@@ -96,7 +96,9 @@ export async function invokeFunction(
 export async function cleanupTestData(): Promise<void> {
   const supa = adminClient();
   // Delete dependent rows first so auth.users cascade to profiles/match_requests
-  // is not blocked by matches.match_request_id (no ON DELETE action).
+  // is not blocked by matches.match_request_id (no ON DELETE action) or
+  // audit_log.actor_id (no ON DELETE action).
+  await supa.from('audit_log').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('match_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // Delete test users by email pattern; profiles cascade
