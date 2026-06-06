@@ -101,6 +101,18 @@ export async function cleanupTestData(): Promise<void> {
   await supa.from('audit_log').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('match_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // Delete profiles left over from anonymize-account tests. Anonymization rewrites the
+  // profile email to `anonymized-<uuid>@deleted.local` while the corresponding
+  // auth.users.email keeps its original `@test.local` suffix, so the loop below catches
+  // the auth row but the profile FK will cascade. We still nuke any orphaned anonymized
+  // profile rows defensively.
+  const { data: anonProfiles } = await supa
+    .from('profiles')
+    .select('user_id, email')
+    .like('email', 'anonymized-%@deleted.local');
+  for (const p of anonProfiles ?? []) {
+    await supa.from('profiles').delete().eq('user_id', p.user_id);
+  }
   // Delete test users by email pattern; profiles cascade
   const { data: users } = await supa.auth.admin.listUsers();
   for (const u of users.users) {
