@@ -172,7 +172,7 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 **`announcements`** — Topluluk duyuruları
 - `created_by` (admin), `title`, `body`, `target_filter jsonb`, `published_at`, `dismissed_count`
 
-**Toplam: 19 tablo.**
+**Toplam: 21 tablo.**
 
 ---
 
@@ -618,7 +618,7 @@ Diğerleri pull-to-refresh veya sayfa açılışında yüklenir.
 ## 9. Implementation sırası (özet — detay plan ayrı)
 
 1. Monorepo kurulumu (Turborepo / pnpm workspaces, packages/shared, packages/supabase)
-2. Supabase migration'ları (19 tablo + seed data: departments, courts, badges)
+2. Supabase migration'ları (21 tablo + seed data: departments, courts, badges)
 3. Edge Functions (ELO hesap, cron'lar, push gönderim)
 4. `packages/shared` (types, ELO logic, zod schemas)
 5. Mobile auth + onboarding flow (UI design link beklenir — placeholder ekranlarla başlanır)
