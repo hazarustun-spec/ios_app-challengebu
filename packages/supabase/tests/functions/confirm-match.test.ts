@@ -61,6 +61,12 @@ Deno.test('confirm-match: both confirm → ELO applied', async () => {
   if (aliceRating.rating <= 1200) throw new Error(`alice rating ${aliceRating.rating} should be > 1200`);
   if (bobRating.rating >= 1200) throw new Error(`bob rating ${bobRating.rating} should be < 1200`);
   assertEquals(aliceRating.rating - 1200, 1200 - bobRating.rating);
+
+  // Verify per-match rating snapshot columns
+  if (m!.rating_before_team_a !== 1200) throw new Error(`rating_before_team_a should be 1200, got ${m!.rating_before_team_a}`);
+  if (m!.rating_before_team_b !== 1200) throw new Error(`rating_before_team_b should be 1200, got ${m!.rating_before_team_b}`);
+  if (m!.rating_after_team_a !== aliceRating!.rating) throw new Error(`rating_after_team_a mismatch`);
+  if (m!.rating_after_team_b !== bobRating!.rating) throw new Error(`rating_after_team_b mismatch`);
 });
 
 Deno.test('confirm-match: unrated match → status confirmed, no ELO change', async () => {

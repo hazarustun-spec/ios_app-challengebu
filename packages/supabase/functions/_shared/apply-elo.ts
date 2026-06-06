@@ -76,6 +76,24 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
       loserScore,
     });
 
+    // Store team-average ratings on the match for ELO history display.
+    // Average matches the expected-score input used by calculateDoublesEloChange.
+    const winnerAvgBefore = Math.round((w1.rating + w2.rating) / 2);
+    const loserAvgBefore = Math.round((l1.rating + l2.rating) / 2);
+    const winnerAvgAfter = Math.round(
+      (result.winnerNewRatings[0] + result.winnerNewRatings[1]) / 2,
+    );
+    const loserAvgAfter = Math.round(
+      (result.loserNewRatings[0] + result.loserNewRatings[1]) / 2,
+    );
+
+    await supa.from('matches').update({
+      rating_before_team_a: match.winner_team === 'a' ? winnerAvgBefore : loserAvgBefore,
+      rating_after_team_a: match.winner_team === 'a' ? winnerAvgAfter : loserAvgAfter,
+      rating_before_team_b: match.winner_team === 'a' ? loserAvgBefore : winnerAvgBefore,
+      rating_after_team_b: match.winner_team === 'a' ? loserAvgAfter : winnerAvgAfter,
+    }).eq('id', match.id);
+
     await upsertRating(supa, winnerIds[0], match.category, result.winnerNewRatings[0], w1.matchesPlayed + 1);
     await upsertRating(supa, winnerIds[1], match.category, result.winnerNewRatings[1], w2.matchesPlayed + 1);
     await upsertRating(supa, loserIds[0], match.category, result.loserNewRatings[0], l1.matchesPlayed + 1);
