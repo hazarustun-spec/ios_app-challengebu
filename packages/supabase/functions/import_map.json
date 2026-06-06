@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@tennis/shared/elo": "../../shared/src/elo/index.ts",
+    "@tennis/shared/types": "../../shared/src/types/index.ts",
+    "@tennis/shared/schemas": "../../shared/src/schemas/index.ts",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.46.0",
+    "zod": "npm:zod@^3.23.8"
+  }
+}
