@@ -1,16 +1,8 @@
 export const SINGLES_CATEGORIES = ['erkek_tek', 'kadin_tek', 'open_tek'] as const;
 
-export const DOUBLES_CATEGORIES = [
-  'erkek_cift',
-  'kadin_cift',
-  'karma_cift',
-  'open_cift',
-] as const;
+export const DOUBLES_CATEGORIES = ['erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift'] as const;
 
-export const ALL_CATEGORIES = [
-  ...SINGLES_CATEGORIES,
-  ...DOUBLES_CATEGORIES,
-] as const;
+export const ALL_CATEGORIES = [...SINGLES_CATEGORIES, ...DOUBLES_CATEGORIES] as const;
 
 export type SinglesCategory = (typeof SINGLES_CATEGORIES)[number];
 export type DoublesCategory = (typeof DOUBLES_CATEGORIES)[number];

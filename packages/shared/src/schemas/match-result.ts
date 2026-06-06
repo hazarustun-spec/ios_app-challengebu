@@ -16,10 +16,9 @@ export const buKlasikScoreDetail = z
       .min(1)
       .max(7),
   })
-  .refine(
-    (data) => data.els.every((el, idx) => el.el === idx + 1),
-    { message: 'els must be sequential starting from 1' },
-  );
+  .refine((data) => data.els.every((el, idx) => el.el === idx + 1), {
+    message: 'els must be sequential starting from 1',
+  });
 
 export const threeSetScoreDetail = z
   .object({
@@ -34,10 +33,9 @@ export const threeSetScoreDetail = z
       .min(2)
       .max(3),
   })
-  .refine(
-    (data) => data.sets.every((s, idx) => s.set === idx + 1),
-    { message: 'sets must be sequential starting from 1' },
-  );
+  .refine((data) => data.sets.every((s, idx) => s.set === idx + 1), {
+    message: 'sets must be sequential starting from 1',
+  });
 
 export const proSet8ScoreDetail = z.object({
   games: z.object({

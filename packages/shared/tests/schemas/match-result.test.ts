@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
-  matchResultSchema,
   buKlasikScoreDetail,
+  matchResultSchema,
   threeSetScoreDetail,
 } from '../../src/schemas/match-result.js';
 

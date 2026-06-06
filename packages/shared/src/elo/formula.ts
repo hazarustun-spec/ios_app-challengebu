@@ -77,9 +77,7 @@ export interface DoublesEloChangeOutput {
   loserNewRatings: [number, number];
 }
 
-export function calculateDoublesEloChange(
-  input: DoublesEloChangeInput,
-): DoublesEloChangeOutput {
+export function calculateDoublesEloChange(input: DoublesEloChangeInput): DoublesEloChangeOutput {
   if (
     input.winnerTeamRatings.length !== 2 ||
     input.loserTeamRatings.length !== 2 ||
@@ -93,10 +91,7 @@ export function calculateDoublesEloChange(
   const loserAvg = (input.loserTeamRatings[0] + input.loserTeamRatings[1]) / 2;
   const expectedWinner = expectedScore(winnerAvg, loserAvg);
 
-  const allMatchesPlayed = [
-    ...input.winnerTeamMatchesPlayed,
-    ...input.loserTeamMatchesPlayed,
-  ];
+  const allMatchesPlayed = [...input.winnerTeamMatchesPlayed, ...input.loserTeamMatchesPlayed];
   const minMatchesPlayed = Math.min(...allMatchesPlayed);
   const k = getKFactor(minMatchesPlayed);
 

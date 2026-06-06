@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { getKFactor, K_NEW_PLAYER, K_ESTABLISHED, NEW_PLAYER_THRESHOLD } from '../../src/elo/k-factor.js';
+import {
+  K_ESTABLISHED,
+  K_NEW_PLAYER,
+  NEW_PLAYER_THRESHOLD,
+  getKFactor,
+} from '../../src/elo/k-factor.js';
 
 describe('K-factor', () => {
   test('constants are 40 and 20', () => {

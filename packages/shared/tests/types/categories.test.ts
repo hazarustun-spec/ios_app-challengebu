@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import {
   ALL_CATEGORIES,
-  SINGLES_CATEGORIES,
-  DOUBLES_CATEGORIES,
-  isSinglesCategory,
-  isDoublesCategory,
   type Category,
+  DOUBLES_CATEGORIES,
+  SINGLES_CATEGORIES,
+  isDoublesCategory,
+  isSinglesCategory,
 } from '../../src/types/categories.js';
 
 describe('categories', () => {
@@ -26,12 +26,7 @@ describe('categories', () => {
   });
 
   test('DOUBLES_CATEGORIES contains 4 doubles', () => {
-    expect(DOUBLES_CATEGORIES).toEqual([
-      'erkek_cift',
-      'kadin_cift',
-      'karma_cift',
-      'open_cift',
-    ]);
+    expect(DOUBLES_CATEGORIES).toEqual(['erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift']);
   });
 
   test('isSinglesCategory true for singles', () => {

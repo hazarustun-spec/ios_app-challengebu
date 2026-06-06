@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import {
+  ALLOWED_BOUN_DOMAINS,
   onboardingSchema,
   validateBouniMail,
-  ALLOWED_BOUN_DOMAINS,
 } from '../../src/schemas/onboarding.js';
 
 describe('BÜ email validation', () => {

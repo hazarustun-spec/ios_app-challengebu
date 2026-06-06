@@ -1,9 +1,4 @@
-export const ALL_FORMATS = [
-  'bu_klasik',
-  'hizli_tiebreak',
-  'pro_set_8',
-  '3set_klasik',
-] as const;
+export const ALL_FORMATS = ['bu_klasik', 'hizli_tiebreak', 'pro_set_8', '3set_klasik'] as const;
 
 export type MatchFormat = (typeof ALL_FORMATS)[number];
 

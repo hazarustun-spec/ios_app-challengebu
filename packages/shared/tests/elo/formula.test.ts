@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import {
-  expectedScore,
-  calculateEloChange,
-  calculateDoublesEloChange,
   DEFAULT_STARTING_ELO,
+  calculateDoublesEloChange,
+  calculateEloChange,
+  expectedScore,
 } from '../../src/elo/formula.js';
 
 describe('expectedScore', () => {

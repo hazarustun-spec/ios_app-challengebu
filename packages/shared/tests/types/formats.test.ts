@@ -1,18 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import {
-  ALL_FORMATS,
-  FORMAT_RULES,
-  type MatchFormat,
-} from '../../src/types/formats.js';
+import { ALL_FORMATS, FORMAT_RULES, type MatchFormat } from '../../src/types/formats.js';
 
 describe('formats', () => {
   test('ALL_FORMATS contains 4 expected codes', () => {
-    expect(ALL_FORMATS).toEqual([
-      'bu_klasik',
-      'hizli_tiebreak',
-      'pro_set_8',
-      '3set_klasik',
-    ]);
+    expect(ALL_FORMATS).toEqual(['bu_klasik', 'hizli_tiebreak', 'pro_set_8', '3set_klasik']);
   });
 
   test('FORMAT_RULES has rules for every format', () => {
