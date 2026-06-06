@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     if (!match) return errorResponse('Match not found', 404);
     const allPlayers: string[] = [...match.team_a_player_ids, ...match.team_b_player_ids];
     if (!allPlayers.includes(auth.userId)) return forbidden('Only participants can raise disputes');
-    if (match.status === 'confirmed' || match.status === 'voided') {
+    if (match.status === 'confirmed' || match.status === 'voided' || match.status === 'disputed') {
       return conflict(`Match is ${match.status} — cannot dispute`);
     }
 
@@ -38,7 +38,11 @@ Deno.serve(async (req) => {
     }).select('id').single();
     if (error) return errorResponse('Failed to create dispute', 500, error);
 
-    await supa.from('matches').update({ status: 'disputed' }).eq('id', match.id);
+    const { error: updateErr } = await supa
+      .from('matches')
+      .update({ status: 'disputed' })
+      .eq('id', match.id);
+    if (updateErr) return errorResponse('Failed to mark match disputed', 500, updateErr);
 
     return jsonResponse({ disputeId: dispute!.id, status: 'disputed' });
   } catch (err) {

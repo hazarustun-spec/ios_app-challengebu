@@ -69,6 +69,25 @@ Deno.test('raise-dispute: non-participant forbidden', async () => {
   assertEquals(status, 403);
 });
 
+Deno.test('raise-dispute: cannot dispute already-disputed match', async () => {
+  await cleanupTestData();
+  const { aliceToken, bobToken, matchId } = await setupAwaitingMatch();
+
+  const r1 = await invokeFunction(
+    'raise-dispute',
+    { matchId, reason: 'first' },
+    aliceToken,
+  );
+  assertEquals(r1.status, 200);
+
+  const r2 = await invokeFunction(
+    'raise-dispute',
+    { matchId, reason: 'second' },
+    bobToken,
+  );
+  assertEquals(r2.status, 409);
+});
+
 Deno.test('raise-dispute: cannot dispute confirmed match', async () => {
   await cleanupTestData();
   const { aliceToken, bobToken, matchId } = await setupAwaitingMatch();
