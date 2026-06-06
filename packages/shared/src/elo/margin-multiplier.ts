@@ -5,6 +5,16 @@ export function getMarginMultiplier(
   winnerScore: number,
   loserScore: number,
 ): number {
+  if (!Number.isInteger(winnerScore) || winnerScore < 0) {
+    throw new Error(
+      `winnerScore must be a non-negative integer, got ${winnerScore}`,
+    );
+  }
+  if (!Number.isInteger(loserScore) || loserScore < 0) {
+    throw new Error(
+      `loserScore must be a non-negative integer, got ${loserScore}`,
+    );
+  }
   if (loserScore >= winnerScore) {
     throw new Error(
       `loserScore (${loserScore}) must be less than winnerScore (${winnerScore})`,

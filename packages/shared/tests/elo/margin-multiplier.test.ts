@@ -55,6 +55,41 @@ describe('margin multiplier', () => {
     });
   });
 
+  describe('pro_set_8 current behavior (deferred design call)', () => {
+    const fmt: MatchFormat = 'pro_set_8';
+    test('8-5 currently returns 1.0 (diff < 4 threshold)', () => {
+      expect(getMarginMultiplier(fmt, 8, 5)).toBeCloseTo(1.0);
+    });
+    test('8-6 currently returns 1.0 (diff < 4 threshold)', () => {
+      expect(getMarginMultiplier(fmt, 8, 6)).toBeCloseTo(1.0);
+    });
+    test('9-7 (tiebreak win) returns 1.0', () => {
+      expect(getMarginMultiplier(fmt, 9, 7)).toBeCloseTo(1.0);
+    });
+  });
+
+  describe('input validation', () => {
+    test('throws on NaN winnerScore', () => {
+      expect(() => getMarginMultiplier('bu_klasik', Number.NaN, 0)).toThrow();
+    });
+    test('throws on NaN loserScore', () => {
+      expect(() => getMarginMultiplier('bu_klasik', 4, Number.NaN)).toThrow();
+    });
+    test('throws on Infinity', () => {
+      expect(() => getMarginMultiplier('bu_klasik', Number.POSITIVE_INFINITY, 0)).toThrow();
+    });
+    test('throws on negative winnerScore', () => {
+      expect(() => getMarginMultiplier('bu_klasik', -1, -5)).toThrow();
+    });
+    test('throws on negative loserScore', () => {
+      expect(() => getMarginMultiplier('bu_klasik', 4, -1)).toThrow();
+    });
+    test('throws on non-integer scores', () => {
+      expect(() => getMarginMultiplier('bu_klasik', 4.5, 2)).toThrow();
+      expect(() => getMarginMultiplier('bu_klasik', 4, 1.5)).toThrow();
+    });
+  });
+
   test('throws if loser score >= winner score', () => {
     expect(() => getMarginMultiplier('bu_klasik', 3, 4)).toThrow();
     expect(() => getMarginMultiplier('bu_klasik', 4, 4)).toThrow();
