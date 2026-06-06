@@ -5,6 +5,11 @@ export const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 export const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 export const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
+/** All test emails must use this domain so cleanupTestData() can find them. */
+export const TEST_EMAIL_DOMAIN = '@test.local';
+
+const TEST_PASSWORD = 'test-password-123';
+
 export function adminClient(): SupabaseClient {
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -23,7 +28,7 @@ export async function createTestUser(opts: {
 
   const { data: created, error: signUpErr } = await supa.auth.admin.createUser({
     email: opts.email,
-    password: 'test-password-123',
+    password: TEST_PASSWORD,
     email_confirm: true,
   });
   if (signUpErr || !created.user) throw new Error(`createUser: ${signUpErr?.message}`);
@@ -39,7 +44,8 @@ export async function createTestUser(opts: {
   }
   if (!departmentId) {
     const { data: anyDept } = await supa.from('departments').select('id').limit(1).single();
-    departmentId = anyDept!.id;
+    if (!anyDept) throw new Error('No departments seeded; run `supabase db reset`');
+    departmentId = anyDept.id;
   }
 
   const { error: profileErr } = await supa.from('profiles').insert({
@@ -58,16 +64,10 @@ export async function createTestUser(opts: {
   });
   if (profileErr) throw new Error(`profile insert: ${profileErr.message}`);
 
-  const { data: session, error: sessionErr } = await supa.auth.admin.generateLink({
-    type: 'magiclink',
-    email: opts.email,
-  });
-  if (sessionErr) throw new Error(`generateLink: ${sessionErr.message}`);
-
   const userSupa = createClient(SUPABASE_URL, ANON_KEY);
   const { data: signIn, error: signInErr } = await userSupa.auth.signInWithPassword({
     email: opts.email,
-    password: 'test-password-123',
+    password: TEST_PASSWORD,
   });
   if (signInErr || !signIn.session) throw new Error(`signIn: ${signInErr?.message}`);
 
@@ -98,7 +98,7 @@ export async function cleanupTestData(): Promise<void> {
   // Delete test users by email pattern; profiles cascade
   const { data: users } = await supa.auth.admin.listUsers();
   for (const u of users.users) {
-    if (u.email?.endsWith('@test.local')) {
+    if (u.email?.endsWith(TEST_EMAIL_DOMAIN)) {
       await supa.auth.admin.deleteUser(u.id);
     }
   }
