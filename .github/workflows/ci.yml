@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shared-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck (shared)
+        working-directory: packages/shared
+        run: bun run typecheck
+
+      - name: Test (shared)
+        working-directory: packages/shared
+        run: bun test
+
+  supabase-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        working-directory: packages/supabase
+        run: supabase start
+
+      - name: Apply migrations
+        working-directory: packages/supabase
+        run: supabase db reset --no-seed=false
+
+      - name: Verify schema
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f packages/supabase/tests/schema-verification.sql
+
+      - name: Stop Supabase
+        if: always()
+        working-directory: packages/supabase
+        run: supabase stop
