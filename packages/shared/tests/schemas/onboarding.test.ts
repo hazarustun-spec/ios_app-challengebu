@@ -99,4 +99,32 @@ describe('onboardingSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  test('rejects whitespace-only firstName', () => {
+    const result = onboardingSchema.safeParse({ ...validInput, firstName: '   ' });
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects whitespace-only lastName', () => {
+    const result = onboardingSchema.safeParse({ ...validInput, lastName: '   ' });
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects whitespace-only pronounCustom with pronoun=other', () => {
+    const result = onboardingSchema.safeParse({
+      ...validInput,
+      pronoun: 'other',
+      pronounCustom: '   ',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  test('rejects pronounCustom longer than 30 chars', () => {
+    const result = onboardingSchema.safeParse({
+      ...validInput,
+      pronoun: 'other',
+      pronounCustom: 'a'.repeat(31),
+    });
+    expect(result.success).toBe(false);
+  });
 });

@@ -28,11 +28,11 @@ const phoneSchema = z
 
 export const onboardingSchema = z
   .object({
-    firstName: z.string().min(1).max(50).trim(),
-    lastName: z.string().min(1).max(50).trim(),
+    firstName: z.string().trim().min(1).max(50),
+    lastName: z.string().trim().min(1).max(50),
     phone: phoneSchema,
     pronoun: z.enum(PRONOUN_VALUES),
-    pronounCustom: z.string().max(30).optional(),
+    pronounCustom: z.string().trim().min(1).max(30).optional(),
     genderCategory: z.enum(GENDER_CATEGORY_VALUES),
     departmentId: z.string().uuid(),
     classYear: z.enum(CLASS_YEAR_VALUES),
