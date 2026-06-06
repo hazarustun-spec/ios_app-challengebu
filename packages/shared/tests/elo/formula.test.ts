@@ -140,4 +140,76 @@ describe('calculateEloChange', () => {
 
     expect(result.winnerChange + result.loserChange).toBe(0);
   });
+
+  test('uses winner K for both sides (kWinner contract)', () => {
+    // Equal ratings, new winner (K=40) vs established loser (K=20)
+    // Margin = 1.5 (4-0). Expected change with kWinner = 40 * 0.5 * 1.5 = 30
+    const result = calculateEloChange({
+      winnerRating: 1200,
+      loserRating: 1200,
+      winnerMatchesPlayed: 5, // K=40
+      loserMatchesPlayed: 20, // K=20
+      format: 'bu_klasik',
+      winnerScore: 4,
+      loserScore: 0,
+    });
+    expect(result.winnerChange).toBe(30);
+    expect(result.loserChange).toBe(-30);
+  });
+
+  test('throws on NaN winnerRating', () => {
+    expect(() =>
+      calculateEloChange({
+        winnerRating: Number.NaN,
+        loserRating: 1200,
+        winnerMatchesPlayed: 20,
+        loserMatchesPlayed: 20,
+        format: 'bu_klasik',
+        winnerScore: 4,
+        loserScore: 2,
+      }),
+    ).toThrow();
+  });
+
+  test('throws on Infinity loserRating', () => {
+    expect(() =>
+      calculateEloChange({
+        winnerRating: 1200,
+        loserRating: Number.POSITIVE_INFINITY,
+        winnerMatchesPlayed: 20,
+        loserMatchesPlayed: 20,
+        format: 'bu_klasik',
+        winnerScore: 4,
+        loserScore: 2,
+      }),
+    ).toThrow();
+  });
+
+  test('propagates invalid matchesPlayed from getKFactor', () => {
+    expect(() =>
+      calculateEloChange({
+        winnerRating: 1200,
+        loserRating: 1200,
+        winnerMatchesPlayed: -1,
+        loserMatchesPlayed: 20,
+        format: 'bu_klasik',
+        winnerScore: 4,
+        loserScore: 2,
+      }),
+    ).toThrow();
+  });
+
+  test('propagates invalid scores from getMarginMultiplier', () => {
+    expect(() =>
+      calculateEloChange({
+        winnerRating: 1200,
+        loserRating: 1200,
+        winnerMatchesPlayed: 20,
+        loserMatchesPlayed: 20,
+        format: 'bu_klasik',
+        winnerScore: 2,
+        loserScore: 4,
+      }),
+    ).toThrow();
+  });
 });

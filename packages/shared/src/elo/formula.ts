@@ -26,12 +26,29 @@ export interface EloChangeOutput {
 }
 
 export function calculateEloChange(input: EloChangeInput): EloChangeOutput {
+  if (!Number.isFinite(input.winnerRating)) {
+    throw new Error(`winnerRating must be a finite number, got ${input.winnerRating}`);
+  }
+  if (!Number.isFinite(input.loserRating)) {
+    throw new Error(`loserRating must be a finite number, got ${input.loserRating}`);
+  }
+
   const expectedWinner = expectedScore(input.winnerRating, input.loserRating);
-  const kWinner = getKFactor(input.winnerMatchesPlayed);
+
+  // We intentionally use the winner's K-factor for both sides, not Math.min(kWinner, kLoser).
+  // Math.min would collapse the K=40 new-player calibration whenever they face an established
+  // player, defeating its purpose. Using kWinner preserves zero-sum (loserChange = -winnerChange)
+  // while letting new winners gain at K=40 and forcing established losers to absorb that K
+  // when they lose to a new player. This is a deliberate club-scale fairness trade-off.
+  const k = getKFactor(input.winnerMatchesPlayed);
+  // Note: input.loserMatchesPlayed is intentionally not used in the K-factor calculation.
+  // It is still validated via getKFactor in the original implementation's intent — call it
+  // here purely for input validation (will throw on invalid values).
+  getKFactor(input.loserMatchesPlayed);
 
   const margin = getMarginMultiplier(input.format, input.winnerScore, input.loserScore);
 
-  const rawChange = kWinner * (1 - expectedWinner) * margin;
+  const rawChange = k * (1 - expectedWinner) * margin;
   const winnerChange = Math.round(rawChange);
   const loserChange = -winnerChange;
 
