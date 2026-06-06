@@ -14,7 +14,14 @@ const inputSchema = z.object({
   games: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
   tiebreakScore: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
   points: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
-});
+}).refine(
+  (data) => {
+    if (data.winnerTeam === 'void') return data.scoreTeamA === data.scoreTeamB;
+    if (data.winnerTeam === 'a') return data.scoreTeamA > data.scoreTeamB;
+    return data.scoreTeamB > data.scoreTeamA;
+  },
+  { message: 'winnerTeam must match scores', path: ['winnerTeam'] },
+);
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);

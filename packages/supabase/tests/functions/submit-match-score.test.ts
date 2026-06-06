@@ -88,3 +88,45 @@ Deno.test('submit-match-score: non-participant forbidden', async () => {
   const r = await invokeFunction('submit-match-score', { matchId, ...matchingScore }, carol.accessToken);
   assertEquals(r.status, 403);
 });
+
+Deno.test('submit-match-score: rejects inconsistent winnerTeam', async () => {
+  await cleanupTestData();
+  const { aliceToken, matchId } = await setupMatch();
+
+  const r = await invokeFunction('submit-match-score', {
+    matchId,
+    scoreTeamA: 2,
+    scoreTeamB: 4,
+    winnerTeam: 'a', // wrong: a has fewer
+    els: [
+      { el: 1, winner: 'b' }, { el: 2, winner: 'a' }, { el: 3, winner: 'b' },
+      { el: 4, winner: 'a' }, { el: 5, winner: 'b' }, { el: 6, winner: 'b' },
+    ],
+  }, aliceToken);
+  assertEquals(r.status, 400);
+});
+
+Deno.test('submit-match-score: same player resubmit replaces prior (latest wins)', async () => {
+  await cleanupTestData();
+  const { aliceToken, bobToken, matchId } = await setupMatch();
+
+  // Alice submits first (wrong score)
+  await invokeFunction('submit-match-score', {
+    matchId,
+    scoreTeamA: 4,
+    scoreTeamB: 1,
+    winnerTeam: 'a',
+    els: [
+      { el: 1, winner: 'a' }, { el: 2, winner: 'a' }, { el: 3, winner: 'a' },
+      { el: 4, winner: 'b' }, { el: 5, winner: 'a' },
+    ],
+  }, aliceToken);
+
+  // Alice resubmits (correct score, matches Bob)
+  await invokeFunction('submit-match-score', { matchId, ...matchingScore }, aliceToken);
+
+  // Bob submits the matching score
+  const r = await invokeFunction('submit-match-score', { matchId, ...matchingScore }, bobToken);
+  assertEquals(r.status, 200);
+  assertEquals((r.body as { matched: boolean }).matched, true);
+});
