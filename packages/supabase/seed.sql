@@ -1,0 +1,2 @@
+-- Seed data for local development
+-- Add seed INSERT statements here as the schema evolves.

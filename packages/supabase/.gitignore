@@ -1,0 +1,7 @@
+# Supabase
+.branches/
+.temp/
+.vscode/
+
+# Generated
+**/db/*.sql.lock
