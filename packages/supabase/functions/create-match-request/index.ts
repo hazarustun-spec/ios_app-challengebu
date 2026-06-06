@@ -18,8 +18,17 @@ const inputSchema = z.object({
   ]),
   format: z.enum(['bu_klasik', 'hizli_tiebreak', 'pro_set_8', '3set_klasik']),
   isRated: z.boolean(),
-  proposedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  proposedTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/),
+  proposedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
+    (s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)),
+    'proposedDate must be a valid calendar date',
+  ),
+  proposedTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).refine(
+    (s) => {
+      const [h, m] = s.split(':').map(Number);
+      return h >= 0 && h < 24 && m >= 0 && m < 60;
+    },
+    'proposedTime must be a valid HH:MM time',
+  ),
   courtId: z.string().uuid(),
   creatorPartnerId: z.string().uuid().optional(),
   targetPartnerId: z.string().uuid().optional(),
@@ -48,6 +57,9 @@ Deno.serve(async (req) => {
     }
     if (input.type === 'open_call' && input.targetId) {
       return errorResponse('targetId must be null for open_call', 400);
+    }
+    if (input.type === 'direct_challenge' && input.targetId === auth.userId) {
+      return errorResponse('Cannot challenge yourself', 400);
     }
 
     if (input.isRated) {

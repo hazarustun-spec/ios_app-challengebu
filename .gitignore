@@ -14,6 +14,9 @@ build/
 # Bun
 bun.lockb
 
+# Deno (Supabase Edge Functions)
+packages/supabase/functions/deno.lock
+
 # Environment
 .env
 .env.local
