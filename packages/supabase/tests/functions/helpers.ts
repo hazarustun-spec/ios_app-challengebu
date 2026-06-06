@@ -101,6 +101,10 @@ export async function cleanupTestData(): Promise<void> {
   await supa.from('audit_log').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('match_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // Season-related rows: tournaments, tournament_matches, season_standings cascade from seasons.
+  // yearly_championship does not cascade from seasons so delete explicitly.
+  await supa.from('yearly_championship').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supa.from('seasons').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // Delete profiles left over from anonymize-account tests. Anonymization rewrites the
   // profile email to `anonymized-<uuid>@deleted.local` while the corresponding
   // auth.users.email keeps its original `@test.local` suffix, so the loop below catches
