@@ -1,0 +1,12 @@
+{
+  "name": "@tennis/supabase",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase status",
+    "test": "psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -v ON_ERROR_STOP=1 -f tests/schema-verification.sql"
+  }
+}
