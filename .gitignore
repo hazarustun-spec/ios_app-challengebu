@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build outputs
+dist/
+build/
+.next/
+.expo/
+
+# Turborepo
+.turbo/
+
+# Bun
+bun.lockb
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Supabase
+packages/supabase/.branches/
+packages/supabase/.temp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
