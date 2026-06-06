@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   expectedScore,
   calculateEloChange,
+  calculateDoublesEloChange,
   DEFAULT_STARTING_ELO,
 } from '../../src/elo/formula.js';
 
@@ -209,6 +210,82 @@ describe('calculateEloChange', () => {
         format: 'bu_klasik',
         winnerScore: 2,
         loserScore: 4,
+      }),
+    ).toThrow();
+  });
+});
+
+describe('calculateDoublesEloChange', () => {
+  test('uses team average for expected calculation', () => {
+    // Team A avg: (1300 + 1100) / 2 = 1200
+    // Team B avg: (1200 + 1200) / 2 = 1200
+    // Equal teams, A wins → ~equal gain
+    const result = calculateDoublesEloChange({
+      winnerTeamRatings: [1300, 1100],
+      loserTeamRatings: [1200, 1200],
+      winnerTeamMatchesPlayed: [20, 20],
+      loserTeamMatchesPlayed: [20, 20],
+      format: 'bu_klasik',
+      winnerScore: 4,
+      loserScore: 2,
+    });
+
+    expect(result.winnerChanges).toHaveLength(2);
+    expect(result.loserChanges).toHaveLength(2);
+    expect(result.winnerChanges[0]).toBe(result.winnerChanges[1]);
+    expect(result.loserChanges[0]).toBe(result.loserChanges[1]);
+  });
+
+  test('zero-sum across all 4 players', () => {
+    const result = calculateDoublesEloChange({
+      winnerTeamRatings: [1500, 1400],
+      loserTeamRatings: [1200, 1100],
+      winnerTeamMatchesPlayed: [30, 25],
+      loserTeamMatchesPlayed: [10, 15],
+      format: '3set_klasik',
+      winnerScore: 2,
+      loserScore: 0,
+    });
+
+    const totalWinnerGain = result.winnerChanges[0] + result.winnerChanges[1];
+    const totalLoserLoss = result.loserChanges[0] + result.loserChanges[1];
+    expect(totalWinnerGain + totalLoserLoss).toBe(0);
+  });
+
+  test('underdog doubles team gets more points', () => {
+    const underdog = calculateDoublesEloChange({
+      winnerTeamRatings: [1000, 1000],
+      loserTeamRatings: [1500, 1500],
+      winnerTeamMatchesPlayed: [20, 20],
+      loserTeamMatchesPlayed: [20, 20],
+      format: 'bu_klasik',
+      winnerScore: 4,
+      loserScore: 2,
+    });
+
+    const favorite = calculateDoublesEloChange({
+      winnerTeamRatings: [1500, 1500],
+      loserTeamRatings: [1000, 1000],
+      winnerTeamMatchesPlayed: [20, 20],
+      loserTeamMatchesPlayed: [20, 20],
+      format: 'bu_klasik',
+      winnerScore: 4,
+      loserScore: 2,
+    });
+
+    expect(underdog.winnerChanges[0]).toBeGreaterThan(favorite.winnerChanges[0]);
+  });
+
+  test('throws if team arrays length mismatch', () => {
+    expect(() =>
+      calculateDoublesEloChange({
+        winnerTeamRatings: [1200],
+        loserTeamRatings: [1200, 1200],
+        winnerTeamMatchesPlayed: [20, 20],
+        loserTeamMatchesPlayed: [20, 20],
+        format: 'bu_klasik',
+        winnerScore: 4,
+        loserScore: 2,
       }),
     ).toThrow();
   });

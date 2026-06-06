@@ -59,3 +59,68 @@ export function calculateEloChange(input: EloChangeInput): EloChangeOutput {
     loserNewRating: input.loserRating + loserChange,
   };
 }
+
+export interface DoublesEloChangeInput {
+  winnerTeamRatings: [number, number];
+  loserTeamRatings: [number, number];
+  winnerTeamMatchesPlayed: [number, number];
+  loserTeamMatchesPlayed: [number, number];
+  format: MatchFormat;
+  winnerScore: number;
+  loserScore: number;
+}
+
+export interface DoublesEloChangeOutput {
+  winnerChanges: [number, number];
+  loserChanges: [number, number];
+  winnerNewRatings: [number, number];
+  loserNewRatings: [number, number];
+}
+
+export function calculateDoublesEloChange(
+  input: DoublesEloChangeInput,
+): DoublesEloChangeOutput {
+  if (
+    input.winnerTeamRatings.length !== 2 ||
+    input.loserTeamRatings.length !== 2 ||
+    input.winnerTeamMatchesPlayed.length !== 2 ||
+    input.loserTeamMatchesPlayed.length !== 2
+  ) {
+    throw new Error('Doubles teams must have exactly 2 players each');
+  }
+
+  const winnerAvg = (input.winnerTeamRatings[0] + input.winnerTeamRatings[1]) / 2;
+  const loserAvg = (input.loserTeamRatings[0] + input.loserTeamRatings[1]) / 2;
+  const expectedWinner = expectedScore(winnerAvg, loserAvg);
+
+  const allMatchesPlayed = [
+    ...input.winnerTeamMatchesPlayed,
+    ...input.loserTeamMatchesPlayed,
+  ];
+  const minMatchesPlayed = Math.min(...allMatchesPlayed);
+  const k = getKFactor(minMatchesPlayed);
+
+  const margin = getMarginMultiplier(input.format, input.winnerScore, input.loserScore);
+
+  const rawChange = k * (1 - expectedWinner) * margin;
+
+  // Distribute equally across both players. Per-player rounding preserves zero-sum
+  // (2 * perPlayer for winners, -2 * perPlayer for losers) and ensures both teammates
+  // receive identical changes — important for fairness in doubles.
+  const perPlayer = Math.round(rawChange / 2);
+  const winnerChanges: [number, number] = [perPlayer, perPlayer];
+  const loserChanges: [number, number] = [-perPlayer, -perPlayer];
+
+  return {
+    winnerChanges,
+    loserChanges,
+    winnerNewRatings: [
+      input.winnerTeamRatings[0] + winnerChanges[0],
+      input.winnerTeamRatings[1] + winnerChanges[1],
+    ],
+    loserNewRatings: [
+      input.loserTeamRatings[0] + loserChanges[0],
+      input.loserTeamRatings[1] + loserChanges[1],
+    ],
+  };
+}
