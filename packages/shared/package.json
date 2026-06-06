@@ -13,8 +13,7 @@
   },
   "scripts": {
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "zod": "^3.23.8"

@@ -279,6 +279,7 @@ describe('calculateDoublesEloChange', () => {
   test('throws if team arrays length mismatch', () => {
     expect(() =>
       calculateDoublesEloChange({
+        // @ts-expect-error - intentionally malformed input to test runtime validation
         winnerTeamRatings: [1200],
         loserTeamRatings: [1200, 1200],
         winnerTeamMatchesPlayed: [20, 20],
