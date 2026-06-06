@@ -282,14 +282,16 @@ Her ikisinde de aynı 4 format seçilebilir:
 - Uyumsuzlukta banner: *"Uyumsuz skor: iki kullanıcı farklı skor girdi, devam edebilmeniz için aynı skor girmelisiniz. Lütfen tekrar girin."*
 - Aynı skor girilene kadar sonraki ele geçilemez (deneme limiti yok)
 - 3-3'te BÜ Klasik: "Maçı Bitir" iki taraftan da onaylanırsa `voided`, ELO etkilenmez
+- Maç bittiğinde tahmini ELO değişimi gösterilir — bu değer Edge Function'dan canonical hesapla preview olarak çekilir (frontend kendi hesabını yapmaz, server-side tek doğruluk kaynağı)
 
 ### 4.5 Maç sonu onayı
 
 - Kazanan belli olduğunda her iki tarafa "Maç Sonu" ekranı: özet + tahmini ELO değişimi
 - "Onayla" / "İtiraz Et" butonları
 - Her iki taraf "Onayla" → `status='confirmed'`, ELO uygulanır
-- Birisi "İtiraz Et" → `status='disputed'`, admin'e bildirim
-- 48 saatte onaylanmazsa: cron otomatik onaylar (`auto_confirm_matches`)
+- Birisi "İtiraz Et" → `status='disputed'`, admin'e bildirim (kazanan veya kaybeden — fark etmez, herkes itiraz edebilir)
+- **İtiraz penceresi: 48 saat.** Bu süre içinde her iki taraf da onaylamadıysa veya itiraz açmadıysa, cron otomatik onaylar (`auto_confirm_matches`) ve ELO uygulanır
+- Onay sonrası itiraz mümkün değil (auto-confirm da dahil) — itiraz penceresi dolduktan sonra skor kesinleşir
 
 ### 4.6 ELO hesaplama
 
@@ -431,11 +433,11 @@ Veri kaynağı: `matches.rating_before_*` ve `rating_after_*` kolonlarından tü
 - Yeni Yüzler (10 farklı rakip)
 
 **Sezon** (her sezon sıfırlanır, kazanılırsa profile eklenir):
-- Sezon Top 10
-- Sezon Top 3
-- Sezon Şampiyonu
-- Sezon Finalisti
-- Sezon Yarı Finalisti
+- Sezon Ladder Top 10 (sezon sonu ladder sıralaması — finale Top 8'den farklı)
+- Sezon Ladder Top 3
+- Sezon Şampiyonu (finale)
+- Sezon Finalisti (finale)
+- Sezon Yarı Finalisti (finale)
 
 **Yıllık:**
 - Yıllık Şampiyon (kategori başına, kalıcı)
