@@ -27,4 +27,16 @@ describe('K-factor', () => {
   test('throws on negative matches_played', () => {
     expect(() => getKFactor(-1)).toThrow();
   });
+
+  test('throws on NaN', () => {
+    expect(() => getKFactor(Number.NaN)).toThrow();
+  });
+
+  test('throws on Infinity', () => {
+    expect(() => getKFactor(Number.POSITIVE_INFINITY)).toThrow();
+  });
+
+  test('throws on non-integer', () => {
+    expect(() => getKFactor(5.5)).toThrow();
+  });
 });
