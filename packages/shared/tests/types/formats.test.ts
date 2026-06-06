@@ -15,12 +15,12 @@ describe('formats', () => {
   });
 
   test('bu_klasik has target of 4 els', () => {
-    expect(FORMAT_RULES['bu_klasik'].targetUnits).toBe(4);
-    expect(FORMAT_RULES['bu_klasik'].canVoidAtTie).toBe(true);
+    expect(FORMAT_RULES.bu_klasik.targetUnits).toBe(4);
+    expect(FORMAT_RULES.bu_klasik.canVoidAtTie).toBe(true);
   });
 
   test('hizli_tiebreak has target of 10', () => {
-    expect(FORMAT_RULES['hizli_tiebreak'].targetUnits).toBe(10);
+    expect(FORMAT_RULES.hizli_tiebreak.targetUnits).toBe(10);
   });
 
   test('Format type narrows correctly', () => {
