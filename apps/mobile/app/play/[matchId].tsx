@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ActivityIndicator, Text, View } from 'react-native';
 import { BuKlasikScoreEntry } from '../../components/matches/score-entry/BuKlasikScoreEntry';
+import { HizliTiebreakScoreEntry } from '../../components/matches/score-entry/HizliTiebreakScoreEntry';
 import { FormatRulesModal } from '../../components/matches/FormatRulesModal';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMatchDetail } from '../../hooks/use-match-detail';
@@ -58,6 +59,35 @@ export default function PlayScreen() {
     }
   };
 
+  const onHizliTiebreakSubmit = async (
+    draft: { points: { a: number; b: number } },
+    winnerTeam: 'a' | 'b' | 'void',
+    scoreA: number,
+    scoreB: number,
+  ) => {
+    try {
+      const res = await submit.mutateAsync({
+        matchId,
+        scoreTeamA: scoreA,
+        scoreTeamB: scoreB,
+        winnerTeam,
+        points: draft.points,
+      });
+      clearDraft(matchId);
+      if (res.matched) {
+        Alert.alert('Eşleşti', 'Karşı taraftan onay bekleniyor.', [
+          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
+        ]);
+      } else {
+        Alert.alert('Gönderildi', 'Rakip henüz aynı skoru girmedi.', [
+          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
+        ]);
+      }
+    } catch (e) {
+      Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: 'Maç oyna', headerShown: true }} />
@@ -76,11 +106,19 @@ export default function PlayScreen() {
               submitting={submit.isPending}
             />
           )}
-          {m.format !== 'bu_klasik' && (
+          {m.format === 'hizli_tiebreak' && (
+            <HizliTiebreakScoreEntry
+              matchId={matchId}
+              myLetter={myLetter}
+              onSubmit={onHizliTiebreakSubmit}
+              submitting={submit.isPending}
+            />
+          )}
+          {(m.format === 'pro_set_8' || m.format === '3set_klasik') && (
             <View className="flex-1 items-center justify-center">
               <View className="rounded-lg bg-yellow-50 p-4">
                 <Text className="text-yellow-900">
-                  Bu format için skor girişi henüz hazır değil (Task 10-12'de gelecek).
+                  Bu format için skor girişi henüz hazır değil (sonraki task'larda gelecek).
                 </Text>
               </View>
             </View>
