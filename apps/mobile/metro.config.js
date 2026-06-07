@@ -13,6 +13,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-config.resolver.disableHierarchicalLookup = true;
+// NOTE: hierarchical lookup must stay enabled for Bun monorepo so Metro can
+// resolve transitive deps (e.g. @expo/metro-runtime, react-native-worklets/plugin)
+// that live in nested .bun/<pkg>/node_modules dirs.
+config.resolver.disableHierarchicalLookup = false;
 
 module.exports = withNativeWind(config, { input: './global.css' });
