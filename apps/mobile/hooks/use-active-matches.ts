@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
 import { useAuthStore } from '../stores/auth-store';
+import type { MatchFormat } from '../components/matches/FormatPicker';
 
 export type MatchStatus = 'awaiting_confirmation' | 'confirmed' | 'disputed' | 'voided';
 
@@ -9,7 +10,7 @@ export interface ActiveMatchRow {
   id: string;
   match_request_id: string | null;
   category: string;
-  format: string;
+  format: MatchFormat;
   is_rated: boolean;
   played_at: string;
   status: MatchStatus;
