@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Switch, Text, View } from 'react-native';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
@@ -6,11 +6,12 @@ import {
   useScoreEntryStore,
   type ProSet8Draft,
 } from '../../../stores/score-entry-store';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: ProSet8Draft, winnerTeam: 'a' | 'b' | 'void', scoreA: number, scoreB: number) => void;
+  onSubmit: (draft: ProSet8Draft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
   submitting: boolean;
 }
 
@@ -24,6 +25,17 @@ export function ProSet8ScoreEntry({ matchId, myLetter, onSubmit, submitting }: P
   const [tbA, setTbA] = useState(String(draft.tiebreakScore?.a ?? 0));
   const [tbB, setTbB] = useState(String(draft.tiebreakScore?.b ?? 0));
   const [err, setErr] = useState<string>();
+
+  useEffect(() => {
+    const a = Number(gamesA) || 0;
+    const b = Number(gamesB) || 0;
+    const tbAN = Number(tbA) || 0;
+    const tbBN = Number(tbB) || 0;
+    setDraft(matchId, {
+      games: { a, b },
+      tiebreakScore: hasTiebreak ? { a: tbAN, b: tbBN } : undefined,
+    });
+  }, [gamesA, gamesB, hasTiebreak, tbA, tbB, matchId, setDraft]);
 
   const onSubmitTap = () => {
     const a = Number(gamesA);
@@ -47,8 +59,12 @@ export function ProSet8ScoreEntry({ matchId, myLetter, onSubmit, submitting }: P
       }
       const ta = Number(tbA);
       const tb_ = Number(tbB);
-      if (!Number.isInteger(ta) || !Number.isInteger(tb_) || ta < 0 || tb_ < 0 || Math.abs(ta - tb_) < 2) {
+      if (!Number.isInteger(ta) || !Number.isInteger(tb_) || ta < 0 || tb_ < 0) {
         setErr('Tiebreak skoru geçersiz (en az 2 fark)');
+        return;
+      }
+      if (Math.max(ta, tb_) < 7 || Math.abs(ta - tb_) < 2) {
+        setErr('Tiebreak en az 7 sayıya kadar oynanır (en az 2 fark)');
         return;
       }
       winner = ta > tb_ ? 'a' : 'b';
@@ -56,7 +72,7 @@ export function ProSet8ScoreEntry({ matchId, myLetter, onSubmit, submitting }: P
     } else if (diff >= 2) {
       winner = a > b ? 'a' : 'b';
     } else {
-      setErr('Skor geçersiz (örn. 8-6, 8-5, 8-4, 9-7, 9-8 tiebreak)');
+      setErr('Skor geçersiz (örn. 8-6, 9-7, 8-8 olursa tiebreak)');
       return;
     }
 
