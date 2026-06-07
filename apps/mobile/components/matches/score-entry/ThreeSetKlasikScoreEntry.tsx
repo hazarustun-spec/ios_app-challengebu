@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
@@ -6,17 +6,35 @@ import {
   useScoreEntryStore,
   type ThreeSetKlasikDraft,
 } from '../../../stores/score-entry-store';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: ThreeSetKlasikDraft, winnerTeam: 'a' | 'b' | 'void', scoreA: number, scoreB: number) => void;
+  onSubmit: (draft: ThreeSetKlasikDraft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
   submitting: boolean;
 }
 
 interface SetInput {
   a: string;
   b: string;
+}
+
+function parseSet(s: SetInput): { a: number; b: number } | null {
+  if (s.a === '' || s.b === '') return null;
+  const a = Number(s.a);
+  const b = Number(s.b);
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return null;
+  return { a, b };
+}
+
+function isLegalSetScore(a: number, b: number): boolean {
+  if (a < 0 || b < 0) return false;
+  const max = Math.max(a, b);
+  const min = Math.min(a, b);
+  if (max === 6 && min <= 4) return true;
+  if (max === 7 && (min === 5 || min === 6)) return true;
+  return false;
 }
 
 export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitting }: Props) {
@@ -30,8 +48,23 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
   const [sets, setSets] = useState<SetInput[]>(initialSets);
   const [err, setErr] = useState<string>();
 
+  useEffect(() => {
+    setDraft(matchId, {
+      sets: sets.map((s, i) => ({ set: i + 1, a: Number(s.a) || 0, b: Number(s.b) || 0 })),
+    });
+  }, [sets, matchId, setDraft]);
+
+  const parsed0 = sets[0] ? parseSet(sets[0]) : null;
+  const parsed1 = sets[1] ? parseSet(sets[1]) : null;
+  let decidedAfterTwo = false;
+  if (parsed0 && parsed1) {
+    const winner0 = parsed0.a > parsed0.b ? 'a' : parsed0.a < parsed0.b ? 'b' : null;
+    const winner1 = parsed1.a > parsed1.b ? 'a' : parsed1.a < parsed1.b ? 'b' : null;
+    if (winner0 && winner1 && winner0 === winner1) decidedAfterTwo = true;
+  }
+
   const addSet = () => {
-    if (sets.length < 3) setSets([...sets, { a: '', b: '' }]);
+    if (sets.length < 3 && !decidedAfterTwo) setSets([...sets, { a: '', b: '' }]);
   };
 
   const updateSet = (i: number, key: 'a' | 'b', value: string) => {
@@ -42,18 +75,19 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
   };
 
   const onSubmitTap = () => {
+    const effectiveSets = decidedAfterTwo ? sets.slice(0, 2) : sets;
     const parsed: { set: number; a: number; b: number }[] = [];
     let setsA = 0;
     let setsB = 0;
-    for (let i = 0; i < sets.length; i++) {
-      const a = Number(sets[i].a);
-      const b = Number(sets[i].b);
-      if (!Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0 || a > 7 || b > 7) {
+    for (let i = 0; i < effectiveSets.length; i++) {
+      const a = Number(effectiveSets[i].a);
+      const b = Number(effectiveSets[i].b);
+      if (!Number.isInteger(a) || !Number.isInteger(b)) {
         setErr(`${i + 1}. set skoru geçersiz`);
         return;
       }
-      if (a === b) {
-        setErr(`${i + 1}. sette beraberlik olamaz`);
+      if (!isLegalSetScore(a, b)) {
+        setErr(`${i + 1}. set skoru geçersiz (örn. 6-3, 7-5, 7-6)`);
         return;
       }
       parsed.push({ set: i + 1, a, b });
@@ -95,7 +129,7 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
           </View>
         </View>
       ))}
-      {sets.length < 3 && (
+      {sets.length < 3 && !decidedAfterTwo && (
         <Pressable onPress={addSet} className="items-center py-2">
           <Text className="text-primary">+ 3. seti ekle</Text>
         </Pressable>
