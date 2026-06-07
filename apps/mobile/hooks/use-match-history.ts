@@ -38,7 +38,7 @@ export function useMyMatchHistory() {
 
 export function useUserMatchHistory(userId: string | undefined) {
   return useQuery<ActiveMatchRow[]>({
-    queryKey: userId ? queryKeys.matchHistory.forUser(userId) : queryKeys.matchHistory.all,
+    queryKey: queryKeys.matchHistory.forUser(userId ?? '__none__'),
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await fetchHistoryFor(userId);

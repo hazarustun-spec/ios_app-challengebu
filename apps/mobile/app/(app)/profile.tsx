@@ -6,7 +6,7 @@ import { ProfileHeader } from '../../components/profile/ProfileHeader';
 import { ProfileTabs, type ProfileTabKey } from '../../components/profile/ProfileTabs';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMyProfile } from '../../hooks/use-profile';
-import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { useAuthStore } from '../../stores/auth-store';
 
@@ -14,7 +14,7 @@ export default function ProfileScreen() {
   const userId = useAuthStore((s) => s.user?.id);
   const [tab, setTab] = useState<ProfileTabKey>('rankings');
   const { data: p, isLoading } = useMyProfile();
-  const rankings = useMyRankings();
+  const rankings = useUserRankings(userId);
   const myBadges = useMyBadges();
 
   if (isLoading || !p || !userId) {
@@ -58,7 +58,7 @@ export default function ProfileScreen() {
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
       />
-      <ProfileTabs active={tab} onChange={setTab} />
+      <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'matches']} />
       <TabContent tabKey={tab} myUserId={userId} />
     </ScreenContainer>
   );
