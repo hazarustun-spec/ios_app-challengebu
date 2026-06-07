@@ -16,7 +16,8 @@ export default function ProfileScreen() {
   }
 
   const pronounDisplay = p.pronoun === 'other' ? p.pronoun_custom : p.pronoun;
-  const departmentName = (p.departments as { name: string } | null)?.name;
+  const dept = p.departments as { name: string }[] | { name: string } | null;
+  const departmentName = Array.isArray(dept) ? dept[0]?.name : dept?.name;
 
   return (
     <ScreenContainer scrollable>
