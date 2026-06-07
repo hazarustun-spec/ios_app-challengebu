@@ -12,7 +12,7 @@ export default function DisputeScreen() {
   const [err, setErr] = useState<string>();
   const raise = useRaiseDispute();
 
-  const onSubmit = async () => {
+  const onSubmit = () => {
     const trimmed = reason.trim();
     if (trimmed.length < 5) {
       setErr('Lütfen kısa bir açıklama gir (en az 5 karakter)');
@@ -23,14 +23,27 @@ export default function DisputeScreen() {
       return;
     }
     if (!matchId) return;
-    try {
-      await raise.mutateAsync({ matchId, reason: trimmed });
-      Alert.alert('İtiraz açıldı', 'Admin karar verene kadar maç beklemede.', [
-        { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-      ]);
-    } catch (e) {
-      Alert.alert('Hata', e instanceof Error ? e.message : 'İtiraz açılamadı');
-    }
+    Alert.alert(
+      'İtiraz et',
+      'Bu işlem geri alınamaz. İtirazı göndermek istediğine emin misin?',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'İtirazı gönder',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await raise.mutateAsync({ matchId, reason: trimmed });
+              Alert.alert('İtiraz açıldı', 'Admin karar verene kadar maç beklemede.', [
+                { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
+              ]);
+            } catch (e) {
+              Alert.alert('Hata', e instanceof Error ? e.message : 'İtiraz açılamadı');
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -52,6 +65,7 @@ export default function DisputeScreen() {
             value={reason}
             onChangeText={(v) => { setReason(v); setErr(undefined); }}
             error={err}
+            editable={!raise.isPending}
           />
           <View className="mt-auto">
             <Button onPress={onSubmit} loading={raise.isPending}>İtirazı gönder</Button>
