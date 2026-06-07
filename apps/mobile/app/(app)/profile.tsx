@@ -2,19 +2,21 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { MatchesTab } from '../../components/profile/MatchesTab';
+import { PinBadgeModal } from '../../components/profile/PinBadgeModal';
 import { ProfileHeader } from '../../components/profile/ProfileHeader';
 import { ProfileTabs, type ProfileTabKey } from '../../components/profile/ProfileTabs';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { useMyProfile } from '../../hooks/use-profile';
-import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useMyBadges } from '../../hooks/use-my-badges';
+import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyProfile } from '../../hooks/use-profile';
 import { useAuthStore } from '../../stores/auth-store';
 
 export default function ProfileScreen() {
   const userId = useAuthStore((s) => s.user?.id);
   const [tab, setTab] = useState<ProfileTabKey>('rankings');
+  const [pinOpen, setPinOpen] = useState(false);
   const { data: p, isLoading } = useMyProfile();
-  const rankings = useUserRankings(userId);
+  const rankings = useMyRankings();
   const myBadges = useMyBadges();
 
   if (isLoading || !p || !userId) {
@@ -38,9 +40,8 @@ export default function ProfileScreen() {
     .join(' · ') || null;
 
   const highestElo = (rankings.data ?? []).reduce((m, r) => Math.max(m, r.rating), 0) || 1200;
-  const pinnedIds = (p.pinned_badge_ids ?? []) as string[];
   const pinned = (myBadges.data ?? [])
-    .filter((b) => pinnedIds.includes(b.badge_id))
+    .filter((b) => b.pinned_at)
     .map((b) => ({ id: b.badge_id, icon: b.icon, name_tr: b.name_tr }));
 
   return (
@@ -54,12 +55,13 @@ export default function ProfileScreen() {
         pinned={pinned}
         editable
         onAvatarPress={() => router.push('/profile/edit')}
-        onPinnedEditPress={() => router.push('/profile/edit?openPin=1')}
+        onPinnedEditPress={() => setPinOpen(true)}
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
       />
-      <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'matches']} />
+      <ProfileTabs active={tab} onChange={setTab} />
       <TabContent tabKey={tab} myUserId={userId} />
+      <PinBadgeModal visible={pinOpen} onClose={() => setPinOpen(false)} />
     </ScreenContainer>
   );
 }
