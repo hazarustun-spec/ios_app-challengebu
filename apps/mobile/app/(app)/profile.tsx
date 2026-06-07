@@ -59,7 +59,7 @@ export default function ProfileScreen() {
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
       />
-      <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'badges', 'matches']} />
+      <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'badges', 'elo', 'matches']} />
       <TabContent tabKey={tab} myUserId={userId} />
       <PinBadgeModal visible={pinOpen} onClose={() => setPinOpen(false)} />
     </ScreenContainer>
