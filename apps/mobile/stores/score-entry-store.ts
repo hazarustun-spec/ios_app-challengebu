@@ -27,6 +27,8 @@ export type DraftByFormat = {
 };
 
 interface State {
+  // Invariant: at most one format per matchId (matches.format is fixed at row creation).
+  // Callers MUST use the set/get pair that matches the match's stored format.
   drafts: Record<string, BuKlasikDraft | HizliTiebreakDraft | ProSet8Draft | ThreeSetKlasikDraft>;
   setBuKlasik: (matchId: string, draft: BuKlasikDraft) => void;
   setHizliTiebreak: (matchId: string, draft: HizliTiebreakDraft) => void;

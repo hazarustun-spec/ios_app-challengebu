@@ -1,13 +1,14 @@
 import { Modal, ScrollView, Text, View } from 'react-native';
 import { Button } from '../ui/Button';
+import type { MatchFormat } from './FormatPicker';
 
 interface Props {
   visible: boolean;
-  format: string;
+  format: MatchFormat;
   onAcknowledge: () => void;
 }
 
-const RULES: Record<string, { title: string; bullets: string[] }> = {
+const RULES: Record<MatchFormat, { title: string; bullets: string[] }> = {
   bu_klasik: {
     title: 'BÜ Klasik (~60 dk)',
     bullets: [
