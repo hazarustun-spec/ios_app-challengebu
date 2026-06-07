@@ -6,12 +6,28 @@ import {
 } from '../../src/schemas/onboarding.js';
 
 describe('BÜ email validation', () => {
-  test('accepts @boun.edu.tr', () => {
-    expect(validateBouniMail('ahmet.veli@boun.edu.tr')).toBe(true);
+  test('accepts @std.bogazici.edu.tr (students)', () => {
+    expect(validateBouniMail('ayse.fatma@std.bogazici.edu.tr')).toBe(true);
   });
 
-  test('accepts @std.bogazici.edu.tr', () => {
-    expect(validateBouniMail('ayse.fatma@std.bogazici.edu.tr')).toBe(true);
+  test('accepts @bogazici.edu.tr (faculty/staff)', () => {
+    expect(validateBouniMail('prof@bogazici.edu.tr')).toBe(true);
+  });
+
+  test('accepts @pt.bogazici.edu.tr (part-time)', () => {
+    expect(validateBouniMail('pt@pt.bogazici.edu.tr')).toBe(true);
+  });
+
+  test('accepts @retired.bogazici.edu.tr (retired)', () => {
+    expect(validateBouniMail('retired@retired.bogazici.edu.tr')).toBe(true);
+  });
+
+  test('accepts @alumni.bogazici.edu.tr (alumni)', () => {
+    expect(validateBouniMail('alum@alumni.bogazici.edu.tr')).toBe(true);
+  });
+
+  test('rejects @boun.edu.tr (deprecated)', () => {
+    expect(validateBouniMail('ahmet.veli@boun.edu.tr')).toBe(false);
   });
 
   test('rejects gmail.com', () => {
@@ -19,15 +35,21 @@ describe('BÜ email validation', () => {
   });
 
   test('rejects subdomain spoof', () => {
-    expect(validateBouniMail('user@boun.edu.tr.fake.com')).toBe(false);
+    expect(validateBouniMail('user@bogazici.edu.tr.fake.com')).toBe(false);
   });
 
   test('case insensitive', () => {
-    expect(validateBouniMail('Foo@BOUN.EDU.TR')).toBe(true);
+    expect(validateBouniMail('Foo@STD.BOGAZICI.EDU.TR')).toBe(true);
   });
 
-  test('ALLOWED_BOUN_DOMAINS has 2 entries', () => {
-    expect(ALLOWED_BOUN_DOMAINS).toEqual(['boun.edu.tr', 'std.bogazici.edu.tr']);
+  test('ALLOWED_BOUN_DOMAINS has 5 entries', () => {
+    expect(ALLOWED_BOUN_DOMAINS).toEqual([
+      'std.bogazici.edu.tr',
+      'bogazici.edu.tr',
+      'pt.bogazici.edu.tr',
+      'retired.bogazici.edu.tr',
+      'alumni.bogazici.edu.tr',
+    ]);
   });
 });
 

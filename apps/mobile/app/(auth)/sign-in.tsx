@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { BOUN_EMAIL_ERROR_TR, validateBouniMail } from '@tennis/shared/schemas';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -13,10 +14,7 @@ const schema = z.object({
   email: z
     .string()
     .email('Geçerli bir e-posta gir')
-    .refine(
-      (e) => e.endsWith('@boun.edu.tr') || e.endsWith('@std.bogazici.edu.tr'),
-      'Sadece BÜ e-postası kabul edilir (@boun.edu.tr veya @std.bogazici.edu.tr)',
-    ),
+    .refine(validateBouniMail, BOUN_EMAIL_ERROR_TR),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -55,7 +53,7 @@ export default function SignInScreen() {
           render={({ field: { onChange, onBlur, value } }) => (
             <TextField
               label="E-posta"
-              placeholder="ad.soyad@boun.edu.tr"
+              placeholder="ad.soyad@std.bogazici.edu.tr"
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"

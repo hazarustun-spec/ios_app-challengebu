@@ -179,7 +179,7 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 ## 3. Kullanıcı Akışı
 
 ### 3.1 Kayıt
-- Email validasyonu: regex `@boun\.edu\.tr$` veya `@std\.bogazici\.edu\.tr$`
+- Email validasyonu: 5 BÜ uzantısı kabul edilir — `@std.bogazici.edu.tr` (öğrenci), `@bogazici.edu.tr` (akademik/personel), `@pt.bogazici.edu.tr` (yarı zamanlı), `@retired.bogazici.edu.tr` (emekli), `@alumni.bogazici.edu.tr` (mezun). Eski `@boun.edu.tr` artık geçerli değildir.
 - Admin maili: BÜ domain zorunluluğundan istisna (beyaz liste mekanizması, ilk admin DB'de manuel atanır)
 - Magic link / 6-haneli OTP (Supabase Auth email provider)
 

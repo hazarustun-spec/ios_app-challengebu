@@ -1,6 +1,15 @@
 import { z } from 'zod';
 
-export const ALLOWED_BOUN_DOMAINS = ['boun.edu.tr', 'std.bogazici.edu.tr'] as const;
+export const ALLOWED_BOUN_DOMAINS = [
+  'std.bogazici.edu.tr',
+  'bogazici.edu.tr',
+  'pt.bogazici.edu.tr',
+  'retired.bogazici.edu.tr',
+  'alumni.bogazici.edu.tr',
+] as const;
+
+export const BOUN_EMAIL_ERROR_TR =
+  'Sadece BÜ e-postası kabul edilir (@std.bogazici.edu.tr, @bogazici.edu.tr, @pt.bogazici.edu.tr, @retired.bogazici.edu.tr veya @alumni.bogazici.edu.tr)';
 
 export function validateBouniMail(email: string): boolean {
   const lower = email.toLowerCase().trim();
