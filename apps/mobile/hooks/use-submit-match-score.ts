@@ -3,7 +3,7 @@ import { invokeFunction } from '../lib/invoke-function';
 import { queryKeys } from '../lib/query-keys';
 import { useAuthStore } from '../stores/auth-store';
 
-type WinnerTeam = 'a' | 'b' | 'void';
+export type WinnerTeam = 'a' | 'b' | 'void';
 
 export interface SubmitMatchScoreInput {
   matchId: string;

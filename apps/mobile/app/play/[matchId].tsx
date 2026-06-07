@@ -8,7 +8,7 @@ import { ThreeSetKlasikScoreEntry } from '../../components/matches/score-entry/T
 import { FormatRulesModal } from '../../components/matches/FormatRulesModal';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMatchDetail } from '../../hooks/use-match-detail';
-import { useSubmitMatchScore } from '../../hooks/use-submit-match-score';
+import { useSubmitMatchScore, type WinnerTeam } from '../../hooks/use-submit-match-score';
 import { useAuthStore } from '../../stores/auth-store';
 import { useScoreEntryStore } from '../../stores/score-entry-store';
 
@@ -32,11 +32,14 @@ export default function PlayScreen() {
 
   const myLetter: 'a' | 'b' = m.team_a_player_ids.includes(userId) ? 'a' : 'b';
 
-  const onBuKlasikSubmit = async (
-    draft: { els: { el: number; winner: 'a' | 'b' }[] },
-    winnerTeam: 'a' | 'b' | 'void',
+  const submitScore = async (
+    winnerTeam: WinnerTeam,
     scoreA: number,
     scoreB: number,
+    extra: Partial<Pick<
+      Parameters<typeof submit.mutateAsync>[0],
+      'els' | 'sets' | 'games' | 'tiebreakScore' | 'points'
+    >>,
   ) => {
     try {
       const res = await submit.mutateAsync({
@@ -44,94 +47,16 @@ export default function PlayScreen() {
         scoreTeamA: scoreA,
         scoreTeamB: scoreB,
         winnerTeam,
-        els: draft.els,
+        ...extra,
       });
       clearDraft(matchId);
-      if (res.matched) {
-        Alert.alert('Eşleşti', 'Karşı taraftan onay bekleniyor. Onaylama ekranına yönlendiriliyorsun.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      } else {
-        Alert.alert('Gönderildi', 'Rakip henüz aynı skoru girmedi. Eşleşince devam edebileceksin.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      }
-    } catch (e) {
-      Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
-    }
-  };
-
-  const onHizliTiebreakSubmit = async (
-    draft: { points: { a: number; b: number } },
-    winnerTeam: 'a' | 'b' | 'void',
-    scoreA: number,
-    scoreB: number,
-  ) => {
-    try {
-      const res = await submit.mutateAsync({
-        matchId,
-        scoreTeamA: scoreA,
-        scoreTeamB: scoreB,
-        winnerTeam,
-        points: draft.points,
-      });
-      clearDraft(matchId);
-      if (res.matched) {
-        Alert.alert('Eşleşti', 'Karşı taraftan onay bekleniyor.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      } else {
-        Alert.alert('Gönderildi', 'Rakip henüz aynı skoru girmedi.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      }
-    } catch (e) {
-      Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
-    }
-  };
-
-  const onProSet8Submit = async (
-    draft: { games: { a: number; b: number }; tiebreakScore?: { a: number; b: number } },
-    winnerTeam: 'a' | 'b' | 'void',
-    scoreA: number,
-    scoreB: number,
-  ) => {
-    try {
-      const res = await submit.mutateAsync({
-        matchId,
-        scoreTeamA: scoreA,
-        scoreTeamB: scoreB,
-        winnerTeam,
-        games: draft.games,
-        tiebreakScore: draft.tiebreakScore,
-      });
-      clearDraft(matchId);
-      Alert.alert(res.matched ? 'Eşleşti' : 'Gönderildi', res.matched ? 'Karşı taraftan onay bekleniyor.' : 'Rakip henüz aynı skoru girmedi.', [
-        { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-      ]);
-    } catch (e) {
-      Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
-    }
-  };
-
-  const onThreeSetSubmit = async (
-    draft: { sets: { set: number; a: number; b: number }[] },
-    winnerTeam: 'a' | 'b' | 'void',
-    setsA: number,
-    setsB: number,
-  ) => {
-    try {
-      const res = await submit.mutateAsync({
-        matchId,
-        scoreTeamA: setsA,
-        scoreTeamB: setsB,
-        winnerTeam,
-        sets: draft.sets,
-      });
-      clearDraft(matchId);
-      Alert.alert(res.matched ? 'Eşleşti' : 'Gönderildi', res.matched ? 'Karşı taraftan onay bekleniyor.' : 'Rakip henüz aynı skoru girmedi.', [
-        { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-      ]);
+      Alert.alert(
+        res.matched ? 'Eşleşti' : 'Gönderildi',
+        res.matched
+          ? 'Karşı taraftan onay bekleniyor.'
+          : 'Rakip henüz aynı skoru girmedi.',
+        [{ text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) }],
+      );
     } catch (e) {
       Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
     }
@@ -151,7 +76,9 @@ export default function PlayScreen() {
             <BuKlasikScoreEntry
               matchId={matchId}
               myLetter={myLetter}
-              onSubmit={onBuKlasikSubmit}
+              onSubmit={(draft, winnerTeam, scoreA, scoreB) =>
+                submitScore(winnerTeam, scoreA, scoreB, { els: draft.els })
+              }
               submitting={submit.isPending}
             />
           )}
@@ -159,7 +86,9 @@ export default function PlayScreen() {
             <HizliTiebreakScoreEntry
               matchId={matchId}
               myLetter={myLetter}
-              onSubmit={onHizliTiebreakSubmit}
+              onSubmit={(draft, winnerTeam, scoreA, scoreB) =>
+                submitScore(winnerTeam, scoreA, scoreB, { points: draft.points })
+              }
               submitting={submit.isPending}
             />
           )}
@@ -167,7 +96,12 @@ export default function PlayScreen() {
             <ProSet8ScoreEntry
               matchId={matchId}
               myLetter={myLetter}
-              onSubmit={onProSet8Submit}
+              onSubmit={(draft, winnerTeam, scoreA, scoreB) =>
+                submitScore(winnerTeam, scoreA, scoreB, {
+                  games: draft.games,
+                  tiebreakScore: draft.tiebreakScore,
+                })
+              }
               submitting={submit.isPending}
             />
           )}
@@ -175,7 +109,9 @@ export default function PlayScreen() {
             <ThreeSetKlasikScoreEntry
               matchId={matchId}
               myLetter={myLetter}
-              onSubmit={onThreeSetSubmit}
+              onSubmit={(draft, winnerTeam, setsA, setsB) =>
+                submitScore(winnerTeam, setsA, setsB, { sets: draft.sets })
+              }
               submitting={submit.isPending}
             />
           )}

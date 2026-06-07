@@ -4,11 +4,12 @@ import {
   useScoreEntryStore,
   type BuKlasikDraft,
 } from '../../../stores/score-entry-store';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: BuKlasikDraft, winnerTeam: 'a' | 'b' | 'void', scoreA: number, scoreB: number) => void;
+  onSubmit: (draft: BuKlasikDraft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
   submitting: boolean;
 }
 
@@ -25,7 +26,7 @@ export function BuKlasikScoreEntry({ matchId, myLetter, onSubmit, submitting }: 
 
   const matchComplete = scoreA >= TARGET || scoreB >= TARGET;
   const isThreeThree = scoreA === 3 && scoreB === 3;
-  const canVoid = isThreeThree && !matchComplete;
+  const canVoid = isThreeThree;
 
   const recordEl = (winner: 'a' | 'b') => {
     if (matchComplete) return;
