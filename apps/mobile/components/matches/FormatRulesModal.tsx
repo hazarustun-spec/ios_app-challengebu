@@ -32,7 +32,7 @@ const RULES: Record<MatchFormat, { title: string; bullets: string[] }> = {
     bullets: [
       'Game bazında oynanır (klasik tenis sayımı).',
       'İlk 8 game alan kazanır (8-6 veya daha fazla fark).',
-      '6-6 olursa kim 8\'e gelirse maçı alır.',
+      '8-7 yetmez — 8\'i kazanmak için 2 game farkı şarttır (8-6, 9-7, ...).',
       '8-8 olursa 7 sayılık tiebreak oynanır.',
     ],
   },

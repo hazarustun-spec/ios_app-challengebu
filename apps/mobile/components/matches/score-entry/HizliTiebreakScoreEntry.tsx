@@ -5,12 +5,13 @@ import {
   useScoreEntryStore,
   type HizliTiebreakDraft,
 } from '../../../stores/score-entry-store';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: HizliTiebreakDraft, winnerTeam: 'a' | 'b' | 'void', scoreA: number, scoreB: number) => void;
+  onSubmit: (draft: HizliTiebreakDraft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
   submitting: boolean;
 }
 
@@ -21,9 +22,9 @@ export function HizliTiebreakScoreEntry({ matchId, myLetter, onSubmit, submittin
   const [bStr, setBStr] = useState(String(draft.points.b));
   const [err, setErr] = useState<string>();
 
-  const onPersist = () => {
+  useEffect(() => {
     setDraft(matchId, { points: { a: Number(aStr) || 0, b: Number(bStr) || 0 } });
-  };
+  }, [aStr, bStr, matchId, setDraft]);
 
   const onSubmitTap = () => {
     const a = Number(aStr);
@@ -43,7 +44,6 @@ export function HizliTiebreakScoreEntry({ matchId, myLetter, onSubmit, submittin
       return;
     }
     const winner: 'a' | 'b' = a > b ? 'a' : 'b';
-    onPersist();
     onSubmit({ points: { a, b } }, winner, a, b);
   };
 
