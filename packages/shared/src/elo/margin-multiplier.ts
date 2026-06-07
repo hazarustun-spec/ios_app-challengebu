@@ -1,4 +1,4 @@
-import type { MatchFormat } from '../types/formats.js';
+import type { MatchFormat } from '../types/formats';
 
 export function getMarginMultiplier(
   format: MatchFormat,

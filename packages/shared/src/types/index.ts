@@ -1,2 +1,2 @@
-export * from './categories.js';
-export * from './formats.js';
+export * from './categories';
+export * from './formats';

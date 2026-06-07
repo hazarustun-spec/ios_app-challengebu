@@ -1,2 +1,2 @@
-export * from './onboarding.js';
-export * from './match-result.js';
+export * from './onboarding';
+export * from './match-result';

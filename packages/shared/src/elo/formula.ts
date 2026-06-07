@@ -1,6 +1,6 @@
-import type { MatchFormat } from '../types/formats.js';
-import { getKFactor } from './k-factor.js';
-import { getMarginMultiplier } from './margin-multiplier.js';
+import type { MatchFormat } from '../types/formats';
+import { getKFactor } from './k-factor';
+import { getMarginMultiplier } from './margin-multiplier';
 
 export const DEFAULT_STARTING_ELO = 1200;
 

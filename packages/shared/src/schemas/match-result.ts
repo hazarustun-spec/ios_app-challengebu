@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ALL_FORMATS } from '../types/formats.js';
+import { ALL_FORMATS } from '../types/formats';
 
 const teamLetterSchema = z.enum(['a', 'b']);
 const winnerTeamSchema = z.enum(['a', 'b', 'void']);
