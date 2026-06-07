@@ -32,6 +32,7 @@ export default function ConfirmMatchScreen() {
   const oppScore = onTeamA ? m.score_team_b : m.score_team_a;
   const iWon = (onTeamA && m.winner_team === 'a') || (!onTeamA && m.winner_team === 'b');
   const voided = m.winner_team === 'void';
+  const alreadyConfirmed = m.confirmed_by.includes(userId);
 
   const onConfirm = async () => {
     try {
@@ -77,7 +78,7 @@ export default function ConfirmMatchScreen() {
             </View>
           </View>
 
-          {m.is_rated && !voided && (
+          {m.is_rated && !voided && !alreadyConfirmed && (
             <View className="rounded-lg bg-blue-50 p-3">
               <Text className="text-sm text-blue-900">
                 Bu sıralama maçı. Onayladığında ELO puanın güncellenecek.
@@ -85,9 +86,17 @@ export default function ConfirmMatchScreen() {
             </View>
           )}
 
+          {alreadyConfirmed && (
+            <View className="rounded-lg bg-green-50 p-3">
+              <Text className="text-sm text-green-900">
+                ✓ Bu skoru zaten onayladın. Karşı tarafın onayı bekleniyor.
+              </Text>
+            </View>
+          )}
+
           <View className="mt-auto">
-            <Button onPress={onConfirm} loading={confirm.isPending}>
-              Skoru onayla
+            <Button onPress={onConfirm} loading={confirm.isPending} disabled={alreadyConfirmed}>
+              {alreadyConfirmed ? 'Onaylandı' : 'Skoru onayla'}
             </Button>
           </View>
         </View>
