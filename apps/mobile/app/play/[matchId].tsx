@@ -1,9 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ActivityIndicator, Text, View } from 'react-native';
+import { Alert, ActivityIndicator, View } from 'react-native';
 import { BuKlasikScoreEntry } from '../../components/matches/score-entry/BuKlasikScoreEntry';
 import { HizliTiebreakScoreEntry } from '../../components/matches/score-entry/HizliTiebreakScoreEntry';
 import { ProSet8ScoreEntry } from '../../components/matches/score-entry/ProSet8ScoreEntry';
+import { ThreeSetKlasikScoreEntry } from '../../components/matches/score-entry/ThreeSetKlasikScoreEntry';
 import { FormatRulesModal } from '../../components/matches/FormatRulesModal';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMatchDetail } from '../../hooks/use-match-detail';
@@ -113,6 +114,29 @@ export default function PlayScreen() {
     }
   };
 
+  const onThreeSetSubmit = async (
+    draft: { sets: { set: number; a: number; b: number }[] },
+    winnerTeam: 'a' | 'b' | 'void',
+    setsA: number,
+    setsB: number,
+  ) => {
+    try {
+      const res = await submit.mutateAsync({
+        matchId,
+        scoreTeamA: setsA,
+        scoreTeamB: setsB,
+        winnerTeam,
+        sets: draft.sets,
+      });
+      clearDraft(matchId);
+      Alert.alert(res.matched ? 'Eşleşti' : 'Gönderildi', res.matched ? 'Karşı taraftan onay bekleniyor.' : 'Rakip henüz aynı skoru girmedi.', [
+        { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
+      ]);
+    } catch (e) {
+      Alert.alert('Hata', e instanceof Error ? e.message : 'Gönderilemedi');
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: 'Maç oyna', headerShown: true }} />
@@ -148,13 +172,12 @@ export default function PlayScreen() {
             />
           )}
           {m.format === '3set_klasik' && (
-            <View className="flex-1 items-center justify-center">
-              <View className="rounded-lg bg-yellow-50 p-4">
-                <Text className="text-yellow-900">
-                  3 Set Klasik skor girişi Task 12'de gelecek.
-                </Text>
-              </View>
-            </View>
+            <ThreeSetKlasikScoreEntry
+              matchId={matchId}
+              myLetter={myLetter}
+              onSubmit={onThreeSetSubmit}
+              submitting={submit.isPending}
+            />
           )}
         </ScreenContainer>
       )}
