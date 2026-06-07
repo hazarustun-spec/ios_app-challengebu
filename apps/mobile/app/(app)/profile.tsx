@@ -7,7 +7,7 @@ import { ProfileHeader } from '../../components/profile/ProfileHeader';
 import { ProfileTabs, type ProfileTabKey } from '../../components/profile/ProfileTabs';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMyBadges } from '../../hooks/use-my-badges';
-import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useMyProfile } from '../../hooks/use-profile';
 import { useAuthStore } from '../../stores/auth-store';
 
@@ -16,7 +16,7 @@ export default function ProfileScreen() {
   const [tab, setTab] = useState<ProfileTabKey>('rankings');
   const [pinOpen, setPinOpen] = useState(false);
   const { data: p, isLoading } = useMyProfile();
-  const rankings = useMyRankings();
+  const rankings = useUserRankings(userId);
   const myBadges = useMyBadges();
 
   if (isLoading || !p || !userId) {
@@ -59,7 +59,7 @@ export default function ProfileScreen() {
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
       />
-      <ProfileTabs active={tab} onChange={setTab} />
+      <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'badges', 'matches']} />
       <TabContent tabKey={tab} myUserId={userId} />
       <PinBadgeModal visible={pinOpen} onClose={() => setPinOpen(false)} />
     </ScreenContainer>
