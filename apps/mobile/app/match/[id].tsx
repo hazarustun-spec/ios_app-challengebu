@@ -1,5 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
+import { EloDeltaDisplay } from '../../components/matches/EloDeltaDisplay';
 import { MismatchBanner } from '../../components/matches/MismatchBanner';
 import { StatusBadge } from '../../components/matches/StatusBadge';
 import { Button } from '../../components/ui/Button';
@@ -49,6 +50,7 @@ export default function MatchDetailScreen() {
     const m = matchQuery.data;
     if (!userId) return null;
     const onTeamA = m.team_a_player_ids.includes(userId);
+    const myLetter: 'a' | 'b' = onTeamA ? 'a' : 'b';
     const myScore = onTeamA ? m.score_team_a : m.score_team_b;
     const oppScore = onTeamA ? m.score_team_b : m.score_team_a;
     const winnerSet = m.winner_team !== null;
@@ -109,6 +111,14 @@ export default function MatchDetailScreen() {
                   ⚠️ Bu maç itiraz altında. Admin karar verene kadar bekleniyor.
                 </Text>
               </View>
+            )}
+
+            {m.status === 'confirmed' && m.is_rated && m.rating_before_team_a !== null && m.rating_after_team_a !== null && (
+              <EloDeltaDisplay
+                before={onTeamA ? m.rating_before_team_a : (m.rating_before_team_b ?? m.rating_before_team_a)}
+                after={onTeamA ? m.rating_after_team_a : (m.rating_after_team_b ?? m.rating_after_team_a)}
+                myLetter={myLetter}
+              />
             )}
           </View>
         </ScreenContainer>
