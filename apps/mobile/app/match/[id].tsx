@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
+import { useMatchDetail } from '../../hooks/use-match-detail';
 import { useMatchRequestDetail } from '../../hooks/use-match-request-detail';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useAuthStore } from '../../stores/auth-store';
@@ -19,22 +20,105 @@ const CATEGORY_LABELS: Record<string, string> = {
   karma_cift: 'Karma Çift', open_cift: 'Open Çift',
 };
 
-export default function MatchRequestDetailScreen() {
+export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useAuthStore((s) => s.user?.id);
-  const { data: r, isLoading } = useMatchRequestDetail(id);
+
+  const matchQuery = useMatchDetail(id);
+  const requestQuery = useMatchRequestDetail(id);
+
   const accept = useAcceptMatchRequest();
   const reject = useRejectMatchRequest();
   const apply = useApplyToOpenCall();
 
-  if (isLoading || !r || !userId) {
+  if ((matchQuery.isLoading || requestQuery.isLoading) && !matchQuery.data && !requestQuery.data) {
     return (
       <>
-        <Stack.Screen options={{ title: 'Maç teklifi', headerShown: true }} />
+        <Stack.Screen options={{ title: 'Maç', headerShown: true }} />
         <ScreenContainer>
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator color="#1e3a8a" />
           </View>
+        </ScreenContainer>
+      </>
+    );
+  }
+
+  if (matchQuery.data) {
+    const m = matchQuery.data;
+    if (!userId) return null;
+    const onTeamA = m.team_a_player_ids.includes(userId);
+    const myScore = onTeamA ? m.score_team_a : m.score_team_b;
+    const oppScore = onTeamA ? m.score_team_b : m.score_team_a;
+    const winnerSet = m.winner_team !== null;
+    const myConfirmed = m.confirmed_by.includes(userId);
+    const playedAt = new Date(m.played_at);
+
+    const onPlay = () => router.push(`/play/${m.id}`);
+    const onConfirm = () => router.push(`/play/confirm/${m.id}`);
+    const onDispute = () => router.push(`/dispute/${m.id}`);
+
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Maç', headerShown: true }} />
+        <ScreenContainer scrollable>
+          <View className="gap-3">
+            <Text className="text-2xl font-bold text-gray-900">
+              {CATEGORY_LABELS[m.category] ?? m.category}
+            </Text>
+            <Row label="Format" value={FORMAT_LABELS[m.format] ?? m.format} />
+            <Row label="Tip" value={m.is_rated ? '🏆 Sıralama' : '🤝 Dostluk'} />
+            <Row label="Tarih" value={`${playedAt.toLocaleDateString('tr-TR')} ${playedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`} />
+            <Row label="Kort" value={m.court?.name ?? '—'} />
+            <Row label="Durum" value={m.status === 'awaiting_confirmation' ? 'Onay bekliyor' : m.status === 'disputed' ? 'İtirazda' : m.status === 'confirmed' ? 'Onaylandı' : 'Voided'} />
+            {winnerSet && (
+              <Row label="Skor" value={`Sen ${myScore} - Rakip ${oppScore}`} />
+            )}
+
+            {m.status === 'awaiting_confirmation' && !winnerSet && (
+              <View className="mt-6">
+                <Button onPress={onPlay}>Maça başla / Skor gir</Button>
+              </View>
+            )}
+
+            {m.status === 'awaiting_confirmation' && winnerSet && !myConfirmed && (
+              <View className="mt-6 gap-3">
+                <Button onPress={onConfirm}>Skoru onayla</Button>
+                <Button onPress={onDispute} variant="ghost">İtiraz et</Button>
+              </View>
+            )}
+
+            {m.status === 'awaiting_confirmation' && winnerSet && myConfirmed && (
+              <View className="mt-6 gap-3">
+                <View className="rounded-lg bg-blue-50 p-3">
+                  <Text className="text-sm text-blue-900">
+                    ✓ Onayladın. Karşı tarafın onayı bekleniyor.
+                  </Text>
+                </View>
+                <Button onPress={onDispute} variant="ghost">İtiraz et</Button>
+              </View>
+            )}
+
+            {m.status === 'disputed' && (
+              <View className="mt-6 rounded-lg bg-yellow-50 p-3">
+                <Text className="text-sm text-yellow-900">
+                  ⚠️ Bu maç itiraz altında. Admin karar verene kadar bekleniyor.
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScreenContainer>
+      </>
+    );
+  }
+
+  const r = requestQuery.data;
+  if (!r || !userId) {
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Maç teklifi', headerShown: true }} />
+        <ScreenContainer>
+          <EmptyOrError />
         </ScreenContainer>
       </>
     );
@@ -49,17 +133,12 @@ export default function MatchRequestDetailScreen() {
     ? `${opponent.first_name} ${opponent.last_name}`
     : r.type === 'open_call' ? 'Açık ilan' : '—';
 
-  const onAccept = () => {
+  const onAccept = () =>
     accept.mutate(
       { requestId: r.id },
-      {
-        onSuccess: () => router.back(),
-        onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'Kabul edilemedi'),
-      },
+      { onSuccess: () => router.back(), onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'Kabul edilemedi') },
     );
-  };
-
-  const onReject = () => {
+  const onReject = () =>
     Alert.alert('Reddet', 'Bu meydan okumayı reddetmek istediğine emin misin?', [
       { text: 'Vazgeç', style: 'cancel' },
       {
@@ -68,16 +147,11 @@ export default function MatchRequestDetailScreen() {
         onPress: () =>
           reject.mutate(
             { requestId: r.id },
-            {
-              onSuccess: () => router.back(),
-              onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'Reddedilemedi'),
-            },
+            { onSuccess: () => router.back(), onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'Reddedilemedi') },
           ),
       },
     ]);
-  };
-
-  const onApply = () => {
+  const onApply = () =>
     apply.mutate(
       { requestId: r.id },
       {
@@ -88,7 +162,6 @@ export default function MatchRequestDetailScreen() {
         onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'Başvurulamadı'),
       },
     );
-  };
 
   return (
     <>
@@ -105,30 +178,22 @@ export default function MatchRequestDetailScreen() {
           <Row label="Tip" value={r.is_rated ? '🏆 Sıralama' : '🤝 Dostluk'} />
           <Row label="Tarih" value={`${r.proposed_date} ${r.proposed_time.slice(0, 5)}`} />
           <Row label="Kort" value={r.court?.name ?? '—'} />
-          {r.type === 'open_call' && (
-            <Row label="Tür" value="📢 Açık ilan" />
-          )}
+          {r.type === 'open_call' && <Row label="Tür" value="📢 Açık ilan" />}
 
           {isIncomingDirect && (
             <View className="mt-6 gap-3">
               <Button onPress={onAccept} loading={accept.isPending}>Kabul et</Button>
-              <Button onPress={onReject} variant="ghost" disabled={reject.isPending}>
-                Reddet
-              </Button>
+              <Button onPress={onReject} variant="ghost" disabled={reject.isPending}>Reddet</Button>
             </View>
           )}
-
           {isOpenCallForOthers && (
             <View className="mt-6">
               <Button onPress={onApply} loading={apply.isPending}>İlana başvur</Button>
             </View>
           )}
-
           {isOutgoing && r.type === 'open_call' && r.status === 'pending' && (
             <View className="mt-6">
-              <Button onPress={() => router.push(`/applications/${r.id}`)}>
-                Başvuruları gör
-              </Button>
+              <Button onPress={() => router.push(`/applications/${r.id}`)}>Başvuruları gör</Button>
             </View>
           )}
         </View>
@@ -142,6 +207,14 @@ function Row({ label, value }: { label: string; value: string }) {
     <View className="border-b border-gray-200 pb-2">
       <Text className="text-xs text-gray-500">{label}</Text>
       <Text className="mt-1 text-base text-gray-900">{value}</Text>
+    </View>
+  );
+}
+
+function EmptyOrError() {
+  return (
+    <View className="flex-1 items-center justify-center">
+      <Text className="text-gray-500">Maç bulunamadı.</Text>
     </View>
   );
 }
