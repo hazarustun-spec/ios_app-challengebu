@@ -1062,20 +1062,77 @@ export function ProfileHeader(props: Props) {
 }
 ```
 
-- [ ] **Step 7: Create `MatchesTab.tsx`** (moved from old `MatchHistorySection`)
+- [ ] **Step 7a: Extend `use-match-history.ts` to support any userId**
+
+Replace `apps/mobile/hooks/use-match-history.ts` with:
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { queryKeys } from '../lib/query-keys';
+import { useAuthStore } from '../stores/auth-store';
+import type { ActiveMatchRow } from './use-active-matches';
+
+function fetchHistoryFor(userId: string) {
+  return supabase
+    .from('matches')
+    .select(`
+      id, match_request_id, category, format, is_rated, played_at, status,
+      team_a_player_ids, team_b_player_ids,
+      score_team_a, score_team_b, winner_team, score_details, confirmed_by,
+      rating_before_team_a, rating_after_team_a,
+      rating_before_team_b, rating_after_team_b,
+      created_at,
+      court:courts(name)
+    `)
+    .in('status', ['confirmed', 'voided'])
+    .or(`team_a_player_ids.cs.{${userId}},team_b_player_ids.cs.{${userId}}`)
+    .order('played_at', { ascending: false })
+    .limit(20);
+}
+
+export function useMyMatchHistory() {
+  const userId = useAuthStore((s) => s.user?.id);
+  return useQuery<ActiveMatchRow[]>({
+    queryKey: queryKeys.matchHistory.mine(),
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await fetchHistoryFor(userId);
+      if (error) throw error;
+      return (data ?? []) as unknown as ActiveMatchRow[];
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useUserMatchHistory(userId: string | undefined) {
+  return useQuery<ActiveMatchRow[]>({
+    queryKey: userId ? queryKeys.matchHistory.forUser(userId) : queryKeys.matchHistory.all,
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await fetchHistoryFor(userId);
+      if (error) throw error;
+      return (data ?? []) as unknown as ActiveMatchRow[];
+    },
+    enabled: !!userId,
+  });
+}
+```
+
+- [ ] **Step 7b: Create `MatchesTab.tsx`**
 
 ```typescript
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import type { ActiveMatchRow } from '../../hooks/use-active-matches';
-import { useMyMatchHistory } from '../../hooks/use-match-history';
+import { useUserMatchHistory } from '../../hooks/use-match-history';
 
 interface Props {
-  myUserId: string;
+  targetUserId: string;
 }
 
-export function MatchesTab({ myUserId }: Props) {
-  const { data, isLoading } = useMyMatchHistory();
+export function MatchesTab({ targetUserId }: Props) {
+  const { data, isLoading } = useUserMatchHistory(targetUserId);
   const list = data ?? [];
   if (isLoading) {
     return <Text className="mt-4 text-sm text-gray-500">Yükleniyor...</Text>;
@@ -1086,7 +1143,7 @@ export function MatchesTab({ myUserId }: Props) {
   return (
     <View className="mt-4">
       {list.map((m) => (
-        <HistoryRow key={m.id} match={m} myUserId={myUserId} />
+        <HistoryRow key={m.id} match={m} myUserId={targetUserId} />
       ))}
     </View>
   );
@@ -1217,7 +1274,7 @@ function TabContent({ tabKey, myUserId }: { tabKey: ProfileTabKey; myUserId: str
     const EloHistoryTab = require('../../components/profile/EloHistoryTab').EloHistoryTab;
     return <EloHistoryTab userId={myUserId} />;
   }
-  return <MatchesTab myUserId={myUserId} />;
+  return <MatchesTab targetUserId={myUserId} />;
 }
 
 function classYearLabel(v: string): string {
@@ -2139,7 +2196,7 @@ function TabContent({ tabKey, myUserId }: { tabKey: ProfileTabKey; myUserId: str
     const EloHistoryTab = require('../../components/profile/EloHistoryTab').EloHistoryTab;
     return <EloHistoryTab userId={myUserId} />;
   }
-  return <MatchesTab myUserId={myUserId} />;
+  return <MatchesTab targetUserId={myUserId} />;
 }
 
 function classYearLabel(v: string): string {
@@ -3095,7 +3152,7 @@ function TabContent({ tabKey, userId }: { tabKey: ProfileTabKey; userId: string 
     const EloHistoryTab = require('../../components/profile/EloHistoryTab').EloHistoryTab;
     return <EloHistoryTab userId={userId} />;
   }
-  return <MatchesTab myUserId={userId} />;
+  return <MatchesTab targetUserId={userId} />;
 }
 
 function canChallengeBetween(
