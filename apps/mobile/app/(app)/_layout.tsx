@@ -18,6 +18,13 @@ export default function AppLayout() {
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>👤</Text>,
         }}
       />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Ayarlar',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>⚙️</Text>,
+        }}
+      />
     </Tabs>
   );
 }
