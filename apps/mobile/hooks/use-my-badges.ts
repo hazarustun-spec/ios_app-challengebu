@@ -16,21 +16,18 @@ export interface MyBadgeRow {
   season_id: string | null;
 }
 
-export function useMyBadges() {
-  const userId = useAuthStore((s) => s.user?.id);
-  return useQuery<MyBadgeRow[]>({
-    queryKey: queryKeys.badges.mine(),
-    queryFn: () => fetchUserBadges(userId),
-    enabled: !!userId,
-  });
-}
-
 export function useUserBadges(targetUserId: string | undefined) {
   return useQuery<MyBadgeRow[]>({
-    queryKey: queryKeys.badges.forUser(targetUserId ?? ''),
+    queryKey: queryKeys.badges.forUser(targetUserId ?? '__none__'),
     queryFn: () => fetchUserBadges(targetUserId),
     enabled: !!targetUserId,
   });
+}
+
+// Delegates to useUserBadges so caller and tab share one cache key + one fetch.
+export function useMyBadges() {
+  const userId = useAuthStore((s) => s.user?.id);
+  return useUserBadges(userId);
 }
 
 async function fetchUserBadges(userId: string | undefined): Promise<MyBadgeRow[]> {

@@ -12,33 +12,13 @@ export function usePinBadges() {
       if (input.selectedBadgeIds.length > 3) {
         throw new Error('En fazla 3 rozet seçebilirsin');
       }
-      const now = new Date().toISOString();
-
-      const { error: clearErr } = await supabase
-        .from('user_badges')
-        .update({ pinned_at: null })
-        .eq('profile_id', userId)
-        .not('pinned_at', 'is', null);
-      if (clearErr) throw clearErr;
-
-      if (input.selectedBadgeIds.length > 0) {
-        const { error: setErr } = await supabase
-          .from('user_badges')
-          .update({ pinned_at: now })
-          .eq('profile_id', userId)
-          .in('badge_id', input.selectedBadgeIds);
-        if (setErr) throw setErr;
-      }
-
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .update({ pinned_badge_ids: input.selectedBadgeIds })
-        .eq('user_id', userId);
-      if (profileErr) throw profileErr;
+      const { error } = await supabase.rpc('pin_badges', { badge_ids: input.selectedBadgeIds });
+      if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.badges.mine() });
-      qc.invalidateQueries({ queryKey: ['profile', userId] });
+      if (!userId) return;
+      qc.invalidateQueries({ queryKey: queryKeys.badges.forUser(userId) });
+      qc.invalidateQueries({ queryKey: queryKeys.profile(userId) });
     },
   });
 }

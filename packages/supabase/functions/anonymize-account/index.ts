@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
         email: `anonymized-${auth.userId}@deleted.local`,
         phone: null,
         avatar_url: null,
-        pinned_badge_ids: [],
         status: 'anonymized',
         pronoun_custom: null,
       })
