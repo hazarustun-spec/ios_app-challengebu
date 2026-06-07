@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Alert, Text, View } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
+import { invokeFunction } from '../../lib/invoke-function';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 
@@ -34,23 +35,12 @@ export default function SettingsScreen() {
   };
 
   const doDelete = async () => {
+    if (!session?.access_token) {
+      Alert.alert('Hata', 'Oturum bulunamadı');
+      return;
+    }
     try {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/anonymize-account`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.access_token}`,
-            apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-          },
-          body: JSON.stringify({}),
-        },
-      );
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body?.error?.message ?? 'Silme başarısız');
-      }
+      await invokeFunction('anonymize-account', {}, session.access_token);
       await supabase.auth.signOut();
       signOutStore();
       router.replace('/(auth)/sign-in');
