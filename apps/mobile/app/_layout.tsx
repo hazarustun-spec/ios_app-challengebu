@@ -15,7 +15,19 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(app)" />
+          <Stack.Screen name="index" />
+          <Stack.Screen name="create-match" options={{ headerShown: true, title: 'Maç Oluştur' }} />
+          <Stack.Screen name="match/[id]" options={{ headerShown: true, title: 'Maç' }} />
+          <Stack.Screen name="match-request/[id]" options={{ headerShown: true, title: 'Maç teklifi' }} />
+          <Stack.Screen name="play/[matchId]" options={{ headerShown: true, title: 'Maç oyna' }} />
+          <Stack.Screen name="play/confirm/[matchId]" options={{ headerShown: true, title: 'Onayla' }} />
+          <Stack.Screen name="dispute/[matchId]" options={{ headerShown: true, title: 'İtiraz et' }} />
+          <Stack.Screen name="applications/[requestId]" options={{ headerShown: true, title: 'Başvurular' }} />
+        </Stack>
         <StatusBar style="auto" />
       </QueryClientProvider>
     </SafeAreaProvider>
