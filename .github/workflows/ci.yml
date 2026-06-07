@@ -31,6 +31,27 @@ jobs:
         working-directory: packages/shared
         run: bun test
 
+  mobile-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck (mobile)
+        working-directory: apps/mobile
+        run: bun run typecheck
+
+      - name: Test (mobile)
+        working-directory: apps/mobile
+        run: bun test
+
   supabase-migrations:
     runs-on: ubuntu-latest
     steps:
