@@ -5,10 +5,17 @@ export default function AppLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: '#1e3a8a' }}>
       <Tabs.Screen
-        name="home"
+        name="matches"
         options={{
-          title: 'Ana Sayfa',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🏠</Text>,
+          title: 'Maçlar',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🎾</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="open-calls"
+        options={{
+          title: 'İlanlar',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>📢</Text>,
         }}
       />
       <Tabs.Screen
@@ -25,6 +32,7 @@ export default function AppLayout() {
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>⚙️</Text>,
         }}
       />
+      <Tabs.Screen name="home" options={{ href: null }} />
     </Tabs>
   );
 }
