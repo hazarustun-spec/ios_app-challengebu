@@ -60,53 +60,6 @@ insert into public.departments (name, faculty, display_order) values
   ('Doktora (Belirtilmemiş)', 'Lisansüstü', 92),
   ('Diğer', 'Diğer', 99);
 
--- Badges catalog
-insert into public.badges (code, name_tr, description_tr, icon, category, is_seasonal, display_order) values
-  -- Milestones
-  ('milestone_1', 'İlk Maç', 'İlk maçını oynadın!', '🎾', 'milestone', false, 100),
-  ('milestone_3', '3 Maç', '3 maç oynadın.', '🎾', 'milestone', false, 101),
-  ('milestone_5', '5 Maç', '5 maç oynadın.', '🎾', 'milestone', false, 102),
-  ('milestone_10', '10 Maç', '10 maç oynadın.', '🏆', 'milestone', false, 103),
-  ('milestone_25', '25 Maç', '25 maç oynadın.', '🏆', 'milestone', false, 104),
-  ('milestone_50', '50 Maç', '50 maç oynadın.', '🥇', 'milestone', false, 105),
-  ('milestone_100', '100 Maç', '100 maç oynadın!', '🥇', 'milestone', false, 106),
-  ('milestone_250', '250 Maç', '250 maç oynadın!', '💎', 'milestone', false, 107),
-  ('milestone_500', '500 Maç', 'Efsane: 500 maç!', '💎', 'milestone', false, 108),
-
-  -- Wins
-  ('win_1', 'İlk Zafer', 'İlk maçını kazandın!', '🏅', 'win', false, 200),
-  ('win_3', '3 Zafer', '3 sıralama maçı kazandın.', '🏅', 'win', false, 201),
-  ('win_5', '5 Zafer', '5 sıralama maçı kazandın.', '🏅', 'win', false, 202),
-  ('win_10', '10 Zafer', '10 sıralama maçı kazandın.', '🥇', 'win', false, 203),
-  ('win_25', '25 Zafer', '25 sıralama maçı kazandın.', '🥇', 'win', false, 204),
-  ('win_50', '50 Zafer', '50 sıralama maçı kazandın!', '👑', 'win', false, 205),
-  ('win_100', '100 Zafer', '100 sıralama maçı kazandın!', '👑', 'win', false, 206),
-  ('win_bagel', 'Bagel', '4-0 (BÜ Klasik) veya 6-0 set kazandın.', '🥯', 'win', false, 210),
-  ('win_comeback', 'Comeback', '0-2 setten 3-2''ye veya 1-3''ten 4-3''e döndün.', '🔥', 'win', false, 211),
-
-  -- Social
-  ('social_first_doubles', 'İlk Çift Maçı', 'İlk çift maçını oynadın.', '🤝', 'social', false, 300),
-  ('social_5_partners', 'Çevremi Genişletiyorum', '5 farklı oyuncuyla çift oynadın.', '🤝', 'social', false, 301),
-  ('social_10_opponents', 'Yeni Yüzler', '10 farklı rakiple maç yaptın.', '🌐', 'social', false, 302),
-
-  -- Season
-  ('season_top_10', 'Sezon Ladder Top 10', 'Sezon ladder''da Top 10''a girdin.', '⭐', 'season', true, 400),
-  ('season_top_3', 'Sezon Ladder Top 3', 'Sezon ladder''da Top 3''e girdin.', '⭐', 'season', true, 401),
-  ('season_champion', 'Sezon Şampiyonu', 'Sezon finalini kazandın.', '👑', 'season', true, 402),
-  ('season_finalist', 'Sezon Finalisti', 'Sezon finaline kaldın.', '🥈', 'season', true, 403),
-  ('season_semifinalist', 'Sezon Yarı Finalisti', 'Sezon yarı finaline kaldın.', '🥉', 'season', true, 404),
-
-  -- Yearly
-  ('yearly_champion', 'Yıllık Şampiyon', 'Yılın şampiyonu oldun!', '🏆', 'yearly', false, 500),
-
-  -- Fun
-  ('fun_night_owl', 'Gece Kuşu', '22:00 sonrası 5 maç oynadın.', '🦉', 'fun', false, 600),
-  ('fun_early_bird', 'Erken Kuş', '09:00 öncesi 5 maç oynadın.', '🐦', 'fun', false, 601),
-  ('fun_bebek_lover', 'Bebek Kort Sevdalısı', 'Bebek Kort''ta 10 maç oynadın.', '💙', 'fun', false, 602),
-  ('fun_court_hopper', 'Saha Gezgini', '3 farklı kortta da maç oynamak', '🚶', 'fun', false, 603),
-  ('fun_marathon', 'Maraton', '3 Set Klasik formatında 5 maç oynadın.', '🏃', 'fun', false, 604),
-
-  -- Loyalty
-  ('loyalty_first_season', '1. Sezon', 'İlk sezonunu tamamladın.', '🎖️', 'loyalty', false, 700),
-  ('loyalty_one_year', '1 Yıl', '3 sezon (1 yıl) tamamladın.', '🎖️', 'loyalty', false, 701),
-  ('loyalty_founder', 'Kurucu', 'İlk 50 üye arasındasın!', '🏛️', 'loyalty', false, 702);
+-- Badges catalog is seeded via migration 20260608000001_seed_badges.sql
+-- (35 MVP badges across 7 categories). The legacy seed block was removed
+-- to avoid duplicate `code` collisions with the migration insert.
