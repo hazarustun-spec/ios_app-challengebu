@@ -24,7 +24,7 @@ export function useMyMatchHistory() {
         .in('status', ['confirmed', 'voided'])
         .or(`team_a_player_ids.cs.{${userId}},team_b_player_ids.cs.{${userId}}`)
         .order('played_at', { ascending: false })
-        .limit(100);
+        .limit(20);
       if (error) throw error;
       return (data ?? []) as unknown as ActiveMatchRow[];
     },

@@ -84,18 +84,21 @@ function genderCategoryLabel(v: string): string {
 
 function MatchHistorySection() {
   const userId = useAuthStore((s) => s.user?.id);
-  const { data: matches } = useMyMatchHistory();
-  const list = matches ?? [];
+  const { data: matches, isLoading } = useMyMatchHistory();
 
   if (!userId) return null;
+
+  const list = matches ?? [];
 
   return (
     <View className="mt-8">
       <Text className="mb-2 text-lg font-semibold text-gray-900">Geçmiş Maçlar</Text>
-      {list.length === 0 ? (
+      {isLoading ? (
+        <Text className="text-sm text-gray-500">Yükleniyor...</Text>
+      ) : list.length === 0 ? (
         <Text className="text-sm text-gray-500">Henüz oynanmış maç yok.</Text>
       ) : (
-        list.slice(0, 20).map((m) => <HistoryRow key={m.id} match={m} myUserId={userId} />)
+        list.map((m) => <HistoryRow key={m.id} match={m} myUserId={userId} />)
       )}
     </View>
   );
