@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     const { data: catalog } = await supa
       .from('badges')
-      .select('id, code, name_tr, description_tr, icon, category, is_seasonal');
+      .select('id, code, name_tr, description_tr, icon, category');
     const byCode = new Map<string, BadgeRow>();
     for (const b of catalog ?? []) byCode.set(b.code, b as BadgeRow);
 
@@ -81,6 +81,9 @@ async function evaluateForUser(
 
   const toAward: BadgeRow[] = [];
 
+  // Milestones include voided matches: spec section 6.1 says "kümülatif, dostluk dahil"
+  // — the player still showed up and played, so it counts toward milestones even if
+  // the score was 3-3 voided. Wins use confirmed-only (below).
   const { count: totalMatches } = await supa
     .from('matches')
     .select('id', { count: 'exact', head: true })
@@ -161,46 +164,54 @@ async function evaluateForUser(
   return toAward;
 }
 
+// score_details is the object stored by submit-match-score:
+// { scoreTeamA, scoreTeamB, winnerTeam, sets?, els?, games?, tiebreakScore?, points? }
+interface ScoreDetails {
+  sets?: { set: number; a: number; b: number }[];
+  els?: { el: number; winner: 'a' | 'b' }[];
+}
+
+function asScoreDetails(scoreDetails: unknown): ScoreDetails | null {
+  if (typeof scoreDetails !== 'object' || scoreDetails === null) return null;
+  return scoreDetails as ScoreDetails;
+}
+
 function hasShutoutSet(scoreDetails: unknown, team: 'a' | 'b'): boolean {
-  if (!Array.isArray(scoreDetails)) return false;
-  for (const item of scoreDetails) {
-    if (typeof item !== 'object' || item === null) continue;
-    const obj = item as Record<string, unknown>;
-    if ('a' in obj && 'b' in obj) {
-      const a = obj.a as number;
-      const b = obj.b as number;
-      if (team === 'a' && a === 6 && b === 0) return true;
-      if (team === 'b' && b === 6 && a === 0) return true;
-    }
+  const d = asScoreDetails(scoreDetails);
+  if (!d?.sets) return false;
+  for (const s of d.sets) {
+    if (team === 'a' && s.a === 6 && s.b === 0) return true;
+    if (team === 'b' && s.b === 6 && s.a === 0) return true;
   }
   return false;
 }
 
 function detectComeback(match: Record<string, unknown>, team: 'a' | 'b'): boolean {
-  const details = match.score_details;
-  if (!Array.isArray(details)) return false;
+  const d = asScoreDetails(match.score_details);
+  if (!d) return false;
+  const wonOverall = match.winner_team === team;
+  if (!wonOverall) return false;
 
   if (match.format === '3set_klasik') {
-    const sets = details as { set: number; a: number; b: number }[];
-    if (sets.length !== 3) return false;
-    const set1 = sets[0];
-    const set2 = sets[1];
-    if (!set1 || !set2) return false;
-    const lostFirstTwo = team === 'a'
-      ? set1.a < set1.b && set2.a < set2.b
-      : set1.b < set1.a && set2.b < set2.a;
-    const wonOverall = match.winner_team === team;
-    return lostFirstTwo && wonOverall;
+    // Best-of-3 comeback: lost set 1, won sets 2 and 3.
+    // (Spec wording "0-2'den 3-2" is best-of-5 phrasing; in best-of-3 the
+    // realizable comeback is 1-set-down-to-win.)
+    if (!d.sets || d.sets.length !== 3) return false;
+    const [s1, s2, s3] = d.sets;
+    if (!s1 || !s2 || !s3) return false;
+    const lost = (s: { a: number; b: number }) =>
+      team === 'a' ? s.a < s.b : s.b < s.a;
+    const won = (s: { a: number; b: number }) =>
+      team === 'a' ? s.a > s.b : s.b > s.a;
+    return lost(s1) && won(s2) && won(s3);
   }
 
   if (match.format === 'bu_klasik') {
-    const els = details as { el: number; winner: 'a' | 'b' }[];
-    if (els.length < 7) return false;
+    // 1-3'ten 4-3: opp won 3 of first 4 Els, user wins overall in 7 Els.
+    if (!d.els || d.els.length !== 7) return false;
     const oppTeam = team === 'a' ? 'b' : 'a';
-    const firstFour = els.slice(0, 4);
-    const oppWinsFirstFour = firstFour.filter((e) => e.winner === oppTeam).length;
-    if (oppWinsFirstFour !== 3) return false;
-    return match.winner_team === team;
+    const oppWinsFirstFour = d.els.slice(0, 4).filter((e) => e.winner === oppTeam).length;
+    return oppWinsFirstFour === 3;
   }
 
   return false;

@@ -104,6 +104,7 @@ async function invokeAwardBadges(matchId: string): Promise<AwardedPerUser[]> {
         Authorization: `Bearer ${serviceKey}`,
       },
       body: JSON.stringify({ matchId }),
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
       console.error('award-badges call failed', res.status, await res.text());
