@@ -8,6 +8,20 @@ import type { MatchFormat } from '../_shared/elo.ts';
 
 const inputSchema = z.object({ matchId: z.string().uuid() });
 
+interface BadgeRow {
+  id: string;
+  code: string;
+  name_tr: string;
+  description_tr: string;
+  icon: string;
+  category: string;
+}
+
+interface AwardedPerUser {
+  userId: string;
+  badges: BadgeRow[];
+}
+
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -47,7 +61,6 @@ Deno.serve(async (req) => {
       return jsonResponse({ confirmed: false });
     }
 
-    // All confirmed
     const newStatus = match.winner_team === 'void' ? 'voided' : 'confirmed';
     await supa.from('matches').update({
       confirmed_by: newConfirmed,
@@ -55,6 +68,7 @@ Deno.serve(async (req) => {
       status: newStatus,
     }).eq('id', match.id);
 
+    let awarded: AwardedPerUser[] = [];
     if (newStatus === 'confirmed') {
       await applyEloForMatch(supa, {
         id: match.id,
@@ -67,11 +81,38 @@ Deno.serve(async (req) => {
         score_team_b: match.score_team_b,
         winner_team: match.winner_team,
       });
+
+      awarded = await invokeAwardBadges(match.id);
     }
 
-    return jsonResponse({ confirmed: true, status: newStatus });
+    return jsonResponse({ confirmed: true, status: newStatus, awarded });
   } catch (err) {
     if (err instanceof AuthError) return errorResponse(err.message, err.status);
     return internalError(err);
   }
 });
+
+async function invokeAwardBadges(matchId: string): Promise<AwardedPerUser[]> {
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) return [];
+  try {
+    const res = await fetch(`${url}/functions/v1/award-badges`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ matchId }),
+    });
+    if (!res.ok) {
+      console.error('award-badges call failed', res.status, await res.text());
+      return [];
+    }
+    const json = (await res.json()) as { awarded?: AwardedPerUser[] };
+    return json.awarded ?? [];
+  } catch (err) {
+    console.error('award-badges fetch threw', err);
+    return [];
+  }
+}
