@@ -1,5 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
+import { MismatchBanner } from '../../components/matches/MismatchBanner';
 import { StatusBadge } from '../../components/matches/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
@@ -63,6 +64,9 @@ export default function MatchDetailScreen() {
         <Stack.Screen options={{ title: 'Maç', headerShown: true }} />
         <ScreenContainer scrollable>
           <View className="gap-3">
+            {m.status === 'awaiting_confirmation' && winnerSet && !myConfirmed && (
+              <MismatchBanner message="Skor girildi. Aynı skoru sen de girdiysen onaylayabilirsin; uyuşmazlık varsa skoru tekrar gir." />
+            )}
             <Text className="text-2xl font-bold text-gray-900">
               {CATEGORY_LABELS[m.category] ?? m.category}
             </Text>
