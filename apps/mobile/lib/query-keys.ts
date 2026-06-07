@@ -23,10 +23,37 @@ export const queryKeys = {
   matchHistory: {
     all: ['match-history'] as const,
     mine: () => [...queryKeys.matchHistory.all, 'mine'] as const,
+    forUser: (userId: string) => [...queryKeys.matchHistory.all, 'user', userId] as const,
+  },
+  badges: {
+    all: ['badges'] as const,
+    catalog: () => [...queryKeys.badges.all, 'catalog'] as const,
+    mine: () => [...queryKeys.badges.all, 'mine'] as const,
+    forUser: (userId: string) => [...queryKeys.badges.all, 'user', userId] as const,
+  },
+  rankings: {
+    all: ['rankings'] as const,
+    mine: () => [...queryKeys.rankings.all, 'mine'] as const,
+    forUser: (userId: string) => [...queryKeys.rankings.all, 'user', userId] as const,
+  },
+  stats: {
+    all: ['stats'] as const,
+    mine: () => [...queryKeys.stats.all, 'mine'] as const,
+    forUser: (userId: string) => [...queryKeys.stats.all, 'user', userId] as const,
+  },
+  eloHistory: {
+    all: ['elo-history'] as const,
+    mine: () => [...queryKeys.eloHistory.all, 'mine'] as const,
+    forUser: (userId: string) => [...queryKeys.eloHistory.all, 'user', userId] as const,
+  },
+  headToHead: {
+    all: ['head-to-head'] as const,
+    between: (otherUserId: string) => [...queryKeys.headToHead.all, 'pair', otherUserId] as const,
   },
   players: {
     all: ['players'] as const,
     list: (filters?: { gender?: string }) => [...queryKeys.players.all, 'list', filters] as const,
+    detail: (userId: string) => [...queryKeys.players.all, 'detail', userId] as const,
   },
   courts: ['courts'] as const,
   departments: ['departments'] as const,

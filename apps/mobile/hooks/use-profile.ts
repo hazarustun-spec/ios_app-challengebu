@@ -12,9 +12,10 @@ export function useMyProfile() {
         .from('profiles')
         .select(`
           user_id, first_name, last_name, email, phone, pronoun, pronoun_custom,
-          gender_category, class_year, show_class_year, skill_self_assessment,
+          gender_category, department_id, class_year, show_class_year, skill_self_assessment,
           dominant_hand, availability_windows, avatar_url, role, status,
-          show_department, departments:departments(name)
+          show_department, pinned_badge_ids,
+          departments:departments(name)
         `)
         .eq('user_id', userId)
         .single();
