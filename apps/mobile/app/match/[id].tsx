@@ -50,7 +50,6 @@ export default function MatchDetailScreen() {
     const m = matchQuery.data;
     if (!userId) return null;
     const onTeamA = m.team_a_player_ids.includes(userId);
-    const myLetter: 'a' | 'b' = onTeamA ? 'a' : 'b';
     const myScore = onTeamA ? m.score_team_a : m.score_team_b;
     const oppScore = onTeamA ? m.score_team_b : m.score_team_a;
     const winnerSet = m.winner_team !== null;
@@ -67,7 +66,7 @@ export default function MatchDetailScreen() {
         <ScreenContainer scrollable>
           <View className="gap-3">
             {m.status === 'awaiting_confirmation' && winnerSet && !myConfirmed && (
-              <MismatchBanner message="Skor girildi. Aynı skoru sen de girdiysen onaylayabilirsin; uyuşmazlık varsa skoru tekrar gir." />
+              <MismatchBanner message="Skor girildi. Aynı skoruysa onayla; uyuşmazlık varsa itiraz et." />
             )}
             <Text className="text-2xl font-bold text-gray-900">
               {CATEGORY_LABELS[m.category] ?? m.category}
@@ -117,7 +116,6 @@ export default function MatchDetailScreen() {
               <EloDeltaDisplay
                 before={onTeamA ? m.rating_before_team_a : (m.rating_before_team_b ?? m.rating_before_team_a)}
                 after={onTeamA ? m.rating_after_team_a : (m.rating_after_team_b ?? m.rating_after_team_a)}
-                myLetter={myLetter}
               />
             )}
           </View>

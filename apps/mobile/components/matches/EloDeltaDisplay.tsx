@@ -3,7 +3,6 @@ import { Text, View } from 'react-native';
 interface Props {
   before: number;
   after: number;
-  myLetter: 'a' | 'b';
 }
 
 export function EloDeltaDisplay({ before, after }: Props) {
