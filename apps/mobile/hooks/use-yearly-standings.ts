@@ -19,10 +19,11 @@ interface RawRow {
   profile: { first_name: string; last_name: string } | null;
 }
 
-export function useYearlyStandings(year: number) {
+export function useYearlyStandings(year: number | undefined) {
   return useQuery<Record<string, YearlyStanding[]>>({
-    queryKey: queryKeys.yearly.standings(year),
+    queryKey: queryKeys.yearly.standings(year ?? 0),
     queryFn: async () => {
+      if (year === undefined) return {};
       const { data, error } = await supabase
         .from('yearly_championship')
         .select(`
@@ -48,6 +49,7 @@ export function useYearlyStandings(year: number) {
       }
       return grouped;
     },
+    enabled: year !== undefined,
     staleTime: 1000 * 60 * 60,
   });
 }

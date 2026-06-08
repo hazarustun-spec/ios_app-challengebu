@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useYearlyStandings } from '../../hooks/use-yearly-standings';
 
@@ -16,12 +16,23 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function YearlyChampionshipScreen() {
   const { year } = useLocalSearchParams<{ year: string }>();
   const yearNum = Number(year);
-  const { data, isLoading } = useYearlyStandings(yearNum);
+  const validYear = Number.isFinite(yearNum) && yearNum > 1900;
+  const { data, isLoading } = useYearlyStandings(validYear ? yearNum : undefined);
+
+  if (!validYear) {
+    return (
+      <ScreenContainer>
+        <Text className="text-sm text-gray-500">Geçersiz yıl.</Text>
+      </ScreenContainer>
+    );
+  }
 
   if (isLoading) {
     return (
       <ScreenContainer>
-        <Text className="text-sm text-gray-500">Yükleniyor...</Text>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#1e3a8a" />
+        </View>
       </ScreenContainer>
     );
   }

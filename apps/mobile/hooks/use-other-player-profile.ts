@@ -10,7 +10,6 @@ export interface OtherPlayerProfile {
   pronoun_custom: string | null;
   gender_category: 'erkek' | 'kadin' | 'open_only';
   avatar_url: string | null;
-  pinned_badge_ids: string[];
   status: string;
   show_department: boolean;
   show_class_year: boolean;
@@ -27,7 +26,7 @@ export function useOtherPlayerProfile(userId: string | undefined) {
         .from('profiles')
         .select(`
           user_id, first_name, last_name, pronoun, pronoun_custom,
-          gender_category, avatar_url, pinned_badge_ids, status,
+          gender_category, avatar_url, status,
           show_department, show_class_year, class_year,
           departments:departments(name)
         `)

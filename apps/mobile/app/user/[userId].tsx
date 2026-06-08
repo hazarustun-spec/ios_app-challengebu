@@ -44,9 +44,8 @@ export default function OtherPlayerProfileScreen() {
     .join(' · ') || null;
 
   const highestElo = (rankings.data ?? []).reduce((m, r) => Math.max(m, r.rating), 0) || 1200;
-  const pinnedIds = profile.pinned_badge_ids ?? [];
   const pinned = (badges.data ?? [])
-    .filter((b) => pinnedIds.includes(b.badge_id))
+    .filter((b) => b.pinned_at)
     .map((b) => ({ id: b.badge_id, icon: b.icon, name_tr: b.name_tr }));
 
   const canChallenge = canSinglesChallengeBetween(
