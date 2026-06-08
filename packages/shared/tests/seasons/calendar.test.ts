@@ -65,4 +65,33 @@ describe('isInFinaleWindow', () => {
     const w = buildSeasonWindow('bahar', 2026);
     expect(isInFinaleWindow(w, new Date('2026-03-01T12:00:00Z'))).toBe(false);
   });
+
+  test('21 June 2026 00:00 UTC IS inside bahar 2026 finale (start edge)', () => {
+    const w = buildSeasonWindow('bahar', 2026);
+    expect(isInFinaleWindow(w, new Date('2026-06-21T00:00:00Z'))).toBe(true);
+  });
+
+  test('30 June 2026 23:59:59 UTC IS inside bahar 2026 finale (end edge)', () => {
+    const w = buildSeasonWindow('bahar', 2026);
+    expect(isInFinaleWindow(w, new Date('2026-06-30T23:59:59Z'))).toBe(true);
+  });
+});
+
+describe('season boundary rollovers', () => {
+  test('31 August → yaz, 1 September → güz (no gap)', () => {
+    expect(getCurrentSeasonWindow(new Date('2026-08-31T23:00:00Z')).name).toBe('yaz');
+    expect(getCurrentSeasonWindow(new Date('2026-09-01T00:00:00Z')).name).toBe('guz');
+  });
+
+  test('25 January → güz of previous year, 26 January → bahar of current year', () => {
+    expect(getCurrentSeasonWindow(new Date('2027-01-25T23:00:00Z')).name).toBe('guz');
+    expect(getCurrentSeasonWindow(new Date('2027-01-25T23:00:00Z')).year).toBe(2026);
+    expect(getCurrentSeasonWindow(new Date('2027-01-26T00:00:00Z')).name).toBe('bahar');
+    expect(getCurrentSeasonWindow(new Date('2027-01-26T00:00:00Z')).year).toBe(2027);
+  });
+
+  test('30 June → bahar, 1 July → yaz (no gap)', () => {
+    expect(getCurrentSeasonWindow(new Date('2026-06-30T23:00:00Z')).name).toBe('bahar');
+    expect(getCurrentSeasonWindow(new Date('2026-07-01T00:00:00Z')).name).toBe('yaz');
+  });
 });

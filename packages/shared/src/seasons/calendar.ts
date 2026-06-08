@@ -49,22 +49,14 @@ export function buildSeasonWindow(name: SeasonName, year: number): SeasonWindow 
 }
 
 export function getCurrentSeasonWindow(at: Date = new Date()): SeasonWindow {
-  const t = at.getTime();
   const year = at.getUTCFullYear();
   const month = at.getUTCMonth();
   const day = at.getUTCDate();
 
-  if (month === 0 && day <= 25) {
-    const guzWindow = buildSeasonWindow('guz', year - 1);
-    if (t <= Date.parse(guzWindow.ends_at)) return guzWindow;
-  }
-  if (month >= 8 || (month === 0 && day <= 25)) {
-    const guzYear = month >= 8 ? year : year - 1;
-    return buildSeasonWindow('guz', guzYear);
-  }
-  if (month === 0 || month === 1 || month === 2 || month === 3 || month === 4 || month === 5) {
-    return buildSeasonWindow('bahar', year);
-  }
+  // Jan 1-25 still belongs to the previous year's güz (finale runs Jan 16-25).
+  if (month === 0 && day <= 25) return buildSeasonWindow('guz', year - 1);
+  if (month >= 8) return buildSeasonWindow('guz', year);
+  if (month <= 5) return buildSeasonWindow('bahar', year);
   return buildSeasonWindow('yaz', year);
 }
 
