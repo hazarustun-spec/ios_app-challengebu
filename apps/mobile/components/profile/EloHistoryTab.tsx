@@ -20,7 +20,9 @@ interface Props {
 
 export function EloHistoryTab({ userId }: Props) {
   const { data, isLoading } = useEloHistory(userId);
-  const categories = Object.keys(data ?? {});
+  const byCategory = data?.byCategory ?? {};
+  const seasonBoundaries = data?.seasonBoundaries ?? [];
+  const categories = Object.keys(byCategory);
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const selected = activeCat ?? categories[0] ?? null;
 
@@ -31,7 +33,7 @@ export function EloHistoryTab({ userId }: Props) {
     return <Text className="mt-4 text-sm text-gray-500">Henüz ELO geçmişi yok.</Text>;
   }
 
-  const points = data?.[selected] ?? [];
+  const points = byCategory[selected] ?? [];
   const peak = points.length > 0 ? Math.max(...points.map((p) => p.elo)) : 0;
   const current = points.length > 0 ? points[points.length - 1].elo : 0;
   const baseline = points.length > 0 ? points[0].eloBefore : 0;
@@ -75,6 +77,7 @@ export function EloHistoryTab({ userId }: Props) {
 
       <EloHistoryChart
         points={points as EloPoint[]}
+        seasonBoundaries={seasonBoundaries}
         width={screenWidth}
         height={200}
         onPointPress={(matchId) => router.push(`/match/${matchId}`)}
