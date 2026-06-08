@@ -3,7 +3,7 @@
 
 do $$
 declare
-  expected_table_count constant int := 21;
+  expected_table_count constant int := 22;
   expected_court_count constant int := 3;
   expected_dept_min_count constant int := 30;
   expected_badge_min_count constant int := 30;
