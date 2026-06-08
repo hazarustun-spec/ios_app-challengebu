@@ -18,7 +18,7 @@ export function useSubmitOnboarding() {
       let avatarUrl: string | null = null;
       if (draft.avatarUri) {
         const ext = draft.avatarUri.split('.').pop() ?? 'jpg';
-        const path = `${user.id}/${Date.now()}.${ext}`;
+        const path = `${user.id}.${ext}`;
         try {
           const fileData = await FileSystem.readAsStringAsync(draft.avatarUri, {
             encoding: FileSystem.EncodingType.Base64,
