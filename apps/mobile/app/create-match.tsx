@@ -1,4 +1,4 @@
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { CourtPicker } from '../components/matches/CourtPicker';
@@ -23,8 +23,9 @@ const CATEGORIES = [
 ];
 
 export default function CreateMatchScreen() {
+  const { opponentId } = useLocalSearchParams<{ opponentId?: string }>();
   const [type, setType] = useState<RequestType>('direct_challenge');
-  const [targetId, setTargetId] = useState<string>();
+  const [targetId, setTargetId] = useState<string | undefined>(opponentId);
   const [category, setCategory] = useState<string>();
   const [format, setFormat] = useState<MatchFormat>();
   const [isRated, setIsRated] = useState(true);
