@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { BracketView } from '../../components/seasons/BracketView';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useTournamentBracket } from '../../hooks/use-tournament-bracket';
@@ -21,7 +21,9 @@ export default function TournamentScreen() {
   if (isLoading) {
     return (
       <ScreenContainer>
-        <Text className="text-sm text-gray-500">Yükleniyor...</Text>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#1e3a8a" />
+        </View>
       </ScreenContainer>
     );
   }

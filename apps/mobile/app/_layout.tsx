@@ -30,7 +30,7 @@ export default function RootLayout() {
           <Stack.Screen name="applications/[requestId]" options={{ headerShown: true, title: 'Başvurular' }} />
           <Stack.Screen name="profile" />
           <Stack.Screen name="user/[userId]" options={{ headerShown: true, title: 'Profil' }} />
-          <Stack.Screen name="tournament/[id]" options={{ headerShown: true, title: 'Bracket' }} />
+          <Stack.Screen name="tournament/[id]" options={{ headerShown: true, title: 'Sezon Finali' }} />
         </Stack>
         <CelebrationMount />
         <StatusBar style="auto" />
