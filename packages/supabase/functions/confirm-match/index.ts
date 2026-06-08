@@ -83,6 +83,7 @@ Deno.serve(async (req) => {
       });
 
       awarded = await invokeAwardBadges(match.id);
+      await invokeAdvanceBracket(match.id);
     }
 
     return jsonResponse({ confirmed: true, status: newStatus, awarded });
@@ -115,5 +116,26 @@ async function invokeAwardBadges(matchId: string): Promise<AwardedPerUser[]> {
   } catch (err) {
     console.error('award-badges fetch threw', err);
     return [];
+  }
+}
+
+async function invokeAdvanceBracket(matchId: string): Promise<void> {
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) return;
+  try {
+    const res = await fetch(`${url}/functions/v1/advance-tournament-bracket`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ matchId }),
+    });
+    if (!res.ok) {
+      console.error('advance-tournament-bracket failed', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('advance-tournament-bracket threw', err);
   }
 }
