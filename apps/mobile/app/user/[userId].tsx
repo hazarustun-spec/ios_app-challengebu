@@ -47,7 +47,7 @@ export default function OtherPlayerProfileScreen() {
     .filter((b) => pinnedIds.includes(b.badge_id))
     .map((b) => ({ id: b.badge_id, icon: b.icon, name_tr: b.name_tr }));
 
-  const canChallenge = canChallengeBetween(
+  const canChallenge = canSinglesChallengeBetween(
     profile.gender_category,
     myProfile?.gender_category,
   );
@@ -107,7 +107,10 @@ function TabContent({ tabKey, userId }: { tabKey: ProfileTabKey; userId: string 
   return <MatchesTab targetUserId={userId} />;
 }
 
-function canChallengeBetween(
+// Singles-only: gates the 1v1 "Meydan Oku" CTA. Doubles formats (incl.
+// karma_cift) use a different flow that recruits partners and can pair
+// different gender_categories, so this returns false for erkek vs kadin.
+function canSinglesChallengeBetween(
   target: 'erkek' | 'kadin' | 'open_only',
   mine: 'erkek' | 'kadin' | 'open_only' | undefined,
 ): boolean {

@@ -12,7 +12,7 @@ export interface HeadToHead {
 export function useHeadToHead(otherUserId: string | undefined) {
   const myId = useAuthStore((s) => s.user?.id);
   return useQuery<HeadToHead>({
-    queryKey: queryKeys.headToHead.between(otherUserId ?? ''),
+    queryKey: [...queryKeys.headToHead.between(otherUserId ?? ''), myId ?? '__none__'],
     queryFn: async () => {
       if (!myId || !otherUserId) return { totalMatches: 0, myWins: 0, theirWins: 0 };
       const { data, error } = await supabase
@@ -29,15 +29,17 @@ export function useHeadToHead(otherUserId: string | undefined) {
 
       let myWins = 0;
       let theirWins = 0;
+      let played = 0;
       for (const m of data ?? []) {
         if (m.winner_team === 'void' || m.winner_team === null) continue;
+        played += 1;
         const onA = (m.team_a_player_ids as string[]).includes(myId);
         const iWon = (onA && m.winner_team === 'a') || (!onA && m.winner_team === 'b');
         if (iWon) myWins += 1;
         else theirWins += 1;
       }
       return {
-        totalMatches: (data ?? []).length,
+        totalMatches: played,
         myWins,
         theirWins,
       };
