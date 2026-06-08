@@ -131,6 +131,7 @@ async function invokeAdvanceBracket(matchId: string): Promise<void> {
         Authorization: `Bearer ${serviceKey}`,
       },
       body: JSON.stringify({ matchId }),
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
       console.error('advance-tournament-bracket failed', res.status, await res.text());
