@@ -129,7 +129,6 @@ export default function EditProfileScreen() {
 
       <Text className="mb-1 text-sm font-medium text-gray-700">Pronoun</Text>
       <RadioGroup
-        label=""
         options={PRONOUN_OPTIONS as unknown as { value: string; label: string }[]}
         value={form.pronoun}
         onChange={(v) => update('pronoun', v as UpdateProfileInput['pronoun'])}
@@ -155,7 +154,6 @@ export default function EditProfileScreen() {
 
       <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Sınıf</Text>
       <RadioGroup
-        label=""
         options={CLASS_OPTIONS as unknown as { value: string; label: string }[]}
         value={form.class_year}
         onChange={(v) => update('class_year', v as UpdateProfileInput['class_year'])}
@@ -163,7 +161,6 @@ export default function EditProfileScreen() {
 
       <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Seviye</Text>
       <RadioGroup
-        label=""
         options={SKILL_OPTIONS as unknown as { value: string; label: string }[]}
         value={form.skill_self_assessment}
         onChange={(v) =>
@@ -173,7 +170,6 @@ export default function EditProfileScreen() {
 
       <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Dominant el</Text>
       <RadioGroup
-        label=""
         options={HAND_OPTIONS as unknown as { value: string; label: string }[]}
         value={form.dominant_hand}
         onChange={(v) => update('dominant_hand', v as UpdateProfileInput['dominant_hand'])}
@@ -181,7 +177,6 @@ export default function EditProfileScreen() {
 
       <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Yarışma kategorisi</Text>
       <RadioGroup
-        label=""
         options={GENDER_OPTIONS as unknown as { value: string; label: string }[]}
         value={form.gender_category ?? 'erkek'}
         onChange={(v) => onChangeGender(v as UpdateProfileInput['gender_category'])}

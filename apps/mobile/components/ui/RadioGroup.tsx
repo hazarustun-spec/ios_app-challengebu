@@ -6,7 +6,7 @@ interface Option<T extends string> {
 }
 
 interface Props<T extends string> {
-  label: string;
+  label?: string;
   options: Option<T>[];
   value: T | undefined;
   onChange: (v: T) => void;
@@ -16,7 +16,7 @@ interface Props<T extends string> {
 export function RadioGroup<T extends string>({ label, options, value, onChange, error }: Props<T>) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-medium text-gray-700">{label}</Text>
+      {label ? <Text className="mb-2 text-sm font-medium text-gray-700">{label}</Text> : null}
       <View className="gap-2">
         {options.map((opt) => (
           <Pressable
