@@ -9,7 +9,15 @@ export interface EloPoint {
   eloBefore: number;
 }
 
-export type EloHistoryByCategory = Record<string, EloPoint[]>;
+export interface SeasonBoundary {
+  timestamp: string;
+  label: string;
+}
+
+export interface EloHistoryResult {
+  byCategory: Record<string, EloPoint[]>;
+  seasonBoundaries: SeasonBoundary[];
+}
 
 interface MatchRow {
   id: string;
@@ -23,11 +31,23 @@ interface MatchRow {
   rating_after_team_b: number | null;
 }
 
+interface SeasonRow {
+  name: string;
+  year: number;
+  starts_at: string;
+}
+
+const SEASON_LABEL: Record<string, string> = {
+  guz: 'Güz',
+  bahar: 'Bahar',
+  yaz: 'Yaz',
+};
+
 export function useEloHistory(userId: string | undefined) {
-  return useQuery<EloHistoryByCategory>({
+  return useQuery<EloHistoryResult>({
     queryKey: userId ? queryKeys.eloHistory.forUser(userId) : queryKeys.eloHistory.all,
     queryFn: async () => {
-      if (!userId) return {};
+      if (!userId) return { byCategory: {}, seasonBoundaries: [] };
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -45,21 +65,34 @@ export function useEloHistory(userId: string | undefined) {
         .limit(100);
       if (error) throw error;
 
-      // Fetched newest-first to keep the most recent 100 matches; reverse
-      // before bucketing so each per-category series is oldest→newest.
       const rows = (((data ?? []) as unknown) as MatchRow[]).slice().reverse();
 
-      const result: EloHistoryByCategory = {};
+      const byCategory: Record<string, EloPoint[]> = {};
       for (const m of rows) {
         const onA = m.team_a_player_ids.includes(userId);
         const eloAfter = onA ? m.rating_after_team_a : m.rating_after_team_b;
         const eloBefore = onA ? m.rating_before_team_a : m.rating_before_team_b;
         if (eloAfter === null || eloBefore === null) continue;
-        const list = result[m.category] ?? [];
+        const list = byCategory[m.category] ?? [];
         list.push({ matchId: m.id, played_at: m.played_at, elo: eloAfter, eloBefore });
-        result[m.category] = list;
+        byCategory[m.category] = list;
       }
-      return result;
+
+      let seasonBoundaries: SeasonBoundary[] = [];
+      if (rows.length > 0) {
+        const earliest = rows[0].played_at;
+        const { data: seasons } = await supabase
+          .from('seasons')
+          .select('name, year, starts_at')
+          .gte('starts_at', earliest)
+          .order('starts_at', { ascending: true });
+        seasonBoundaries = ((seasons ?? []) as SeasonRow[]).map((s) => ({
+          timestamp: s.starts_at,
+          label: `${SEASON_LABEL[s.name] ?? s.name} ${s.year} başladı`,
+        }));
+      }
+
+      return { byCategory, seasonBoundaries };
     },
     enabled: !!userId,
   });
