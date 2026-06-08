@@ -20,8 +20,7 @@ export function usePlayers(opts?: { gender?: 'erkek' | 'kadin' | 'open_only' }) 
       let q = supabase
         .from('profiles')
         .select('user_id, first_name, last_name, avatar_url, gender_category, status')
-        .eq('role', 'player')
-        .neq('status', 'anonymized')
+        .eq('status', 'active')
         .order('first_name');
       if (opts?.gender) q = q.eq('gender_category', opts.gender);
       const { data, error } = await q;
