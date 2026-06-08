@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { CelebrationMount } from '../components/profile/CelebrationMount';
 import { bootstrapAuth } from '../lib/auth-bootstrap';
 import { queryClient } from '../lib/query-client';
 
@@ -30,6 +31,7 @@ export default function RootLayout() {
           <Stack.Screen name="profile" />
           <Stack.Screen name="user/[userId]" options={{ headerShown: true, title: 'Profil' }} />
         </Stack>
+        <CelebrationMount />
         <StatusBar style="auto" />
       </QueryClientProvider>
     </SafeAreaProvider>

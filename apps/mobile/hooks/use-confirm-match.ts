@@ -75,7 +75,14 @@ async function computeLevelChange(
     .eq('id', matchId)
     .maybeSingle();
   if (!match) return null;
-  const onA = (match.team_a_player_ids as string[]).includes(userId);
+  // Singles only: in doubles, rating_*_team_* stores the team average
+  // (apply-elo.ts), not the individual rating, so a per-player level-up
+  // can't be derived from this row. Plan 8 may revisit doubles via
+  // elo_ratings lookups.
+  const teamA = match.team_a_player_ids as string[];
+  const teamB = match.team_b_player_ids as string[];
+  if (teamA.length !== 1 || teamB.length !== 1) return null;
+  const onA = teamA.includes(userId);
   const before = onA ? match.rating_before_team_a : match.rating_before_team_b;
   const after = onA ? match.rating_after_team_a : match.rating_after_team_b;
   if (before === null || after === null) return null;

@@ -37,19 +37,25 @@ export default function ConfirmMatchScreen() {
   const onConfirm = async () => {
     try {
       const res = await confirm.mutateAsync({ matchId });
-      if (res.confirmed) {
-        Alert.alert('Maç onaylandı', res.status === 'confirmed' ? 'ELO güncellendi.' : 'Maç voided sayıldı.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      } else if (res.alreadyConfirmed) {
-        Alert.alert('Zaten onaylamıştın', 'Karşı tarafın onayı bekleniyor.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
-      } else {
-        Alert.alert('Onayın kaydedildi', 'Karşı tarafın onayı bekleniyor.', [
-          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
-        ]);
+      // On full confirmation we route immediately and let CelebrationMount
+      // carry the post-confirm moment (badge unlock + level-up modals). An
+      // Alert here would render on top of those modals on iOS and defeat
+      // the celebration.
+      if (res.confirmed && res.status === 'confirmed') {
+        router.replace(`/match/${matchId}`);
+        return;
       }
+      if (res.confirmed && res.status === 'voided') {
+        Alert.alert('Maç yapılmamış sayıldı', '3-3 ile bitti, ELO etkilenmedi.', [
+          { text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) },
+        ]);
+        return;
+      }
+      Alert.alert(
+        res.alreadyConfirmed ? 'Zaten onaylamıştın' : 'Onayın kaydedildi',
+        'Karşı tarafın onayı bekleniyor.',
+        [{ text: 'Tamam', onPress: () => router.replace(`/match/${matchId}`) }],
+      );
     } catch (e) {
       Alert.alert('Hata', e instanceof Error ? e.message : 'Onaylanamadı');
     }

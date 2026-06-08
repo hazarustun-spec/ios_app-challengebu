@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
+import { useCelebrationStore } from './post-match-celebration-store';
 
 interface ProfileSummary {
   userId: string;
@@ -28,5 +29,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSession: (session) => set({ session, user: session?.user ?? null }),
   setProfile: (profile) => set({ profile }),
   setLoading: (loading) => set({ loading }),
-  signOut: () => set({ session: null, user: null, profile: null }),
+  signOut: () => {
+    useCelebrationStore.getState().clear();
+    set({ session: null, user: null, profile: null });
+  },
 }));
