@@ -72,6 +72,7 @@ export function SeasonBanner() {
 
   if (status === 'finale_in_progress') {
     return (
+      // TODO(Faz E): drop the `as never` once app/tournament/[id].tsx lands and typed-routes recognises this path.
       <BannerShell
         onPress={firstTournamentId ? () => router.push(`/tournament/${firstTournamentId}` as never) : undefined}
       >
