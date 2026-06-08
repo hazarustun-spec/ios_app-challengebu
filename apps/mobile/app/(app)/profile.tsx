@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
+import { pickAvatar } from '../../components/profile/AvatarPicker';
 import { MatchesTab } from '../../components/profile/MatchesTab';
 import { PinBadgeModal } from '../../components/profile/PinBadgeModal';
 import { ProfileHeader } from '../../components/profile/ProfileHeader';
@@ -9,6 +10,7 @@ import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useMyProfile } from '../../hooks/use-profile';
+import { useUploadAvatar } from '../../hooks/use-upload-avatar';
 import { useAuthStore } from '../../stores/auth-store';
 
 export default function ProfileScreen() {
@@ -18,6 +20,17 @@ export default function ProfileScreen() {
   const { data: p, isLoading } = useMyProfile();
   const rankings = useUserRankings(userId);
   const myBadges = useMyBadges();
+  const uploadAvatar = useUploadAvatar();
+
+  const onAvatarPress = async () => {
+    const uri = await pickAvatar();
+    if (!uri) return;
+    try {
+      await uploadAvatar.mutateAsync({ localUri: uri });
+    } catch (e) {
+      Alert.alert('Hata', (e as Error).message);
+    }
+  };
 
   if (isLoading || !p || !userId) {
     return (
@@ -54,7 +67,7 @@ export default function ProfileScreen() {
         highestElo={highestElo}
         pinned={pinned}
         editable
-        onAvatarPress={() => router.push('/profile/edit')}
+        onAvatarPress={onAvatarPress}
         onPinnedEditPress={() => setPinOpen(true)}
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
