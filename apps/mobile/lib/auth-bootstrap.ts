@@ -18,23 +18,26 @@ export async function bootstrapAuth() {
   });
 }
 
-async function loadProfile(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('user_id, first_name, last_name, role, status')
-    .eq('user_id', userId)
-    .maybeSingle();
-
+async function loadProfile(_userId: string) {
+  // Use the SECURITY DEFINER RPC so we can read the owner's `role` field
+  // even though SELECT(role) is revoked from authenticated.
+  const { data, error } = await supabase.rpc('get_my_profile');
   if (error || !data) {
     useAuthStore.getState().setProfile(null);
     return;
   }
-
+  const row = data as {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    role: 'player' | 'admin';
+    status: string | null;
+  };
   useAuthStore.getState().setProfile({
-    userId: data.user_id,
-    firstName: data.first_name,
-    lastName: data.last_name,
-    role: data.role,
-    onboardingComplete: data.status !== null && data.first_name?.length > 0,
+    userId: row.user_id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    role: row.role,
+    onboardingComplete: row.status !== null && row.first_name?.length > 0,
   });
 }
