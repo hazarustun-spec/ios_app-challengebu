@@ -72,6 +72,38 @@ begin
   end if;
   raise notice 'PASS: match_category enum has 7 values';
 
+  -- Privacy: authenticated must NOT have SELECT on sensitive profile columns
+  declare
+    leak_count int;
+  begin
+    select count(*) into leak_count
+    from information_schema.column_privileges
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and grantee = 'authenticated'
+      and privilege_type = 'SELECT'
+      and column_name in ('phone', 'email', 'role');
+    if leak_count > 0 then
+      raise exception 'Privacy regression: authenticated has SELECT on % sensitive profile column(s)', leak_count;
+    end if;
+    raise notice 'PASS: authenticated cannot SELECT phone/email/role on profiles';
+  end;
+
+  -- Privacy: public_profiles view exists and does NOT expose sensitive columns
+  if not exists (
+    select 1 from pg_views where schemaname = 'public' and viewname = 'public_profiles'
+  ) then
+    raise exception 'public_profiles view not found';
+  end if;
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'public_profiles'
+      and column_name in ('phone', 'email', 'role')
+  ) then
+    raise exception 'public_profiles view leaks a sensitive column';
+  end if;
+  raise notice 'PASS: public_profiles view exists and exposes only safe columns';
+
   raise notice 'ALL VERIFICATIONS PASSED';
 end;
 $$ language plpgsql;

@@ -22,8 +22,12 @@ export function useOtherPlayerProfile(userId: string | undefined) {
     queryKey: userId ? queryKeys.players.detail(userId) : ['players', 'detail', ''],
     queryFn: async () => {
       if (!userId) return null;
+      // Reads via the public_profiles view so the privacy boundary is
+      // explicit in code, not implicit through column grants. The view
+      // never exposes phone/email/role even if a future migration
+      // accidentally regrants them on the base table.
       const { data, error } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select(`
           user_id, first_name, last_name, pronoun, pronoun_custom,
           gender_category, avatar_url, status,
