@@ -12,6 +12,7 @@ import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useUserBadges } from '../../hooks/use-my-badges';
 import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
+import { usePastChampion } from '../../hooks/use-past-champion';
 import { useMyProfile } from '../../hooks/use-profile';
 import { HeadToHeadSummary } from '../../components/profile/HeadToHeadSummary';
 
@@ -22,6 +23,7 @@ export default function OtherPlayerProfileScreen() {
   const { data: myProfile } = useMyProfile();
   const rankings = useUserRankings(userId);
   const badges = useUserBadges(userId);
+  const pastChampion = usePastChampion(userId);
 
   if (isLoading || !profile || !userId) {
     return (
@@ -63,6 +65,7 @@ export default function OtherPlayerProfileScreen() {
         pinned={pinned}
         editable={false}
         belowName={belowName}
+        pastChampion={pastChampion.data ?? null}
       />
 
       {myProfile && myProfile.user_id !== userId && (

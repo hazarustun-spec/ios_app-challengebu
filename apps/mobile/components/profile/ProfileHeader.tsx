@@ -2,6 +2,8 @@ import { Image, Pressable, Text, View } from 'react-native';
 import type { PinnedBadgeView } from './PinnedBadges';
 import { LevelBadge } from './LevelBadge';
 import { PinnedBadges } from './PinnedBadges';
+import { PastChampionPill } from '../seasons/PastChampionPill';
+import type { PastChampion } from '../../hooks/use-past-champion';
 
 interface Props {
   firstName: string;
@@ -15,6 +17,7 @@ interface Props {
   onPinnedEditPress?: () => void;
   onEditProfilePress?: () => void;
   belowName?: string | null;
+  pastChampion?: PastChampion | null;
 }
 
 export function ProfileHeader(props: Props) {
@@ -42,6 +45,7 @@ export function ProfileHeader(props: Props) {
       {props.belowName && (
         <Text className="mt-1 text-sm text-gray-500">{props.belowName}</Text>
       )}
+      {props.pastChampion && <PastChampionPill champion={props.pastChampion} />}
       <View className="mt-2">
         <LevelBadge highestElo={props.highestElo} />
       </View>

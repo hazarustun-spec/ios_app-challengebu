@@ -9,6 +9,7 @@ import { ProfileTabs, type ProfileTabKey } from '../../components/profile/Profil
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { useUserRankings } from '../../hooks/use-my-rankings';
+import { usePastChampion } from '../../hooks/use-past-champion';
 import { useMyProfile } from '../../hooks/use-profile';
 import { useUploadAvatar } from '../../hooks/use-upload-avatar';
 import { useAuthStore } from '../../stores/auth-store';
@@ -20,6 +21,7 @@ export default function ProfileScreen() {
   const { data: p, isLoading } = useMyProfile();
   const rankings = useUserRankings(userId);
   const myBadges = useMyBadges();
+  const pastChampion = usePastChampion(userId);
   const uploadAvatar = useUploadAvatar();
 
   const onAvatarPress = async () => {
@@ -71,6 +73,7 @@ export default function ProfileScreen() {
         onPinnedEditPress={() => setPinOpen(true)}
         onEditProfilePress={() => router.push('/profile/edit')}
         belowName={belowName}
+        pastChampion={pastChampion.data ?? null}
       />
       <ProfileTabs active={tab} onChange={setTab} available={['rankings', 'stats', 'badges', 'elo', 'matches']} />
       <TabContent tabKey={tab} myUserId={userId} />
