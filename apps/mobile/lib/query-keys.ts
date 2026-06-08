@@ -55,6 +55,25 @@ export const queryKeys = {
     list: (filters?: { gender?: string }) => [...queryKeys.players.all, 'list', filters] as const,
     detail: (userId: string) => [...queryKeys.players.all, 'detail', userId] as const,
   },
+  seasons: {
+    all: ['seasons'] as const,
+    current: () => [...queryKeys.seasons.all, 'current'] as const,
+    boundaries: () => [...queryKeys.seasons.all, 'boundaries'] as const,
+    finaleStatus: () => [...queryKeys.seasons.all, 'finale-status'] as const,
+  },
+  tournaments: {
+    all: ['tournaments'] as const,
+    bracket: (tournamentId: string) =>
+      [...queryKeys.tournaments.all, 'bracket', tournamentId] as const,
+    bySeason: (seasonId: string) =>
+      [...queryKeys.tournaments.all, 'by-season', seasonId] as const,
+  },
+  yearly: {
+    all: ['yearly'] as const,
+    standings: (year: number) => [...queryKeys.yearly.all, 'standings', year] as const,
+    pastChampion: (userId: string) =>
+      [...queryKeys.yearly.all, 'past-champion', userId] as const,
+  },
   courts: ['courts'] as const,
   departments: ['departments'] as const,
   profile: (userId: string) => ['profile', userId] as const,
