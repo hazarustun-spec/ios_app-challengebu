@@ -1,5 +1,15 @@
 export type SeasonName = 'guz' | 'bahar' | 'yaz';
 
+const SEASON_DISPLAY: Record<SeasonName, string> = {
+  guz: 'Güz',
+  bahar: 'Bahar',
+  yaz: 'Yaz',
+};
+
+export function seasonDisplayName(name: SeasonName): string {
+  return SEASON_DISPLAY[name];
+}
+
 export interface SeasonWindow {
   name: SeasonName;
   year: number;

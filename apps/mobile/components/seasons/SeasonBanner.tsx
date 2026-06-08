@@ -1,16 +1,11 @@
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
+import { seasonDisplayName } from '@tennis/shared';
 import { supabase } from '../../lib/supabase';
 import { useEffect, useState } from 'react';
 import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { useMyRankings } from '../../hooks/use-my-rankings';
-
-const SEASON_LABEL: Record<string, string> = {
-  guz: 'Güz',
-  bahar: 'Bahar',
-  yaz: 'Yaz',
-};
 
 export function SeasonBanner() {
   const season = useCurrentSeason();
@@ -41,7 +36,7 @@ export function SeasonBanner() {
   const status = finaleStatus.data;
   if (!status || status === 'inactive') return null;
 
-  const label = `${SEASON_LABEL[season.data.name] ?? season.data.name} ${season.data.year}`;
+  const label = `${seasonDisplayName(season.data.name)} ${season.data.year}`;
   const top8 = computeTop8Status(rankings.data ?? []);
 
   if (status === 'announced') {

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { type SeasonName, seasonDisplayName } from '@tennis/shared';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
 
@@ -32,16 +33,10 @@ interface MatchRow {
 }
 
 interface SeasonRow {
-  name: string;
+  name: SeasonName;
   year: number;
   starts_at: string;
 }
-
-const SEASON_LABEL: Record<string, string> = {
-  guz: 'Güz',
-  bahar: 'Bahar',
-  yaz: 'Yaz',
-};
 
 export function useEloHistory(userId: string | undefined) {
   return useQuery<EloHistoryResult>({
@@ -81,14 +76,16 @@ export function useEloHistory(userId: string | undefined) {
       let seasonBoundaries: SeasonBoundary[] = [];
       if (rows.length > 0) {
         const earliest = rows[0].played_at;
+        const latest = rows[rows.length - 1].played_at;
         const { data: seasons } = await supabase
           .from('seasons')
           .select('name, year, starts_at')
           .gte('starts_at', earliest)
+          .lte('starts_at', latest)
           .order('starts_at', { ascending: true });
         seasonBoundaries = ((seasons ?? []) as SeasonRow[]).map((s) => ({
           timestamp: s.starts_at,
-          label: `${SEASON_LABEL[s.name] ?? s.name} ${s.year} başladı`,
+          label: `${seasonDisplayName(s.name)} ${s.year} başladı`,
         }));
       }
 
