@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
 
+const DOUBLES_CATEGORIES = ['erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift'];
+
 export interface BracketSlot {
   id: string;
   round: number;
@@ -24,7 +26,7 @@ export interface TournamentBracket {
   bracket_size: number;
   status: 'seeded' | 'in_progress' | 'completed';
   slots: BracketSlot[];
-  seedToPlayer: Record<number, { user_id: string; name: string }>;
+  seedToLabel: Record<number, string>;
 }
 
 interface RawBracketSlot {
@@ -42,10 +44,15 @@ interface RawBracketSlot {
   } | null;
 }
 
-interface StandingRow {
+interface SinglesStandingRow {
   rank: number;
-  profile_id: string;
   profile: { first_name: string; last_name: string } | null;
+}
+
+interface DoublesTeamRow {
+  rank: number;
+  player_a: { first_name: string } | null;
+  player_b: { first_name: string } | null;
 }
 
 export function useTournamentBracket(tournamentId: string | undefined) {
@@ -59,7 +66,7 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         .from('tournaments')
         .select('id, season_id, category, bracket_size, status')
         .eq('id', tournamentId)
-        .single();
+        .maybeSingle();
       if (tErr) throw tErr;
       if (!tournament) return null;
 
@@ -74,22 +81,9 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         .order('bracket_position', { ascending: true });
       if (sErr) throw sErr;
 
-      const { data: standings, error: stErr } = await supabase
-        .from('season_standings')
-        .select(`
-          rank, profile_id,
-          profile:profiles!season_standings_profile_id_fkey(first_name, last_name)
-        `)
-        .eq('season_id', tournament.season_id)
-        .eq('category', tournament.category)
-        .lte('rank', tournament.bracket_size);
-      if (stErr) throw stErr;
-
-      const seedToPlayer: Record<number, { user_id: string; name: string }> = {};
-      for (const s of ((standings ?? []) as unknown as StandingRow[])) {
-        const name = s.profile ? `${s.profile.first_name} ${s.profile.last_name}` : '—';
-        seedToPlayer[s.rank] = { user_id: s.profile_id, name };
-      }
+      const seedToLabel = DOUBLES_CATEGORIES.includes(tournament.category)
+        ? await fetchDoublesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size)
+        : await fetchSinglesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
 
       const slots: BracketSlot[] = ((rawSlots ?? []) as unknown as RawBracketSlot[]).map((r) => ({
         id: r.id,
@@ -102,8 +96,8 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         winner_team: r.match?.winner_team ?? null,
         score_team_a: r.match?.score_team_a ?? null,
         score_team_b: r.match?.score_team_b ?? null,
-        player_a_name: r.seed_a !== null ? seedToPlayer[r.seed_a]?.name ?? null : null,
-        player_b_name: r.seed_b !== null ? seedToPlayer[r.seed_b]?.name ?? null : null,
+        player_a_name: r.seed_a !== null ? seedToLabel[r.seed_a] ?? null : null,
+        player_b_name: r.seed_b !== null ? seedToLabel[r.seed_b] ?? null : null,
       }));
 
       return {
@@ -113,9 +107,56 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         bracket_size: tournament.bracket_size,
         status: tournament.status,
         slots,
-        seedToPlayer,
+        seedToLabel,
       };
     },
     enabled: !!tournamentId,
   });
+}
+
+async function fetchSinglesSeedLabels(
+  seasonId: string,
+  category: string,
+  bracketSize: number,
+): Promise<Record<number, string>> {
+  const { data } = await supabase
+    .from('season_standings')
+    .select(`
+      rank,
+      profile:public_profiles!season_standings_profile_id_fkey(first_name, last_name)
+    `)
+    .eq('season_id', seasonId)
+    .eq('category', category)
+    .lte('rank', bracketSize);
+
+  const labels: Record<number, string> = {};
+  for (const s of ((data ?? []) as unknown as SinglesStandingRow[])) {
+    labels[s.rank] = s.profile ? `${s.profile.first_name} ${s.profile.last_name}` : '—';
+  }
+  return labels;
+}
+
+async function fetchDoublesSeedLabels(
+  seasonId: string,
+  category: string,
+  bracketSize: number,
+): Promise<Record<number, string>> {
+  const { data } = await supabase
+    .from('season_doubles_teams')
+    .select(`
+      rank,
+      player_a:public_profiles!season_doubles_teams_player_a_id_fkey(first_name),
+      player_b:public_profiles!season_doubles_teams_player_b_id_fkey(first_name)
+    `)
+    .eq('season_id', seasonId)
+    .eq('category', category)
+    .lte('rank', bracketSize);
+
+  const labels: Record<number, string> = {};
+  for (const t of ((data ?? []) as unknown as DoublesTeamRow[])) {
+    const a = t.player_a?.first_name ?? '?';
+    const b = t.player_b?.first_name ?? '?';
+    labels[t.rank] = `${a} / ${b}`;
+  }
+  return labels;
 }
