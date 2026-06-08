@@ -27,6 +27,7 @@ export default function RootLayout() {
           <Stack.Screen name="play/confirm/[matchId]" options={{ headerShown: true, title: 'Onayla' }} />
           <Stack.Screen name="dispute/[matchId]" options={{ headerShown: true, title: 'İtiraz et' }} />
           <Stack.Screen name="applications/[requestId]" options={{ headerShown: true, title: 'Başvurular' }} />
+          <Stack.Screen name="profile" />
         </Stack>
         <StatusBar style="auto" />
       </QueryClientProvider>
