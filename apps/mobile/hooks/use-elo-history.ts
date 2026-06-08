@@ -6,6 +6,7 @@ export interface EloPoint {
   matchId: string;
   played_at: string;
   elo: number;
+  eloBefore: number;
 }
 
 export type EloHistoryByCategory = Record<string, EloPoint[]>;
@@ -39,17 +40,23 @@ export function useEloHistory(userId: string | undefined) {
         .or(`team_a_player_ids.cs.{${userId}},team_b_player_ids.cs.{${userId}}`)
         .not('rating_after_team_a', 'is', null)
         .not('rating_after_team_b', 'is', null)
-        .order('played_at', { ascending: true })
+        .order('played_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(100);
       if (error) throw error;
 
+      // Fetched newest-first to keep the most recent 100 matches; reverse
+      // before bucketing so each per-category series is oldest→newest.
+      const rows = (((data ?? []) as unknown) as MatchRow[]).slice().reverse();
+
       const result: EloHistoryByCategory = {};
-      for (const m of ((data ?? []) as unknown) as MatchRow[]) {
+      for (const m of rows) {
         const onA = m.team_a_player_ids.includes(userId);
         const eloAfter = onA ? m.rating_after_team_a : m.rating_after_team_b;
-        if (eloAfter === null) continue;
+        const eloBefore = onA ? m.rating_before_team_a : m.rating_before_team_b;
+        if (eloAfter === null || eloBefore === null) continue;
         const list = result[m.category] ?? [];
-        list.push({ matchId: m.id, played_at: m.played_at, elo: eloAfter });
+        list.push({ matchId: m.id, played_at: m.played_at, elo: eloAfter, eloBefore });
         result[m.category] = list;
       }
       return result;

@@ -34,8 +34,8 @@ export function EloHistoryTab({ userId }: Props) {
   const points = data?.[selected] ?? [];
   const peak = points.length > 0 ? Math.max(...points.map((p) => p.elo)) : 0;
   const current = points.length > 0 ? points[points.length - 1].elo : 0;
-  const first = points.length > 0 ? points[0].elo : 0;
-  const trend = current - first;
+  const baseline = points.length > 0 ? points[0].eloBefore : 0;
+  const trend = current - baseline;
   const screenWidth = Dimensions.get('window').width - 48;
 
   return (
