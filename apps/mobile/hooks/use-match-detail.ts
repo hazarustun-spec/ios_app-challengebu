@@ -27,3 +27,18 @@ export function useMatchDetail(id: string | undefined) {
     enabled: !!id,
   });
 }
+
+import { useRealtimeChannel } from './use-realtime-channel';
+
+export function useMatchDetailRealtime(matchId: string | undefined) {
+  useRealtimeChannel({
+    channelName: matchId ? `match:detail:${matchId}` : 'match:detail:none',
+    enabled: !!matchId,
+    configs: [
+      { event: 'UPDATE', table: 'matches', filter: matchId ? `id=eq.${matchId}` : undefined },
+    ],
+    invalidateKeys: matchId
+      ? [queryKeys.activeMatches.detail(matchId), queryKeys.activeMatches.list()]
+      : [],
+  });
+}

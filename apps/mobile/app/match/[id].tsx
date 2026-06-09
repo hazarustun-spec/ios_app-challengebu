@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
-import { useMatchDetail } from '../../hooks/use-match-detail';
+import { useMatchDetail, useMatchDetailRealtime } from '../../hooks/use-match-detail';
 import { useMatchRequestDetail } from '../../hooks/use-match-request-detail';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useAuthStore } from '../../stores/auth-store';
@@ -27,6 +27,7 @@ export default function MatchDetailScreen() {
   const userId = useAuthStore((s) => s.user?.id);
 
   const matchQuery = useMatchDetail(id);
+  useMatchDetailRealtime(id);
   const requestQuery = useMatchRequestDetail(id);
 
   const accept = useAcceptMatchRequest();

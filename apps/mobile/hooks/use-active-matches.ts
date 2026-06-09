@@ -55,3 +55,15 @@ export function useActiveMatches() {
     enabled: !!userId,
   });
 }
+
+import { useRealtimeChannel } from './use-realtime-channel';
+
+export function useActiveMatchesRealtime() {
+  const userId = useAuthStore((s) => s.user?.id);
+  useRealtimeChannel({
+    channelName: userId ? `matches:active:${userId}` : 'matches:active:none',
+    enabled: !!userId,
+    configs: [{ event: 'UPDATE', table: 'matches' }],
+    invalidateKeys: [queryKeys.activeMatches.all],
+  });
+}

@@ -7,7 +7,7 @@ import { RequestCard } from '../../components/matches/RequestCard';
 import { NotificationBell } from '../../components/notifications/NotificationBell';
 import { SeasonBanner } from '../../components/seasons/SeasonBanner';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { useActiveMatches } from '../../hooks/use-active-matches';
+import { useActiveMatches, useActiveMatchesRealtime } from '../../hooks/use-active-matches';
 import {
   useIncomingMatchRequests,
   useOutgoingMatchRequests,
@@ -22,6 +22,7 @@ export default function MatchesScreen() {
   const [tab, setTab] = useState<Tab>('active');
 
   const active = useActiveMatches();
+  useActiveMatchesRealtime();
   const incoming = useIncomingMatchRequests();
   const outgoing = useOutgoingMatchRequests();
 
