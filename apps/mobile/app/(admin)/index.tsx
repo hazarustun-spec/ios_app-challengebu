@@ -27,8 +27,8 @@ export default function AdminHomeScreen() {
         <Button onPress={() => router.push('/(admin)/tournaments')} variant="secondary">
           Finale Bracket Yönetimi
         </Button>
-        <Button onPress={noop} variant="secondary" disabled>
-          Kullanıcı Yönetimi (yakında)
+        <Button onPress={() => router.push('/(admin)/users')} variant="secondary">
+          Kullanıcı Yönetimi
         </Button>
         <Button onPress={noop} variant="secondary" disabled>
           Topluluk Duyurusu (yakında)
