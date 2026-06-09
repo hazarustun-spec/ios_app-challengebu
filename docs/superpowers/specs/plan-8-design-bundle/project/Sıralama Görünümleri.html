@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sıralama — Görünüm Opsiyonları</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style>
+  html, body { margin: 0; height: 100%; }
+</style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#E9F1DC"/>
+    <rect x="22" y="30" width="56" height="9" rx="4.5" fill="#161618"/>
+    <rect x="22" y="46" width="56" height="9" rx="4.5" fill="#8FD43B"/>
+    <rect x="22" y="62" width="56" height="9" rx="4.5" fill="#2F6BFF"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- foundation (same design system as the live prototype) -->
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<!-- live leaderboard screen → used as the "current" reference board -->
+<script type="text/babel" src="app/screens-leaderboard.jsx"></script>
+
+<!-- canvas + alternative view designs -->
+<script type="text/babel" src="app/design-canvas.jsx"></script>
+<script type="text/babel" src="app/lb-views.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, Screen, LBCompact, LBPodium, LBTable, LBCards } = window;
+
+// reference = the real Leaderboard screen, fed a no-op nav so it renders standalone
+const RefBoard = window.SCREENS.leaderboard.comp;
+const fakeNav = { go(){}, replace(){}, back(){}, reset(){}, sheet(){}, closeSheet(){}, modal(){}, closeModal(){}, toast(){} };
+function LBReference() {
+  return (
+    <Screen>
+      <window.AppCtx.Provider value={{ nav: fakeNav, theme: 'light', dark: false }}>
+        <RefBoard params={{}} />
+      </window.AppCtx.Provider>
+    </Screen>
+  );
+}
+
+function Board() {
+  return (
+    <DesignCanvas>
+      <DCSection id="lb" title="Sıralama · Görünüm opsiyonları" subtitle="Düz tasarım — gölgesiz, gradyansız, net renkler ve siyah/beyaz hatlar">
+        <DCArtboard id="compact" label="A · Kompakt liste" width={393} height={852}><LBCompact /></DCArtboard>
+        <DCArtboard id="podium" label="B · Podyum sahnesi" width={393} height={852}><LBPodium /></DCArtboard>
+        <DCArtboard id="table" label="C · Form tablosu" width={393} height={852}><LBTable /></DCArtboard>
+        <DCArtboard id="cards" label="D · Editöryel kartlar" width={393} height={852}><LBCards /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Board />);
+</script>
+</body>
+</html>

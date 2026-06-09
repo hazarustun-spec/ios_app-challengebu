@@ -1,0 +1,175 @@
+/* ============================================================
+   TENNIS CHALLENGER — Design Tokens  (v3 — playful editorial)
+   White base · lime green hero · cobalt blue · hot pink (sparse)
+   Big rounded cards · dark pill nav · outlined pill tags · doodles
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  /* --- Surfaces --- */
+  --bg:            #FFFFFF;
+  --surface:       #FFFFFF;
+  --surface-2:     #F3F3F1;   /* light warm gray */
+  --surface-3:     #E8E8E4;
+  --border:        #1A1A1A;   /* crisp ink hairline (flat outline language) */
+  --border-strong: #1A1A1A;   /* bold ink outline (used intentionally) */
+
+  /* --- Text (near-black ink) --- */
+  --text:        #161618;
+  --text-2:      #65656E;
+  --text-3:      #A2A2AA;
+  --text-on-accent: #FFFFFF;  /* primary = black pill → white text */
+
+  /* --- Primary action = INK (black pill, very on-style) --- */
+  --clay:        #161618;
+  --clay-press:  #000000;
+  --clay-soft:   #EAF6D6;     /* light lime chip */
+  --clay-softer: #F3FAE7;
+  --clay-text:   #5C8C1E;     /* accent text = lime deep */
+
+  /* --- Lime (hero brand fill) --- */
+  --lime:        #8FD43B;
+  --lime-bright: #9BE048;
+  --lime-deep:   #5C8C1E;
+  --lime-soft:   #EAF6D6;
+  --on-lime:     #161618;
+  --shadow-lime: none;
+  --star:        #F5B924;
+
+  /* --- Blue (locked to court blue — single blue across the app) --- */
+  --blue:        var(--court);
+  --blue-deep:   var(--court-2);
+  --blue-soft:   #DCE9F4;
+
+  /* --- Court blue (hero panels — hard-court azure) --- */
+  --court:       #2270BC;
+  --court-2:     #1A5694;
+  --shadow-court: none;
+
+  /* --- Hot pink (sparse accent) --- */
+  --pink:        #F73FBE;
+  --pink-deep:   #C81E92;
+  --pink-soft:   #FFE3F6;
+
+  /* --- Secondary (green semantic) --- */
+  --grass:       #5C8C1E;
+  --grass-press: #4A7217;
+  --grass-soft:  #EAF6D6;
+  --grass-text:  #466C18;
+
+  /* --- Semantic --- */
+  --win:    #5C8C1E;
+  --loss:   #E0463C;
+  --warn:   #E0992B;
+  --warn-soft: #FBEFD6;
+  --info:   var(--court);
+  --frozen: #5E7CB4;
+  --frozen-soft: #E6EDF7;
+
+  /* --- Elevation (flat — no shadows anywhere) --- */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-pop: none;
+  --shadow-navy: none;
+
+  /* --- Level accent colors (text/icon-safe; deep & prestigious on light) --- */
+  --lv-cekirge:  #6F8B47;
+  --lv-caylak:   #5E8B39;
+  --lv-amator:   #2E63B8;
+  --lv-rekabet:  #2742A0;
+  --lv-usta:     #2A3A8E;
+  --lv-elit:     #2B357A;
+  --lv-sampiyon: #B98A1E;
+
+  /* --- Accent palette (badges/formats; text/icon-safe) --- */
+  --ac-gold:   #B98A1E;
+  --ac-green:  #5E8B39;
+  --ac-dgreen: #4C7330;
+  --ac-navy:   #2742A0;
+  --ac-blue:   #2E63B8;
+  --ac-purple: #7A4FA0;
+}
+
+
+/* ---------- Type scale ---------- */
+:root {
+  --font-display: "Bricolage Grotesque", -apple-system, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, system-ui, sans-serif;
+  --font-num:  "Space Grotesk", "Bricolage Grotesque", monospace;
+
+  --r-xs: 10px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-7: 32px; --sp-8: 40px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+.num { font-family: var(--font-num); font-feature-settings: "tnum" 1; letter-spacing: -0.02em; }
+
+.tc-screen {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* buttons don't inherit color by default (system buttontext) — force inheritance
+   so any in-app button without an explicit color follows the theme (fixes dark mode) */
+.tc-screen button { color: inherit; font-family: var(--font-sans); }
+.tc-screen input, .tc-screen textarea { color: inherit; }
+
+.tc-screen h1, .tc-screen h2, .tc-screen h3, .tc-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ---------- Animations ---------- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes popIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+@keyframes spinAround { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes floaty { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-7px) rotate(3deg); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+
+/* ---------- Live match ---------- */
+@keyframes scorePop { 0% { transform: scale(.45); opacity: .2; } 55% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes ballSpin { to { transform: rotate(360deg); } }
+@keyframes ringPing { 0% { transform: scale(.7); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes gameFlash { 0% { opacity: 0; transform: scale(.8); } 18% { opacity: 1; transform: scale(1); } 78% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.05); } }
+@keyframes pipFill { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes btnPress { 0% { transform: scale(1); } 40% { transform: scale(.95); } 100% { transform: scale(1); } }
+@keyframes serveBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+.tc-skel {
+  background: var(--surface-2); animation: pulse 1.4s infinite ease-in-out;
+}
+.tc-spin { animation: spinAround .9s linear infinite; }
+
+/* ---------- External chrome (outside the phone) ---------- */
+body { margin: 0; background: #EDEDEA; font-family: var(--font-sans); }
+.ext-btn {
+  display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px;
+  border-radius: 11px; border: none; cursor: pointer; font-family: var(--font-sans);
+  font-weight: 700; font-size: 13.5px; background: #161618; color: #fff; white-space: nowrap;
+}
+.ext-btn.ghost { background: #fff; color: #161618; border: 1px solid #D8D8D2; }
+.ext-pill {
+  height: 38px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 11px;
+  background: #fff; border: 1px solid #D8D8D2; font-weight: 700; font-size: 13px; color: #65656E;
+  max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.scroll-x { -webkit-overflow-scrolling: touch; }

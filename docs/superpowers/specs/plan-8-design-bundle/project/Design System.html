@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style>
+  body { margin: 0; background: #EDEDEA; font-family: var(--font-sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  /* masthead */
+  .mast { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
+  .mast h1 { font-family: var(--font-display); font-weight: 800; font-size: 44px; letter-spacing: -.03em; margin: 0; line-height: 1; white-space: nowrap; }
+  .mast .v { font-family: var(--font-num); font-weight: 700; font-size: 13px; color: var(--text-2); border: 1.5px solid var(--border-strong); border-radius: var(--r-pill); padding: 7px 14px; white-space: nowrap; }
+  .lede { font-size: 16px; color: var(--text-2); max-width: 760px; line-height: 1.55; margin: 0 0 14px; }
+  .principles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 48px; }
+  .principles span { font-size: 12.5px; font-weight: 700; color: var(--text-2); background: var(--surface); border: 1.5px solid var(--border-strong); border-radius: var(--r-pill); padding: 7px 14px; white-space: nowrap; }
+
+  /* section */
+  section { margin-bottom: 56px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border-strong); }
+  .sec-head .no { font-family: var(--font-num); font-weight: 700; font-size: 14px; color: #fff; background: var(--text); border-radius: var(--r-sm); padding: 4px 10px; }
+  .sec-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 25px; letter-spacing: -.02em; margin: 0; white-space: nowrap; }
+  .sec-head p { margin: 0 0 0 auto; font-size: 13.5px; color: var(--text-3); font-weight: 600; }
+
+  .grid { display: grid; gap: 14px; }
+  .g-sw { grid-template-columns: repeat(4, 1fr); }
+  .sub { font-size: 12px; font-weight: 800; letter-spacing: .1em; color: var(--text-3); text-transform: uppercase; margin: 22px 0 12px; }
+
+  /* swatch card */
+  .sw { border: 1.5px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+  .sw .chip { height: 76px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 8px; }
+  .sw .meta { padding: 11px 13px 13px; border-top: 1.5px solid var(--border-strong); }
+  .sw .tok { font-family: var(--font-num); font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sw .hex { font-family: var(--font-num); font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .sw .use { font-size: 11.5px; color: var(--text-3); font-weight: 600; margin-top: 6px; line-height: 1.35; }
+  .sw .onchip { font-size: 10px; font-weight: 800; letter-spacing: .06em; padding: 3px 7px; border-radius: var(--r-pill); }
+
+  /* type */
+  .type-row { display: grid; grid-template-columns: 150px 1fr; gap: 20px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--surface-3); }
+  .type-row:last-child { border-bottom: none; }
+  .type-spec { font-family: var(--font-num); font-size: 12px; color: var(--text-2); line-height: 1.5; }
+  .type-spec b { color: var(--text); font-weight: 700; }
+  .type-name { font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--text-3); text-transform: uppercase; margin-bottom: 5px; }
+
+  /* spacing */
+  .sp-row { display: flex; align-items: center; gap: 16px; padding: 8px 0; }
+  .sp-bar { background: var(--lime); border: 1.5px solid var(--border-strong); height: 20px; border-radius: 4px; }
+  .sp-lab { font-family: var(--font-num); font-weight: 700; font-size: 13px; width: 96px; }
+  .sp-tok { font-family: var(--font-num); font-size: 12px; color: var(--text-3); }
+
+  /* radius */
+  .rad-grid { display: flex; flex-wrap: wrap; gap: 18px; }
+  .rad { text-align: center; }
+  .rad .box { width: 84px; height: 84px; background: var(--court); border: 1.5px solid var(--border-strong); }
+  .rad .lab { font-family: var(--font-num); font-weight: 700; font-size: 13px; margin-top: 9px; }
+  .rad .px { font-family: var(--font-num); font-size: 11.5px; color: var(--text-3); }
+
+  /* cards/notes */
+  .note { border: 1.5px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface); padding: 18px 20px; }
+  .note h4 { margin: 0 0 7px; font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+  .note p { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* outline demo */
+  .ol-demo { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .ol { border-radius: var(--r-md); padding: 16px 18px; font-weight: 700; font-size: 13.5px; }
+
+  /* motion */
+  .mo { border: 1.5px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface); padding: 15px 16px; }
+  .mo .k { font-family: var(--font-num); font-weight: 700; font-size: 13.5px; }
+  .mo .c { font-family: var(--font-num); font-size: 11.5px; color: var(--text-2); margin-top: 3px; }
+  .mo .d { font-size: 12px; color: var(--text-3); font-weight: 600; margin-top: 7px; line-height: 1.4; }
+  .mo-ball { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); border: 1.5px solid var(--border-strong); margin-top: 12px; animation: demoBounce 2.4s infinite; }
+  @keyframes demoBounce { 0%,100% { transform: translateX(0); } 50% { transform: translateX(180px); } }
+</style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#fff"/>
+    <circle cx="30" cy="34" r="13" fill="#8FD43B" stroke="#161618" stroke-width="2.5"/>
+    <rect x="52" y="24" width="28" height="20" rx="5" fill="#2270BC" stroke="#161618" stroke-width="2.5"/>
+    <rect x="20" y="58" width="60" height="9" rx="4.5" fill="#161618"/>
+    <rect x="20" y="72" width="40" height="9" rx="4.5" fill="#F73FBE"/>
+  </svg>
+</template>
+</head>
+<body>
+<div class="page">
+
+  <div class="mast">
+    <h1>Tennis Challenger</h1>
+    <span class="v">Design System · v3</span>
+  </div>
+  <p class="lede">Boğaziçi Üniversitesi tenis topluluğu için ELO + sezon ladder uygulamasının tasarım dili. Beyaz zemin, ink (siyah) birincil aksiyon, lime marka dolgusu, kort mavisi rekabet panelleri, seyrek hot-pink vurgu. Büyük yuvarlak kartlar, net hatlar, Space&nbsp;Grotesk rakamlar.</p>
+  <div class="principles">
+    <span>Beyaz zemin</span><span>Ink birincil aksiyon</span><span>Lime marka</span><span>Kort mavisi · rekabet</span><span>Hot pink · seyrek</span><span>Büyük yuvarlak kartlar</span><span>Net hatlar — gölge yok</span><span>Outline pill etiketler</span><span>Yalnızca açık tema</span>
+  </div>
+
+  <!-- ============ COLORS ============ -->
+  <section>
+    <div class="sec-head"><span class="no">01</span><h2>Renk Paleti</h2><p>token · hex · kullanım</p></div>
+
+    <div class="sub">Zemin & Ink</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#FFFFFF;border-bottom:1.5px solid var(--border-strong)"></div><div class="meta"><div class="tok">--bg / --surface</div><div class="hex">#FFFFFF</div><div class="use">Sayfa & kart zemini</div></div></div>
+      <div class="sw"><div class="chip" style="background:#F3F3F1"></div><div class="meta"><div class="tok">--surface-2</div><div class="hex">#F3F3F1</div><div class="use">İkincil yüzey, chip zemini</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E8E8E4"></div><div class="meta"><div class="tok">--surface-3</div><div class="hex">#E8E8E4</div><div class="use">Skeleton, izleme çubuğu</div></div></div>
+      <div class="sw"><div class="chip" style="background:#1A1A1A"><span class="onchip" style="background:#fff;color:#161618">hat</span></div><div class="meta"><div class="tok">--border-strong</div><div class="hex">#1A1A1A</div><div class="use">Tüm net hatlar (1.5px)</div></div></div>
+      <div class="sw"><div class="chip" style="background:#161618"><span class="onchip" style="background:#fff;color:#161618">Aa</span></div><div class="meta"><div class="tok">--text</div><div class="hex">#161618</div><div class="use">Birincil metin (ink)</div></div></div>
+      <div class="sw"><div class="chip" style="background:#65656E"><span class="onchip" style="background:#fff;color:#65656E">Aa</span></div><div class="meta"><div class="tok">--text-2</div><div class="hex">#65656E</div><div class="use">İkincil metin</div></div></div>
+      <div class="sw"><div class="chip" style="background:#A2A2AA"><span class="onchip" style="background:#fff;color:#A2A2AA">Aa</span></div><div class="meta"><div class="tok">--text-3</div><div class="hex">#A2A2AA</div><div class="use">Soluk / yardımcı metin</div></div></div>
+      <div class="sw"><div class="chip" style="background:#161618"><span class="onchip" style="background:#161618;color:#fff;border:1.5px solid #fff">CTA</span></div><div class="meta"><div class="tok">--clay / --clay-press</div><div class="hex">#161618 → #000</div><div class="use">Birincil buton (ink pill)</div></div></div>
+    </div>
+
+    <div class="sub">Lime — marka dolgusu</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#8FD43B"><span class="onchip" style="background:#161618;color:#fff">on</span></div><div class="meta"><div class="tok">--lime</div><div class="hex">#8FD43B</div><div class="use">Hero marka dolgusu, nav aktif</div></div></div>
+      <div class="sw"><div class="chip" style="background:#9BE048"></div><div class="meta"><div class="tok">--lime-bright</div><div class="hex">#9BE048</div><div class="use">Parlak vurgu</div></div></div>
+      <div class="sw"><div class="chip" style="background:#5C8C1E"><span class="onchip" style="background:#fff;color:#5C8C1E">Aa</span></div><div class="meta"><div class="tok">--lime-deep / --clay-text</div><div class="hex">#5C8C1E</div><div class="use">Lime üstü metin, galibiyet</div></div></div>
+      <div class="sw"><div class="chip" style="background:#EAF6D6"></div><div class="meta"><div class="tok">--lime-soft / --clay-soft</div><div class="hex">#EAF6D6</div><div class="use">Lime yumuşak chip zemini</div></div></div>
+    </div>
+
+    <div class="sub">Kort mavisi — rekabet panelleri</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#2270BC"><span class="onchip" style="background:#fff;color:#2270BC">on</span></div><div class="meta"><div class="tok">--court / --blue</div><div class="hex">#2270BC</div><div class="use">Hero paneller, sıralama, ranked</div></div></div>
+      <div class="sw"><div class="chip" style="background:#1A5694"><span class="onchip" style="background:#fff;color:#1A5694">on</span></div><div class="meta"><div class="tok">--court-2 / --blue-deep</div><div class="hex">#1A5694</div><div class="use">Koyu kort tonu</div></div></div>
+      <div class="sw"><div class="chip" style="background:#DCE9F4"></div><div class="meta"><div class="tok">--blue-soft</div><div class="hex">#DCE9F4</div><div class="use">Mavi yumuşak zemin</div></div></div>
+      <div class="sw"><div class="chip" style="background:#5E7CB4"><span class="onchip" style="background:#fff;color:#5E7CB4">❄</span></div><div class="meta"><div class="tok">--frozen</div><div class="hex">#5E7CB4</div><div class="use">Donmuş / inaktif oyuncu</div></div></div>
+    </div>
+
+    <div class="sub">Hot pink — seyrek vurgu & sosyal</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#F73FBE"><span class="onchip" style="background:#fff;color:#C81E92">on</span></div><div class="meta"><div class="tok">--pink</div><div class="hex">#F73FBE</div><div class="use">Dostluk maçı, dikkat rozeti</div></div></div>
+      <div class="sw"><div class="chip" style="background:#C81E92"><span class="onchip" style="background:#fff;color:#C81E92">on</span></div><div class="meta"><div class="tok">--pink-deep</div><div class="hex">#C81E92</div><div class="use">Pembe üstü metin, badge sayaç</div></div></div>
+      <div class="sw"><div class="chip" style="background:#FFE3F6"></div><div class="meta"><div class="tok">--pink-soft</div><div class="hex">#FFE3F6</div><div class="use">Pembe yumuşak zemin</div></div></div>
+      <div class="sw"><div class="chip" style="background:#F5B924"></div><div class="meta"><div class="tok">--star</div><div class="hex">#F5B924</div><div class="use">Yıldız / öne çıkan</div></div></div>
+    </div>
+
+    <div class="sub">Semantik</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#5C8C1E"><span class="onchip" style="background:#fff;color:#5C8C1E">W</span></div><div class="meta"><div class="tok">--win</div><div class="hex">#5C8C1E</div><div class="use">Galibiyet, pozitif trend</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E0463C"><span class="onchip" style="background:#fff;color:#E0463C">L</span></div><div class="meta"><div class="tok">--loss</div><div class="hex">#E0463C</div><div class="use">Mağlubiyet, negatif, sil</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E0992B"><span class="onchip" style="background:#fff;color:#E0992B">!</span></div><div class="meta"><div class="tok">--warn</div><div class="hex">#E0992B</div><div class="use">Uyarı, senkron bekleyen</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2270BC"><span class="onchip" style="background:#fff;color:#2270BC">i</span></div><div class="meta"><div class="tok">--info</div><div class="hex">#2270BC (court)</div><div class="use">Bilgi (kort mavisi)</div></div></div>
+    </div>
+
+    <div class="sub">Seviye renkleri — Çekirge → Şampiyon</div>
+    <div class="grid g-sw">
+      <div class="sw"><div class="chip" style="background:#5E8B39"></div><div class="meta"><div class="tok">--lv-caylak</div><div class="hex">#5E8B39</div><div class="use">Çaylak</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2E63B8"></div><div class="meta"><div class="tok">--lv-amator</div><div class="hex">#2E63B8</div><div class="use">Amatör</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2A3A8E"></div><div class="meta"><div class="tok">--lv-usta</div><div class="hex">#2A3A8E</div><div class="use">Usta</div></div></div>
+      <div class="sw"><div class="chip" style="background:#B98A1E"></div><div class="meta"><div class="tok">--lv-sampiyon / --ac-gold</div><div class="hex">#B98A1E</div><div class="use">Şampiyon, madalya, rozet</div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ TYPOGRAPHY ============ -->
+  <section>
+    <div class="sec-head"><span class="no">02</span><h2>Tipografi</h2><p>Bricolage Grotesque · Plus Jakarta Sans · Space Grotesk</p></div>
+
+    <div class="type-row">
+      <div><div class="type-name">Display</div><div class="type-spec"><b>Bricolage</b> 800<br>46 / 0.95 · -.03em</div></div>
+      <div style="font-family:var(--font-display);font-weight:800;font-size:46px;letter-spacing:-.03em;line-height:.95">Sezon başladı</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">H1</div><div class="type-spec"><b>Bricolage</b> 800<br>27 / 1.05 · -.02em</div></div>
+      <div style="font-family:var(--font-display);font-weight:800;font-size:27px;letter-spacing:-.02em">Sıralama Maçı</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">H2 · başlık</div><div class="type-spec"><b>Bricolage</b> 800<br>21 / 1.1 · -.02em</div></div>
+      <div style="font-family:var(--font-display);font-weight:800;font-size:21px;letter-spacing:-.02em">Kaan Demir</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">H3 · kart başlığı</div><div class="type-spec"><b>Jakarta</b> 800<br>18 / 1.2 · -.01em</div></div>
+      <div style="font-weight:800;font-size:18px;letter-spacing:-.01em">Yaklaşan maçlar</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">Body LG</div><div class="type-spec"><b>Jakarta</b> 700<br>15.5 / 1.4</div></div>
+      <div style="font-weight:700;font-size:15.5px">Berk Aydın ile maçın yarın 18:00’de.</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">Body</div><div class="type-spec"><b>Jakarta</b> 500<br>14 / 1.5</div></div>
+      <div style="font-weight:500;font-size:14px;color:var(--text-2)">ELO’nu etkiler, sıralamada yükselmeni sağlar. Format kuralları zorunludur.</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">Caption</div><div class="type-spec"><b>Jakarta</b> 600<br>12.5 / 1.4</div></div>
+      <div style="font-weight:600;font-size:12.5px;color:var(--text-3)">Kandilli Tenis Kortu · 41 gün kaldı</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">Label / overline</div><div class="type-spec"><b>Jakarta</b> 800<br>11 · .1em · UPPER</div></div>
+      <div style="font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Sezon Podyumu</div>
+    </div>
+    <div class="type-row">
+      <div><div class="type-name">Numerals (.num)</div><div class="type-spec"><b>Space Grotesk</b> 800<br>tnum · -.02em</div></div>
+      <div class="num" style="font-weight:800;font-size:42px">1612 · 4–2 · +22</div>
+    </div>
+  </section>
+
+  <!-- ============ SPACING ============ -->
+  <section>
+    <div class="sec-head"><span class="no">03</span><h2>Spacing</h2><p>4 tabanlı ölçek</p></div>
+    <div>
+      <div class="sp-row"><span class="sp-lab">4px</span><span class="sp-tok">--sp-1</span><div class="sp-bar" style="width:4px"></div></div>
+      <div class="sp-row"><span class="sp-lab">8px</span><span class="sp-tok">--sp-2</span><div class="sp-bar" style="width:8px"></div></div>
+      <div class="sp-row"><span class="sp-lab">12px</span><span class="sp-tok">--sp-3</span><div class="sp-bar" style="width:12px"></div></div>
+      <div class="sp-row"><span class="sp-lab">16px</span><span class="sp-tok">--sp-4</span><div class="sp-bar" style="width:16px"></div></div>
+      <div class="sp-row"><span class="sp-lab">20px</span><span class="sp-tok">--sp-5</span><div class="sp-bar" style="width:20px"></div></div>
+      <div class="sp-row"><span class="sp-lab">24px</span><span class="sp-tok">--sp-6</span><div class="sp-bar" style="width:24px"></div></div>
+      <div class="sp-row"><span class="sp-lab">32px</span><span class="sp-tok">--sp-7</span><div class="sp-bar" style="width:32px"></div></div>
+      <div class="sp-row"><span class="sp-lab">40px</span><span class="sp-tok">--sp-8</span><div class="sp-bar" style="width:40px"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ RADIUS ============ -->
+  <section>
+    <div class="sec-head"><span class="no">04</span><h2>Border Radius</h2><p>yumuşak, cömert köşeler</p></div>
+    <div class="rad-grid">
+      <div class="rad"><div class="box" style="border-radius:10px"></div><div class="lab">--r-xs</div><div class="px">10px</div></div>
+      <div class="rad"><div class="box" style="border-radius:14px"></div><div class="lab">--r-sm</div><div class="px">14px</div></div>
+      <div class="rad"><div class="box" style="border-radius:18px"></div><div class="lab">--r-md</div><div class="px">18px</div></div>
+      <div class="rad"><div class="box" style="border-radius:26px"></div><div class="lab">--r-lg</div><div class="px">26px</div></div>
+      <div class="rad"><div class="box" style="border-radius:34px"></div><div class="lab">--r-xl</div><div class="px">34px</div></div>
+      <div class="rad"><div class="box" style="border-radius:999px"></div><div class="lab">--r-pill</div><div class="px">999px</div></div>
+    </div>
+  </section>
+
+  <!-- ============ ELEVATION ============ -->
+  <section>
+    <div class="sec-head"><span class="no">05</span><h2>Elevation</h2><p>düz dil — gölge yerine hat</p></div>
+    <div class="two">
+      <div class="note">
+        <h4>Gölge yok — hepsi <span class="num">none</span></h4>
+        <p>Sistem bilinçli olarak düz. <span class="num">--shadow-sm/md/lg/pop/navy</span> token’larının tümü <b>none</b>. Derinlik gölgeyle değil, <b>1.5px ink hat</b> ve renk kontrastıyla kurulur. Koyu panellerde (kort mavisi) hatlar yarı-saydam beyaza döner.</p>
+      </div>
+      <div class="note">
+        <h4>Outline dili</h4>
+        <div class="ol-demo" style="margin-top:12px">
+          <div class="ol" style="background:var(--surface);border:1.5px solid var(--border-strong)">Kart</div>
+          <div class="ol" style="background:var(--lime);border:1.5px solid var(--border-strong);color:var(--on-lime)">Lime</div>
+          <div class="ol" style="background:var(--court);border:1.5px solid var(--border-strong);color:#fff">Kort</div>
+          <div class="ol" style="background:var(--surface);border:1.5px solid var(--border-strong);border-radius:var(--r-pill)">Pill etiket</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MOTION ============ -->
+  <section>
+    <div class="sec-head"><span class="no">06</span><h2>Motion</h2><p>kıvrak, oyunsu ama ölçülü</p></div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="mo"><div class="k">popIn</div><div class="c">cubic-bezier(.2,.9,.3,1.1)</div><div class="d">Modal & rozet — hafif overshoot ile beliriş</div></div>
+      <div class="mo"><div class="k">slideUp</div><div class="c">cubic-bezier(.2,.8,.2,1)</div><div class="d">Bottom sheet, liste girişleri</div></div>
+      <div class="mo"><div class="k">scorePop</div><div class="c">scale .45→1.18→1</div><div class="d">Skor rakamı her sayıda zıplar</div></div>
+      <div class="mo"><div class="k">ball (canlı maç)</div><div class="c">cubic-bezier(.34,1.4,.5,1)</div><div class="d">Top yay çizerek korta düşer<div class="mo-ball"></div></div></div>
+      <div class="mo"><div class="k">pulse / serveBlink</div><div class="c">1.4s infinite</div><div class="d">Canlı senkron noktası, servis göstergesi</div></div>
+      <div class="mo"><div class="k">pipFill</div><div class="c">scale 0→1.25→1</div><div class="d">Oyun kazanılınca pip dolumu</div></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

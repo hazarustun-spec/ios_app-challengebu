@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style>
+  body { margin: 0; background: #EDEDEA; font-family: var(--font-sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 56px 40px 96px; }
+  .mast { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 12px; }
+  .mast h1 { font-family: var(--font-display); font-weight: 800; font-size: 44px; letter-spacing: -.03em; margin: 0; line-height: 1; white-space: nowrap; }
+  .mast .v { font-family: var(--font-num); font-weight: 700; font-size: 13px; color: var(--text-2); border: 1.5px solid var(--border-strong); border-radius: var(--r-pill); padding: 7px 14px; white-space: nowrap; }
+  .lede { font-size: 16px; color: var(--text-2); max-width: 760px; line-height: 1.55; margin: 0 0 48px; }
+
+  section { margin-bottom: 52px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border-strong); }
+  .sec-head .no { font-family: var(--font-num); font-weight: 700; font-size: 14px; color: #fff; background: var(--text); border-radius: var(--r-sm); padding: 4px 10px; }
+  .sec-head h2 { font-family: var(--font-display); font-weight: 800; font-size: 25px; letter-spacing: -.02em; margin: 0; white-space: nowrap; }
+  .sec-head p { margin: 0 0 0 auto; font-size: 13.5px; color: var(--text-3); font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .card { background: var(--surface); border: 1.5px solid var(--border-strong); border-radius: var(--r-md); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .card.muted { background: #FAFAF8; }
+  .lab { font-size: 11px; font-weight: 800; letter-spacing: .09em; color: var(--text-3); text-transform: uppercase; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .span5 { grid-column: span 5; }
+  .span6 { grid-column: span 6; } .span7 { grid-column: span 7; } .span8 { grid-column: span 8; } .span12 { grid-column: span 12; }
+  .divh { font-size: 12px; font-weight: 700; color: var(--text-3); }
+
+  /* mini phone surface for overlay components */
+  .surface { position: relative; width: 100%; height: 300px; background: var(--bg); border: 1.5px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; }
+  .surface.tall { height: 420px; }
+</style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#fff"/>
+    <rect x="18" y="22" width="30" height="16" rx="8" fill="#8FD43B" stroke="#161618" stroke-width="2.5"/>
+    <rect x="54" y="22" width="30" height="16" rx="8" fill="#161618"/>
+    <rect x="18" y="48" width="64" height="13" rx="6.5" fill="#fff" stroke="#161618" stroke-width="2.5"/>
+    <circle cx="27" cy="74" r="8" fill="#2270BC" stroke="#161618" stroke-width="2.5"/>
+    <rect x="42" y="68" width="40" height="12" rx="6" fill="#F73FBE"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+const { Icon, Avatar, NameLine, Button, Card, Chip, Segmented, Toggle, CheckBox, Field, SearchBar,
+  ListRow, Modal, Sheet, Progress, LevelIcon, FormatChip, Sparkline, FormDots, InfoChip,
+  TabBar, levelForElo, eloTrend, ME } = window;
+
+function GCard({ label, span = 4, muted, children }) {
+  return <div className={`card span${span} ${muted ? 'muted' : ''}`}><div className="lab">{label}</div>{children}</div>;
+}
+function Sec({ no, title, note, children }) {
+  return <section><div className="sec-head"><span className="no">{no}</span><h2>{title}</h2>{note && <p>{note}</p>}</div><div className="grid">{children}</div></section>;
+}
+
+// ---- composed documentation atoms (same tokens/components as the app) ----
+function EloChip({ elo, delta }) {
+  const up = delta >= 0;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-pill)', padding: '5px 12px 5px 13px', background: 'var(--surface)' }}>
+      <span className="num" style={{ fontWeight: 800, fontSize: 16 }}>{elo}</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+        <Icon name={up ? 'chevU' : 'chevD'} size={13} color={up ? 'var(--win)' : 'var(--loss)'} stroke={3} />
+        <span className="num" style={{ fontWeight: 700, fontSize: 12.5, color: up ? 'var(--win)' : 'var(--loss)' }}>{Math.abs(delta)}</span>
+      </span>
+    </span>
+  );
+}
+
+function Banner({ tone, title, body }) {
+  const map = {
+    info:    { c: 'var(--court)', bg: 'var(--blue-soft)', icon: 'info' },
+    success: { c: 'var(--win)',   bg: 'var(--lime-soft)', icon: 'check' },
+    warning: { c: 'var(--warn)',  bg: 'var(--warn-soft)', icon: 'warn' },
+    error:   { c: 'var(--loss)',  bg: '#FCE6E4',          icon: 'xCircle' },
+  }[tone];
+  return (
+    <div style={{ display: 'flex', gap: 11, padding: '12px 14px', background: map.bg, border: `1.5px solid ${map.c}`, borderRadius: 'var(--r-md)' }}>
+      <Icon name={map.icon} size={19} color={map.c} stroke={2.3} />
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 800, fontSize: 13.5, color: 'var(--text)' }}>{title}</div>
+        <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginTop: 2, lineHeight: 1.45 }}>{body}</div>
+      </div>
+    </div>
+  );
+}
+
+function MatchCard({ kind }) {
+  const opp = { name: 'Aleyna Kaya', elo: 1487 };
+  const status = {
+    planned:  { c: 'var(--court)', bg: 'var(--blue-soft)', label: 'Planlı', cta: 'Detay' },
+    pending:  { c: 'var(--warn)',  bg: 'var(--warn-soft)', label: 'Skor bekliyor', cta: 'Skoru gir' },
+    done:     { c: 'var(--win)',   bg: 'var(--lime-soft)', label: 'Tamamlandı', cta: null },
+  }[kind];
+  return (
+    <div style={{ border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-lg)', overflow: 'hidden', background: 'var(--surface)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: status.bg, borderBottom: '1.5px solid var(--border-strong)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 800, color: status.c }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: status.c }} />{status.label}
+        </span>
+        <FormatChip fmtKey="klasik" size={11} />
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <Avatar name="Mert Şahin" round size={40} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Sen <span style={{ color: 'var(--text-3)', fontWeight: 600 }}>vs</span> {opp.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, marginTop: 2 }}>
+              {kind === 'done' ? 'Kandilli Tenis Kortu' : 'Yarın 18:00 · Kandilli Tenis Kortu'}
+            </div>
+          </div>
+          <Avatar name={opp.name} round size={40} />
+        </div>
+        {kind === 'done'
+          ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 13, paddingTop: 13, borderTop: '1px solid var(--surface-3)' }}>
+              <span style={{ fontWeight: 800, fontSize: 13, color: 'var(--win)' }}>Kazandın</span>
+              <span className="num" style={{ fontWeight: 800, fontSize: 22 }}>4 – 2</span>
+              <EloChip elo={1612} delta={22} />
+            </div>
+          : <div style={{ marginTop: 13 }}><Button full size="sm" variant={kind === 'pending' ? 'primary' : 'secondary'}>{status.cta}</Button></div>}
+      </div>
+    </div>
+  );
+}
+
+function PlayerChip({ name, elo, sub }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-pill)', padding: '6px 14px 6px 6px', background: 'var(--surface)' }}>
+      <Avatar name={name} round size={32} />
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5, lineHeight: 1, whiteSpace: 'nowrap' }}>{name}</div>
+        {sub && <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, marginTop: 3, whiteSpace: 'nowrap' }}>{sub}</div>}
+      </div>
+      <span className="num" style={{ fontWeight: 800, fontSize: 14, marginLeft: 4 }}>{elo}</span>
+    </div>
+  );
+}
+
+function App() {
+  const [seg, setSeg] = useState('hafta');
+  const [t1, setT1] = useState(true), [t2, setT2] = useState(false);
+  const [c1, setC1] = useState(true), [c2, setC2] = useState(false), [r1, setR1] = useState('a');
+  const [pw, setPw] = useState('cokgizli'), [showPw, setShowPw] = useState(false);
+  const [modal, setModal] = useState(false), [sheet, setSheet] = useState(false), [toast, setToast] = useState(false);
+
+  return (
+    <div className="page">
+      <div className="mast"><h1>Component Library</h1><span className="v">Tennis Challenger · v3</span></div>
+      <p className="lede">Uygulamanın gerçek atomic bileşenleri — aynı token’lar, aynı kod. Hepsi düz dil: net 1.5px ink hat, gölge yok, pill butonlar, Space Grotesk rakamlar.</p>
+
+      {/* 01 BUTTONS */}
+      <Sec no="01" title="Butonlar" note="primary · secondary · destructive · ghost · dark">
+        <GCard label="Variant" span={6}>
+          <div className="row"><Button variant="primary">Maç oluştur</Button><Button variant="secondary">İptal</Button><Button variant="danger" icon="warn">İtiraz et</Button></div>
+          <div className="row"><Button variant="dark">Meydan oku</Button><Button variant="ghost">Vazgeç</Button><Button variant="tonal">Daha sonra</Button></div>
+        </GCard>
+        <GCard label="State" span={6}>
+          <div className="row"><Button variant="primary">Default</Button><Button variant="primary" disabled>Disabled</Button><Button variant="primary"><Icon name="refresh" size={17} className="tc-spin" /> Yükleniyor</Button></div>
+          <div className="row"><Button variant="primary" arrow>İleri</Button><Button variant="secondary" icon="share">Paylaş</Button><Button size="sm" variant="primary">Küçük</Button></div>
+        </GCard>
+      </Sec>
+
+      {/* 02 INPUTS */}
+      <Sec no="02" title="Inputs" note="text · email · password · search · hata">
+        <GCard label="Text & email" span={4}>
+          <Field label="Ad Soyad" value="Aleyna Kaya" placeholder="Adın" />
+          <Field label="BÜ e-posta" value="aleyna@boun.edu.tr" icon="mail" type="email" />
+        </GCard>
+        <GCard label="Password & search" span={4}>
+          <Field label="Şifre" value={showPw ? pw : '••••••••'} icon="lock" suffix={showPw ? 'gizle' : 'göster'} />
+          <SearchBar placeholder="Oyuncu ara…" value="" />
+        </GCard>
+        <GCard label="Hata state" span={4}>
+          <Field label="BÜ e-posta" value="aleyna@gmail.com" icon="mail" error hint="Yalnızca @boun.edu.tr uzantısı kabul edilir." />
+          <Field label="Skor" value="" placeholder="4-6 1-6" suffix="set" hint="Set skorunu gir" />
+        </GCard>
+      </Sec>
+
+      {/* 03 SELECTION */}
+      <Sec no="03" title="Seçim kontrolleri" note="segmented · toggle · checkbox · radio">
+        <GCard label="Segmented control" span={6}>
+          <Segmented value={seg} onChange={setSeg} options={[{value:'hafta',label:'Haftalık'},{value:'ay',label:'Aylık'},{value:'sezon',label:'Sezon'}]} />
+          <Segmented size="sm" value={seg} onChange={setSeg} options={[{value:'hafta',label:'Tek'},{value:'ay',label:'Çift'}]} />
+        </GCard>
+        <GCard label="Toggle · checkbox · radio" span={6}>
+          <div className="row" style={{ justifyContent: 'space-between' }}><span style={{ fontSize: 14, fontWeight: 600 }}>Maç davetleri</span><Toggle value={t1} onChange={setT1} /></div>
+          <div className="row" style={{ justifyContent: 'space-between' }}><span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-3)' }}>Topluluk duyuruları</span><Toggle value={t2} onChange={setT2} /></div>
+          <div className="row" style={{ gap: 18 }}>
+            <span onClick={() => setC1(!c1)} className="row" style={{ gap: 9, cursor: 'pointer' }}><CheckBox checked={c1} /> <span style={{ fontSize: 14, fontWeight: 600 }}>KVKK onayı</span></span>
+            <span onClick={() => setR1('a')} className="row" style={{ gap: 9, cursor: 'pointer' }}><CheckBox checked={r1==='a'} shape="circle" /> <span style={{ fontSize: 14, fontWeight: 600 }}>Sağ el</span></span>
+            <span onClick={() => setR1('b')} className="row" style={{ gap: 9, cursor: 'pointer' }}><CheckBox checked={r1==='b'} shape="circle" /> <span style={{ fontSize: 14, fontWeight: 600 }}>Sol el</span></span>
+          </div>
+        </GCard>
+      </Sec>
+
+      {/* 04 CARDS */}
+      <Sec no="04" title="Kartlar" note="default · interactive · featured">
+        <GCard label="Default" span={4} muted>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 16 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>Güz Sezonu</div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 5, lineHeight: 1.45 }}>1 Eyl – 15 Oca · Aktif ladder</div>
+          </div>
+        </GCard>
+        <GCard label="Interactive (basılabilir)" span={4} muted>
+          <ListRow icon="trophy" title="Maç geçmişi" subtitle="32 maç" chevron onClick={() => {}} />
+          <ListRow icon="bell" title="Bildirimler" subtitle="3 yeni" chevron onClick={() => {}} />
+        </GCard>
+        <GCard label="Featured (kort mavisi)" span={4} muted>
+          <div style={{ background: 'var(--court)', border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-lg)', padding: 16, color: '#fff' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', color: 'rgba(255,255,255,.7)' }}>SEZON LİDERİ</div>
+            <div style={{ fontWeight: 800, fontSize: 18, marginTop: 6 }}>Kaan Demir</div>
+            <div className="num" style={{ fontWeight: 800, fontSize: 24, color: '#fff', marginTop: 2 }}>1924</div>
+          </div>
+        </GCard>
+      </Sec>
+
+      {/* 05 OVERLAYS */}
+      <Sec no="05" title="Overlay" note="modal · bottom sheet">
+        <GCard label="Modal (ortalı)" span={6}>
+          <Button variant="secondary" onClick={() => setModal(true)}>Modal’ı aç</Button>
+          <div className="surface">
+            {modal && <Modal onClose={() => setModal(false)}>
+              <div style={{ padding: 22, textAlign: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FCE6E4', border: '1.5px solid var(--loss)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="warn" size={26} color="var(--loss)" /></div>
+                <div style={{ fontWeight: 800, fontSize: 18 }}>Hesabı sil?</div>
+                <div style={{ fontSize: 13.5, color: 'var(--text-2)', margin: '7px 0 16px', lineHeight: 1.5 }}>7 gün içinde geri alabilirsin. Sonra kalıcı olarak silinir.</div>
+                <div className="row" style={{ gap: 10 }}><Button variant="secondary" full onClick={() => setModal(false)}>Vazgeç</Button><Button variant="danger" full onClick={() => setModal(false)}>Sil</Button></div>
+              </div>
+            </Modal>}
+            {!modal && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', fontSize: 13, fontWeight: 600 }}>Önizleme alanı</div>}
+          </div>
+        </GCard>
+        <GCard label="Bottom sheet" span={6}>
+          <Button variant="secondary" onClick={() => setSheet(true)}>Sheet’i aç</Button>
+          <div className="surface">
+            {sheet && <Sheet title="Format seç" onClose={() => setSheet(false)}>
+              <div className="col">
+                <ListRow title="BÜ Klasik" subtitle="4 el · 15/30/40" right={<FormatChip fmtKey="klasik" size={11} />} onClick={() => setSheet(false)} />
+                <ListRow title="Tiebreak" subtitle="Tek set · ilk 7" right={<CheckBox checked shape="circle" />} onClick={() => setSheet(false)} />
+              </div>
+            </Sheet>}
+            {!sheet && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', fontSize: 13, fontWeight: 600 }}>Önizleme alanı</div>}
+          </div>
+        </GCard>
+      </Sec>
+
+      {/* 06 FEEDBACK */}
+      <Sec no="06" title="Banner & Toast" note="info · success · warning · error">
+        <GCard label="Inline banner" span={8}>
+          <Banner tone="info" title="Sezon finali yaklaşıyor" body="İlk 8’e girmek için 41 günün var." />
+          <Banner tone="success" title="Skor onaylandı" body="ELO’n 1590 → 1612 olarak güncellendi." />
+          <Banner tone="warning" title="Skor onayı bekliyor" body="Berk Aydın’ın onayı bekleniyor." />
+          <Banner tone="error" title="Skorlar uyuşmuyor" body="İtiraz açıldı, yönetici inceleyecek." />
+        </GCard>
+        <GCard label="Toast" span={4}>
+          <Button variant="secondary" onClick={() => { setToast(true); setTimeout(() => setToast(false), 2600); }}>Toast göster</Button>
+          <div className="surface" style={{ height: 160 }}>
+            {toast && <div style={{ position: 'absolute', left: 16, right: 16, bottom: 16, display: 'flex', alignItems: 'center', gap: 10, padding: '13px 15px', background: 'var(--text)', color: '#fff', borderRadius: 'var(--r-md)', animation: 'slideUp .28s cubic-bezier(.2,.8,.2,1)' }}>
+              <Icon name="check" size={18} color="var(--lime)" stroke={3} /><span style={{ fontWeight: 700, fontSize: 13.5 }}>Meydan okuma gönderildi</span>
+            </div>}
+            {!toast && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', fontSize: 13, fontWeight: 600 }}>Önizleme alanı</div>}
+          </div>
+        </GCard>
+      </Sec>
+
+      {/* 07 NAV + AVATAR */}
+      <Sec no="07" title="Tab bar & Avatar" note="4 sekme · sm/md/lg · rozet">
+        <GCard label="Tab bar (4 sekme)" span={7}>
+          <div className="surface" style={{ height: 96, display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ width: '100%' }}><TabBar active="ranking" onTab={() => {}} /></div>
+          </div>
+        </GCard>
+        <GCard label="Avatar — boyut & rozet" span={5}>
+          <div className="row" style={{ gap: 16, alignItems: 'flex-end' }}>
+            <Avatar name="Ali Koç" round size={32} />
+            <Avatar name="Aleyna Kaya" round size={44} />
+            <Avatar name="Kaan Demir" round size={56} badge={1} />
+            <Avatar name="Boş" round size={44} badge="frozen" />
+            <Avatar name="Usta Oyuncu" round size={44} badge="level" level={levelForElo(1600)} />
+          </div>
+          <div className="divh">İnisiyal fallback · madalya · donmuş ❄ · seviye</div>
+        </GCard>
+      </Sec>
+
+      {/* 08 DOMAIN */}
+      <Sec no="08" title="Domain bileşenleri" note="ELO chip · match card · player chip">
+        <GCard label="ELO / rating chip" span={4}>
+          <div className="row"><EloChip elo={1612} delta={22} /><EloChip elo={1487} delta={-14} /></div>
+          <div className="row" style={{ gap: 14 }}>
+            <span className="row" style={{ gap: 7 }}><LevelIcon level={levelForElo(1612)} size={16} /><span style={{ fontSize: 13, fontWeight: 700 }}>Usta</span></span>
+            <Sparkline data={eloTrend({ name: 'Kaan Demir', elo: 1612 })} color="auto" w={60} h={20} />
+            <FormDots form={['W','W','L','W','W']} size={11} />
+          </div>
+        </GCard>
+        <GCard label="Player chip / mini-card" span={8}>
+          <div className="row">
+            <PlayerChip name="Aleyna Kaya" elo={1487} sub="Amatör · 2. sınıf" />
+            <PlayerChip name="Kaan Demir" elo={1924} sub="Şampiyon" />
+          </div>
+        </GCard>
+        <GCard label="Match card — planlı / skor bekleyen / tamamlanmış" span={12} muted>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+            <MatchCard kind="planned" /><MatchCard kind="pending" /><MatchCard kind="done" />
+          </div>
+        </GCard>
+      </Sec>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

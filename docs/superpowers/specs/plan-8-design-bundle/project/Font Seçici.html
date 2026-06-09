@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wordmark Font Seçici</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Archivo:wght@700;800&family=Big+Shoulders+Display:wght@700;800&family=Bricolage+Grotesque:wght@700;800&family=Unbounded:wght@700;800&family=Sora:wght@700;800&family=Outfit:wght@700;800&family=Hanken+Grotesk:wght@700;800&family=Schibsted+Grotesk:wght@700;800&family=League+Spartan:wght@700;800&family=Darker+Grotesque:wght@700;800&family=Familjen+Grotesk:wght@700&family=Space+Grotesk:wght@700&family=Instrument+Serif&family=Fraunces:wght@700&family=Epilogue:wght@800&family=Plus+Jakarta+Sans:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --navy:#1E2C7C; --green:#E9F1DC; --page:#F6FAEE; --ink:#18224F; --mut:#5A6285; --bd:#D2DEBE; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--page); font-family:"Plus Jakarta Sans",sans-serif; color:var(--ink); padding:40px 28px 80px; }
+  .head{ max-width:1100px; margin:0 auto 28px; }
+  .head h1{ font-family:"Bricolage Grotesque",sans-serif; font-size:30px; margin:0 0 6px; letter-spacing:-.02em; }
+  .head p{ color:var(--mut); font-size:15px; margin:0; line-height:1.5; }
+  .grid{ max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:16px; }
+  .card{ background:#fff; border:1px solid var(--bd); border-radius:22px; padding:22px 22px 18px; }
+  .card.navy{ background:var(--navy); border-color:var(--navy); }
+  .num{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; background:var(--green); color:var(--navy); font-weight:800; font-size:13px; font-family:"Plus Jakarta Sans"; }
+  .navy .num{ background:rgba(255,255,255,.16); color:#fff; }
+  .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .fname{ font-size:12.5px; font-weight:700; color:var(--mut); font-family:"Plus Jakarta Sans"; }
+  .navy .fname{ color:rgba(255,255,255,.7); }
+  .wm{ font-size:34px; line-height:1.02; font-weight:800; letter-spacing:-.02em; color:var(--navy); margin:0; }
+  .navy .wm{ color:#fff; }
+  .sub{ margin:12px 0 0; font-size:15px; font-weight:700; color:var(--ink); }
+  .navy .sub{ color:#fff; }
+  .meta{ font-size:12px; color:var(--mut); margin-top:8px; font-family:"Plus Jakarta Sans"; line-height:1.4; }
+  .navy .meta{ color:rgba(255,255,255,.65); }
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>Wordmark fontu — hangisi?</h1>
+  <p>“Tennis Challenger” her fontta lacivertle. Beğendiğinin <b>numarasını ya da adını</b> söyle, tüm başlıklara uygularım. Bir kaçını yan yana da deneyebiliriz.</p>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+  const fonts = [
+    ['Anton','Ağır, sıkışık — poster/jersey'],
+    ['Bebas Neue','Uzun, ince-condensed, sportif'],
+    ['Archivo','Geniş atletik grotesk'],
+    ['Big Shoulders Display','Sportif, köşeli, dinamik'],
+    ['Bricolage Grotesque','Karakterli, çağdaş'],
+    ['Unbounded','Yuvarlak, kalın, oyunsu'],
+    ['Sora','Temiz geometrik'],
+    ['Outfit','Modern geometrik, nötr'],
+    ['Hanken Grotesk','Sıcak, okunur grotesk'],
+    ['Schibsted Grotesk','Keskin, editöryel'],
+    ['League Spartan','Geometrik, kalın, net'],
+    ['Darker Grotesque','İnce-uzun, sıra dışı'],
+    ['Familjen Grotesk','Yumuşak çağdaş grotesk'],
+    ['Epilogue','Dik, teknik'],
+    ['Space Grotesk','Teknik, mono hissi'],
+    ['Instrument Serif','Zarif serif (kontrast için)'],
+    ['Fraunces','Klasik display serif'],
+  ];
+  const navyIdx = new Set([0,4,5,10,15]); // some cards filled navy for preview
+  const g = document.getElementById('grid');
+  fonts.forEach(([f,desc],i)=>{
+    const navy = navyIdx.has(i);
+    const card = document.createElement('div');
+    card.className = 'card' + (navy?' navy':'');
+    card.innerHTML = `
+      <div class="top"><span class="num">${i+1}</span><span class="fname">${f}</span></div>
+      <div class="wm" style="font-family:'${f}',sans-serif">Tennis<br>Challenger</div>
+      <div class="sub" style="font-family:'${f}',sans-serif">Sıralama · Güz Sezonu</div>
+      <div class="meta">${desc}</div>`;
+    g.appendChild(card);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Tüm Şema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style> html, body { margin: 0; height: 100%; } </style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#E9F1DC"/>
+    <rect x="20" y="20" width="26" height="26" rx="5" fill="#161618"/>
+    <rect x="54" y="20" width="26" height="26" rx="5" fill="#2270BC"/>
+    <rect x="20" y="54" width="26" height="26" rx="5" fill="#C81E92"/>
+    <rect x="54" y="54" width="26" height="26" rx="5" fill="#8FD43B"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- foundation -->
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/doodles.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<!-- every screen -->
+<script type="text/babel" src="app/screens-auth.jsx"></script>
+<script type="text/babel" src="app/screens-onboarding.jsx"></script>
+<script type="text/babel" src="app/screens-leaderboard.jsx"></script>
+<script type="text/babel" src="app/screens-matches.jsx"></script>
+<script type="text/babel" src="app/screens-match-flow.jsx"></script>
+<script type="text/babel" src="app/screens-profile.jsx"></script>
+<script type="text/babel" src="app/screens-season.jsx"></script>
+<script type="text/babel" src="app/screens-notifs.jsx"></script>
+<script type="text/babel" src="app/screens-admin.jsx"></script>
+<script type="text/babel" src="app/screens-system.jsx"></script>
+
+<!-- canvas -->
+<script type="text/babel" src="app/design-canvas.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, StatusBar, TabBar, AppCtx, SCREENS } = window;
+
+const GROUPS = ['Auth & Onboarding', 'Sıralama', 'Maçlar', 'Profil & Gamification', 'Sezon & Turnuva', 'Bildirimler', 'Admin', 'Sistem'];
+
+// sensible default params for screens that read them
+const PARAMS = {
+  player_preview: { name: 'Kaan Demir', cat: 'erkek_tek' },
+  lb_filter: { cat: 'erkek_tek' },
+  format_rules: { format: 'klasik' },
+  active_match: { opp: 'Berk Aydın', format: 'klasik', court: 'Kort 1' },
+  match_summary: { opp: 'Berk Aydın', win: true, score: '4-2', format: 'klasik', court: 'Kort 1' },
+  dispute_form: { opp: 'Berk Aydın' },
+  new_match_detail: { opponent: 'Berk Aydın' },
+  new_match_opponent: { doubles: false },
+  open_applicants: { count: 4 },
+};
+
+const fakeNav = {
+  go(){}, replace(){}, back(){}, reset(){},
+  sheet(){}, closeSheet(){}, modal(){}, closeModal(){}, toast(){},
+};
+
+class EB extends React.Component {
+  constructor(p){ super(p); this.state = { err: false }; }
+  static getDerivedStateFromError(){ return { err: true }; }
+  componentDidCatch(){}
+  render(){
+    if (this.state.err) return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, padding: 24, textAlign: 'center' }}>
+        Bu ekran burada statik render edilemiyor<br/>(canlı uygulamada çalışır)
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+function ScreenHost({ meta }) {
+  const Comp = meta.comp;
+  const params = PARAMS[meta.id] || {};
+  return (
+    <div data-theme="light" className="tc-screen" style={{ width: 393, height: 852, display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)', width: 124, height: 35, background: '#000', borderRadius: 20, zIndex: 100 }} />
+      {!meta.noStatus && <StatusBar dark={false} />}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+        <EB><Comp params={params} /></EB>
+      </div>
+      {meta.tab && <TabBar active={meta.tab} onTab={() => {}} />}
+    </div>
+  );
+}
+
+function Board() {
+  const byGroup = {};
+  Object.keys(SCREENS).forEach(id => { const s = SCREENS[id]; (byGroup[s.group] = byGroup[s.group] || []).push(s); });
+  return (
+    <AppCtx.Provider value={{ nav: fakeNav, theme: 'light', setTheme(){}, dark: false }}>
+      <DesignCanvas>
+        {GROUPS.map(g => {
+          const items = byGroup[g] || [];
+          if (!items.length) return null;
+          return (
+            <DCSection key={g} id={g} title={g} subtitle={`${items.length} ekran`}>
+              {items.map(s => (
+                <DCArtboard key={s.id} id={s.id} label={s.title} width={393} height={852}>
+                  <ScreenHost meta={s} />
+                </DCArtboard>
+              ))}
+            </DCSection>
+          );
+        })}
+      </DesignCanvas>
+    </AppCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Board />);
+</script>
+</body>
+</html>
