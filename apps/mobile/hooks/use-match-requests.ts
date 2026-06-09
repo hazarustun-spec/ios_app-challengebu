@@ -72,13 +72,31 @@ import { useRealtimeChannel } from './use-realtime-channel';
 
 export function useMatchRequestsRealtime() {
   const userId = useAuthStore((s) => s.user?.id);
+  // match_requests SELECT policy is `using (true)` — without scoped filters
+  // every authenticated client would receive an event for every request in
+  // the community. We scope to two channels with scalar filters that Realtime
+  // does support: outgoing (creator_id) and incoming-direct (target_id).
+  // Open-call discovery is left to pull-to-refresh.
   useRealtimeChannel({
-    channelName: userId ? `match-requests:${userId}` : 'match-requests:none',
+    channelName: userId ? `match-requests:outgoing:${userId}` : 'match-requests:none',
     enabled: !!userId,
-    configs: [
-      { event: 'INSERT', table: 'match_requests' },
-      { event: 'UPDATE', table: 'match_requests' },
-    ],
+    configs: userId
+      ? [
+          { event: 'INSERT', table: 'match_requests', filter: `creator_id=eq.${userId}` },
+          { event: 'UPDATE', table: 'match_requests', filter: `creator_id=eq.${userId}` },
+        ]
+      : [],
+    invalidateKeys: [queryKeys.matchRequests.all],
+  });
+  useRealtimeChannel({
+    channelName: userId ? `match-requests:incoming:${userId}` : 'match-requests:none-in',
+    enabled: !!userId,
+    configs: userId
+      ? [
+          { event: 'INSERT', table: 'match_requests', filter: `target_id=eq.${userId}` },
+          { event: 'UPDATE', table: 'match_requests', filter: `target_id=eq.${userId}` },
+        ]
+      : [],
     invalidateKeys: [queryKeys.matchRequests.all],
   });
 }

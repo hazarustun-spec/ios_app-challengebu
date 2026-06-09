@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 /**
  * Generic Supabase Realtime subscription helper.
@@ -35,7 +34,6 @@ interface Params {
   configs: PostgresChangeConfig[];
   invalidateKeys: readonly (readonly unknown[])[];
   debounceMs?: number;
-  onEvent?: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
 }
 
 export function useRealtimeChannel({
@@ -44,15 +42,13 @@ export function useRealtimeChannel({
   configs,
   invalidateKeys,
   debounceMs = 250,
-  onEvent,
 }: Params) {
   const qc = useQueryClient();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!enabled || configs.length === 0) return;
-    const schedule = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-      onEvent?.(payload);
+    const schedule = () => {
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         for (const k of invalidateKeys) {
@@ -80,5 +76,5 @@ export function useRealtimeChannel({
       if (timer.current) clearTimeout(timer.current);
       supabase.removeChannel(channel);
     };
-  }, [channelName, enabled, JSON.stringify(configs), JSON.stringify(invalidateKeys), qc, debounceMs, onEvent]);
+  }, [channelName, enabled, JSON.stringify(configs), JSON.stringify(invalidateKeys), qc, debounceMs]);
 }
