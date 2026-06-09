@@ -31,8 +31,8 @@ export default function AdminHomeScreen() {
         <Button onPress={() => router.push('/(admin)/announcements')} variant="secondary">
           Topluluk Duyurusu
         </Button>
-        <Button onPress={() => {}} variant="secondary" disabled>
-          Sistem Sağlığı (yakında)
+        <Button onPress={() => router.push('/(admin)/health')} variant="secondary">
+          Sistem Sağlığı
         </Button>
       </View>
     </ScreenContainer>
