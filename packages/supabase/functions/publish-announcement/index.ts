@@ -70,7 +70,12 @@ Deno.serve(async (req) => {
       body: input.body,
       data: { announcementId: announcement.id },
     }));
-    await supa.from('notifications').insert(rows);
+    const { error: notifErr } = await supa.from('notifications').insert(rows);
+    if (notifErr) {
+      // The announcement row already exists; surface the failure so the admin
+      // knows the fan-out partially failed and can decide whether to retry.
+      return errorResponse(`Notification fan-out failed: ${notifErr.message}`, 500);
+    }
 
     let pushed = 0;
     if (input.sendPush) {
@@ -94,12 +99,16 @@ Deno.serve(async (req) => {
           body: input.body,
           data: { announcementId: announcement.id },
         }));
-      if (messages.length > 0) {
+      // Expo Push rejects single requests >100 messages, so chunk for any
+      // community-wide announcement larger than that.
+      const CHUNK = 100;
+      for (let i = 0; i < messages.length; i += CHUNK) {
+        const slice = messages.slice(i, i + CHUNK);
         try {
-          await sendToExpo(messages);
-          pushed = messages.length;
+          await sendToExpo(slice);
+          pushed += slice.length;
         } catch (pushErr) {
-          console.error('publish-announcement push fanout failed', pushErr);
+          console.error('publish-announcement push fanout chunk failed', { offset: i, err: pushErr });
         }
       }
     }

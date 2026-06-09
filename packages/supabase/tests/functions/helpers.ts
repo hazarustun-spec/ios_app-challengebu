@@ -99,6 +99,12 @@ export async function cleanupTestData(): Promise<void> {
   // is not blocked by matches.match_request_id (no ON DELETE action) or
   // audit_log.actor_id (no ON DELETE action).
   await supa.from('audit_log').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // announcements.created_by → profiles(user_id) has NO ACTION on delete, so
+  // clear before any auth.user delete loop hits a profile.
+  await supa.from('announcements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // notifications cascade from profiles but publish-announcement tests may
+  // leave orphans depending on which user is deleted first; nuke them defensively.
+  await supa.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // tournament_matches.match_id → matches has NO ACTION on delete, so clear it before matches.
   await supa.from('tournament_matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
