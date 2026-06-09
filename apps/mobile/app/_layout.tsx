@@ -38,6 +38,10 @@ export default function RootLayout() {
             name="notification-preferences"
             options={{ headerShown: true, title: 'Bildirim Tercihleri' }}
           />
+          <Stack.Screen
+            name="notifications"
+            options={{ headerShown: true, title: 'Bildirimler' }}
+          />
         </Stack>
         <CelebrationMount />
         <StatusBar style="auto" />

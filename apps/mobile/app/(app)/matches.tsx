@@ -4,6 +4,7 @@ import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 import { ActiveMatchCard } from '../../components/matches/ActiveMatchCard';
 import { EmptyState } from '../../components/matches/EmptyState';
 import { RequestCard } from '../../components/matches/RequestCard';
+import { NotificationBell } from '../../components/notifications/NotificationBell';
 import { SeasonBanner } from '../../components/seasons/SeasonBanner';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useActiveMatches } from '../../hooks/use-active-matches';
@@ -84,6 +85,10 @@ export default function MatchesScreen() {
 
   return (
     <ScreenContainer>
+      <View className="mb-2 flex-row items-center justify-between">
+        <Text className="text-xl font-bold text-gray-900">Maçlar</Text>
+        <NotificationBell />
+      </View>
       <SeasonBanner />
       <View className="mb-3 flex-row border-b border-gray-200">
         <Pressable
