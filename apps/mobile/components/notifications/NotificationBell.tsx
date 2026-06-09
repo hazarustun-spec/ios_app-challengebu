@@ -9,7 +9,7 @@ export function NotificationBell() {
     <Pressable
       // TODO(plan-7-faz-b): drop the `as never` cast once Expo Router regenerates typed routes for /notifications.
       onPress={() => router.push('/notifications' as never)}
-      className="relative h-10 w-10 items-center justify-center"
+      className="relative h-11 w-11 items-center justify-center"
       accessibilityLabel="Bildirimler"
     >
       <Text className="text-2xl">🔔</Text>

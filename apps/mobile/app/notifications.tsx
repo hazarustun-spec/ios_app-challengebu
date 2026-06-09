@@ -5,12 +5,14 @@ import { ScreenContainer } from '../components/ui/ScreenContainer';
 import { useMarkAllRead } from '../hooks/use-mark-all-read';
 import { useMarkNotificationRead } from '../hooks/use-mark-notification-read';
 import { useNotifications, type NotificationRow as Row } from '../hooks/use-notifications';
+import { useUnreadCount } from '../hooks/use-unread-count';
 import { useAuthStore } from '../stores/auth-store';
 
 export default function NotificationsScreen() {
   const list = useNotifications();
   const markOne = useMarkNotificationRead();
   const markAll = useMarkAllRead();
+  const { data: unread } = useUnreadCount();
   const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
 
   const handlePress = (n: Row) => {
@@ -39,14 +41,35 @@ export default function NotificationsScreen() {
       router.push('/(admin)/seasons' as never);
       return;
     }
+    // Category-based fallback: payload-less notifications still navigate
+    // somewhere sensible instead of just turning read.
+    switch (n.category) {
+      case 'badges':
+      case 'elo_and_ranking':
+      case 'season_and_tournament':
+        router.push('/(app)/profile');
+        return;
+      case 'match_proposals':
+      case 'match_reminders':
+      case 'score_confirmations':
+      case 'inactivity_warning':
+        router.push('/(app)/matches');
+        return;
+      case 'community_announcements':
+      default:
+        // Stay on the notification center — there's no community feed yet.
+        return;
+    }
   };
 
   return (
     <ScreenContainer>
       <View className="mb-2 flex-row items-center justify-between">
         <Text className="text-base font-semibold text-gray-900">Bildirimler</Text>
-        <Pressable onPress={() => markAll.mutate()}>
-          <Text className="text-xs text-primary">Tümünü okundu işaretle</Text>
+        <Pressable onPress={() => markAll.mutate()} disabled={(unread ?? 0) === 0}>
+          <Text className={`text-xs ${(unread ?? 0) === 0 ? 'text-gray-400' : 'text-primary'}`}>
+            Tümünü okundu işaretle
+          </Text>
         </Pressable>
       </View>
       <FlatList
