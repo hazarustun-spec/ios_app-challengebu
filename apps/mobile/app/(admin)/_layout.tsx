@@ -17,6 +17,8 @@ export default function AdminLayout() {
       <Stack.Screen name="tournaments" options={{ title: 'Finale Bracket Yönetimi' }} />
       <Stack.Screen name="users" options={{ title: 'Kullanıcı Yönetimi' }} />
       <Stack.Screen name="users/[userId]" options={{ title: 'Kullanıcı' }} />
+      <Stack.Screen name="announcements" options={{ title: 'Duyurular' }} />
+      <Stack.Screen name="announcements/new" options={{ title: 'Yeni Duyuru' }} />
     </Stack>
   );
 }

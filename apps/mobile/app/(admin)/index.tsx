@@ -5,13 +5,11 @@ import { ScreenContainer } from '../../components/ui/ScreenContainer';
 
 // Plan 7 Faz D ships only the route group + role gate. The six admin screens
 // are wired up in Phases E/F/G — see plan 7 phase outline. Faz F enables the
-// Finale Bracket Yönetimi + Kullanıcı Yönetimi tiles. Topluluk Duyurusu +
-// Sistem Sağlığı stay placeholder until Faz G. Styling stays at the
-// ScreenContainer + Button primitive level on purpose: Plan 8 redesigns the
-// admin surface end-to-end.
+// Finale Bracket Yönetimi + Kullanıcı Yönetimi tiles. Faz G enables Topluluk
+// Duyurusu + Sistem Sağlığı. Styling stays at the ScreenContainer + Button
+// primitive level on purpose: Plan 8 redesigns the admin surface end-to-end.
 
 export default function AdminHomeScreen() {
-  const noop = () => {};
   return (
     <ScreenContainer scrollable>
       <Text className="mb-4 text-xs text-gray-500">
@@ -30,10 +28,10 @@ export default function AdminHomeScreen() {
         <Button onPress={() => router.push('/(admin)/users')} variant="secondary">
           Kullanıcı Yönetimi
         </Button>
-        <Button onPress={noop} variant="secondary" disabled>
-          Topluluk Duyurusu (yakında)
+        <Button onPress={() => router.push('/(admin)/announcements')} variant="secondary">
+          Topluluk Duyurusu
         </Button>
-        <Button onPress={noop} variant="secondary" disabled>
+        <Button onPress={() => {}} variant="secondary" disabled>
           Sistem Sağlığı (yakında)
         </Button>
       </View>
