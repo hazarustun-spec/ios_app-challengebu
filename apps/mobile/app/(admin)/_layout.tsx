@@ -11,6 +11,8 @@ export default function AdminLayout() {
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen name="index" options={{ title: 'Admin Paneli' }} />
+      <Stack.Screen name="disputes" options={{ title: 'Bekleyen İtirazlar' }} />
+      <Stack.Screen name="disputes/[id]" options={{ title: 'İtiraz' }} />
     </Stack>
   );
 }

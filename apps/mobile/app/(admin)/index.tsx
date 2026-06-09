@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
@@ -16,8 +17,8 @@ export default function AdminHomeScreen() {
         Admin işlemlerin audit log&apos;a kaydedilir.
       </Text>
       <View className="gap-3">
-        <Button onPress={noop} variant="secondary" disabled>
-          Bekleyen İtirazlar (yakında)
+        <Button onPress={() => router.push('/(admin)/disputes')} variant="secondary">
+          Bekleyen İtirazlar
         </Button>
         <Button onPress={noop} variant="secondary" disabled>
           Sezon Yönetimi (yakında)

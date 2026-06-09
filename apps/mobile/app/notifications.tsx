@@ -32,12 +32,11 @@ export default function NotificationsScreen() {
       return;
     }
     if (isAdmin && typeof data.disputeId === 'string') {
-      // TODO(plan-7-faz-d): drop the `as never` cast once the (admin) route group lands.
-      router.push(`/(admin)/disputes/${data.disputeId}` as never);
+      router.push({ pathname: '/(admin)/disputes/[id]', params: { id: data.disputeId } });
       return;
     }
     if (data.action === 'open_admin_seasons' && isAdmin) {
-      // TODO(plan-7-faz-d): drop the `as never` cast once the (admin) route group lands.
+      // TODO(plan-7-faz-e): drop the `as never` cast once the (admin) seasons route lands.
       router.push('/(admin)/seasons' as never);
       return;
     }
