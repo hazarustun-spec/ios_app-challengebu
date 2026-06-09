@@ -43,7 +43,7 @@ Deno.test('season-lifecycle E2E: close-season + start-season-finale', async () =
       ends_at: '2026-06-30',
       finale_starts_at: '2026-06-21',
       finale_ends_at: '2026-06-30',
-      status: 'finale',
+      status: 'active',
     })
     .select('id')
     .single();

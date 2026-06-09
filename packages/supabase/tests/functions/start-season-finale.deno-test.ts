@@ -24,7 +24,7 @@ async function seedRatings(category: string, count: number): Promise<{ adminToke
     ends_at: '2026-12-31T23:59:59Z',
     finale_starts_at: '2026-12-20T00:00:00Z',
     finale_ends_at: '2026-12-30T23:59:59Z',
-    status: 'finale',
+    status: 'active',
   }).select('id').single();
 
   return { adminToken: admin.accessToken, seasonId: season!.id };
@@ -109,7 +109,7 @@ Deno.test('start-season-finale: erkek_cift forms 4 teams from match history, see
     ends_at: '2026-12-31T23:59:59Z',
     finale_starts_at: '2026-12-20T00:00:00Z',
     finale_ends_at: '2026-12-30T23:59:59Z',
-    status: 'finale',
+    status: 'active',
   }).select('id').single();
 
   const { data: court } = await supa.from('courts').select('id').limit(1).single();

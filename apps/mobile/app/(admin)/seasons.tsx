@@ -73,7 +73,7 @@ export default function AdminSeasonsScreen() {
               {new Date(item.finale_ends_at).toLocaleDateString('tr-TR')} · Turnuva: {item.tournament_count}
             </Text>
             <View className="mt-3 gap-2">
-              {item.status === 'active' || item.status === 'finale' ? (
+              {item.status === 'active' && new Date() >= new Date(item.finale_starts_at) ? (
                 <Button onPress={() => handleStart(item)} variant="secondary">
                   Finale başlat
                 </Button>

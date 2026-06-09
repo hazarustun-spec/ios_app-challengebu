@@ -42,6 +42,12 @@ Deno.serve(async (req) => {
 
     const { data: season } = await supa.from('seasons').select('*').eq('id', parsed.data.seasonId).maybeSingle();
     if (!season) return errorResponse('Season not found', 404);
+    // Idempotency guard: re-firing would duplicate season_standings /
+    // season_doubles_teams / tournaments rows because none have a per-season
+    // unique constraint. Only allow the transition active → finale.
+    if (season.status !== 'active') {
+      return errorResponse(`Season is not active (current: ${season.status})`, 409);
+    }
 
     const tournamentsCreated: string[] = [];
 
