@@ -10,6 +10,7 @@ import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useActiveMatches, useActiveMatchesRealtime } from '../../hooks/use-active-matches';
 import {
   useIncomingMatchRequests,
+  useMatchRequestsRealtime,
   useOutgoingMatchRequests,
   type MatchRequestRow,
 } from '../../hooks/use-match-requests';
@@ -23,6 +24,7 @@ export default function MatchesScreen() {
 
   const active = useActiveMatches();
   useActiveMatchesRealtime();
+  useMatchRequestsRealtime();
   const incoming = useIncomingMatchRequests();
   const outgoing = useOutgoingMatchRequests();
 

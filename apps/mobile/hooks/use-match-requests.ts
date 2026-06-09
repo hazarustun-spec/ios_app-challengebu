@@ -67,3 +67,18 @@ export function useOutgoingMatchRequests() {
     enabled: !!userId,
   });
 }
+
+import { useRealtimeChannel } from './use-realtime-channel';
+
+export function useMatchRequestsRealtime() {
+  const userId = useAuthStore((s) => s.user?.id);
+  useRealtimeChannel({
+    channelName: userId ? `match-requests:${userId}` : 'match-requests:none',
+    enabled: !!userId,
+    configs: [
+      { event: 'INSERT', table: 'match_requests' },
+      { event: 'UPDATE', table: 'match_requests' },
+    ],
+    invalidateKeys: [queryKeys.matchRequests.all],
+  });
+}
