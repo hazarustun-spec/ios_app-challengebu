@@ -62,11 +62,14 @@ export function useUpdateNotificationPreference() {
   return useMutation({
     mutationFn: async (input: { category: NotificationCategory; enabled: boolean }) => {
       if (!userId) throw new Error('not authenticated');
+      // Upsert so a profile created before the default-prefs trigger landed
+      // (or anywhere the trigger silently failed) still gets a row written.
       const { error } = await supabase
         .from('notification_preferences')
-        .update({ enabled: input.enabled })
-        .eq('profile_id', userId)
-        .eq('category', input.category);
+        .upsert(
+          { profile_id: userId, category: input.category, enabled: input.enabled },
+          { onConflict: 'profile_id,category' },
+        );
       if (error) throw error;
     },
     onSuccess: () => {

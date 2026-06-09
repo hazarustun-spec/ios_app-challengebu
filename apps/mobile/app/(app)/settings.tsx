@@ -57,6 +57,7 @@ export default function SettingsScreen() {
           Bildirim Tercihleri
         </Button>
         {isAdmin ? (
+          // TODO(plan-7-faz-d): drop the `as never` cast once the (admin) route group lands.
           <Button onPress={() => router.push('/(admin)' as never)} variant="secondary">
             Admin Paneli
           </Button>
