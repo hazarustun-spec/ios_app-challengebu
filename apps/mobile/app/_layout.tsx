@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CelebrationMount } from '../components/profile/CelebrationMount';
+import { usePushRegistration } from '../hooks/use-push-registration';
 import { bootstrapAuth } from '../lib/auth-bootstrap';
 import { queryClient } from '../lib/query-client';
 
@@ -12,6 +13,8 @@ export default function RootLayout() {
   useEffect(() => {
     bootstrapAuth();
   }, []);
+
+  usePushRegistration();
 
   return (
     <SafeAreaProvider>
