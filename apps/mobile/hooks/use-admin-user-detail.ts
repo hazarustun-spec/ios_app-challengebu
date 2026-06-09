@@ -20,7 +20,9 @@ export interface AdminUserDetail {
 // gates on `public.is_admin()`. Non-admins hitting this hook get a 42501.
 export function useAdminUserDetail(userId: string | undefined) {
   return useQuery<AdminUserDetail | null>({
-    queryKey: userId ? queryKeys.admin.userDetail(userId) : queryKeys.admin.all,
+    // Avoid sharing the umbrella admin.all key when disabled — invalidating
+    // admin.all from a sibling hook would otherwise refetch this no-op query.
+    queryKey: userId ? queryKeys.admin.userDetail(userId) : [...queryKeys.admin.all, 'userDetail', 'disabled'],
     enabled: !!userId,
     queryFn: async () => {
       if (!userId) return null;

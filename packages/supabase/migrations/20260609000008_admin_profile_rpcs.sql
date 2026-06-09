@@ -53,7 +53,7 @@ begin
       or p.last_name ilike '%' || search || '%'
       or p.email ilike '%' || search || '%'
     order by p.first_name asc
-    limit greatest(lim, 1);
+    limit least(greatest(lim, 1), 200);
 end;
 $$;
 

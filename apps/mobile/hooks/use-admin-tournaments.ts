@@ -38,12 +38,16 @@ export function useVoidBracketMatch() {
         .update({ status: 'voided', voided_reason: input.reason })
         .eq('id', input.matchId);
       if (error) throw error;
-      await supabase.from('audit_log').insert({
+      const { error: auditErr } = await supabase.from('audit_log').insert({
         action: 'void_bracket_match',
         entity_type: 'match',
         entity_id: input.matchId,
         details: { reason: input.reason },
       });
+      // The match has already been voided at this point; surface the audit
+      // failure to the operator but don't roll back the match update — the
+      // audit row is operationally important, not transactionally bound.
+      if (auditErr) throw auditErr;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.tournaments.all });
