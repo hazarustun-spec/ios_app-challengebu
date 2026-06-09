@@ -8,7 +8,9 @@ import { ThreeSetKlasikScoreEntry } from '../../components/matches/score-entry/T
 import { FormatRulesModal } from '../../components/matches/FormatRulesModal';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useMatchDetail } from '../../hooks/use-match-detail';
+import { useRealtimeChannel } from '../../hooks/use-realtime-channel';
 import { useSubmitMatchScore, type WinnerTeam } from '../../hooks/use-submit-match-score';
+import { queryKeys } from '../../lib/query-keys';
 import { useAuthStore } from '../../stores/auth-store';
 import { useScoreEntryStore } from '../../stores/score-entry-store';
 
@@ -19,6 +21,21 @@ export default function PlayScreen() {
   const submit = useSubmitMatchScore();
   const clearDraft = useScoreEntryStore((s) => s.clear);
   const [rulesAcknowledged, setRulesAcknowledged] = useState(false);
+
+  useRealtimeChannel({
+    channelName: matchId ? `score-submissions:${matchId}` : 'score-submissions:none',
+    enabled: !!matchId,
+    configs: [
+      {
+        event: 'INSERT',
+        table: 'match_score_submissions',
+        filter: matchId ? `match_id=eq.${matchId}` : undefined,
+      },
+    ],
+    invalidateKeys: matchId
+      ? [queryKeys.activeMatches.detail(matchId), queryKeys.activeMatches.list()]
+      : [],
+  });
 
   if (isLoading || !m || !matchId || !userId) {
     return (
