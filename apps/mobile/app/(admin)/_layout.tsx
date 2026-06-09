@@ -14,6 +14,7 @@ export default function AdminLayout() {
       <Stack.Screen name="disputes" options={{ title: 'Bekleyen İtirazlar' }} />
       <Stack.Screen name="disputes/[id]" options={{ title: 'İtiraz' }} />
       <Stack.Screen name="seasons" options={{ title: 'Sezon Yönetimi' }} />
+      <Stack.Screen name="tournaments" options={{ title: 'Finale Bracket Yönetimi' }} />
     </Stack>
   );
 }

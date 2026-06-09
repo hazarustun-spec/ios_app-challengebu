@@ -4,10 +4,11 @@ import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 
 // Plan 7 Faz D ships only the route group + role gate. The six admin screens
-// are wired up in Phases E/F/G — see plan 7 phase outline. For now every
-// button is disabled; later phases will swap onPress + drop the "yakında"
-// suffix. Styling stays at the ScreenContainer + Button primitive level on
-// purpose: Plan 8 redesigns the admin surface end-to-end.
+// are wired up in Phases E/F/G — see plan 7 phase outline. Faz F enables the
+// Finale Bracket Yönetimi + Kullanıcı Yönetimi tiles. Topluluk Duyurusu +
+// Sistem Sağlığı stay placeholder until Faz G. Styling stays at the
+// ScreenContainer + Button primitive level on purpose: Plan 8 redesigns the
+// admin surface end-to-end.
 
 export default function AdminHomeScreen() {
   const noop = () => {};
@@ -23,8 +24,8 @@ export default function AdminHomeScreen() {
         <Button onPress={() => router.push('/(admin)/seasons')} variant="secondary">
           Sezon Yönetimi
         </Button>
-        <Button onPress={noop} variant="secondary" disabled>
-          Finale Bracket Yönetimi (yakında)
+        <Button onPress={() => router.push('/(admin)/tournaments')} variant="secondary">
+          Finale Bracket Yönetimi
         </Button>
         <Button onPress={noop} variant="secondary" disabled>
           Kullanıcı Yönetimi (yakında)
