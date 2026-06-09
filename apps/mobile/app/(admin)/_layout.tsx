@@ -13,6 +13,7 @@ export default function AdminLayout() {
       <Stack.Screen name="index" options={{ title: 'Admin Paneli' }} />
       <Stack.Screen name="disputes" options={{ title: 'Bekleyen İtirazlar' }} />
       <Stack.Screen name="disputes/[id]" options={{ title: 'İtiraz' }} />
+      <Stack.Screen name="seasons" options={{ title: 'Sezon Yönetimi' }} />
     </Stack>
   );
 }

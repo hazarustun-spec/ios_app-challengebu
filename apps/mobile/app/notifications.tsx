@@ -36,8 +36,7 @@ export default function NotificationsScreen() {
       return;
     }
     if (data.action === 'open_admin_seasons' && isAdmin) {
-      // TODO(plan-7-faz-e): drop the `as never` cast once the (admin) seasons route lands.
-      router.push('/(admin)/seasons' as never);
+      router.push({ pathname: '/(admin)/seasons' });
       return;
     }
     // Category-based fallback: payload-less notifications still navigate

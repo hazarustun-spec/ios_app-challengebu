@@ -20,8 +20,8 @@ export default function AdminHomeScreen() {
         <Button onPress={() => router.push('/(admin)/disputes')} variant="secondary">
           Bekleyen İtirazlar
         </Button>
-        <Button onPress={noop} variant="secondary" disabled>
-          Sezon Yönetimi (yakında)
+        <Button onPress={() => router.push('/(admin)/seasons')} variant="secondary">
+          Sezon Yönetimi
         </Button>
         <Button onPress={noop} variant="secondary" disabled>
           Finale Bracket Yönetimi (yakında)
