@@ -55,6 +55,27 @@ export const queryKeys = {
     list: (filters?: { gender?: string }) => [...queryKeys.players.all, 'list', filters] as const,
     detail: (userId: string) => [...queryKeys.players.all, 'detail', userId] as const,
   },
+  notifications: {
+    all: ['notifications'] as const,
+    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    unreadCount: () => [...queryKeys.notifications.all, 'unread-count'] as const,
+    preferences: () => [...queryKeys.notifications.all, 'preferences'] as const,
+  },
+  admin: {
+    all: ['admin'] as const,
+    pendingDisputes: () => [...queryKeys.admin.all, 'pending-disputes'] as const,
+    disputeDetail: (id: string) => [...queryKeys.admin.all, 'dispute', id] as const,
+    seasons: () => [...queryKeys.admin.all, 'seasons'] as const,
+    tournaments: (seasonId: string) => [...queryKeys.admin.all, 'tournaments', seasonId] as const,
+    users: (search: string | null) => [...queryKeys.admin.all, 'users', search] as const,
+    userDetail: (userId: string) => [...queryKeys.admin.all, 'user', userId] as const,
+    health: () => [...queryKeys.admin.all, 'health'] as const,
+    auditLog: () => [...queryKeys.admin.all, 'audit-log'] as const,
+  },
+  announcements: {
+    all: ['announcements'] as const,
+    published: () => [...queryKeys.announcements.all, 'published'] as const,
+  },
   seasons: {
     all: ['seasons'] as const,
     current: () => [...queryKeys.seasons.all, 'current'] as const,

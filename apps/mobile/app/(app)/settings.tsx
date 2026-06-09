@@ -9,6 +9,7 @@ import { useAuthStore } from '../../stores/auth-store';
 export default function SettingsScreen() {
   const signOutStore = useAuthStore((s) => s.signOut);
   const session = useAuthStore((s) => s.session);
+  const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -51,11 +52,19 @@ export default function SettingsScreen() {
 
   return (
     <ScreenContainer>
-      <View className="flex-1 gap-4 pt-8">
+      <View className="flex-1 gap-3 pt-6">
+        <Button onPress={() => router.push('/notification-preferences')} variant="secondary">
+          Bildirim Tercihleri
+        </Button>
+        {isAdmin ? (
+          <Button onPress={() => router.push('/(admin)' as never)} variant="secondary">
+            Admin Paneli
+          </Button>
+        ) : null}
         <Button onPress={handleLogout} variant="secondary">
           Çıkış yap
         </Button>
-        <Text className="mt-8 text-sm text-gray-500">Hesabını kalıcı olarak sil:</Text>
+        <Text className="mt-6 text-sm text-gray-500">Hesabını kalıcı olarak sil:</Text>
         <Button onPress={confirmDelete} variant="ghost">
           Hesabımı sil
         </Button>

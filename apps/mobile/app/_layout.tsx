@@ -34,6 +34,10 @@ export default function RootLayout() {
           <Stack.Screen name="profile" />
           <Stack.Screen name="user/[userId]" options={{ headerShown: true, title: 'Profil' }} />
           <Stack.Screen name="tournament/[id]" options={{ headerShown: true, title: 'Sezon Finali' }} />
+          <Stack.Screen
+            name="notification-preferences"
+            options={{ headerShown: true, title: 'Bildirim Tercihleri' }}
+          />
         </Stack>
         <CelebrationMount />
         <StatusBar style="auto" />
