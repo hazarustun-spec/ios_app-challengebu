@@ -108,6 +108,9 @@ export async function cleanupTestData(): Promise<void> {
   // tournament_matches.match_id → matches has NO ACTION on delete, so clear it before matches.
   await supa.from('tournament_matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // match_request_applications cascade from match_requests, but nuke explicitly
+  // (defense-in-depth, mirrors audit_log/announcements/notifications pattern).
+  await supa.from('match_request_applications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('match_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // Season-related rows: tournaments, tournament_matches, season_standings cascade from seasons.
   // yearly_championship does not cascade from seasons so delete explicitly.
