@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style> html, body { margin: 0; height: 100%; } </style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#fff"/>
+    <path d="M50 16l22 8v18c0 16-9 27-22 34-13-7-22-18-22-34V24z" fill="#161618" stroke="#161618" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M41 49l7 7 12-13" fill="none" stroke="#8FD43B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/doodles.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/screens-admin.jsx"></script>
+<script type="text/babel" src="app/screens-admin-system.jsx"></script>
+<script type="text/babel" src="app/design-canvas.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, StatusBar, TabBar, AppCtx, SCREENS } = window;
+
+const FLOW = [
+  ['admin_home', '1 · Admin dashboard (6 tile)', {}],
+  ['admin_disputes', '2 · Bekleyen itirazlar + karar', {}],
+  ['admin_seasons', '3 · Sezon yönetimi', {}],
+  ['admin_bracket', '4 · Bracket yönetimi (void + manuel sonuç)', {}],
+  ['admin_users', '5 · Kullanıcı yönetimi', {}],
+  ['admin_announce', '6 · Duyurular (yayınla + geçmiş)', {}],
+  ['admin_system', '7 · Sistem sağlığı (cron + audit log)', {}],
+];
+
+const fakeNav = { go(){}, replace(){}, back(){}, reset(){}, sheet(){}, closeSheet(){}, modal(){}, closeModal(){}, toast(){} };
+
+class EB extends React.Component {
+  constructor(p){ super(p); this.state = { err: false }; }
+  static getDerivedStateFromError(){ return { err: true }; }
+  componentDidCatch(){}
+  render(){
+    if (this.state.err) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, padding: 24, textAlign: 'center' }}>Statik render edilemiyor</div>;
+    return this.props.children;
+  }
+}
+
+function Phone({ meta, params }) {
+  const Comp = meta.comp;
+  return (
+    <div style={{ padding: 11, background: '#1A1A1C', borderRadius: 56, border: '1.5px solid var(--border-strong)' }}>
+      <div data-theme="light" className="tc-screen" style={{ width: 393, height: 852, display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative', overflow: 'hidden', borderRadius: 46 }}>
+        <div style={{ position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)', width: 124, height: 35, background: '#000', borderRadius: 20, zIndex: 100 }} />
+        {!meta.noStatus && <StatusBar dark={false} />}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+          <EB><Comp params={params} /></EB>
+        </div>
+        {meta.tab && <TabBar active={meta.tab} onTab={() => {}} />}
+      </div>
+    </div>
+  );
+}
+
+function Board() {
+  return (
+    <AppCtx.Provider value={{ nav: fakeNav, theme: 'light', setTheme(){}, dark: false }}>
+      <DesignCanvas>
+        <DCSection id="admin" title="Admin" subtitle="Dashboard · itirazlar · sezon · bracket · kullanıcılar · duyurular · sistem sağlığı">
+          {FLOW.map(([id, label, params]) => {
+            const meta = SCREENS[id];
+            if (!meta) return null;
+            return (
+              <DCArtboard key={id} id={id} label={label} width={415} height={874}>
+                <Phone meta={meta} params={params} />
+              </DCArtboard>
+            );
+          })}
+        </DCSection>
+      </DesignCanvas>
+    </AppCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Board />);
+</script>
+</body>
+</html>

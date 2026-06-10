@@ -19,6 +19,7 @@ function AdminHome() {
     ['admin_bracket', 'ranking', 'Bracket Düzenle', 'Top 8 seed', 'var(--info)'],
     ['admin_users', 'user', 'Kullanıcılar', '248 oyuncu', 'var(--grass)'],
     ['admin_announce', 'megaphone', 'Duyurular', '2 yayında', '#7A4FA0'],
+    ['admin_system', 'settings', 'Sistem Sağlığı', '1 uyarı', 'var(--warn)'],
   ];
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
