@@ -4,7 +4,7 @@ import { ScreenContainer } from '../components/ui/ScreenContainer';
 import { Toggle } from '../components/ui/Toggle';
 import {
   ALL_CATEGORIES,
-  CATEGORY_LABELS,
+  CATEGORY_LABEL_STRINGS,
   useNotificationPreferences,
   useUpdateNotificationPreference,
 } from '../hooks/use-notification-preferences';
@@ -41,7 +41,7 @@ export default function NotificationPreferencesScreen() {
         {ALL_CATEGORIES.map((cat) => (
           <Toggle
             key={cat}
-            label={CATEGORY_LABELS[cat]}
+            label={CATEGORY_LABEL_STRINGS[cat]}
             value={map.get(cat) ?? DEFAULT_ON[cat]}
             onValueChange={(v) =>
               update.mutate(

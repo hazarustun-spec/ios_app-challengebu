@@ -80,8 +80,15 @@ Deno.test('notif categories: default prefs trigger seeds 8 categories per new pr
   const user = await createTestUser({ email: 'notif-default@test.local' });
 
   const { data } = await supa.from('notification_preferences')
-    .select('category')
+    .select('category, enabled')
     .eq('profile_id', user.userId);
+
+  // Pin enabled=true for all 8 — Plan 8 A3 deliberately flipped the legacy
+  // elo_and_ranking=false default to ladder_movement=true. Without this
+  // assertion, a future migration that silently turns one off would slip
+  // through unnoticed.
+  const allOn = (data ?? []).every((r) => r.enabled === true);
+  assertEquals(allOn, true, `expected all 8 default prefs to be enabled=true`);
 
   const cats = (data ?? []).map((r) => r.category).sort();
   assertEquals(cats.length, 8, `expected 8 default prefs, got ${cats.length}`);

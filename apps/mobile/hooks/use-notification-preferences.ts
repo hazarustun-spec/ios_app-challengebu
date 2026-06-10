@@ -14,11 +14,11 @@ export interface NotificationPreference {
   enabled: boolean;
 }
 
-// Legacy single-string CATEGORY_LABELS map kept for callers that haven't
-// migrated to the richer @tennis/shared `CATEGORY_LABELS` (title/subtitle/icon)
-// yet. Once notification-preferences.tsx is rebuilt against the Plan-8 design
-// the legacy map can be deleted.
-export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
+// Legacy single-string map kept for the pre-Plan-8 notification-preferences.tsx
+// screen. Renamed away from `CATEGORY_LABELS` so it can't silently shadow the
+// richer shape exported by @tennis/shared (title/subtitle/icon). Phase G rebuilds
+// the screen against the shared rich map; this constant can be deleted then.
+export const CATEGORY_LABEL_STRINGS: Record<NotificationCategory, string> = {
   match_invitations: 'Maç teklifleri',
   match_score_pending: 'Maç onayları',
   badges_earned: 'Rozet kazanımı',
