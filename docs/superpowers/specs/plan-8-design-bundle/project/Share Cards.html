@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Share Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style> html, body { margin: 0; height: 100%; } </style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#2270BC"/>
+    <circle cx="50" cy="42" r="18" fill="#8FD43B" stroke="#161618" stroke-width="2.5"/>
+    <rect x="26" y="68" width="48" height="10" rx="5" fill="#fff"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/doodles.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/design-canvas.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, Icon, Avatar, Sparkline, BallMark, eloTrend, ME } = window;
+
+// ---------- shared footer logo ----------
+function CardFooter({ light, onLime }) {
+  const c = light ? '#fff' : 'var(--text)';
+  const sub = light ? 'rgba(255,255,255,.62)' : onLime ? 'rgba(22,22,24,.55)' : 'var(--text-3)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 26 }}>
+      <BallMark size={64} sw={4} stroke={light ? '#fff' : 'var(--text)'} />
+      <div style={{ textAlign: 'left' }}>
+        <div className="tc-display" style={{ fontWeight: 800, fontSize: 44, letterSpacing: '-.01em', color: c, lineHeight: 1, whiteSpace: 'nowrap' }}>Tennis Challenger</div>
+        <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '.14em', color: sub, marginTop: 8, whiteSpace: 'nowrap' }}>BOĞAZİÇİ ÜNİVERSİTESİ</div>
+      </div>
+    </div>
+  );
+}
+
+function StoryShell({ bg, border = 'var(--border-strong)', children }) {
+  return (
+    <div style={{ width: 1080, height: 1920, background: bg, display: 'flex', flexDirection: 'column', padding: 88, boxSizing: 'border-box', position: 'relative', overflow: 'hidden', fontFamily: 'var(--font-sans)' }}>
+      {children}
+    </div>
+  );
+}
+
+// ---------- 1 · Maç sonucu ----------
+function CardMatchResult() {
+  return (
+    <StoryShell bg="var(--court)">
+      {/* court lines backdrop */}
+      <div style={{ position: 'absolute', inset: 64, border: '5px solid rgba(255,255,255,.22)', borderRadius: 16, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', left: 40, right: 40, top: '50%', borderTop: '6px dashed rgba(255,255,255,.16)' }} />
+
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 48 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, background: 'rgba(255,255,255,.14)', border: '4px solid rgba(255,255,255,.5)', padding: '18px 44px', borderRadius: 999 }}>
+          <Icon name="trophy" size={44} color="var(--lime)" />
+          <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: '.18em', color: '#fff' }}>SIRALAMA MAÇI</span>
+        </div>
+
+        <div className="tc-display" style={{ fontWeight: 800, fontSize: 150, letterSpacing: '-.03em', color: '#fff', lineHeight: .95, textAlign: 'center', whiteSpace: 'nowrap' }}>KORT BENİM.</div>
+
+        {/* players */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 72, marginTop: 24 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'inline-block', border: '8px solid var(--lime)', borderRadius: '50%', padding: 8 }}><Avatar name={ME.name} round size={240} /></div>
+            <div style={{ fontSize: 42, fontWeight: 800, color: '#fff', marginTop: 26 }}>{ME.name.split(' ')[0]}</div>
+            <div className="num" style={{ fontSize: 30, fontWeight: 700, color: 'var(--lime)', marginTop: 6 }}>1634 ELO</div>
+          </div>
+          <div className="num" style={{ fontSize: 64, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>VS</div>
+          <div style={{ textAlign: 'center', opacity: .82 }}>
+            <div style={{ display: 'inline-block', border: '8px solid rgba(255,255,255,.4)', borderRadius: '50%', padding: 8 }}><Avatar name="Berk Aydın" round size={240} /></div>
+            <div style={{ fontSize: 42, fontWeight: 800, color: '#fff', marginTop: 26 }}>Berk</div>
+            <div className="num" style={{ fontSize: 30, fontWeight: 700, color: 'rgba(255,255,255,.7)', marginTop: 6 }}>1748 ELO</div>
+          </div>
+        </div>
+
+        {/* score */}
+        <div className="num" style={{ fontWeight: 800, fontSize: 280, lineHeight: 1, color: '#fff', letterSpacing: '-.04em' }}>4–2</div>
+
+        <div className="num" style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--lime)', border: '5px solid var(--border-strong)', borderRadius: 999, padding: '20px 56px', fontWeight: 800, fontSize: 56, color: 'var(--on-lime)', whiteSpace: 'nowrap' }}>
+          <Icon name="chevU" size={52} color="var(--on-lime)" stroke={3} /> +22 ELO
+        </div>
+        <div className="tc-display" style={{ fontSize: 52, fontWeight: 800, color: 'rgba(255,255,255,.92)', letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>Sıradaki kim?</div>
+      </div>
+
+      <div style={{ position: 'relative' }}><CardFooter light /></div>
+    </StoryShell>
+  );
+}
+
+// ---------- 2 · ELO progress ----------
+function CardEloProgress() {
+  const trend = eloTrend({ name: ME.name, elo: ME.elo }, 8);
+  return (
+    <StoryShell bg="var(--bg)">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 44 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <Avatar name={ME.name} round size={120} />
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 44, fontWeight: 800 }}>{ME.name}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-3)', marginTop: 4 }}>Erkek Tek · #4</div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '.2em', color: 'var(--text-3)' }}>GRAFİK YALAN SÖYLEMEZ</div>
+
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 28 }}>
+          <span className="num" style={{ fontWeight: 800, fontSize: 240, lineHeight: .9, letterSpacing: '-.04em' }}>{ME.elo}</span>
+          <span className="num" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 64, color: 'var(--win)', marginBottom: 18 }}>
+            <Icon name="chevU" size={56} color="var(--win)" stroke={3} />38
+          </span>
+        </div>
+
+        {/* chart panel */}
+        <div style={{ width: '100%', background: 'var(--surface)', border: '5px solid var(--border-strong)', borderRadius: 40, padding: '64px 56px 48px' }}>
+          <Sparkline data={trend} color="var(--court)" w={800} h={260} stroke={9} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 28, fontSize: 26, fontWeight: 700, color: 'var(--text-3)' }} className="num">
+            <span>PZT</span><span>SAL</span><span>ÇAR</span><span>PER</span><span>CUM</span><span>CMT</span><span>PAZ</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 24 }}>
+          {[['3', 'MAÇ'], ['3', 'GALİBİYET'], ['%100', 'ORAN']].map(([v, l]) => (
+            <div key={l} style={{ textAlign: 'center', background: 'var(--lime-soft)', border: '5px solid var(--border-strong)', borderRadius: 32, padding: '30px 52px' }}>
+              <div className="num" style={{ fontWeight: 800, fontSize: 72, lineHeight: 1 }}>{v}</div>
+              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '.1em', color: 'var(--text-2)', marginTop: 10 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <CardFooter />
+    </StoryShell>
+  );
+}
+
+// ---------- 3 · Rozet kazanıldı ----------
+function CardBadgeWon() {
+  return (
+    <StoryShell bg="var(--lime)">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 52, position: 'relative' }}>
+        <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '.22em', color: 'var(--on-lime)', opacity: .75, whiteSpace: 'nowrap' }}>ROZET DÜŞTÜ</div>
+
+        {/* big badge medallion */}
+        <div style={{ position: 'relative', width: 560, height: 560 }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#fff', border: '10px solid var(--border-strong)' }} />
+          <div style={{ position: 'absolute', inset: 56, borderRadius: '50%', background: 'var(--clay-softer)', border: '6px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="flame" size={240} color="var(--clay)" stroke={1.8} />
+          </div>
+        </div>
+
+        <div className="tc-display" style={{ fontWeight: 800, fontSize: 120, letterSpacing: '-.02em', color: 'var(--on-lime)', lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap' }}>Seri Avcısı</div>
+        <p style={{ fontSize: 40, fontWeight: 700, color: 'var(--on-lime)', opacity: .8, margin: 0, textAlign: 'center', maxWidth: 760, lineHeight: 1.4 }}>5’te 5. Durduran yok.</p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22, background: '#fff', border: '6px solid var(--border-strong)', borderRadius: 999, padding: '22px 52px' }}>
+          <Avatar name={ME.name} round size={88} />
+          <span style={{ fontSize: 44, fontWeight: 800 }}>{ME.name}</span>
+        </div>
+      </div>
+      <CardFooter onLime />
+    </StoryShell>
+  );
+}
+
+function Board() {
+  return (
+    <DesignCanvas>
+      <DCSection id="share" title="Share Cards" subtitle="Instagram story · 1080×1920 · maç sonucu · ELO progress · rozet">
+        <DCArtboard id="result" label="1 · Maç sonucu" width={1080} height={1920}><CardMatchResult /></DCArtboard>
+        <DCArtboard id="elo" label="2 · ELO progress" width={1080} height={1920}><CardEloProgress /></DCArtboard>
+        <DCArtboard id="badge" label="3 · Rozet kazanıldı" width={1080} height={1920}><CardBadgeWon /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Board />);
+</script>
+</body>
+</html>
