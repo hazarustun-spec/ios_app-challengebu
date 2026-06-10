@@ -1,0 +1,221 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Doodles BallMark renders with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "cx": 50,
+        "cy": 50,
+        "fill": "#8FD43B",
+        "r": 46,
+        "stroke": "#161618",
+        "strokeWidth": 3.2,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "d": "M16 18 C40 36, 40 64, 16 82",
+        "fill": "none",
+        "stroke": "#161618",
+        "strokeLinecap": "round",
+        "strokeWidth": 3.2,
+      },
+      "type": "Path",
+    },
+    {
+      "children": [],
+      "props": {
+        "d": "M84 18 C60 36, 60 64, 84 82",
+        "fill": "none",
+        "stroke": "#161618",
+        "strokeLinecap": "round",
+        "strokeWidth": 3.2,
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "height": 88,
+    "viewBox": "0 0 100 100",
+    "width": 88,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Doodles Cloud renders with custom fill 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M28 64c-13 0-22-9-22-20 0-9 6-16 15-19-1-12 8-21 20-21 9 0 16 5 19 13 3-2 7-3 11-3 11 0 19 8 19 18 9 1 17 7 17 17 0 11-9 18-21 18H28z",
+        "fill": "rgba(255,255,255,0.25)",
+        "stroke": "#161618",
+        "strokeLinejoin": "round",
+        "strokeWidth": 3.4,
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "rgba(255,255,255,0.25)",
+    "height": 74.4,
+    "style": undefined,
+    "viewBox": "0 0 120 74",
+    "width": 120,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Doodles Squiggle renders with pink 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M2 8 C8 2, 14 14, 20 8 S32 2, 38 8 S50 14, 58 8",
+        "fill": "none",
+        "stroke": "#F73FBE",
+        "strokeLinecap": "round",
+        "strokeWidth": 4,
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 16,
+    "style": undefined,
+    "viewBox": "0 0 60 15",
+    "width": 64,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Doodles Star renders with white fill 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M12 2.5l2.2 6.3 6.8.2-5.4 4.1 2 6.6L12 16l-5.6 3.7 2-6.6-5.4-4.1 6.8-.2z",
+        "fill": "#FFFFFF",
+        "stroke": "#FFFFFF",
+        "strokeLinejoin": "round",
+        "strokeWidth": 2.6,
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "#FFFFFF",
+    "height": 22,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 22,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Doodles Dots renders with 9 circles 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "cx": 8,
+        "cy": 20,
+        "fill": "#F73FBE",
+        "r": 2.8,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 20,
+        "cy": 8,
+        "fill": "#F73FBE",
+        "r": 2,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 32,
+        "cy": 20,
+        "fill": "#F73FBE",
+        "r": 2.8,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 20,
+        "cy": 32,
+        "fill": "#F73FBE",
+        "r": 2,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 13,
+        "cy": 13,
+        "fill": "#F73FBE",
+        "r": 2.8,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 27,
+        "cy": 13,
+        "fill": "#F73FBE",
+        "r": 2,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 27,
+        "cy": 27,
+        "fill": "#F73FBE",
+        "r": 2.8,
+      },
+      "type": "Circle",
+    },
+    {
+      "children": [],
+      "props": {
+        "cx": 13,
+        "cy": 27,
+        "fill": "#F73FBE",
+        "r": 2,
+      },
+      "type": "Circle",
+    },
+  ],
+  "props": {
+    "fill": "#F73FBE",
+    "height": 40,
+    "style": undefined,
+    "viewBox": "0 0 40 40",
+    "width": 40,
+  },
+  "type": "Svg",
+}
+`;
