@@ -1,0 +1,354 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Field renders with label + placeholder 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "Ad",
+      ],
+      "props": {
+        "className": "mb-2 text-[11px] font-extrabold tracking-[1.1px] uppercase text-text-3",
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": "Adın",
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Field renders with leading icon + suffix 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#A2A2AA",
+            "name": "mail",
+            "size": 20,
+          },
+          "type": "Icon",
+        },
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": undefined,
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "ad@bogazici.edu.tr",
+          },
+          "type": "TextInput",
+        },
+        {
+          "children": [
+            "değiştir",
+          ],
+          "props": {
+            "className": "ml-2 text-[12.5px] font-semibold text-text-2",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Field renders error state with hint 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": undefined,
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "x",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-loss",
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        "Geçersiz e-posta",
+      ],
+      "props": {
+        "className": "mt-2 text-[12.5px] text-loss",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Field big variant applies larger height + font 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[16px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": "Ad",
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-14 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Field type=password sets secureTextEntry 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": false,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": undefined,
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": true,
+            "value": "secret",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Field onSuffixPress wraps suffix in a Pressable 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": undefined,
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "",
+          },
+          "type": "TextInput",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "göster",
+              ],
+              "props": {
+                "className": "text-[12.5px] font-semibold text-text-2",
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "accessibilityRole": "button",
+            "className": "ml-2 active:opacity-70",
+            "onPress": "[Function]",
+          },
+          "type": "Pressable",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`SearchBar renders with search icon + default placeholder 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#A2A2AA",
+            "name": "search",
+            "size": 20,
+          },
+          "type": "Icon",
+        },
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": "Ara…",
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
+
+exports[`SearchBar custom placeholder 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#A2A2AA",
+            "name": "search",
+            "size": 20,
+          },
+          "type": "Icon",
+        },
+        {
+          "children": [],
+          "props": {
+            "autoCapitalize": "sentences",
+            "autoCorrect": true,
+            "autoFocus": undefined,
+            "className": "ml-2 flex-1 font-sans text-text text-[14.5px]",
+            "keyboardType": "default",
+            "onChangeText": undefined,
+            "placeholder": "Oyuncu ara…",
+            "placeholderTextColor": "#A2A2AA",
+            "secureTextEntry": false,
+            "value": "",
+          },
+          "type": "TextInput",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center rounded-md border-base bg-surface px-3 h-12 border-border-strong",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "w-full",
+  },
+  "type": "View",
+}
+`;
