@@ -1,0 +1,448 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Card default variant renders a View 1`] = `
+{
+  "children": [
+    "Inside",
+  ],
+  "props": {
+    "className": "rounded-lg p-4 bg-surface border-base border-border-strong",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Card interactive variant renders a Pressable with active:opacity-80 1`] = `
+{
+  "children": [
+    "Tap me",
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "className": "rounded-lg p-4 bg-surface border-base border-border-strong active:opacity-80",
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Card featured variant uses court bg 1`] = `
+{
+  "children": [
+    "Hero",
+  ],
+  "props": {
+    "className": "rounded-lg p-4 bg-court border-base border-border-strong",
+  },
+  "type": "View",
+}
+`;
+
+exports[`ListRow icon + title + subtitle + chevron + onPress 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#65656E",
+                "name": "bell",
+                "size": 19,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "className": "w-9 h-9 rounded-sm bg-surface-2 items-center justify-center",
+          },
+          "type": "View",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "Bildirimler",
+              ],
+              "props": {
+                "className": "font-sans font-bold text-[15px] text-text",
+                "numberOfLines": 1,
+              },
+              "type": "Text",
+            },
+            {
+              "children": [
+                "3 yeni",
+              ],
+              "props": {
+                "className": "text-text-3 text-[12.5px] font-semibold mt-0.5",
+                "numberOfLines": 1,
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1 min-w-0",
+          },
+          "type": "View",
+        },
+        {
+          "children": [],
+          "props": {
+            "color": "#A2A2AA",
+            "name": "chevR",
+            "size": 18,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-3 py-3.5 px-4",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "className": "active:opacity-80",
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`ListRow danger row (Hesabı sil) flips title + icon to loss 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#E0463C",
+                "name": "trash",
+                "size": 19,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "className": "w-9 h-9 rounded-sm bg-surface-2 items-center justify-center",
+          },
+          "type": "View",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "Hesabı sil",
+              ],
+              "props": {
+                "className": "font-sans font-bold text-[15px] text-loss",
+                "numberOfLines": 1,
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1 min-w-0",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-3 py-3.5 px-4",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "className": "active:opacity-80",
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`ListRow right node renders between content and chevron 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#65656E",
+            "name": "bell",
+            "size": 19,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "className": "w-9 h-9 rounded-sm bg-surface-2 items-center justify-center",
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Push",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[15px] text-text",
+            "numberOfLines": 1,
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1 min-w-0",
+      },
+      "type": "View",
+    },
+    "ON",
+  ],
+  "props": {
+    "className": "flex-row items-center gap-3 py-3.5 px-4",
+  },
+  "type": "View",
+}
+`;
+
+exports[`NavHeader standard with back + title 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "back",
+                "size": 20,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityRole": "button",
+            "className": "w-9 h-9 rounded-sm bg-surface-2 items-center justify-center",
+            "onPress": "[Function]",
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "Maç detayı",
+              ],
+              "props": {
+                "className": "font-display font-extrabold text-[16px] text-text",
+                "numberOfLines": 1,
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1 items-start",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-2.5 min-h-[48px]",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "pt-2 pb-1 px-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`NavHeader large with title + subtitle 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "Sıralama",
+              ],
+              "props": {
+                "className": "font-display font-extrabold text-[27px] text-text tracking-[-0.27px]",
+              },
+              "type": "Text",
+            },
+            {
+              "children": [
+                "Güz Sezonu · 41 gün kaldı",
+              ],
+              "props": {
+                "className": "text-text-3 text-[13.5px] font-semibold mt-1",
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-2.5 min-h-[48px]",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "pt-1.5 pb-1 px-4.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`NavHeader close icon (modal) + action text 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "x",
+                "size": 20,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityRole": "button",
+            "className": "w-9 h-9 rounded-sm bg-surface-2 items-center justify-center",
+            "onPress": "[Function]",
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "Sezon",
+              ],
+              "props": {
+                "className": "font-display font-extrabold text-[16px] text-text",
+                "numberOfLines": 1,
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1 items-start",
+          },
+          "type": "View",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                "Sıfırla",
+              ],
+              "props": {
+                "className": "font-sans font-bold text-[15px] text-clay",
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "accessibilityRole": "button",
+            "className": "active:opacity-80",
+            "onPress": "[Function]",
+          },
+          "type": "Pressable",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-2.5 min-h-[48px]",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "pt-2 pb-1 px-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`NavHeader action icon variant on large header 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "Maçlar",
+              ],
+              "props": {
+                "className": "font-display font-extrabold text-[27px] text-text tracking-[-0.27px]",
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "className": "flex-1",
+          },
+          "type": "View",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "clock",
+                "size": 21,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityRole": "button",
+            "className": "w-10 h-10 rounded-sm bg-surface-2 items-center justify-center",
+            "onPress": "[Function]",
+          },
+          "type": "Pressable",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center gap-2.5 min-h-[48px]",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "pt-1.5 pb-1 px-4.5",
+  },
+  "type": "View",
+}
+`;
