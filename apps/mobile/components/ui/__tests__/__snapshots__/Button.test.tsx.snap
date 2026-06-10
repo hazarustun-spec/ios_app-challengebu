@@ -1,0 +1,396 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Button renders text in primary variant md size 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "Maç oluştur",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders disabled state 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "Disabled",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": true,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill opacity-50",
+    "disabled": true,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders loading state with ActivityIndicator 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "size": "small",
+      },
+      "type": "ActivityIndicator",
+    },
+    {
+      "children": [
+        "Yükleniyor",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": true,
+      "disabled": true,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill opacity-50",
+    "disabled": true,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders primary variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "primary",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders secondary variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "secondary",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-text",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-surface border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders danger variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "danger",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-white",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-loss border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders dark variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "dark",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-white",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-clay border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders ghost variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "ghost",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-text",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-transparent border-0 h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders tonal variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "tonal",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-text-2",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-surface-2 border-0 h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders sm size 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "sm",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[13px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-9 px-3 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders md size 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "md",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button renders lg size 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "lg",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[15.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-14 px-5 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button full width prop applies w-full 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "Full",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill w-full active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Button arrow prop renders the chevron after children 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        "İleri",
+      ],
+      "props": {
+        "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        "›",
+      ],
+      "props": {
+        "className": "text-on-lime text-[14.5px]",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "busy": undefined,
+      "disabled": undefined,
+    },
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "disabled": undefined,
+    "onPress": undefined,
+  },
+  "type": "Pressable",
+}
+`;
