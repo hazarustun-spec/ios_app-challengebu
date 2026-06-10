@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Alert, Text, View } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
+import { useSignOut } from '../../hooks/use-sign-out';
 import { invokeFunction } from '../../lib/invoke-function';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
@@ -10,11 +11,10 @@ export default function SettingsScreen() {
   const signOutStore = useAuthStore((s) => s.signOut);
   const session = useAuthStore((s) => s.session);
   const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
+  const signOutMutation = useSignOut();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    signOutStore();
-    router.replace('/(auth)/sign-in');
+  const handleLogout = () => {
+    signOutMutation.mutate();
   };
 
   const confirmDelete = () => {
@@ -61,7 +61,7 @@ export default function SettingsScreen() {
             Admin Paneli
           </Button>
         ) : null}
-        <Button onPress={handleLogout} variant="secondary">
+        <Button onPress={handleLogout} variant="secondary" loading={signOutMutation.isPending}>
           Çıkış yap
         </Button>
         <Text className="mt-6 text-sm text-gray-500">Hesabını kalıcı olarak sil:</Text>

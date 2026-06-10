@@ -116,6 +116,10 @@ export async function cleanupTestData(): Promise<void> {
   // yearly_championship does not cascade from seasons so delete explicitly.
   await supa.from('yearly_championship').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('seasons').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // push_tokens cascade from profiles, but nuke explicitly so tokens left over
+  // from earlier tests can't leak into deactivate-push-token's cross-user
+  // assertions (defense-in-depth mirroring the patterns above).
+  await supa.from('push_tokens').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // Delete profiles left over from anonymize-account tests. Anonymization rewrites the
   // profile email to `anonymized-<uuid>@deleted.local` while the corresponding
   // auth.users.email keeps its original `@test.local` suffix, so the loop below catches
