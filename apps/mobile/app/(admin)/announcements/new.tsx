@@ -58,16 +58,14 @@ export default function NewAnnouncementScreen() {
           numberOfLines={5}
           style={{ minHeight: 120, textAlignVertical: 'top' }}
         />
-        <Toggle
-          label="Sadece aktif oyunculara"
-          value={onlyActive}
-          onValueChange={setOnlyActive}
-        />
-        <Toggle
-          label="Push bildirimi de gönder"
-          value={sendPush}
-          onValueChange={setSendPush}
-        />
+        <View className="mb-3 flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+          <Text className="flex-1 text-base text-gray-800">Sadece aktif oyunculara</Text>
+          <Toggle value={onlyActive} onChange={setOnlyActive} />
+        </View>
+        <View className="mb-3 flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+          <Text className="flex-1 text-base text-gray-800">Push bildirimi de gönder</Text>
+          <Toggle value={sendPush} onChange={setSendPush} />
+        </View>
         <Text className="text-[10px] text-gray-500">
           Push, kullanıcının &quot;Topluluk duyuruları&quot; tercihi açıksa gönderilir.
         </Text>

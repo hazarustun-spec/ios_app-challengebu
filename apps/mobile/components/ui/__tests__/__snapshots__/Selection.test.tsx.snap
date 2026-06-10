@@ -1,0 +1,386 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Segmented renders 3 options with one selected 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            "Haftalık",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[14px] text-text",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "accessibilityRole": "button",
+        "accessibilityState": {
+          "selected": true,
+        },
+        "className": "mx-[1px] flex-1 flex-row items-center justify-center rounded-sm border-base border-border-strong bg-surface",
+        "onPress": "[Function]",
+      },
+      "type": "Pressable",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Aylık",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[14px] text-text-2",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "accessibilityRole": "button",
+        "accessibilityState": {
+          "selected": false,
+        },
+        "className": "mx-[1px] flex-1 flex-row items-center justify-center rounded-sm border-base border-transparent bg-transparent",
+        "onPress": "[Function]",
+      },
+      "type": "Pressable",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Sezon",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[14px] text-text-2",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "accessibilityRole": "button",
+        "accessibilityState": {
+          "selected": false,
+        },
+        "className": "mx-[1px] flex-1 flex-row items-center justify-center rounded-sm border-base border-transparent bg-transparent",
+        "onPress": "[Function]",
+      },
+      "type": "Pressable",
+    },
+  ],
+  "props": {
+    "className": "flex-row rounded-md bg-surface-2 p-[3px] h-11",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Segmented sm size variant 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            "A",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[13px] text-text",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "accessibilityRole": "button",
+        "accessibilityState": {
+          "selected": true,
+        },
+        "className": "mx-[1px] flex-1 flex-row items-center justify-center rounded-sm border-base border-border-strong bg-surface",
+        "onPress": "[Function]",
+      },
+      "type": "Pressable",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "B",
+          ],
+          "props": {
+            "className": "font-sans font-bold text-[13px] text-text-2",
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "accessibilityRole": "button",
+        "accessibilityState": {
+          "selected": false,
+        },
+        "className": "mx-[1px] flex-1 flex-row items-center justify-center rounded-sm border-base border-transparent bg-transparent",
+        "onPress": "[Function]",
+      },
+      "type": "Pressable",
+    },
+  ],
+  "props": {
+    "className": "flex-row rounded-md bg-surface-2 p-[3px] h-[38px]",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Toggle renders off state 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "className": "h-full w-full rounded-full bg-white",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "absolute rounded-full",
+        "style": [
+          {
+            "height": 24,
+            "top": 3,
+            "width": 24,
+          },
+          {
+            "left": 3,
+          },
+        ],
+      },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "switch",
+    "accessibilityState": {
+      "checked": false,
+      "disabled": undefined,
+    },
+    "className": "relative h-[30px] w-[50px] flex-shrink-0 rounded-pill bg-surface-3 ",
+    "disabled": undefined,
+    "hitSlop": {
+      "bottom": 7,
+      "left": 4,
+      "right": 4,
+      "top": 7,
+    },
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Toggle renders on state 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "className": "h-full w-full rounded-full bg-white",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "absolute rounded-full",
+        "style": [
+          {
+            "height": 24,
+            "top": 3,
+            "width": 24,
+          },
+          {
+            "left": 23,
+          },
+        ],
+      },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "switch",
+    "accessibilityState": {
+      "checked": true,
+      "disabled": undefined,
+    },
+    "className": "relative h-[30px] w-[50px] flex-shrink-0 rounded-pill bg-win ",
+    "disabled": undefined,
+    "hitSlop": {
+      "bottom": 7,
+      "left": 4,
+      "right": 4,
+      "top": 7,
+    },
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Toggle renders disabled state 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "className": "h-full w-full rounded-full bg-white",
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "absolute rounded-full",
+        "style": [
+          {
+            "height": 24,
+            "top": 3,
+            "width": 24,
+          },
+          {
+            "left": 23,
+          },
+        ],
+      },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "switch",
+    "accessibilityState": {
+      "checked": true,
+      "disabled": true,
+    },
+    "className": "relative h-[30px] w-[50px] flex-shrink-0 rounded-pill bg-win opacity-50",
+    "disabled": true,
+    "hitSlop": {
+      "bottom": 7,
+      "left": 4,
+      "right": 4,
+      "top": 7,
+    },
+    "onPress": "[Function]",
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`CheckBox square unchecked 1`] = `
+{
+  "children": [],
+  "props": {
+    "accessibilityRole": "checkbox",
+    "accessibilityState": {
+      "checked": false,
+      "disabled": undefined,
+    },
+    "className": "items-center justify-center border-base rounded-xs bg-transparent border-border-strong ",
+    "disabled": undefined,
+    "onPress": "[Function]",
+    "style": {
+      "height": 24,
+      "width": 24,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`CheckBox square checked renders inner Icon 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#FFFFFF",
+        "name": "check",
+        "size": 14,
+        "stroke": 3,
+      },
+      "type": "Icon",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "checkbox",
+    "accessibilityState": {
+      "checked": true,
+      "disabled": undefined,
+    },
+    "className": "items-center justify-center border-base rounded-xs bg-clay border-clay ",
+    "disabled": undefined,
+    "onPress": "[Function]",
+    "style": {
+      "height": 24,
+      "width": 24,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`CheckBox circle (radio) checked exposes accessibilityRole=radio 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#FFFFFF",
+        "name": "check",
+        "size": 14,
+        "stroke": 3,
+      },
+      "type": "Icon",
+    },
+  ],
+  "props": {
+    "accessibilityRole": "radio",
+    "accessibilityState": {
+      "checked": true,
+      "disabled": undefined,
+    },
+    "className": "items-center justify-center border-base rounded-full bg-clay border-clay ",
+    "disabled": undefined,
+    "onPress": "[Function]",
+    "style": {
+      "height": 24,
+      "width": 24,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`CheckBox disabled state 1`] = `
+{
+  "children": [],
+  "props": {
+    "accessibilityRole": "checkbox",
+    "accessibilityState": {
+      "checked": false,
+      "disabled": true,
+    },
+    "className": "items-center justify-center border-base rounded-xs bg-transparent border-border-strong opacity-50",
+    "disabled": true,
+    "onPress": "[Function]",
+    "style": {
+      "height": 24,
+      "width": 24,
+    },
+  },
+  "type": "Pressable",
+}
+`;

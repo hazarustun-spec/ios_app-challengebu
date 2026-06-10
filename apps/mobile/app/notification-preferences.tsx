@@ -39,17 +39,23 @@ export default function NotificationPreferencesScreen() {
       </Text>
       <View>
         {ALL_CATEGORIES.map((cat) => (
-          <Toggle
+          <View
             key={cat}
-            label={CATEGORY_LABEL_STRINGS[cat]}
-            value={map.get(cat) ?? DEFAULT_ON[cat]}
-            onValueChange={(v) =>
-              update.mutate(
-                { category: cat, enabled: v },
-                { onError: () => Alert.alert('Hata', 'Tercih kaydedilemedi.') },
-              )
-            }
-          />
+            className="mb-3 flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3"
+          >
+            <Text className="flex-1 text-base text-gray-800">
+              {CATEGORY_LABEL_STRINGS[cat]}
+            </Text>
+            <Toggle
+              value={map.get(cat) ?? DEFAULT_ON[cat]}
+              onChange={(v) =>
+                update.mutate(
+                  { category: cat, enabled: v },
+                  { onError: () => Alert.alert('Hata', 'Tercih kaydedilemedi.') },
+                )
+              }
+            />
+          </View>
         ))}
       </View>
     </ScreenContainer>

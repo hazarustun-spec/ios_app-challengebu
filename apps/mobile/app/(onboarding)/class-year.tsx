@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Text, View } from 'react-native';
 import { RadioGroup } from '../../components/ui/RadioGroup';
 import { Toggle } from '../../components/ui/Toggle';
 import { StepLayout } from '../../components/onboarding/StepLayout';
@@ -35,7 +36,10 @@ export default function ClassYearScreen() {
   return (
     <StepLayout step={6} total={TOTAL_STEPS} title="Sınıf" onNext={handleNext}>
       <RadioGroup label="Sınıfını seç" options={OPTIONS} value={value} onChange={setValue} error={error} />
-      <Toggle label="Sınıfı profilimde göster" value={show} onValueChange={setShow} />
+      <View className="mt-4 flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+        <Text className="flex-1 text-base text-gray-800">Sınıfı profilimde göster</Text>
+        <Toggle value={show} onChange={setShow} />
+      </View>
     </StepLayout>
   );
 }

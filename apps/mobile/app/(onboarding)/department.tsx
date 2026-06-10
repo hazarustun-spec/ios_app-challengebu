@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { RadioGroup } from '../../components/ui/RadioGroup';
 import { Toggle } from '../../components/ui/Toggle';
 import { StepLayout } from '../../components/onboarding/StepLayout';
@@ -50,7 +50,10 @@ export default function DepartmentScreen() {
           />
         </ScrollView>
       </View>
-      <Toggle label="Bölümü profilimde göster" value={showDepartment} onValueChange={setShowDepartment} />
+      <View className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
+        <Text className="flex-1 text-base text-gray-800">Bölümü profilimde göster</Text>
+        <Toggle value={showDepartment} onChange={setShowDepartment} />
+      </View>
     </StepLayout>
   );
 }
