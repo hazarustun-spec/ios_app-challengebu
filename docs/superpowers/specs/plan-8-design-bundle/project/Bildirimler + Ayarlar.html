@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tennis Challenger — Bildirimler + Ayarlar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<style> html, body { margin: 0; height: 100%; } </style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#fff"/>
+    <path d="M50 18a16 16 0 0 1 16 16v10l6 10H28l6-10V34a16 16 0 0 1 16-16z" fill="#8FD43B" stroke="#161618" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="50" cy="62" r="5" fill="#161618"/>
+    <circle cx="66" cy="24" r="9" fill="#C81E92" stroke="#161618" stroke-width="2"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/image-slot.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/doodles.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/screens-leaderboard.jsx"></script>
+<script type="text/babel" src="app/screens-notifs.jsx"></script>
+<script type="text/babel" src="app/screens-profile.jsx"></script>
+<script type="text/babel" src="app/design-canvas.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard, StatusBar, TabBar, AppCtx, SCREENS } = window;
+
+const FLOW = [
+  ['notifs', '1 · Bildirim merkezi (okunmadı vurgusu + kategoriler)', {}],
+  ['notifs_empty', '2 · Bildirim · boş durum', {}],
+  ['notif_prefs', '3 · Bildirim ayarları (kategori toggle’ları)', {}],
+  ['settings', '4 · Ayarlar ana ekran', {}],
+  ['delete_account', '5 · Hesabı sil (7 gün geri alma)', {}],
+];
+
+const fakeNav = { go(){}, replace(){}, back(){}, reset(){}, sheet(){}, closeSheet(){}, modal(){}, closeModal(){}, toast(){} };
+
+class EB extends React.Component {
+  constructor(p){ super(p); this.state = { err: false }; }
+  static getDerivedStateFromError(){ return { err: true }; }
+  componentDidCatch(){}
+  render(){
+    if (this.state.err) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, padding: 24, textAlign: 'center' }}>Statik render edilemiyor</div>;
+    return this.props.children;
+  }
+}
+
+function Phone({ meta, params }) {
+  const Comp = meta.comp;
+  return (
+    <div style={{ padding: 11, background: '#1A1A1C', borderRadius: 56, border: '1.5px solid var(--border-strong)' }}>
+      <div data-theme="light" className="tc-screen" style={{ width: 393, height: 852, display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative', overflow: 'hidden', borderRadius: 46 }}>
+        <div style={{ position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)', width: 124, height: 35, background: '#000', borderRadius: 20, zIndex: 100 }} />
+        {!meta.noStatus && <StatusBar dark={false} />}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+          <EB><Comp params={params} /></EB>
+        </div>
+        {meta.tab && <TabBar active={meta.tab} onTab={() => {}} />}
+      </div>
+    </div>
+  );
+}
+
+function Board() {
+  return (
+    <AppCtx.Provider value={{ nav: fakeNav, theme: 'light', setTheme(){}, dark: false }}>
+      <DesignCanvas>
+        <DCSection id="notifs" title="Bildirimler + Ayarlar" subtitle="Bildirim merkezi · boş durum · kategori toggle’ları · ayarlar · hesap silme">
+          {FLOW.map(([id, label, params]) => {
+            const meta = SCREENS[id];
+            if (!meta) return null;
+            return (
+              <DCArtboard key={id} id={id} label={label} width={415} height={874}>
+                <Phone meta={meta} params={params} />
+              </DCArtboard>
+            );
+          })}
+        </DCSection>
+      </DesignCanvas>
+    </AppCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Board />);
+</script>
+</body>
+</html>
