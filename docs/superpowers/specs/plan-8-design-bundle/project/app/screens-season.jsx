@@ -64,10 +64,31 @@ function Slot({ name, elo, win, top }) {
   );
 }
 function Match({ a, b }) {
-  return <div style={{ width: 124, border: '1px solid var(--border)', borderRadius: 'var(--r-sm)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}><Slot {...a} top /><Slot {...b} /></div>;
+  return <div style={{ width: 124, border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-sm)', overflow: 'hidden' }}><Slot {...a} top /><Slot {...b} /></div>;
 }
-function Bracket() {
+// doubles slot — two stacked players per side
+function TeamSlot({ team, win, top }) {
+  return (
+    <div style={{ padding: '7px 9px', background: win ? 'var(--clay-softer)' : 'var(--surface)', borderTop: top ? 'none' : '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: -4 }}>
+          {team ? <>
+            <Avatar name={team[0]} size={20} />
+            <div style={{ marginLeft: -6 }}><Avatar name={team[1]} size={20} /></div>
+          </> : <div style={{ width: 20, height: 20, borderRadius: 'var(--r-xs)', background: 'var(--surface-3)' }} />}
+        </div>
+        {win && <Icon name="check" size={12} color="var(--clay)" stroke={3} />}
+      </div>
+      <div style={{ fontSize: 10.5, fontWeight: win ? 800 : 600, color: team ? 'var(--text)' : 'var(--text-3)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team ? `${team[0].split(' ')[0]} & ${team[1].split(' ')[0]}` : '—'}</div>
+    </div>
+  );
+}
+function TeamMatch({ a, b }) {
+  return <div style={{ width: 138, border: '1.5px solid var(--border-strong)', borderRadius: 'var(--r-sm)', overflow: 'hidden' }}><TeamSlot {...a} top /><TeamSlot {...b} /></div>;
+}
+function Bracket({ params = {} }) {
   const { nav } = useApp();
+  if (params.doubles) return <DoublesBracket />;
   const qf = [[{ name: 'Kaan Demir', win: true }, { name: 'Eren Doğan' }], [{ name: 'Mert Şahin', win: true }, { name: 'Ali Koç' }], [{ name: 'Berk Aydın', win: true }, { name: 'Onur Çelik' }], [{ name: 'Emre Yıldız', win: true }, { name: 'Can Öztürk' }]];
   const sf = [[{ name: 'Kaan Demir', win: true }, { name: 'Mert Şahin' }], [{ name: 'Berk Aydın' }, { name: 'Emre Yıldız', win: true }]];
   const f = [{ name: 'Kaan Demir', win: true }, { name: 'Emre Yıldız' }];
@@ -91,6 +112,38 @@ function Bracket() {
               <Icon name="crown" size={24} color="#fff" />
               <div style={{ fontWeight: 800, fontSize: 13, color: '#fff', marginTop: 4 }}>Kaan Demir</div>
               <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.85)', fontWeight: 600 }}>Şampiyon</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- 44b: doubles bracket (4 teams) ----------
+function DoublesBracket() {
+  const { nav } = useApp();
+  const sf = [
+    [{ team: ['Kaan Demir', 'Mert Şahin'], win: true }, { team: ['Ali Koç', 'Onur Çelik'] }],
+    [{ team: ['Berk Aydın', 'Eren Doğan'] }, { team: ['Emre Yıldız', 'Can Öztürk'], win: true }],
+  ];
+  const f = [{ team: ['Kaan Demir', 'Mert Şahin'], win: true }, { team: ['Emre Yıldız', 'Can Öztürk'] }];
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <NavHeader onBack={() => nav.back()} title="Sezon Finali" subtitle="Erkek Çift · Top 4 · tek eleme" />
+      <div className="scroll-y" style={{ flex: 1, overflowX: 'auto', padding: '12px 16px 24px' }}>
+        <div style={{ display: 'flex', gap: 22, minWidth: 'max-content', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>Yarı Final</div>
+            {sf.map((m, i) => <TeamMatch key={i} a={m[0]} b={m[1]} />)}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--clay)', textTransform: 'uppercase', letterSpacing: '.05em' }}>Final · 3 Set</div>
+            <TeamMatch a={f[0]} b={f[1]} />
+            <div style={{ marginTop: 14, textAlign: 'center', background: 'var(--court)', borderRadius: 'var(--r-md)', padding: '14px 12px', width: 138, border: '1.5px solid var(--border-strong)' }}>
+              <Icon name="crown" size={24} color="#fff" />
+              <div style={{ fontWeight: 800, fontSize: 12.5, color: '#fff', marginTop: 4 }}>Kaan &amp; Mert</div>
+              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.85)', fontWeight: 600 }}>Çift Şampiyon</div>
             </div>
           </div>
         </div>
@@ -158,6 +211,7 @@ function SeasonArchive() {
 registerScreens([
   { id: 'season', group: 'Sezon & Turnuva', title: 'Aktif sezon', comp: Season },
   { id: 'bracket', group: 'Sezon & Turnuva', title: 'Finale bracket', comp: Bracket },
+  { id: 'bracket_doubles', group: 'Sezon & Turnuva', title: 'Finale bracket · çift', comp: (p) => <Bracket params={{ doubles: true }} /> },
   { id: 'annual_champ', group: 'Sezon & Turnuva', title: 'Yıllık şampiyon', comp: AnnualChamp },
   { id: 'season_archive', group: 'Sezon & Turnuva', title: 'Geçmiş sezonlar', comp: SeasonArchive },
 ]);
