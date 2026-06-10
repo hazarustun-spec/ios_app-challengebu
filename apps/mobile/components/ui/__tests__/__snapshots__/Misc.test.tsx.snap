@@ -1,0 +1,684 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`GreetHeader renders name + sub + bell 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            "Selam,",
+          ],
+          "props": {
+            "className": "font-sans",
+            "style": {
+              "color": "#A2A2AA",
+              "fontSize": 13,
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "Hazar",
+          ],
+          "props": {
+            "className": "font-display font-extrabold",
+            "numberOfLines": 1,
+            "style": {
+              "color": "#161618",
+              "fontSize": 24,
+              "letterSpacing": -0.5,
+              "lineHeight": 28,
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "Bugün maç günü mü?",
+          ],
+          "props": {
+            "className": "font-sans font-semibold",
+            "numberOfLines": 1,
+            "style": {
+              "color": "#65656E",
+              "fontSize": 13,
+              "marginTop": 3,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "flex": 1,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "count": 3,
+          },
+          "type": "BellWithBadge",
+        },
+      ],
+      "props": {
+        "accessibilityLabel": "Bildirimler",
+        "accessibilityRole": "button",
+        "className": "items-center justify-center",
+        "onPress": "[Function]",
+        "style": {
+          "height": 44,
+          "marginRight": -8,
+          "width": 44,
+        },
+      },
+      "type": "Pressable",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center justify-between",
+    "style": {
+      "paddingBottom": 8,
+      "paddingHorizontal": 18,
+      "paddingTop": 14,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`GreetHeader without sub line 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            "Selam,",
+          ],
+          "props": {
+            "className": "font-sans",
+            "style": {
+              "color": "#A2A2AA",
+              "fontSize": 13,
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "Hazar",
+          ],
+          "props": {
+            "className": "font-display font-extrabold",
+            "numberOfLines": 1,
+            "style": {
+              "color": "#161618",
+              "fontSize": 24,
+              "letterSpacing": -0.5,
+              "lineHeight": 28,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "flex": 1,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "count": 0,
+          },
+          "type": "BellWithBadge",
+        },
+      ],
+      "props": {
+        "accessibilityLabel": "Bildirimler",
+        "accessibilityRole": "button",
+        "className": "items-center justify-center",
+        "onPress": undefined,
+        "style": {
+          "height": 44,
+          "marginRight": -8,
+          "width": 44,
+        },
+      },
+      "type": "Pressable",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center justify-between",
+    "style": {
+      "paddingBottom": 8,
+      "paddingHorizontal": 18,
+      "paddingTop": 14,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`LevelRing mid-tier ELO forwards the level color as Avatar ring 1`] = `
+{
+  "children": [],
+  "props": {
+    "name": "Mert Şahin",
+    "ring": "#2742A0",
+    "size": 82,
+    "uri": undefined,
+  },
+  "type": "Avatar",
+}
+`;
+
+exports[`EmptyState info tone with action button 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#161618",
+            "name": "matches",
+            "size": 32,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#F3F3F1",
+          "borderRadius": 36,
+          "height": 72,
+          "justifyContent": "center",
+          "width": 72,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        "Henüz maç yok",
+      ],
+      "props": {
+        "className": "font-display font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 21,
+          "letterSpacing": -0.42,
+          "textAlign": "center",
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        "İlk maçını oluştur.",
+      ],
+      "props": {
+        "className": "font-sans",
+        "style": {
+          "color": "#65656E",
+          "fontSize": 14,
+          "lineHeight": 20,
+          "textAlign": "center",
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Yeni maç oluştur",
+          ],
+          "props": {
+            "onPress": "[Function]",
+            "variant": "primary",
+          },
+          "type": "Button",
+        },
+      ],
+      "props": {
+        "style": {
+          "marginTop": 8,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-1 items-center justify-center",
+    "style": {
+      "gap": 16,
+      "paddingHorizontal": 32,
+      "paddingVertical": 40,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`EmptyState error tone with extra technical code 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#E0463C",
+            "name": "lock",
+            "size": 32,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#FCE6E4",
+          "borderRadius": 36,
+          "height": 72,
+          "justifyContent": "center",
+          "width": 72,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        "Oturum süresi doldu",
+      ],
+      "props": {
+        "className": "font-display font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 21,
+          "letterSpacing": -0.42,
+          "textAlign": "center",
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        "Yeniden giriş yap.",
+      ],
+      "props": {
+        "className": "font-sans",
+        "style": {
+          "color": "#65656E",
+          "fontSize": 14,
+          "lineHeight": 20,
+          "textAlign": "center",
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Tekrar giriş yap",
+          ],
+          "props": {
+            "onPress": "[Function]",
+            "variant": "primary",
+          },
+          "type": "Button",
+        },
+      ],
+      "props": {
+        "style": {
+          "marginTop": 8,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "TOKEN_EXPIRED · 401",
+          ],
+          "props": {},
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "marginTop": 8,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-1 items-center justify-center",
+    "style": {
+      "gap": 16,
+      "paddingHorizontal": 32,
+      "paddingVertical": 40,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`BellWithBadge count=0 renders bell only (no badge pip) 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "name": "bell",
+        "size": 24,
+      },
+      "type": "Icon",
+    },
+  ],
+  "props": {},
+  "type": "View",
+}
+`;
+
+exports[`BellWithBadge count=5 renders bell + pip with "5" 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "name": "bell",
+        "size": 24,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            5,
+          ],
+          "props": {
+            "className": "font-sans font-extrabold",
+            "style": {
+              "color": "#FFFFFF",
+              "fontSize": 10,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#C81E92",
+          "borderColor": "#FFFFFF",
+          "borderRadius": 8.5,
+          "borderWidth": 1.5,
+          "height": 17,
+          "justifyContent": "center",
+          "minWidth": 17,
+          "paddingHorizontal": 4,
+          "position": "absolute",
+          "right": -6,
+          "top": -4,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {},
+  "type": "View",
+}
+`;
+
+exports[`BellWithBadge count=150 overflows to "99+" 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "name": "bell",
+        "size": 24,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "99+",
+          ],
+          "props": {
+            "className": "font-sans font-extrabold",
+            "style": {
+              "color": "#FFFFFF",
+              "fontSize": 10,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#C81E92",
+          "borderColor": "#FFFFFF",
+          "borderRadius": 8.5,
+          "borderWidth": 1.5,
+          "height": 17,
+          "justifyContent": "center",
+          "minWidth": 17,
+          "paddingHorizontal": 4,
+          "position": "absolute",
+          "right": -6,
+          "top": -4,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {},
+  "type": "View",
+}
+`;
+
+exports[`ScoreInput with court tint (my-side button) 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#2270BC",
+        "name": "plus",
+        "size": 27,
+        "stroke": 2.6,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Sana sayı",
+      ],
+      "props": {
+        "className": "font-sans font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 13.5,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityLabel": "Sana sayı",
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "disabled": false,
+    },
+    "className": "items-center justify-center rounded-lg border-base border-border-strong bg-surface active:opacity-80",
+    "disabled": undefined,
+    "onPress": "[Function]",
+    "style": {
+      "flex": 1,
+      "gap": 5,
+      "height": 84,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`ScoreInput without tint (opponent button) falls back to ink 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "name": "plus",
+        "size": 27,
+        "stroke": 2.6,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Berk sayı",
+      ],
+      "props": {
+        "className": "font-sans font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 13.5,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityLabel": "Berk sayı",
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "disabled": false,
+    },
+    "className": "items-center justify-center rounded-lg border-base border-border-strong bg-surface active:opacity-80",
+    "disabled": undefined,
+    "onPress": "[Function]",
+    "style": {
+      "flex": 1,
+      "gap": 5,
+      "height": 84,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`ScoreInput disabled drops onPress + adds opacity-50 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#161618",
+        "name": "plus",
+        "size": 27,
+        "stroke": 2.6,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Disabled",
+      ],
+      "props": {
+        "className": "font-sans font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 13.5,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "accessibilityLabel": "Disabled",
+    "accessibilityRole": "button",
+    "accessibilityState": {
+      "disabled": true,
+    },
+    "className": "items-center justify-center rounded-lg border-base border-border-strong bg-surface active:opacity-80 opacity-50",
+    "disabled": true,
+    "onPress": undefined,
+    "style": {
+      "flex": 1,
+      "gap": 5,
+      "height": 84,
+    },
+  },
+  "type": "Pressable",
+}
+`;
+
+exports[`Skel default size 1`] = `
+{
+  "children": [],
+  "props": {
+    "style": [
+      {
+        "opacity": 0.45,
+      },
+      {
+        "backgroundColor": "#F3F3F1",
+        "borderRadius": 6,
+        "height": 16,
+        "width": "100%",
+      },
+      undefined,
+    ],
+  },
+  "type": "Animated.View",
+}
+`;
+
+exports[`Skel custom dimensions 1`] = `
+{
+  "children": [],
+  "props": {
+    "style": [
+      {
+        "opacity": 0.45,
+      },
+      {
+        "backgroundColor": "#F3F3F1",
+        "borderRadius": 16,
+        "height": 32,
+        "width": 120,
+      },
+      undefined,
+    ],
+  },
+  "type": "Animated.View",
+}
+`;
