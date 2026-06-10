@@ -1,0 +1,362 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Icon renders chevR with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M9 5l7 7-7 7",
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders plus with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M12 5v14M5 12h14",
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders trophy with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "d": "M7 4h10v4a5 5 0 0 1-10 0z",
+          },
+          "type": "Path",
+        },
+        {
+          "children": [],
+          "props": {
+            "d": "M7 5H4v2a3 3 0 0 0 3 3m10-5h3v2a3 3 0 0 1-3 3M9 18h6m-3-4v4m-3 2h6",
+          },
+          "type": "Path",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders mail with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "height": 14,
+            "rx": 2,
+            "width": 18,
+            "x": 3,
+            "y": 5,
+          },
+          "type": "Rect",
+        },
+        {
+          "children": [],
+          "props": {
+            "d": "M3 7l9 6 9-6",
+          },
+          "type": "Path",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders check with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M4 12l5 5L20 6",
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders warn with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "d": "M12 3l9 16H3z",
+          },
+          "type": "Path",
+        },
+        {
+          "children": [],
+          "props": {
+            "d": "M12 10v4m0 3v.5",
+          },
+          "type": "Path",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders lock with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "height": 9,
+            "rx": 2,
+            "width": 14,
+            "x": 5,
+            "y": 11,
+          },
+          "type": "Rect",
+        },
+        {
+          "children": [],
+          "props": {
+            "d": "M8 11V8a4 4 0 0 1 8 0v3",
+          },
+          "type": "Path",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon renders dots with defaults 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "cx": 5,
+            "cy": 12,
+            "r": 1.6,
+          },
+          "type": "Circle",
+        },
+        {
+          "children": [],
+          "props": {
+            "cx": 12,
+            "cy": 12,
+            "r": 1.6,
+          },
+          "type": "Circle",
+        },
+        {
+          "children": [],
+          "props": {
+            "cx": 19,
+            "cy": 12,
+            "r": 1.6,
+          },
+          "type": "Circle",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon applies custom size, color, stroke, fill 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "d": "M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z",
+      },
+      "type": "Path",
+    },
+  ],
+  "props": {
+    "fill": "#F5B924",
+    "height": 32,
+    "stroke": "#F5B924",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 1.6,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 32,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Icon multi-shape icon (settings) preserves child element order 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "cx": 12,
+            "cy": 12,
+            "r": 3,
+          },
+          "type": "Circle",
+        },
+        {
+          "children": [],
+          "props": {
+            "d": "M12 2v3m0 14v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M2 12h3m14 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1",
+          },
+          "type": "Path",
+        },
+      ],
+      "props": {},
+      "type": "Fragment",
+    },
+  ],
+  "props": {
+    "fill": "none",
+    "height": 24,
+    "stroke": "#161618",
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "strokeWidth": 2,
+    "style": undefined,
+    "viewBox": "0 0 24 24",
+    "width": 24,
+  },
+  "type": "Svg",
+}
+`;
