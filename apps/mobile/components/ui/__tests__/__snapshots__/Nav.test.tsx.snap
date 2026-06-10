@@ -1,0 +1,855 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Avatar initials from "Aleyna Kaya" → AK 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "AK",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2E3E8C",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 17,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DBE2F0",
+              "borderRadius": 22,
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar initials from single name → A 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "A",
+              ],
+              "props": {
+                "style": {
+                  "color": "#27408A",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 17,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#D6E0F4",
+              "borderRadius": 22,
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar size 92 (large profile) scales the box + font 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "KD",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2E3E8C",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 35,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DBE2F0",
+              "borderRadius": 46,
+              "height": 92,
+              "justifyContent": "center",
+              "width": 92,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 46,
+          "height": 92,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 92,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 92,
+      "width": 92,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar with ring renders a colored outer container with 3px padding 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "M",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2742A0",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 14,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DDE3F2",
+              "borderRadius": 19,
+              "height": 38,
+              "justifyContent": "center",
+              "width": 38,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#2270BC",
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 3,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar with number badge renders pink-deep circle + numeric text 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "M",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2742A0",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 17,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DDE3F2",
+              "borderRadius": 22,
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            1,
+          ],
+          "props": {
+            "style": {
+              "color": "#FFFFFF",
+              "fontSize": 11,
+              "fontWeight": "800",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#C81E92",
+          "borderColor": "#1A1A1A",
+          "borderRadius": 9,
+          "borderWidth": 1.5,
+          "height": 18,
+          "justifyContent": "center",
+          "minWidth": 18,
+          "paddingHorizontal": 4,
+          "position": "absolute",
+          "right": -2,
+          "top": -2,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar with frozen badge renders snow icon over frozen color 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "M",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2742A0",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 17,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DDE3F2",
+              "borderRadius": 22,
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#FFFFFF",
+            "name": "snow",
+            "size": 10,
+            "stroke": 2.4,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#5E7CB4",
+          "borderColor": "#1A1A1A",
+          "borderRadius": 9,
+          "borderWidth": 1.5,
+          "height": 18,
+          "justifyContent": "center",
+          "minWidth": 18,
+          "paddingHorizontal": 4,
+          "position": "absolute",
+          "right": -2,
+          "top": -2,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Avatar with level badge renders the supplied icon + color 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                "M",
+              ],
+              "props": {
+                "style": {
+                  "color": "#2742A0",
+                  "fontFamily": "PlusJakartaSans-ExtraBold",
+                  "fontSize": 17,
+                  "fontWeight": "800",
+                },
+              },
+              "type": "Text",
+            },
+          ],
+          "props": {
+            "style": {
+              "alignItems": "center",
+              "backgroundColor": "#DDE3F2",
+              "borderRadius": 22,
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": undefined,
+          "borderRadius": 22,
+          "height": 44,
+          "justifyContent": "center",
+          "padding": 0,
+          "width": 44,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#FFFFFF",
+            "name": "crown",
+            "size": 10,
+            "stroke": 2.4,
+          },
+          "type": "Icon",
+        },
+      ],
+      "props": {
+        "style": {
+          "alignItems": "center",
+          "backgroundColor": "#2742A0",
+          "borderColor": "#1A1A1A",
+          "borderRadius": 9,
+          "borderWidth": 1.5,
+          "height": 18,
+          "justifyContent": "center",
+          "minWidth": 18,
+          "paddingHorizontal": 4,
+          "position": "absolute",
+          "right": -2,
+          "top": -2,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "style": {
+      "height": 44,
+      "width": 44,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`TabBar renders 5 slots with index active 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#FFFFFF",
+                "name": "ranking",
+                "size": 23,
+                "stroke": 2.4,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "index",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": true,
+            },
+            "className": "items-center justify-center rounded-full bg-clay",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "matches",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "matches",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#FFFFFF",
+                "name": "plus",
+                "size": 25,
+                "stroke": 2.7,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "new-match",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-clay border-2 border-white",
+            "onPress": "[Function]",
+            "style": {
+              "height": 52,
+              "width": 52,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "bell",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "notifications",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "user",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "profile",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+      ],
+      "props": {
+        "className": "h-16 flex-row items-center justify-between rounded-pill border-base border-border-strong bg-lime px-2",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "px-4 pt-2",
+    "style": {
+      "paddingBottom": 42,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`TabBar notif badge appears when count > 0 and notif tab is inactive 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#FFFFFF",
+                "name": "ranking",
+                "size": 23,
+                "stroke": 2.4,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "index",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": true,
+            },
+            "className": "items-center justify-center rounded-full bg-clay",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "matches",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "matches",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#FFFFFF",
+                "name": "plus",
+                "size": 25,
+                "stroke": 2.7,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "new-match",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-clay border-2 border-white",
+            "onPress": "[Function]",
+            "style": {
+              "height": 52,
+              "width": 52,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "bell",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    "3",
+                  ],
+                  "props": {
+                    "className": "font-sans text-[9.5px] font-extrabold text-white",
+                  },
+                  "type": "Text",
+                },
+              ],
+              "props": {
+                "className": "absolute h-[15px] min-w-[15px] items-center justify-center rounded-pill border-base border-lime bg-pink-deep px-1",
+                "style": {
+                  "right": 7,
+                  "top": 6,
+                },
+              },
+              "type": "View",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "notifications",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "color": "#161618",
+                "name": "user",
+                "size": 23,
+                "stroke": 2.1,
+              },
+              "type": "Icon",
+            },
+          ],
+          "props": {
+            "accessibilityLabel": "profile",
+            "accessibilityRole": "button",
+            "accessibilityState": {
+              "selected": false,
+            },
+            "className": "items-center justify-center rounded-full bg-transparent",
+            "onPress": "[Function]",
+            "style": {
+              "height": 48,
+              "width": 48,
+            },
+          },
+          "type": "Pressable",
+        },
+      ],
+      "props": {
+        "className": "h-16 flex-row items-center justify-between rounded-pill border-base border-border-strong bg-lime px-2",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "px-4 pt-2",
+    "style": {
+      "paddingBottom": 42,
+    },
+  },
+  "type": "View",
+}
+`;
