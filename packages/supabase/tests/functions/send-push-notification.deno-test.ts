@@ -8,7 +8,7 @@ Deno.test('send-push-notification: admin sends → notification row created', as
 
   const { status, body } = await invokeFunction('send-push-notification', {
     recipientId: alice.userId,
-    category: 'match_proposals',
+    category: 'match_invitations',
     title: 'Yeni meydan okuma',
     body: 'Ali sana erkek tek meydan okudu',
     data: { matchRequestId: '00000000-0000-0000-0000-000000000123' },
@@ -29,7 +29,7 @@ Deno.test('send-push-notification: non-admin forbidden', async () => {
 
   const { status } = await invokeFunction('send-push-notification', {
     recipientId: bob.userId,
-    category: 'match_proposals',
+    category: 'match_invitations',
     title: 'test',
     body: 'test',
   }, alice.accessToken);
@@ -41,15 +41,15 @@ Deno.test('send-push-notification: respects user preference OFF', async () => {
   const admin = await createTestUser({ email: 'admin@test.local', role: 'admin', genderCategory: 'erkek' });
   const alice = await createTestUser({ email: 'alice@test.local', genderCategory: 'erkek' });
 
-  // Disable badges category for alice
+  // Disable badges_earned category for alice
   const supa = adminClient();
   await supa.from('notification_preferences').update({ enabled: false })
     .eq('profile_id', alice.userId)
-    .eq('category', 'badges');
+    .eq('category', 'badges_earned');
 
   const { body } = await invokeFunction('send-push-notification', {
     recipientId: alice.userId,
-    category: 'badges',
+    category: 'badges_earned',
     title: 'Yeni rozet',
     body: 'İlk maç rozeti kazandın',
   }, admin.accessToken);
@@ -65,7 +65,7 @@ Deno.test('send-push-notification: no tokens → pushed false', async () => {
 
   const { body } = await invokeFunction('send-push-notification', {
     recipientId: alice.userId,
-    category: 'match_proposals',
+    category: 'match_invitations',
     title: 'test',
     body: 'test',
   }, admin.accessToken);

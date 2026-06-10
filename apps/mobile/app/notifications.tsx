@@ -42,15 +42,15 @@ export default function NotificationsScreen() {
     // Category-based fallback: payload-less notifications still navigate
     // somewhere sensible instead of just turning read.
     switch (n.category) {
-      case 'badges':
-      case 'elo_and_ranking':
-      case 'season_and_tournament':
+      case 'badges_earned':
+      case 'ladder_movement':
+      case 'season_lifecycle':
         router.push('/(app)/profile');
         return;
-      case 'match_proposals':
+      case 'match_invitations':
       case 'match_reminders':
-      case 'score_confirmations':
-      case 'inactivity_warning':
+      case 'match_score_pending':
+      case 'open_listings':
         router.push('/(app)/matches');
         return;
       case 'community_announcements':

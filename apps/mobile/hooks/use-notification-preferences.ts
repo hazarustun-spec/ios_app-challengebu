@@ -1,44 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  NOTIFICATION_CATEGORIES,
+  type NotificationCategory,
+} from '@tennis/shared';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
 import { useAuthStore } from '../stores/auth-store';
 
-export type NotificationCategory =
-  | 'match_proposals'
-  | 'match_reminders'
-  | 'score_confirmations'
-  | 'elo_and_ranking'
-  | 'badges'
-  | 'season_and_tournament'
-  | 'community_announcements'
-  | 'inactivity_warning';
+export type { NotificationCategory };
 
 export interface NotificationPreference {
   category: NotificationCategory;
   enabled: boolean;
 }
 
+// Legacy single-string CATEGORY_LABELS map kept for callers that haven't
+// migrated to the richer @tennis/shared `CATEGORY_LABELS` (title/subtitle/icon)
+// yet. Once notification-preferences.tsx is rebuilt against the Plan-8 design
+// the legacy map can be deleted.
 export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
-  match_proposals: 'Maç teklifleri',
-  match_reminders: 'Maç hatırlatma',
-  score_confirmations: 'Skor onayları',
-  elo_and_ranking: 'ELO ve sıralama',
-  badges: 'Rozet',
-  season_and_tournament: 'Sezon ve turnuva',
+  match_invitations: 'Maç teklifleri',
+  match_score_pending: 'Maç onayları',
+  badges_earned: 'Rozet kazanımı',
+  season_lifecycle: 'Sezon & finaller',
+  ladder_movement: 'Sıralama değişimi',
   community_announcements: 'Topluluk duyuruları',
-  inactivity_warning: 'Pasiflik uyarısı',
+  open_listings: 'Açık ilanlar',
+  match_reminders: 'Hatırlatmalar',
 };
 
-export const ALL_CATEGORIES: NotificationCategory[] = [
-  'match_proposals',
-  'match_reminders',
-  'score_confirmations',
-  'elo_and_ranking',
-  'badges',
-  'season_and_tournament',
-  'community_announcements',
-  'inactivity_warning',
-];
+export const ALL_CATEGORIES: readonly NotificationCategory[] = NOTIFICATION_CATEGORIES;
 
 export function useNotificationPreferences() {
   const userId = useAuthStore((s) => s.user?.id);

@@ -5,12 +5,15 @@ import { getServiceClient } from '../_shared/supabase-client.ts';
 import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 import { sendToExpo, type ExpoPushMessage } from '../_shared/expo-push.ts';
 
+// Mirror of public.notification_category enum
+// (see packages/supabase/migrations/20260610000003_notification_category_revise.sql).
+// Kept inline because Edge Functions can't easily import from the TS workspace.
 const inputSchema = z.object({
   recipientId: z.string().uuid(),
   category: z.enum([
-    'match_proposals', 'match_reminders', 'score_confirmations',
-    'elo_and_ranking', 'badges', 'season_and_tournament',
-    'community_announcements', 'inactivity_warning',
+    'match_invitations', 'match_score_pending', 'badges_earned',
+    'season_lifecycle', 'ladder_movement', 'community_announcements',
+    'open_listings', 'match_reminders',
   ]),
   title: z.string().min(1).max(200),
   body: z.string().min(1).max(500),
