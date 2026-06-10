@@ -1,0 +1,308 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Banner info tone 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#2270BC",
+        "name": "info",
+        "size": 20,
+        "stroke": 2.3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Sezon finali yaklaşıyor",
+          ],
+          "props": {
+            "className": "font-sans text-[13.5px] font-extrabold",
+            "style": {
+              "color": "#161618",
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "İlk 8'e girmek için 41 günün var.",
+          ],
+          "props": {
+            "className": "mt-0.5 font-sans text-[12.5px] leading-5",
+            "style": {
+              "color": "#65656E",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row gap-3 rounded-md border-base bg-blue-soft border-court p-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Banner success tone 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#5C8C1E",
+        "name": "check",
+        "size": 20,
+        "stroke": 2.3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Skor onaylandı",
+          ],
+          "props": {
+            "className": "font-sans text-[13.5px] font-extrabold",
+            "style": {
+              "color": "#161618",
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "ELO'n 1590 → 1612.",
+          ],
+          "props": {
+            "className": "mt-0.5 font-sans text-[12.5px] leading-5",
+            "style": {
+              "color": "#65656E",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row gap-3 rounded-md border-base bg-lime-soft border-win p-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Banner warning tone 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#E0992B",
+        "name": "warn",
+        "size": 20,
+        "stroke": 2.3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Skor onayı bekliyor",
+          ],
+          "props": {
+            "className": "font-sans text-[13.5px] font-extrabold",
+            "style": {
+              "color": "#161618",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row gap-3 rounded-md border-base bg-warn-soft border-warn p-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Banner error tone 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#E0463C",
+        "name": "xCircle",
+        "size": 20,
+        "stroke": 2.3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "Skorlar uyuşmuyor",
+          ],
+          "props": {
+            "className": "font-sans text-[13.5px] font-extrabold",
+            "style": {
+              "color": "#161618",
+            },
+          },
+          "type": "Text",
+        },
+        {
+          "children": [
+            "İtiraz açıldı.",
+          ],
+          "props": {
+            "className": "mt-0.5 font-sans text-[12.5px] leading-5",
+            "style": {
+              "color": "#65656E",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row gap-3 rounded-md border-base bg-[#FCE6E4] border-loss p-3.5",
+  },
+  "type": "View",
+}
+`;
+
+exports[`Banner inline padding variant 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#2270BC",
+        "name": "info",
+        "size": 20,
+        "stroke": 2.3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            "kompakt",
+          ],
+          "props": {
+            "className": "font-sans text-[13.5px] font-extrabold",
+            "style": {
+              "color": "#161618",
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-1",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row gap-3 rounded-md border-base bg-blue-soft border-court p-3",
+  },
+  "type": "View",
+}
+`;
+
+exports[`ToastView success variant 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#8FD43B",
+        "name": "check",
+        "size": 18,
+        "stroke": 3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Meydan okuma gönderildi",
+      ],
+      "props": {
+        "className": "font-sans text-[13.5px] font-bold text-white",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-2.5 rounded-md px-4 py-3",
+    "style": {
+      "backgroundColor": "#161618",
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`ToastView error variant 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#E0463C",
+        "name": "xCircle",
+        "size": 18,
+        "stroke": 3,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Hata oluştu",
+      ],
+      "props": {
+        "className": "font-sans text-[13.5px] font-bold text-white",
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-2.5 rounded-md px-4 py-3",
+    "style": {
+      "backgroundColor": "#161618",
+    },
+  },
+  "type": "View",
+}
+`;
