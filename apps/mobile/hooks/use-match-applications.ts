@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { useAuthStore } from '../stores/auth-store';
 
 export interface MatchApplication {
   id: string;
   request_id: string;
   applicant_id: string;
+  applicant_partner_id: string | null;
   applicant: { first_name: string; last_name: string };
   note: string | null;
   applied_at: string;
@@ -30,7 +32,7 @@ export function useMatchApplications(requestId: string | undefined) {
       const { data, error } = await supabase
         .from('match_request_applications')
         .select(`
-          id, request_id, applicant_id, note, applied_at,
+          id, request_id, applicant_id, applicant_partner_id, note, applied_at,
           applicant:profiles!applicant_id(first_name, last_name)
         `)
         .eq('request_id', requestId)
@@ -41,23 +43,29 @@ export function useMatchApplications(requestId: string | undefined) {
   });
 }
 
-export function useApplyToOpenCall() {
+/**
+ * Apply to a Plan 8 open-call `match_request`. The new hook name avoids the
+ * collision with the legacy `useApplyToOpenCall` (which targets the legacy
+ * `open_call_applications` table + Edge Function flow).
+ */
+export function useApplyToMatchRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { requestId: string; note?: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not signed in');
+    mutationFn: async (input: { requestId: string; note?: string; partnerId?: string }) => {
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) throw new Error('Not signed in');
       const { error } = await supabase.from('match_request_applications').insert({
         request_id: input.requestId,
-        applicant_id: user.id,
+        applicant_id: userId,
+        applicant_partner_id: input.partnerId ?? null,
         note: input.note ?? null,
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.matchRequests.all });
-      qc.invalidateQueries({ queryKey: queryKeys.openCalls.all });
-      qc.invalidateQueries({ queryKey: queryKeys.matchApplications.all });
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.matchApplications.byRequest(variables.requestId),
+      });
     },
   });
 }
@@ -72,10 +80,11 @@ export function useAcceptApplication() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.matchApplications.byRequest(variables.requestId),
+      });
       qc.invalidateQueries({ queryKey: queryKeys.matchRequests.all });
-      qc.invalidateQueries({ queryKey: queryKeys.openCalls.all });
-      qc.invalidateQueries({ queryKey: queryKeys.matchApplications.all });
     },
   });
 }

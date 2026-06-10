@@ -6,6 +6,14 @@
 -- from the applicant and atomically marks the request accepted via a single
 -- RPC call from the creator.
 --
+-- IMPORTANT — semantic divergence from legacy open_call_applications:
+-- The new accept_match_application RPC sets BOTH match_requests.status='accepted'
+-- AND match_requests.target_id = applicant_user_id. The legacy
+-- select-open-call-application Edge Function sets only status='accepted' and
+-- leaves target_id NULL. Mobile UI consuming match_requests.target_id must
+-- treat NULL on an 'accepted' open_call row as "legacy flow accepted, look up
+-- via open_call_applications" until the legacy flow is migrated.
+--
 -- Schema notes:
 --   * `match_requests` did not have an `accepted_at` column; this migration
 --     adds it (nullable so existing rows are unaffected).
@@ -41,10 +49,14 @@ create table public.match_request_applications (
   id uuid primary key default gen_random_uuid(),
   request_id uuid not null references public.match_requests(id) on delete cascade,
   applicant_id uuid not null references public.profiles(user_id) on delete cascade,
+  applicant_partner_id uuid references public.profiles(user_id) on delete set null,
   note text,
   applied_at timestamptz not null default now(),
   unique (request_id, applicant_id)
 );
+
+comment on column public.match_request_applications.applicant_partner_id is
+  'Doubles applicant partner (nullable for singles).';
 
 create index match_request_applications_request_idx
   on public.match_request_applications (request_id);
@@ -53,11 +65,19 @@ create index match_request_applications_applicant_idx
 
 alter table public.match_request_applications enable row level security;
 
--- Applicant can insert their own application.
+-- Applicant can insert their own application — only against a pending open_call.
 create policy "applicants insert own"
   on public.match_request_applications for insert
   to authenticated
-  with check (applicant_id = auth.uid());
+  with check (
+    applicant_id = auth.uid()
+    and exists (
+      select 1 from public.match_requests r
+      where r.id = request_id
+        and r.type = 'open_call'
+        and r.status = 'pending'
+    )
+  );
 
 -- Creator + applicant can read.
 create policy "creator and applicant read"
@@ -92,14 +112,31 @@ create or replace function public.accept_match_application(
 language plpgsql security definer set search_path = public as $$
 declare
   uid uuid := auth.uid();
+  v_status text;
+  v_creator_id uuid;
 begin
-  if not exists (
-    select 1 from public.match_requests
-      where id = p_request_id
-        and creator_id = uid
-  ) then
+  -- Lock the request row and pull status + creator in one shot so we can:
+  --   (a) gate the RPC on creator_id without racing the UPDATE below
+  --   (b) refuse to overwrite an already-accepted/rejected/expired/completed row
+  select status, creator_id
+    into v_status, v_creator_id
+    from public.match_requests
+    where id = p_request_id
+    for update;
+
+  if v_creator_id is null then
+    raise exception 'Request not found'
+      using errcode = '42704';
+  end if;
+
+  if v_creator_id <> uid then
     raise exception 'Only request creator can accept applications'
       using errcode = '42501';
+  end if;
+
+  if v_status <> 'pending' then
+    raise exception 'Request is not pending'
+      using errcode = 'P0001';
   end if;
 
   if not exists (

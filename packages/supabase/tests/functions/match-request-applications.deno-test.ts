@@ -1,5 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, cleanupTestData, createTestUser } from './helpers.ts';
+import { adminClient, ANON_KEY, cleanupTestData, createTestUser, SUPABASE_URL } from './helpers.ts';
 
 /**
  * Plan 8 Task A2 — match_request_applications table + accept_match_application RPC.
@@ -42,6 +42,32 @@ async function seedOpenCall(creatorId: string): Promise<string> {
     .select('id')
     .single();
   if (error || !req) throw new Error(`seedOpenCall: ${error?.message}`);
+  return req.id as string;
+}
+
+async function seedDirectChallenge(creatorId: string, targetId: string): Promise<string> {
+  const supa = adminClient();
+  const { data: court } = await supa.from('courts').select('id').limit(1).single();
+  if (!court) throw new Error('No court seeded; run `supabase db reset`');
+
+  const { data: req, error } = await supa
+    .from('match_requests')
+    .insert({
+      creator_id: creatorId,
+      type: 'direct_challenge',
+      target_id: targetId,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      is_rated: true,
+      proposed_date: '2026-07-01',
+      proposed_time: '19:00',
+      court_id: court.id,
+      status: 'pending',
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    })
+    .select('id')
+    .single();
+  if (error || !req) throw new Error(`seedDirectChallenge: ${error?.message}`);
   return req.id as string;
 }
 
@@ -142,6 +168,101 @@ Deno.test('accept_match_application: non-creator forbidden', async () => {
   if (!rpcErr) throw new Error('non-creator RPC call should have failed');
   // PostgREST surfaces errcode in `code`.
   assertEquals(rpcErr.code, '42501');
+
+  await cleanupTestData();
+});
+
+Deno.test('accept_match_application: already-accepted request rejected', async () => {
+  // Guards against silent overwrite of an accepted/rejected/expired/completed
+  // request. The RPC must refuse a second accept and raise P0001.
+  await cleanupTestData();
+  const creator = await createTestUser({ email: 'creator-a2@test.local', genderCategory: 'erkek' });
+  const applicantA = await createTestUser({
+    email: 'applicant-a2-a@test.local',
+    genderCategory: 'erkek',
+  });
+  const applicantB = await createTestUser({
+    email: 'applicant-a2-b@test.local',
+    genderCategory: 'erkek',
+  });
+
+  const requestId = await seedOpenCall(creator.userId);
+  const supa = adminClient();
+
+  await supa.from('match_request_applications').insert([
+    { request_id: requestId, applicant_id: applicantA.userId, note: 'A' },
+    { request_id: requestId, applicant_id: applicantB.userId, note: 'B' },
+  ]);
+
+  const creatorSupa = (await import('@supabase/supabase-js')).createClient(
+    SUPABASE_URL,
+    ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${creator.accessToken}` } },
+    },
+  );
+
+  // First accept — applicant A — must succeed.
+  const { error: firstErr } = await creatorSupa.rpc('accept_match_application', {
+    p_request_id: requestId,
+    p_applicant_user_id: applicantA.userId,
+  });
+  if (firstErr) throw new Error(`first accept failed: ${firstErr.message}`);
+
+  // Second accept — applicant B — must fail (request no longer pending).
+  const { error: secondErr } = await creatorSupa.rpc('accept_match_application', {
+    p_request_id: requestId,
+    p_applicant_user_id: applicantB.userId,
+  });
+  if (!secondErr) {
+    throw new Error('second accept on already-accepted request should have failed');
+  }
+  assertEquals(secondErr.code, 'P0001');
+
+  // Sanity: target_id remained applicantA — not silently overwritten.
+  const { data: req } = await supa
+    .from('match_requests')
+    .select('status, target_id')
+    .eq('id', requestId)
+    .single();
+  assertEquals(req!.status, 'accepted');
+  assertEquals(req!.target_id, applicantA.userId);
+
+  await cleanupTestData();
+});
+
+Deno.test('match_request_applications: applying to direct_challenge blocked by RLS', async () => {
+  // The INSERT policy requires the target request be type='open_call' AND
+  // status='pending'. Applying to a direct_challenge row must fail under RLS.
+  await cleanupTestData();
+  const creator = await createTestUser({ email: 'creator-a2@test.local', genderCategory: 'erkek' });
+  const target = await createTestUser({ email: 'target-a2@test.local', genderCategory: 'erkek' });
+  const applicant = await createTestUser({
+    email: 'applicant-a2@test.local',
+    genderCategory: 'erkek',
+  });
+
+  const requestId = await seedDirectChallenge(creator.userId, target.userId);
+
+  const applicantSupa = (await import('@supabase/supabase-js')).createClient(
+    SUPABASE_URL,
+    ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${applicant.accessToken}` } },
+    },
+  );
+
+  const { error: insertErr } = await applicantSupa
+    .from('match_request_applications')
+    .insert({
+      request_id: requestId,
+      applicant_id: applicant.userId,
+      note: 'sneaky',
+    });
+
+  if (!insertErr) {
+    throw new Error('insert against direct_challenge should have been blocked by RLS');
+  }
 
   await cleanupTestData();
 });
