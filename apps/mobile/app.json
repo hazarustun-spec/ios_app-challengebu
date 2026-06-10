@@ -16,7 +16,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "tr.edu.boun.tennischallenger",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -45,7 +47,9 @@
           "icon": "./assets/icon.png",
           "color": "#1e3a8a"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true
