@@ -100,6 +100,45 @@ begin
       using errcode = 'P0002';
   end if;
 
+  -- Reject doubles tournaments: their seeds live in season_doubles_teams, not
+  -- season_standings, so rewriting season_standings.rank would silently no-op
+  -- on a doubles bracket while still emitting a "success" audit log. Surface
+  -- the limitation explicitly until the doubles reorder path is implemented.
+  if v_category::text like '%_cift' then
+    raise exception 'Doubles bracket reorder not yet supported (singles only)'
+      using errcode = '0A000';
+  end if;
+
+  -- Acquire a row-level lock on the tournament so two admins reordering the
+  -- same bracket concurrently serialize against each other. Without this lock
+  -- the two reorder passes can interleave and the final season_standings.rank
+  -- assignment is non-deterministic (no rank-uniqueness constraint would
+  -- fail-loudly). Existence already verified above; this is purely the lock.
+  perform 1 from public.tournaments
+    where id = admin_reorder_bracket_seeds.tournament_id
+    for update;
+
+  -- Validation hardening: array_length=8 alone permits {u1,u1,...,u1}.
+  -- 1. No NULL entries.
+  if exists (select 1 from unnest(seed_player_ids) as u(id) where u.id is null) then
+    raise exception 'seed_player_ids contains NULL'
+      using errcode = '22023';
+  end if;
+  -- 2. All 8 distinct.
+  if (select count(distinct u.id) from unnest(seed_player_ids) as u(id)) <> 8 then
+    raise exception 'seed_player_ids contains duplicates'
+      using errcode = '22023';
+  end if;
+  -- 3. All 8 are members of this season+category in season_standings; otherwise
+  -- the two-pass rewrite would silently update fewer than 8 rows.
+  if (select count(*) from public.season_standings
+        where season_id = v_season_id
+          and category = v_category
+          and profile_id = any(seed_player_ids)) <> 8 then
+    raise exception 'One or more seed_player_ids not in season standings'
+      using errcode = 'P0002';
+  end if;
+
   -- Re-assign ranks to match the requested player order. We do this in two
   -- passes to avoid the (season_id, profile_id, category) unique conflict
   -- temporarily (no rank-uniqueness constraint exists, but rewriting in place

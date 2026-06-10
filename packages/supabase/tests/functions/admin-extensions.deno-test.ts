@@ -251,6 +251,24 @@ Deno.test('admin_reorder_bracket_seeds: rewrites season_standings.rank by player
   assertEquals(audit.actor_id, admin.userId);
   assertEquals(audit.entity_type, 'tournament');
 
+  // End-to-end resolution: bracket UI reads seed_a=1 → resolves to
+  // season_standings WHERE rank=1 → profile_id. After reorder, that's
+  // reversed[0]; seed 8 is reversed[7]. This is what the join the bracket UI
+  // performs actually returns, not just the side-effect on a single table.
+  const { data: seed1 } = await supa.from('season_standings')
+    .select('profile_id')
+    .eq('season_id', seasonId)
+    .eq('category', 'erkek_tek')
+    .eq('rank', 1).single();
+  assertEquals(seed1!.profile_id, reversed[0]);
+
+  const { data: seed8 } = await supa.from('season_standings')
+    .select('profile_id')
+    .eq('season_id', seasonId)
+    .eq('category', 'erkek_tek')
+    .eq('rank', 8).single();
+  assertEquals(seed8!.profile_id, reversed[7]);
+
   await cleanupTestData();
 });
 
@@ -279,5 +297,99 @@ Deno.test('admin_reorder_bracket_seeds: wrong array length rejected', async () =
   });
   assertExists(error);
   assertEquals((error as { code?: string }).code, '22023');
+  await cleanupTestData();
+});
+
+Deno.test('admin_reorder_bracket_seeds: doubles tournament rejected (0A000)', async () => {
+  // Seed a doubles tournament (kadin_cift) and confirm the RPC refuses to
+  // touch it rather than silently no-op'ing season_standings (which is a
+  // singles-only table — doubles seeds live in season_doubles_teams).
+  await cleanupTestData();
+  const supa = adminClient();
+  const admin = await createTestUser({ email: 'reorder-doubles@test.local', role: 'admin' });
+
+  const { data: season, error: seasonErr } = await supa.from('seasons').insert({
+    name: 'bahar',
+    year: 2098,
+    starts_at: new Date().toISOString(),
+    ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
+    finale_starts_at: new Date(Date.now() + 60 * 86_400_000).toISOString(),
+    finale_ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
+    status: 'finale',
+  }).select('id').single();
+  if (seasonErr || !season) throw new Error(`season insert: ${seasonErr?.message}`);
+
+  const { data: tournament, error: tErr } = await supa.from('tournaments').insert({
+    season_id: season.id,
+    category: 'kadin_cift',
+    bracket_size: 8,
+    status: 'seeded',
+  }).select('id').single();
+  if (tErr || !tournament) throw new Error(`tournament insert: ${tErr?.message}`);
+
+  const adminJwt = jwtClient(admin.accessToken);
+  const { error } = await adminJwt.rpc('admin_reorder_bracket_seeds', {
+    tournament_id: tournament.id,
+    seed_player_ids: Array.from({ length: 8 }, () => '00000000-0000-0000-0000-000000000001'),
+  });
+  assertExists(error);
+  assertEquals((error as { code?: string }).code, '0A000');
+  await cleanupTestData();
+});
+
+Deno.test('admin_reorder_bracket_seeds: duplicate IDs rejected (22023)', async () => {
+  await cleanupTestData();
+  const admin = await createTestUser({ email: 'reorder-dup@test.local', role: 'admin' });
+  const { tournamentId, playerIds } = await seedFinaleBracket();
+
+  // Same UUID 8 times — passes length=8 but should fail distinct check.
+  const dup = Array.from({ length: 8 }, () => playerIds[0]);
+
+  const adminJwt = jwtClient(admin.accessToken);
+  const { error } = await adminJwt.rpc('admin_reorder_bracket_seeds', {
+    tournament_id: tournamentId,
+    seed_player_ids: dup,
+  });
+  assertExists(error);
+  assertEquals((error as { code?: string }).code, '22023');
+  await cleanupTestData();
+});
+
+Deno.test('admin_reorder_bracket_seeds: NULL in array rejected (22023)', async () => {
+  await cleanupTestData();
+  const admin = await createTestUser({ email: 'reorder-null@test.local', role: 'admin' });
+  const { tournamentId, playerIds } = await seedFinaleBracket();
+
+  // Replace last entry with NULL — Postgres uuid[] accepts NULL elements,
+  // but the RPC must reject so the inner update doesn't silently no-op.
+  const withNull: (string | null)[] = [...playerIds];
+  withNull[7] = null;
+
+  const adminJwt = jwtClient(admin.accessToken);
+  const { error } = await adminJwt.rpc('admin_reorder_bracket_seeds', {
+    tournament_id: tournamentId,
+    seed_player_ids: withNull,
+  });
+  assertExists(error);
+  assertEquals((error as { code?: string }).code, '22023');
+  await cleanupTestData();
+});
+
+Deno.test('admin_reorder_bracket_seeds: non-member UUID rejected (P0002)', async () => {
+  await cleanupTestData();
+  const admin = await createTestUser({ email: 'reorder-stranger@test.local', role: 'admin' });
+  const { tournamentId, playerIds } = await seedFinaleBracket();
+
+  // Replace one entry with a random UUID that is not in season_standings.
+  const stranger = [...playerIds];
+  stranger[3] = '00000000-0000-0000-0000-0000000000aa';
+
+  const adminJwt = jwtClient(admin.accessToken);
+  const { error } = await adminJwt.rpc('admin_reorder_bracket_seeds', {
+    tournament_id: tournamentId,
+    seed_player_ids: stranger,
+  });
+  assertExists(error);
+  assertEquals((error as { code?: string }).code, 'P0002');
   await cleanupTestData();
 });
