@@ -6,6 +6,12 @@ interface MatchRow {
   category: string;
   format: MatchFormat;
   is_rated: boolean;
+  /**
+   * Plan 8 — 'friendly' matches skip ELO + ladder; 'ranking' (default) keeps
+   * the historical behaviour. Older callers that don't pass `kind` are treated
+   * as ranking matches.
+   */
+  kind?: 'ranking' | 'friendly';
   team_a_player_ids: string[];
   team_b_player_ids: string[];
   score_team_a: number;
@@ -14,6 +20,8 @@ interface MatchRow {
 }
 
 export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): Promise<void> {
+  // Plan 8 Task A1 — friendly matches never affect ELO.
+  if (match.kind && match.kind !== 'ranking') return;
   if (!match.is_rated) return;
   if (match.winner_team === 'void' || match.winner_team === null) return;
 

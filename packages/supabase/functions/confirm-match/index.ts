@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
         category: match.category,
         format: match.format as MatchFormat,
         is_rated: match.is_rated,
+        kind: match.kind,
         team_a_player_ids: match.team_a_player_ids,
         team_b_player_ids: match.team_b_player_ids,
         score_team_a: match.score_team_a,
