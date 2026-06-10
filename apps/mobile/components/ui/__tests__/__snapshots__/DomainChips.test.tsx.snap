@@ -1,0 +1,442 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`EloChip positive delta renders win color + chevU 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        1612,
+      ],
+      "props": {
+        "className": "font-num font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 16,
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#5C8C1E",
+            "name": "chevU",
+            "size": 13,
+            "stroke": 3,
+          },
+          "type": "Icon",
+        },
+        {
+          "children": [
+            22,
+          ],
+          "props": {
+            "className": "font-num font-bold",
+            "style": {
+              "color": "#5C8C1E",
+              "fontSize": 12.5,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center",
+        "style": {
+          "gap": 1,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1.5 rounded-pill border-base border-border-strong bg-surface",
+    "style": {
+      "paddingHorizontal": 12,
+      "paddingVertical": 4,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`EloChip negative delta renders loss color + chevD 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        1487,
+      ],
+      "props": {
+        "className": "font-num font-extrabold",
+        "style": {
+          "color": "#161618",
+          "fontSize": 16,
+        },
+      },
+      "type": "Text",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "color": "#E0463C",
+            "name": "chevD",
+            "size": 13,
+            "stroke": 3,
+          },
+          "type": "Icon",
+        },
+        {
+          "children": [
+            14,
+          ],
+          "props": {
+            "className": "font-num font-bold",
+            "style": {
+              "color": "#E0463C",
+              "fontSize": 12.5,
+            },
+          },
+          "type": "Text",
+        },
+      ],
+      "props": {
+        "className": "flex-row items-center",
+        "style": {
+          "gap": 1,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1.5 rounded-pill border-base border-border-strong bg-surface",
+    "style": {
+      "paddingHorizontal": 12,
+      "paddingVertical": 4,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-cekirge 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#5E8B39",
+    "name": "spark",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-caylak 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#6F8B47",
+    "name": "bolt",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-amator 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#2E63B8",
+    "name": "shield",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-rekabet 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#2742A0",
+    "name": "flame",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-usta 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#2A3A8E",
+    "name": "crown",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-elit 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#2B357A",
+    "name": "crown",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`LevelIcon all 7 levels render with their color + glyph: level-sampiyon 1`] = `
+{
+  "children": [],
+  "props": {
+    "color": "#B98A1E",
+    "name": "trophy",
+    "size": 16,
+    "stroke": 2.2,
+  },
+  "type": "Icon",
+}
+`;
+
+exports[`FormatChip all 4 formats render with name + glyph: format-klasik 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#2742A0",
+        "name": "spark",
+        "size": 13,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "BÜ Klasik",
+      ],
+      "props": {
+        "className": "font-sans font-bold",
+        "style": {
+          "color": "#2742A0",
+          "fontSize": 11,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1 rounded-pill",
+    "style": {
+      "backgroundColor": "#2742A022",
+      "paddingHorizontal": 8,
+      "paddingVertical": 3,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`FormatChip all 4 formats render with name + glyph: format-tiebreak 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#2E63B8",
+        "name": "bolt",
+        "size": 13,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Hızlı Tiebreak",
+      ],
+      "props": {
+        "className": "font-sans font-bold",
+        "style": {
+          "color": "#2E63B8",
+          "fontSize": 11,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1 rounded-pill",
+    "style": {
+      "backgroundColor": "#2E63B822",
+      "paddingHorizontal": 8,
+      "paddingVertical": 3,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`FormatChip all 4 formats render with name + glyph: format-proset 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#5E8B39",
+        "name": "shield",
+        "size": 13,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "Pro Set 8",
+      ],
+      "props": {
+        "className": "font-sans font-bold",
+        "style": {
+          "color": "#5E8B39",
+          "fontSize": 11,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1 rounded-pill",
+    "style": {
+      "backgroundColor": "#5E8B3922",
+      "paddingHorizontal": 8,
+      "paddingVertical": 3,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`FormatChip all 4 formats render with name + glyph: format-set3 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "color": "#7A4FA0",
+        "name": "trophy",
+        "size": 13,
+      },
+      "type": "Icon",
+    },
+    {
+      "children": [
+        "3 Set Klasik",
+      ],
+      "props": {
+        "className": "font-sans font-bold",
+        "style": {
+          "color": "#7A4FA0",
+          "fontSize": 11,
+        },
+      },
+      "type": "Text",
+    },
+  ],
+  "props": {
+    "className": "flex-row items-center gap-1 rounded-pill",
+    "style": {
+      "backgroundColor": "#7A4FA022",
+      "paddingHorizontal": 8,
+      "paddingVertical": 3,
+    },
+  },
+  "type": "View",
+}
+`;
+
+exports[`FormDots renders 5 mixed dots 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "style": {
+          "backgroundColor": "#5C8C1E",
+          "borderRadius": 4.5,
+          "height": 9,
+          "width": 9,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [],
+      "props": {
+        "style": {
+          "backgroundColor": "#5C8C1E",
+          "borderRadius": 4.5,
+          "height": 9,
+          "width": 9,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [],
+      "props": {
+        "style": {
+          "backgroundColor": "#E0463C",
+          "borderRadius": 4.5,
+          "height": 9,
+          "width": 9,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [],
+      "props": {
+        "style": {
+          "backgroundColor": "#5C8C1E",
+          "borderRadius": 4.5,
+          "height": 9,
+          "width": 9,
+        },
+      },
+      "type": "View",
+    },
+    {
+      "children": [],
+      "props": {
+        "style": {
+          "backgroundColor": "#5C8C1E",
+          "borderRadius": 4.5,
+          "height": 9,
+          "width": 9,
+        },
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "flex-row",
+    "style": {
+      "gap": 3,
+    },
+  },
+  "type": "View",
+}
+`;
