@@ -1,218 +1,243 @@
+// Profile edit — Plan 8 Phase F2.
+//
+// Ports the design bundle's `ProfileEdit` (see
+// docs/superpowers/specs/plan-8-design-bundle/project/app/screens-profile-edit.jsx
+// `function ProfileEdit(...)`) to React Native + NativeWind.
+//
+// Fields: avatar w/ camera badge → Ad Soyad · Zamir (seg) · Bölüm · Sınıf +
+// Dominant el (seg) · Tenis seviyesi (seg) · Müsaitlik (6 slot grid).
+//
+// TODO(plan-8-F-polish): wire to use-update-profile mutation + supabase
+// auth identity; keeps local UI state for the design pass.
+
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Switch, Text, View } from 'react-native';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { Field } from '../../components/ui/Field';
+import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
-import { RadioGroup } from '../../components/ui/RadioGroup';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { TextField } from '../../components/ui/TextField';
-import { useUpdateProfile, type UpdateProfileInput } from '../../hooks/use-update-profile';
-import { useMyProfile } from '../../hooks/use-profile';
+import { CheckBox } from '../../components/ui/CheckBox';
+import { Segmented } from '../../components/ui/Segmented';
+import { Icon } from '../../components/ui/Icon';
+import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
 
-const PRONOUN_OPTIONS = [
-  { value: 'he/him', label: 'he/him' },
-  { value: 'she/her', label: 'she/her' },
-  { value: 'they/them', label: 'they/them' },
-  { value: 'other', label: 'other' },
-] as const;
+const PRONOUNS = ['he/him', 'she/her', 'they/them'] as const;
+type Pronoun = (typeof PRONOUNS)[number];
 
-const CLASS_OPTIONS = [
-  { value: 'hazirlik', label: 'Hazırlık' },
-  { value: '1', label: '1' },
-  { value: '2', label: '2' },
-  { value: '3', label: '3' },
-  { value: '4', label: '4' },
-  { value: 'yl', label: 'YL' },
-  { value: 'doktora', label: 'Doktora' },
-] as const;
-
-const SKILL_OPTIONS = [
-  { value: 'baslangic', label: 'Başlangıç' },
-  { value: 'orta', label: 'Orta' },
-  { value: 'ileri', label: 'İleri' },
-] as const;
-
-const HAND_OPTIONS = [
-  { value: 'sag', label: 'Sağ' },
-  { value: 'sol', label: 'Sol' },
-] as const;
-
-const GENDER_OPTIONS = [
-  { value: 'erkek', label: 'Erkek' },
-  { value: 'kadin', label: 'Kadın' },
-  { value: 'open_only', label: 'Sadece Open' },
-] as const;
-
-const AVAILABILITY_OPTIONS: { value: string; label: string }[] = [
-  { value: 'weekday_morning', label: 'Hafta içi sabah' },
-  { value: 'weekday_noon', label: 'Hafta içi öğlen' },
-  { value: 'weekday_evening', label: 'Hafta içi akşam' },
-  { value: 'weekend_morning', label: 'Hafta sonu sabah' },
-  { value: 'weekend_noon', label: 'Hafta sonu öğlen' },
-  { value: 'weekend_evening', label: 'Hafta sonu akşam' },
+const SLOTS: { key: string; label: string }[] = [
+  { key: 'wd_am', label: 'Hafta içi sabah' },
+  { key: 'wd_noon', label: 'Hafta içi öğlen' },
+  { key: 'wd_eve', label: 'Hafta içi akşam' },
+  { key: 'we_am', label: 'Hafta sonu sabah' },
+  { key: 'we_noon', label: 'Hafta sonu öğlen' },
+  { key: 'we_eve', label: 'Hafta sonu akşam' },
 ];
 
-export default function EditProfileScreen() {
-  const { data: p, isLoading } = useMyProfile();
-  const mutation = useUpdateProfile();
-  const [form, setForm] = useState<UpdateProfileInput | null>(null);
+export default function ProfileEdit() {
+  const profile = useAuthStore((s) => s.profile);
+  const extras = profile as
+    | (NonNullable<typeof profile> & {
+        pronoun?: string;
+        dominantHand?: string;
+        skillLevel?: string;
+        departmentName?: string;
+        classYear?: string | number;
+      })
+    | null;
 
-  useEffect(() => {
-    if (!p) return;
-    setForm({
-      first_name: p.first_name,
-      last_name: p.last_name,
-      pronoun: p.pronoun,
-      pronoun_custom: p.pronoun_custom ?? null,
-      department_id: p.department_id ?? null,
-      show_department: p.show_department,
-      class_year: p.class_year,
-      show_class_year: p.show_class_year,
-      skill_self_assessment: p.skill_self_assessment,
-      dominant_hand: p.dominant_hand,
-      availability_windows: p.availability_windows ?? [],
-      gender_category: p.gender_category,
-    });
-  }, [p]);
-
-  if (isLoading || !form) {
-    return (
-      <ScreenContainer>
-        <Text className="text-gray-500">Yükleniyor...</Text>
-      </ScreenContainer>
-    );
-  }
-
-  const update = <K extends keyof UpdateProfileInput>(key: K, value: UpdateProfileInput[K]) => {
-    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
-  };
-
-  const onChangeGender = (next: UpdateProfileInput['gender_category']) => {
-    if (next === form.gender_category) return;
-    Alert.alert(
-      'Kategori değişikliği',
-      "Yarışma kategorisini değiştirmek istediğinden emin misin? Yeni kategorideki ELO'n 1200'den başlar.",
-      [
-        { text: 'Vazgeç', style: 'cancel' },
-        { text: 'Değiştir', style: 'destructive', onPress: () => update('gender_category', next) },
-      ],
-    );
-  };
-
-  const onSave = async () => {
-    try {
-      await mutation.mutateAsync(form);
-      router.back();
-    } catch (e) {
-      Alert.alert('Hata', (e as Error).message);
-    }
-  };
-
-  const toggleAvailability = (val: string) => {
-    const next = form.availability_windows.includes(val)
-      ? form.availability_windows.filter((v) => v !== val)
-      : [...form.availability_windows, val];
-    update('availability_windows', next);
-  };
-
-  return (
-    <ScreenContainer scrollable>
-      <TextField
-        label="Ad"
-        value={form.first_name}
-        onChangeText={(v) => update('first_name', v)}
-      />
-      <TextField
-        label="Soyad"
-        value={form.last_name}
-        onChangeText={(v) => update('last_name', v)}
-      />
-
-      <Text className="mb-1 text-sm font-medium text-gray-700">Pronoun</Text>
-      <RadioGroup
-        options={PRONOUN_OPTIONS as unknown as { value: string; label: string }[]}
-        value={form.pronoun}
-        onChange={(v) => update('pronoun', v as UpdateProfileInput['pronoun'])}
-      />
-      {form.pronoun === 'other' && (
-        <TextField
-          label="Özel"
-          value={form.pronoun_custom ?? ''}
-          onChangeText={(v) => update('pronoun_custom', v)}
-        />
-      )}
-
-      <ToggleRow
-        label="Bölümü profilde göster"
-        value={form.show_department}
-        onChange={(v) => update('show_department', v)}
-      />
-      <ToggleRow
-        label="Sınıfı profilde göster"
-        value={form.show_class_year}
-        onChange={(v) => update('show_class_year', v)}
-      />
-
-      <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Sınıf</Text>
-      <RadioGroup
-        options={CLASS_OPTIONS as unknown as { value: string; label: string }[]}
-        value={form.class_year}
-        onChange={(v) => update('class_year', v as UpdateProfileInput['class_year'])}
-      />
-
-      <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Seviye</Text>
-      <RadioGroup
-        options={SKILL_OPTIONS as unknown as { value: string; label: string }[]}
-        value={form.skill_self_assessment}
-        onChange={(v) =>
-          update('skill_self_assessment', v as UpdateProfileInput['skill_self_assessment'])
-        }
-      />
-
-      <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Dominant el</Text>
-      <RadioGroup
-        options={HAND_OPTIONS as unknown as { value: string; label: string }[]}
-        value={form.dominant_hand}
-        onChange={(v) => update('dominant_hand', v as UpdateProfileInput['dominant_hand'])}
-      />
-
-      <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Yarışma kategorisi</Text>
-      <RadioGroup
-        options={GENDER_OPTIONS as unknown as { value: string; label: string }[]}
-        value={form.gender_category ?? 'erkek'}
-        onChange={(v) => onChangeGender(v as UpdateProfileInput['gender_category'])}
-      />
-
-      <Text className="mb-1 mt-3 text-sm font-medium text-gray-700">Müsaitlik</Text>
-      {AVAILABILITY_OPTIONS.map((a) => (
-        <ToggleRow
-          key={a.value}
-          label={a.label}
-          value={form.availability_windows.includes(a.value)}
-          onChange={() => toggleAvailability(a.value)}
-        />
-      ))}
-
-      <View className="mt-6 gap-2">
-        <Button onPress={onSave} loading={mutation.isPending}>Kaydet</Button>
-        <Button variant="ghost" onPress={() => router.back()}>İptal</Button>
-      </View>
-    </ScreenContainer>
+  const [pronoun, setPronoun] = useState<Pronoun>(
+    (extras?.pronoun as Pronoun) ?? 'they/them',
   );
-}
+  const [hand, setHand] = useState<'sag' | 'sol'>(
+    (extras?.dominantHand as 'sag' | 'sol') ?? 'sag',
+  );
+  const [level, setLevel] = useState<'baslangic' | 'orta' | 'ileri'>(
+    (extras?.skillLevel as 'baslangic' | 'orta' | 'ileri') ?? 'orta',
+  );
+  const [avail, setAvail] = useState<string[]>(['wd_eve', 'we_am']);
 
-function ToggleRow({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (next: boolean) => void;
-}) {
+  const toggle = (k: string) =>
+    setAvail((a) => (a.includes(k) ? a.filter((x) => x !== k) : [...a, k]));
+
+  const name = profile?.firstName
+    ? `${profile.firstName} ${profile.lastName ?? ''}`.trim()
+    : 'Oyuncu';
+  const dept = extras?.departmentName ?? '';
+  const year = extras?.classYear ?? '';
+
   return (
-    <View className="mb-2 flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-3">
-      <Text className="text-sm text-gray-900">{label}</Text>
-      <Switch value={value} onValueChange={onChange} />
+    <View className="flex-1 bg-bg">
+      <NavHeader title="Profili düzenle" onBack={() => router.back()} />
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 4,
+          paddingBottom: 20,
+        }}
+      >
+        {/* Avatar */}
+        <View
+          style={{
+            alignItems: 'center',
+            gap: 10,
+            paddingVertical: 20,
+          }}
+        >
+          <View style={{ position: 'relative' }}>
+            <Avatar name={name} size={92} />
+            <View
+              style={{
+                position: 'absolute',
+                right: -2,
+                bottom: -2,
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: colors.text,
+                borderWidth: 1.5,
+                borderColor: colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="camera" size={15} color="#FFFFFF" stroke={2.2} />
+            </View>
+          </View>
+          <Pressable>
+            <Text
+              className="font-sans font-bold"
+              style={{ fontSize: 13, color: colors.court }}
+            >
+              Fotoğrafı değiştir
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={{ gap: 18 }}>
+          <Field label="Ad Soyad" value={name} />
+
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              ZAMİR
+            </Text>
+            <Segmented
+              value={pronoun}
+              onChange={setPronoun}
+              options={PRONOUNS.map((p) => ({ value: p, label: p }))}
+            />
+          </View>
+
+          <Field
+            label="Bölüm"
+            value={dept}
+            icon="search"
+            suffix="değiştir"
+          />
+
+          <View className="flex-row" style={{ gap: 14 }}>
+            <View style={{ flex: 1 }}>
+              <Text
+                className="font-sans font-extrabold text-text-3"
+                style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+              >
+                SINIF
+              </Text>
+              <Field value={year ? `${year}. sınıf` : ''} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                className="font-sans font-extrabold text-text-3"
+                style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+              >
+                DOMİNANT EL
+              </Text>
+              <Segmented
+                value={hand}
+                onChange={setHand}
+                options={[
+                  { value: 'sag', label: 'Sağ' },
+                  { value: 'sol', label: 'Sol' },
+                ]}
+              />
+            </View>
+          </View>
+
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              TENİS SEVİYESİ
+            </Text>
+            <Segmented
+              value={level}
+              onChange={setLevel}
+              options={[
+                { value: 'baslangic', label: 'Başlangıç' },
+                { value: 'orta', label: 'Orta' },
+                { value: 'ileri', label: 'İleri' },
+              ]}
+            />
+          </View>
+
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              MÜSAİTLİK
+            </Text>
+            <View
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
+            >
+              {SLOTS.map((s) => {
+                const on = avail.includes(s.key);
+                return (
+                  <Pressable
+                    key={s.key}
+                    onPress={() => toggle(s.key)}
+                    className="flex-row items-center"
+                    style={{
+                      width: '48%',
+                      padding: 12,
+                      gap: 9,
+                      borderRadius: 18,
+                      borderWidth: 1.5,
+                      borderColor: colors.borderStrong,
+                      backgroundColor: on ? colors.limeSoft : colors.surface,
+                    }}
+                  >
+                    <CheckBox checked={on} onChange={() => toggle(s.key)} />
+                    <Text
+                      className="font-sans font-bold text-text"
+                      style={{ fontSize: 12.5 }}
+                    >
+                      {s.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View
+        style={{
+          padding: 20,
+          borderTopWidth: 1,
+          borderColor: colors.borderStrong,
+        }}
+      >
+        <Button full size="lg" onPress={() => router.back()}>
+          Kaydet
+        </Button>
+      </View>
     </View>
   );
 }
