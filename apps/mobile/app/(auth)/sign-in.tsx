@@ -184,6 +184,21 @@ export default function SignIn() {
             </Text>
           </Pressable>
         )}
+
+        {/* Dev-only onboarding wizard jump — Plan 8 Phase D5-D14 visual QA. */}
+        {__DEV__ && (
+          <Pressable
+            onPress={() => router.push('/(onboarding)/name')}
+            style={{ alignSelf: 'center', marginTop: 4, padding: 8 }}
+          >
+            <Text
+              className="font-sans font-semibold text-text-3"
+              style={{ fontSize: 13 }}
+            >
+              Onboarding wizard (dev)
+            </Text>
+          </Pressable>
+        )}
       </ScrollView>
 
       <View style={{ padding: 24, paddingTop: 8 }}>

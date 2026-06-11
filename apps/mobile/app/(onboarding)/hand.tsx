@@ -1,33 +1,30 @@
+// Onboarding · Dominant el (D12)
+// Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObHand
+
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { RadioGroup } from '../../components/ui/RadioGroup';
-import { StepLayout } from '../../components/onboarding/StepLayout';
-import { useOnboardingStore, type HandValue } from '../../stores/onboarding-store';
+import { OBFrame } from '../../components/onboarding/OBFrame';
+import { PickList } from '../../components/onboarding/PickList';
+import { useOnboardingStore, type DominantHand } from '../../stores/onboarding-store';
 
-const TOTAL_STEPS = 11;
-const OPTIONS: { value: HandValue; label: string }[] = [
-  { value: 'sag', label: 'Sağ el' },
-  { value: 'sol', label: 'Sol el' },
-];
-
-export default function HandScreen() {
-  const draft = useOnboardingStore((s) => s.draft);
-  const update = useOnboardingStore((s) => s.update);
-  const [value, setValue] = useState<HandValue | undefined>(draft.dominantHand);
-  const [error, setError] = useState<string>();
-
-  const handleNext = () => {
-    if (!value) {
-      setError('Bir seçim yap');
-      return;
-    }
-    update({ dominantHand: value });
-    router.push('/(onboarding)/availability');
-  };
+export default function ObHand() {
+  const hand = useOnboardingStore((s) => s.hand);
+  const setField = useOnboardingStore((s) => s.setField);
 
   return (
-    <StepLayout step={8} total={TOTAL_STEPS} title="Dominant el" onNext={handleNext}>
-      <RadioGroup label="El" options={OPTIONS} value={value} onChange={setValue} error={error} />
-    </StepLayout>
+    <OBFrame
+      step="hand"
+      title="Dominant elin"
+      onNext={() => router.push('/(onboarding)/availability')}
+    >
+      <PickList<DominantHand>
+        value={hand}
+        onPick={(v) => setField('hand', v)}
+        cols={2}
+        options={[
+          { value: 'sag', label: 'Sağ' },
+          { value: 'sol', label: 'Sol' },
+        ]}
+      />
+    </OBFrame>
   );
 }

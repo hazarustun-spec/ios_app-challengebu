@@ -2,11 +2,28 @@ import { useMutation } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
-import type { OnboardingDraft } from '../stores/onboarding-store';
+import type {
+  AvailabilitySlot,
+  GenderCategory,
+  OnboardingState,
+} from '../stores/onboarding-store';
+
+type DraftSnapshot = Omit<OnboardingState, 'setField' | 'reset'>;
 
 interface Args {
-  draft: OnboardingDraft;
+  draft: DraftSnapshot;
 }
+
+// Map the OBFrame wizard's 6-slot grid (wd_*/we_*) to the canonical
+// availability_windows column values (weekday_*/weekend_*).
+const SLOT_TO_DB: Record<AvailabilitySlot, string> = {
+  wd_am: 'weekday_morning',
+  wd_noon: 'weekday_noon',
+  wd_eve: 'weekday_evening',
+  we_am: 'weekend_morning',
+  we_noon: 'weekend_noon',
+  we_eve: 'weekend_evening',
+};
 
 export function useSubmitOnboarding() {
   return useMutation({
@@ -16,11 +33,11 @@ export function useSubmitOnboarding() {
 
       // 1. Upload avatar if present
       let avatarUrl: string | null = null;
-      if (draft.avatarUri) {
-        const ext = draft.avatarUri.split('.').pop() ?? 'jpg';
+      if (draft.photoUri) {
+        const ext = draft.photoUri.split('.').pop() ?? 'jpg';
         const path = `${user.id}.${ext}`;
         try {
-          const fileData = await FileSystem.readAsStringAsync(draft.avatarUri, {
+          const fileData = await FileSystem.readAsStringAsync(draft.photoUri, {
             encoding: FileSystem.EncodingType.Base64,
           });
           const buffer = Uint8Array.from(atob(fileData), (c) => c.charCodeAt(0));
@@ -43,22 +60,21 @@ export function useSubmitOnboarding() {
         first_name: draft.firstName,
         last_name: draft.lastName,
         phone: draft.phone ?? null,
-        pronoun: draft.pronoun!,
-        pronoun_custom: draft.pronounCustom ?? null,
-        gender_category: draft.genderCategory!,
-        department_id: draft.departmentId!,
-        class_year: draft.classYear!,
+        pronoun: draft.pronoun,
+        gender_category: draft.category,
+        department_id: draft.departmentId,
+        class_year: draft.classYear,
         show_department: draft.showDepartment,
         show_class_year: draft.showClassYear,
-        skill_self_assessment: draft.skillSelfAssessment!,
-        dominant_hand: draft.dominantHand!,
-        availability_windows: draft.availabilityWindows,
+        skill_self_assessment: draft.level,
+        dominant_hand: draft.hand,
+        availability_windows: draft.availability.map((s) => SLOT_TO_DB[s]),
         avatar_url: avatarUrl,
       });
       if (profileErr) throw profileErr;
 
       // 3. Seed ELO ratings (1200) for relevant categories
-      const categories = pickCategories(draft.genderCategory!);
+      const categories = pickCategories(draft.category);
       const rows = categories.map((c) => ({
         profile_id: user.id,
         category: c,
@@ -72,7 +88,7 @@ export function useSubmitOnboarding() {
   });
 }
 
-function pickCategories(genderCategory: 'erkek' | 'kadin' | 'open_only'): string[] {
+function pickCategories(genderCategory: GenderCategory): string[] {
   if (genderCategory === 'erkek') {
     return ['erkek_tek', 'open_tek', 'erkek_cift', 'karma_cift', 'open_cift'];
   }

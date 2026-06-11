@@ -6,24 +6,33 @@ describe('onboarding-store', () => {
     useOnboardingStore.getState().reset();
   });
 
-  test('initial draft has defaults', () => {
-    const d = useOnboardingStore.getState().draft;
-    expect(d.firstName).toBe('');
-    expect(d.showDepartment).toBe(true);
-    expect(d.availabilityWindows).toEqual([]);
+  test('initial state has defaults', () => {
+    const s = useOnboardingStore.getState();
+    expect(s.firstName).toBe('');
+    expect(s.showDepartment).toBe(true);
+    expect(s.showClassYear).toBe(true);
+    expect(s.availability).toEqual([]);
+    expect(s.pronoun).toBe('they/them');
+    expect(s.category).toBe('erkek');
+    expect(s.level).toBe('orta');
+    expect(s.hand).toBe('sag');
   });
 
-  test('update patches draft', () => {
-    useOnboardingStore.getState().update({ firstName: 'Ali', genderCategory: 'erkek' });
-    const d = useOnboardingStore.getState().draft;
-    expect(d.firstName).toBe('Ali');
-    expect(d.genderCategory).toBe('erkek');
-    expect(d.showDepartment).toBe(true);
+  test('setField patches a single field', () => {
+    useOnboardingStore.getState().setField('firstName', 'Ali');
+    useOnboardingStore.getState().setField('category', 'kadin');
+    const s = useOnboardingStore.getState();
+    expect(s.firstName).toBe('Ali');
+    expect(s.category).toBe('kadin');
+    expect(s.showDepartment).toBe(true);
   });
 
   test('reset returns to initial', () => {
-    useOnboardingStore.getState().update({ firstName: 'X' });
+    useOnboardingStore.getState().setField('firstName', 'X');
+    useOnboardingStore.getState().setField('availability', ['wd_am']);
     useOnboardingStore.getState().reset();
-    expect(useOnboardingStore.getState().draft.firstName).toBe('');
+    const s = useOnboardingStore.getState();
+    expect(s.firstName).toBe('');
+    expect(s.availability).toEqual([]);
   });
 });
