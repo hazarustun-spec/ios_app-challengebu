@@ -2,7 +2,7 @@
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObDept
 
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Field } from '../../components/ui/Field';
@@ -98,45 +98,63 @@ export default function ObDepartment() {
       </Pressable>
 
       <Sheet visible={open} onClose={() => setOpen(false)} title="Bölüm seç">
-        <Field
-          icon="search"
-          placeholder="Bölüm ara…"
-          value={q}
-          onChange={setQ}
-          autoFocus
-        />
-        <ScrollView style={{ marginTop: 12, maxHeight: 380 }}>
-          {filtered.map((d) => (
-            <Pressable
-              key={d.id}
-              onPress={() => {
-                setField('departmentId', d.id);
-                setField('departmentName', d.name);
-                setOpen(false);
-                setQ('');
-              }}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingVertical: 14,
-                paddingHorizontal: 6,
-                borderBottomWidth: 1,
-                borderColor: colors.surface3,
-              }}
-            >
-              <Text
-                className="font-sans font-semibold text-text"
-                style={{ fontSize: 15 }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ height: 520 }}
+        >
+          <Field
+            icon="search"
+            placeholder="Bölüm ara…"
+            value={q}
+            onChange={setQ}
+          />
+          <FlatList
+            style={{ marginTop: 12, flex: 1 }}
+            data={filtered}
+            keyExtractor={(d) => d.id}
+            keyboardShouldPersistTaps="handled"
+            initialNumToRender={20}
+            renderItem={({ item: d }) => (
+              <Pressable
+                onPress={() => {
+                  setField('departmentId', d.id);
+                  setField('departmentName', d.name);
+                  setOpen(false);
+                  setQ('');
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 14,
+                  paddingHorizontal: 6,
+                  borderBottomWidth: 1,
+                  borderColor: colors.surface3,
+                }}
               >
-                {d.name}
+                <Text
+                  className="font-sans font-semibold text-text"
+                  style={{ fontSize: 15 }}
+                >
+                  {d.name}
+                </Text>
+                {departmentId === d.id && (
+                  <Icon name="check" size={18} color={colors.clay} stroke={3} />
+                )}
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <Text
+                className="font-sans text-text-3"
+                style={{ fontSize: 13, textAlign: 'center', paddingVertical: 24 }}
+              >
+                {deps === undefined
+                  ? 'Yükleniyor…'
+                  : 'Eşleşen bölüm yok'}
               </Text>
-              {departmentId === d.id && (
-                <Icon name="check" size={18} color={colors.clay} stroke={3} />
-              )}
-            </Pressable>
-          ))}
-        </ScrollView>
+            }
+          />
+        </KeyboardAvoidingView>
       </Sheet>
     </OBFrame>
   );
