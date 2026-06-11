@@ -25,13 +25,48 @@ export interface FormatDef {
   color: string;
   /** Glyph rendered by `FormatChip`. */
   mark: IconName;
+  /**
+   * Human-readable ELO multiplier ladder rendered on the
+   * `/match/new/format-rules` screen (Plan 8 E15). Mirrors the design
+   * bundle's `FORMATS[].mult` strings — score margins map to a multiplier
+   * that scales the K-factor delta for the winner.
+   */
+  mult: string;
 }
 
 export const FORMATS: FormatDef[] = [
-  { key: 'klasik',   name: 'BÜ Klasik',      tag: '4 El',    color: '#2742A0', mark: 'spark'  },
-  { key: 'tiebreak', name: 'Hızlı Tiebreak', tag: '10 Sayı', color: '#2E63B8', mark: 'bolt'   },
-  { key: 'proset',   name: 'Pro Set 8',      tag: '8 Oyun',  color: '#5E8B39', mark: 'shield' },
-  { key: 'set3',     name: '3 Set Klasik',   tag: 'ATP',     color: '#7A4FA0', mark: 'trophy' },
+  {
+    key: 'klasik',
+    name: 'BÜ Klasik',
+    tag: '4 El',
+    color: '#2742A0',
+    mark: 'spark',
+    mult: '4-0 → 1.5×  ·  4-1 → 1.3×  ·  4-2 → 1.1×  ·  4-3 → 1.0×',
+  },
+  {
+    key: 'tiebreak',
+    name: 'Hızlı Tiebreak',
+    tag: '10 Sayı',
+    color: '#2E63B8',
+    mark: 'bolt',
+    mult: '10-0 → 1.5×  ·  10-5 → 1.2×  ·  10-8 → 1.0×',
+  },
+  {
+    key: 'proset',
+    name: 'Pro Set 8',
+    tag: '8 Oyun',
+    color: '#5E8B39',
+    mark: 'shield',
+    mult: '8-0 → 1.5×  ·  8-4 → 1.2×  ·  9-8 tb → 1.0×',
+  },
+  {
+    key: 'set3',
+    name: '3 Set Klasik',
+    tag: 'ATP',
+    color: '#7A4FA0',
+    mark: 'trophy',
+    mult: '2-0 set → 1.3×  ·  2-1 set → 1.0×',
+  },
 ];
 
 export function formatByKey(key: FormatKey): FormatDef {
