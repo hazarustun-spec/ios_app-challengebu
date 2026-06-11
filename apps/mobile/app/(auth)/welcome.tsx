@@ -8,6 +8,7 @@
 
 import { useEffect } from 'react';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Animated, {
   Easing,
@@ -25,10 +26,15 @@ import { Star } from '../../components/ui/doodles/Star';
 import { colors } from '../../theme/colors';
 
 export default function Welcome() {
+  const insets = useSafeAreaInsets();
   return (
     <View
       className="flex-1 bg-bg"
-      style={{ paddingTop: 8, paddingHorizontal: 18, paddingBottom: 24 }}
+      style={{
+        paddingTop: 8 + insets.top,
+        paddingHorizontal: 18,
+        paddingBottom: 24,
+      }}
     >
       <View
         className="flex-1 bg-lime overflow-hidden"

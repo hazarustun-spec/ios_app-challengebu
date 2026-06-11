@@ -8,6 +8,7 @@
 
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Animated, {
   Easing,
@@ -22,13 +23,17 @@ import { colors } from '../../theme/colors';
 const SPLASH_DURATION_MS = 1500;
 
 export default function Splash() {
+  const insets = useSafeAreaInsets();
   useEffect(() => {
     const t = setTimeout(() => router.replace('/(auth)/welcome'), SPLASH_DURATION_MS);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <View className="flex-1 items-center justify-center bg-bg">
+    <View
+      className="flex-1 items-center justify-center bg-bg"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
       <BallMark size={96} />
       <View
         style={{

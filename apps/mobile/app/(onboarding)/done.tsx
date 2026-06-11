@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Animated, {
   Easing,
@@ -46,6 +47,7 @@ import { colors } from '../../theme/colors';
 const INITIAL_ELO = 1200;
 
 export default function ObDone() {
+  const insets = useSafeAreaInsets();
   const firstName = useOnboardingStore((s) => s.firstName);
   const reset = useOnboardingStore((s) => s.reset);
   const submit = useSubmitOnboarding();
@@ -130,7 +132,11 @@ export default function ObDone() {
   return (
     <View
       className="flex-1 bg-bg"
-      style={{ paddingTop: 10, paddingHorizontal: 18, paddingBottom: 24 }}
+      style={{
+        paddingTop: 10 + insets.top,
+        paddingHorizontal: 18,
+        paddingBottom: 24,
+      }}
     >
       {/* Hero card */}
       <View

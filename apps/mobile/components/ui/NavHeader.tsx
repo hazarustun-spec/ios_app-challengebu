@@ -19,6 +19,7 @@
 //   labels with no chip background.
 
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './Icon';
 import { colors } from '../../theme/colors';
 
@@ -48,8 +49,12 @@ export function NavHeader({
   onAction,
   large,
 }: NavHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View className={large ? 'pt-1.5 pb-1 px-4.5' : 'pt-2 pb-1 px-3.5'}>
+    <View
+      className={large ? 'pb-1 px-4.5' : 'pb-1 px-3.5'}
+      style={{ paddingTop: insets.top + (large ? 6 : 8) }}
+    >
       <View className="flex-row items-center gap-2.5 min-h-[48px]">
         {onBack && (
           <Pressable

@@ -15,6 +15,7 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
@@ -56,6 +57,7 @@ export function OBFrame({
   onNext,
   onSkip,
 }: OBFrameProps) {
+  const insets = useSafeAreaInsets();
   const idx = OB_STEPS.indexOf(step);
   const total = OB_STEPS.length;
   const pct = ((idx + 1) / total) * 100;
@@ -65,7 +67,7 @@ export function OBFrame({
   const canGoBack = router.canGoBack();
 
   return (
-    <View className="flex-1 bg-bg">
+    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       {/* Progress header */}
       <View
         style={{

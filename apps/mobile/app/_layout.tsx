@@ -67,7 +67,7 @@ export default function RootLayout() {
             <Stack.Screen name="(dev)" />
           </Stack>
           <CelebrationMount />
-          <StatusBar style="auto" />
+          <StatusBar style="dark" />
         </ToastProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
