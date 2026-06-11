@@ -43,6 +43,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(onboarding)" />
+            <Stack.Screen name="(tabs)" />
             <Stack.Screen name="(app)" />
             <Stack.Screen name="index" />
             <Stack.Screen name="create-match" options={{ headerShown: true, title: 'Maç Oluştur' }} />

@@ -103,7 +103,9 @@ export default function ObDone() {
     opacity: ballOpacity.value,
   }));
 
-  const goHome = () => router.replace('/(app)/home');
+  // Cast: typed-routes file regenerates on `expo start`; until then `/(tabs)`
+  // is not in the route union. Path is runtime-validated by Expo Router.
+  const goHome = () => router.replace('/(tabs)' as never);
 
   const retry = () => {
     setError(null);

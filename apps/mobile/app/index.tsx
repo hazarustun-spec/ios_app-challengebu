@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, type Href } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '../stores/auth-store';
 
@@ -21,5 +21,9 @@ export default function Index() {
     return <Redirect href="/(onboarding)/name" />;
   }
 
-  return <Redirect href="/(app)/home" />;
+  // Cast: Expo Router's typed-routes generator (`.expo/types/router.d.ts`)
+  // only regenerates on `expo start`. Until the next dev launch, `/(tabs)`
+  // is not in the union; the cast unblocks typecheck while the path is
+  // still validated at runtime by Expo Router itself.
+  return <Redirect href={'/(tabs)' as Href} />;
 }

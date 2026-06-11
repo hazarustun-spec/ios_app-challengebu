@@ -54,13 +54,17 @@ interface TabStateLike {
   routes: TabRouteLike[];
 }
 
+// `emit` in `@react-navigation/bottom-tabs` is overloaded per-event-type
+// with a literal `canPreventDefault: true` for `tabPress`. Our shim only
+// fires `tabPress` and only reads `defaultPrevented`. Typing the argument
+// AND the return as `any` keeps the shape structurally compatible with
+// whatever the real bottom-tabs typings hand us at runtime — the
+// alternative (writing the full overload by hand) duplicates upstream
+// complexity for zero local benefit.
 interface TabNavigationLike {
   navigate: (name: string) => void;
-  emit: (event: {
-    type: 'tabPress';
-    target: string;
-    canPreventDefault: boolean;
-  }) => { defaultPrevented: boolean };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emit: (event: any) => any;
 }
 
 export interface TabBarProps {
