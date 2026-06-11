@@ -28,7 +28,7 @@ export default function ObYear() {
       step="year"
       title="Sınıfın"
       canNext={!!classYear}
-      onNext={() => router.push('/(onboarding)/level')}
+      onNext={() => router.push('/(onboarding)/department')}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9 }}>
         {YEARS.map((y) => {

@@ -18,7 +18,7 @@ export default function ObCategory() {
       step="category"
       title="Yarışma kategorin"
       subtitle="Hangi tekler sıralamalarında yer alacağını belirler. Open sıralamalarına herkes katılabilir."
-      onNext={() => router.push('/(onboarding)/department')}
+      onNext={() => router.push('/(onboarding)/year')}
     >
       <PickList<GenderCategory>
         value={category}
