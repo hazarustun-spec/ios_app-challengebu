@@ -1,87 +1,202 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { BOUN_EMAIL_ERROR_TR, validateBouniMail } from '@tennis/shared/schemas';
-import { router } from 'expo-router';
+// Sign-in (email) screen — Plan 8 Phase D3.
+//
+// Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-auth.jsx
+// `function EmailScreen()` lines 51-75.
+//
+// User enters a BÜ-eligible e-mail, accepts the KVKK + privacy notice, then
+// taps "Kod gönder" — Supabase sends a magic-link + 6-digit OTP and we route
+// to /(auth)/otp with the email param for verification.
+
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, Text, View } from 'react-native';
-import { z } from 'zod';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import { router } from 'expo-router';
+import {
+  BOUN_EMAIL_ERROR_TR,
+  validateBouniMail,
+} from '@tennis/shared/schemas';
+import { getOtpOptions } from '@tennis/shared';
 import { Button } from '../../components/ui/Button';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { TextField } from '../../components/ui/TextField';
+import { CheckBox } from '../../components/ui/CheckBox';
+import { Field } from '../../components/ui/Field';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { colors } from '../../theme/colors';
 import { supabase } from '../../lib/supabase';
 
-const schema = z.object({
-  email: z
-    .string()
-    .email('Geçerli bir e-posta gir')
-    .refine(validateBouniMail, BOUN_EMAIL_ERROR_TR),
-});
+const QUICK_DOMAINS = [
+  '@std.bogazici.edu.tr',
+  '@bogazici.edu.tr',
+  '@alumni.bogazici.edu.tr',
+];
 
-type FormValues = z.infer<typeof schema>;
+export default function SignIn() {
+  const [email, setEmail] = useState('');
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-export default function SignInScreen() {
-  const [loading, setLoading] = useState(false);
-  const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-  });
+  const trimmed = email.trim();
+  const dirty = trimmed.length > 3;
+  const valid = validateBouniMail(trimmed);
+  const canSubmit = valid && kvkkAccepted && !sending;
 
-  const onSubmit = async (data: FormValues) => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: data.email,
-      options: { shouldCreateUser: true },
-    });
-    setLoading(false);
-    if (error) {
-      Alert.alert('Hata', error.message);
-      return;
+  const handleSend = async () => {
+    if (!canSubmit) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: getOtpOptions({ email: trimmed, withMagicLink: true }),
+      });
+      if (error) throw error;
+      router.push({
+        pathname: '/(auth)/otp',
+        params: { email: trimmed },
+      });
+    } catch (err) {
+      Alert.alert(
+        'Hata',
+        err instanceof Error ? err.message : 'Bir sorun oluştu.',
+      );
+    } finally {
+      setSending(false);
     }
-    router.push({ pathname: '/(auth)/verify-otp', params: { email: data.email } });
   };
 
   return (
-    <ScreenContainer scrollable>
-      <View className="flex-1 justify-center">
-        <Text className="mb-2 text-3xl font-bold text-gray-900">Hoş geldin</Text>
-        <Text className="mb-8 text-base text-gray-600">
-          BÜ e-postanı gir, sana 6 haneli giriş kodu yollayalım.
+    <View className="flex-1 bg-bg">
+      <NavHeader onBack={() => router.back()} />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text
+          className="font-display font-extrabold text-text"
+          style={{
+            fontSize: 27,
+            marginTop: 8,
+            marginBottom: 8,
+            letterSpacing: -0.54,
+          }}
+        >
+          E-postanı gir
+        </Text>
+        <Text
+          className="font-sans text-text-2"
+          style={{ fontSize: 15, lineHeight: 23, marginBottom: 28 }}
+        >
+          Sana giriş bağlantısı ve 6 haneli kod göndereceğiz. Sadece üniversite
+          hesapları kabul edilir.
         </Text>
 
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextField
-              label="E-posta"
-              placeholder="ad.soyad@std.bogazici.edu.tr"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ?? ''}
-              error={errors.email?.message}
-            />
-          )}
+        <Field
+          icon="mail"
+          type="email"
+          placeholder="ad.soyad@std.bogazici.edu.tr"
+          value={email}
+          onChange={setEmail}
+          autoFocus
+          big
+          error={dirty && !valid}
+          hint={
+            dirty && !valid
+              ? BOUN_EMAIL_ERROR_TR
+              : 'Öğrenci, akademisyen, personel, emekli ve mezun hesapları kabul edilir.'
+          }
         />
 
-        <Button onPress={handleSubmit(onSubmit)} loading={loading}>
-          Kod gönder
-        </Button>
+        <View
+          style={{
+            marginTop: 18,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 8,
+          }}
+        >
+          {QUICK_DOMAINS.map((d) => (
+            <Pressable
+              key={d}
+              onPress={() =>
+                setEmail((cur) => (cur.split('@')[0] || 'ad.soyad') + d)
+              }
+              style={{
+                paddingHorizontal: 11,
+                paddingVertical: 7,
+                borderRadius: 9999,
+                backgroundColor: colors.claySofter,
+                borderWidth: 1,
+                borderColor: colors.claySoft,
+              }}
+              accessibilityRole="button"
+            >
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 12.5, color: colors.clayText }}
+              >
+                {d}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
+        {/* KVKK + privacy consent */}
+        <Pressable
+          onPress={() => setKvkkAccepted((v) => !v)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 10,
+            marginTop: 32,
+            paddingVertical: 4,
+          }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: kvkkAccepted }}
+        >
+          <View style={{ marginTop: 1 }}>
+            <CheckBox checked={kvkkAccepted} onChange={setKvkkAccepted} />
+          </View>
+          <Text
+            className="font-sans flex-1 text-text-2"
+            style={{ fontSize: 13, lineHeight: 19 }}
+          >
+            <Text className="text-text font-bold">KVKK Aydınlatma Metni</Text>{' '}
+            ve{' '}
+            <Text className="text-text font-bold">Gizlilik Politikası</Text>
+            {"'nı"} okudum, kabul ediyorum.
+          </Text>
+        </Pressable>
+
+        {/* Dev-only component gallery link — preserved from previous sign-in. */}
         {__DEV__ && (
           <Pressable
-            // Typed routes haven't been regenerated for the dev-only group;
-            // cast to bypass the static-route table until the user runs the app.
             onPress={() => router.push('/(dev)/gallery' as never)}
-            className="mt-6 self-center px-3 py-2"
+            style={{ alignSelf: 'center', marginTop: 24, padding: 8 }}
           >
-            <Text className="text-sm font-semibold text-gray-500">
+            <Text
+              className="font-sans font-semibold text-text-3"
+              style={{ fontSize: 13 }}
+            >
               Component Gallery (dev)
             </Text>
           </Pressable>
         )}
+      </ScrollView>
+
+      <View style={{ padding: 24, paddingTop: 8 }}>
+        <Button
+          full
+          size="lg"
+          disabled={!valid || !kvkkAccepted}
+          loading={sending}
+          onPress={handleSend}
+        >
+          {sending ? 'Gönderiliyor…' : 'Kod gönder'}
+        </Button>
       </View>
-    </ScreenContainer>
+    </View>
   );
 }
