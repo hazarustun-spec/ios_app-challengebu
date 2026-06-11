@@ -7,9 +7,9 @@
 //
 // Visual structure:
 //   Lime pill container (h-16, rounded-pill, 1.5px ink border)
-//   ├─ Sıralama  (48x48 circle, ink fill when active, otherwise transparent)
+//   ├─ Sıralama  (48x48 circle, court-blue fill when active, otherwise transparent)
 //   ├─ Maçlar    (idem)
-//   ├─ "+"       central, 52x52 ink circle, 2px WHITE ring, plus glyph;
+//   ├─ "+"       central, 52x52 court-blue circle, 2px WHITE ring, plus glyph;
 //   │            never settles on a tab — taps navigate to the modal
 //   │            `new-match` route
 //   ├─ Bildirim  (idem) + pink-deep numeric badge bubble (hidden when active)
@@ -138,7 +138,7 @@ export function TabBar({ state, navigation, notifBadgeCount = 0 }: TabBarProps) 
               style={{ width: size, height: size }}
               className={[
                 'items-center justify-center rounded-full',
-                inkBg ? 'bg-clay' : 'bg-transparent',
+                inkBg ? 'bg-court' : 'bg-transparent',
                 isCenter ? 'border-2 border-white' : '',
               ]
                 .filter(Boolean)

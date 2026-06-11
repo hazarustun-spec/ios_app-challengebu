@@ -278,15 +278,15 @@ describe('TabBar', () => {
     const slots = findAll(tree, (n) => n.type === 'Pressable');
     expect(slots.length).toBe(5);
     // Slot 0 (index) should carry the ink-fill background class.
-    expect(String(slots[0]?.props.className)).toContain('bg-clay');
+    expect(String(slots[0]?.props.className)).toContain('bg-court');
     // Slot 1 (matches) should be transparent.
     expect(String(slots[1]?.props.className)).toContain('bg-transparent');
     // Slot 2 (new-match) is the central "+" — ink bg + white ring border.
-    expect(String(slots[2]?.props.className)).toContain('bg-clay');
+    expect(String(slots[2]?.props.className)).toContain('bg-court');
     expect(String(slots[2]?.props.className)).toContain('border-white');
   });
 
-  test('central + slot is always ink-filled with white ring even when inactive', () => {
+  test('central + slot is always court-blue-filled with white ring even when inactive', () => {
     const tree = normalize(
       TabBar({
         state: { index: 1, routes: mockRoutes }, // matches active
@@ -297,9 +297,9 @@ describe('TabBar', () => {
     // Index slot is no longer active.
     expect(String(slots[0]?.props.className)).toContain('bg-transparent');
     // Matches slot now active.
-    expect(String(slots[1]?.props.className)).toContain('bg-clay');
-    // Center remains ink-filled.
-    expect(String(slots[2]?.props.className)).toContain('bg-clay');
+    expect(String(slots[1]?.props.className)).toContain('bg-court');
+    // Center remains court-blue-filled.
+    expect(String(slots[2]?.props.className)).toContain('bg-court');
     expect(String(slots[2]?.props.className)).toContain('border-white');
   });
 

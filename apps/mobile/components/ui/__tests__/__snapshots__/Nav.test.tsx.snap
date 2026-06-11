@@ -533,7 +533,7 @@ exports[`TabBar renders 5 slots with index active 1`] = `
             "accessibilityState": {
               "selected": true,
             },
-            "className": "items-center justify-center rounded-full bg-clay",
+            "className": "items-center justify-center rounded-full bg-court",
             "onPress": "[Function]",
             "style": {
               "height": 48,
@@ -589,7 +589,7 @@ exports[`TabBar renders 5 slots with index active 1`] = `
             "accessibilityState": {
               "selected": false,
             },
-            "className": "items-center justify-center rounded-full bg-clay border-2 border-white",
+            "className": "items-center justify-center rounded-full bg-court border-2 border-white",
             "onPress": "[Function]",
             "style": {
               "height": 52,
@@ -695,7 +695,7 @@ exports[`TabBar notif badge appears when count > 0 and notif tab is inactive 1`]
             "accessibilityState": {
               "selected": true,
             },
-            "className": "items-center justify-center rounded-full bg-clay",
+            "className": "items-center justify-center rounded-full bg-court",
             "onPress": "[Function]",
             "style": {
               "height": 48,
@@ -751,7 +751,7 @@ exports[`TabBar notif badge appears when count > 0 and notif tab is inactive 1`]
             "accessibilityState": {
               "selected": false,
             },
-            "className": "items-center justify-center rounded-full bg-clay border-2 border-white",
+            "className": "items-center justify-center rounded-full bg-court border-2 border-white",
             "onPress": "[Function]",
             "style": {
               "height": 52,
