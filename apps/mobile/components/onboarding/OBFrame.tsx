@@ -59,6 +59,10 @@ export function OBFrame({
   const idx = OB_STEPS.indexOf(step);
   const total = OB_STEPS.length;
   const pct = ((idx + 1) / total) * 100;
+  // Hide the back chip when the navigation stack is empty (e.g., the very
+  // first onboarding step after a Redirect from `app/index.tsx`). Avoids a
+  // dead-tap UX where pressing back does nothing.
+  const canGoBack = router.canGoBack();
 
   return (
     <View className="flex-1 bg-bg">
@@ -72,21 +76,23 @@ export function OBFrame({
           gap: 12,
         }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 14,
-            backgroundColor: colors.surface2,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          accessibilityRole="button"
-          accessibilityLabel="Geri"
-        >
-          <Icon name="back" size={20} color={colors.text} />
-        </Pressable>
+        {canGoBack ? (
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 14,
+              backgroundColor: colors.surface2,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Geri"
+          >
+            <Icon name="back" size={20} color={colors.text} />
+          </Pressable>
+        ) : null}
         <View
           style={{
             flex: 1,
