@@ -64,6 +64,7 @@ export default function RootLayout() {
               options={{ headerShown: true, title: 'Bildirimler' }}
             />
             <Stack.Screen name="(admin)" />
+            <Stack.Screen name="(dev)" />
           </Stack>
           <CelebrationMount />
           <StatusBar style="auto" />

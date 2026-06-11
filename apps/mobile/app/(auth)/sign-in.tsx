@@ -3,7 +3,7 @@ import { BOUN_EMAIL_ERROR_TR, validateBouniMail } from '@tennis/shared/schemas';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { z } from 'zod';
 import { Button } from '../../components/ui/Button';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
@@ -68,6 +68,19 @@ export default function SignInScreen() {
         <Button onPress={handleSubmit(onSubmit)} loading={loading}>
           Kod gönder
         </Button>
+
+        {__DEV__ && (
+          <Pressable
+            // Typed routes haven't been regenerated for the dev-only group;
+            // cast to bypass the static-route table until the user runs the app.
+            onPress={() => router.push('/(dev)/gallery' as never)}
+            className="mt-6 self-center px-3 py-2"
+          >
+            <Text className="text-sm font-semibold text-gray-500">
+              Component Gallery (dev)
+            </Text>
+          </Pressable>
+        )}
       </View>
     </ScreenContainer>
   );
