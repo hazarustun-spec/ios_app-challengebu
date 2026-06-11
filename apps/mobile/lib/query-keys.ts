@@ -76,6 +76,7 @@ export const queryKeys = {
     userDetail: (userId: string) => [...queryKeys.admin.all, 'user', userId] as const,
     health: () => [...queryKeys.admin.all, 'health'] as const,
     auditLog: () => [...queryKeys.admin.all, 'audit-log'] as const,
+    cronStatus: () => [...queryKeys.admin.all, 'cron-status'] as const,
   },
   announcements: {
     all: ['announcements'] as const,

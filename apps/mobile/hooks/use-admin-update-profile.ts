@@ -7,6 +7,13 @@ export interface AdminUpdateProfileInput {
   targetUserId: string;
   role?: 'player' | 'admin';
   status?: 'active' | 'suspended' | 'banned';
+  /**
+   * ISO timestamp for when a suspension should automatically expire. Pair
+   * with `status: 'suspended'`. Pass `null` to clear an existing expiry, or
+   * omit entirely for a permanent ban. The daily `expire_suspensions()` cron
+   * flips status back to `active` once this moment passes (Plan 8 Phase A4).
+   */
+  suspendedUntil?: string | null;
   notes?: string;
 }
 

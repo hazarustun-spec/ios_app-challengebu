@@ -13,6 +13,11 @@ export interface AdminUserDetail {
   gender_category: string | null;
   last_match_at: string | null;
   created_at: string;
+  /**
+   * ISO timestamp when an active suspension auto-expires (Plan 8 Phase A4).
+   * `null` while `status === 'suspended'` means a permanent ban.
+   */
+  suspended_until: string | null;
 }
 
 // `profiles.email` / `profiles.phone` / `profiles.role` are revoked from

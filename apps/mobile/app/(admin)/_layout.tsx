@@ -1,3 +1,15 @@
+// Admin route group — Plan 8 Phase G.
+//
+// Gate logic ports verbatim from Plan 7 Faz D: only profiles with
+// `role === 'admin'` get through; everyone else (including unauthenticated
+// users) gets redirected back to the app root, which itself reroutes
+// non-onboarded users to the sign-in flow.
+//
+// Plan 8 swaps the native Stack header for our `NavHeader` primitive on
+// every admin screen, so `headerShown: false` is the new default here. Each
+// screen renders its own `<NavHeader title="..." onBack={...} />` to match
+// the design source (see screens-admin.jsx).
+
 import { Redirect, Stack } from 'expo-router';
 import { useAuthStore } from '../../stores/auth-store';
 
@@ -8,18 +20,5 @@ export default function AdminLayout() {
   if (!profile || profile.role !== 'admin') {
     return <Redirect href="/" />;
   }
-  return (
-    <Stack screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="index" options={{ title: 'Admin Paneli' }} />
-      <Stack.Screen name="disputes" options={{ title: 'Bekleyen İtirazlar' }} />
-      <Stack.Screen name="disputes/[id]" options={{ title: 'İtiraz' }} />
-      <Stack.Screen name="seasons" options={{ title: 'Sezon Yönetimi' }} />
-      <Stack.Screen name="tournaments" options={{ title: 'Finale Bracket Yönetimi' }} />
-      <Stack.Screen name="users" options={{ title: 'Kullanıcı Yönetimi' }} />
-      <Stack.Screen name="users/[userId]" options={{ title: 'Kullanıcı' }} />
-      <Stack.Screen name="announcements" options={{ title: 'Duyurular' }} />
-      <Stack.Screen name="announcements/new" options={{ title: 'Yeni Duyuru' }} />
-      <Stack.Screen name="health" options={{ title: 'Sistem Sağlığı' }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

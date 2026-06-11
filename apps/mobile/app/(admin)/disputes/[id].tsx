@@ -1,9 +1,39 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Alert, Text, View } from 'react-native';
+// Admin · İtiraz detayı — Plan 8 Phase G restyle.
+//
+// Plan 7 shipped the resolve flow (`useResolveDispute` with 4 outcomes:
+// approve_a / approve_b / void / replay). Plan 8 keeps the same business
+// logic but rewrites the surface around `NavHeader`, `Card`, and `Banner`
+// primitives so it matches the visual rhythm of the disputes list it's
+// pushed from.
+
+import { router, useLocalSearchParams } from 'expo-router';
+import { Alert, ScrollView, Text, View } from 'react-native';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
-import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { Banner } from '../../../components/ui/Banner';
 import { useDisputeDetail } from '../../../hooks/use-dispute-detail';
-import { useResolveDispute, type DisputeOutcome } from '../../../hooks/use-resolve-dispute';
+import {
+  useResolveDispute,
+  type DisputeOutcome,
+} from '../../../hooks/use-resolve-dispute';
+import { colors } from '../../../theme/colors';
+
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
+};
+
+const FORMAT_LABELS: Record<string, string> = {
+  bu_klasik: 'BÜ Klasik',
+  hizli_tiebreak: 'Hızlı Tiebreak',
+  full_set: 'Full Set',
+  pro_set: 'Pro Set',
+};
 
 export default function DisputeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -12,19 +42,34 @@ export default function DisputeDetailScreen() {
 
   if (detail.isLoading) {
     return (
-      <ScreenContainer>
-        <Stack.Screen options={{ title: 'İtiraz', headerShown: true }} />
-        <Text className="text-sm text-gray-500">Yükleniyor...</Text>
-      </ScreenContainer>
+      <View className="flex-1 bg-bg">
+        <NavHeader title="İtiraz" onBack={() => router.back()} />
+        <View
+          className="flex-1 items-center justify-center"
+          style={{ padding: 24 }}
+        >
+          <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
+            Yükleniyor…
+          </Text>
+        </View>
+      </View>
     );
   }
+
   const d = detail.data;
   if (!d) {
     return (
-      <ScreenContainer>
-        <Stack.Screen options={{ title: 'İtiraz', headerShown: true }} />
-        <Text className="text-sm text-gray-500">İtiraz bulunamadı.</Text>
-      </ScreenContainer>
+      <View className="flex-1 bg-bg">
+        <NavHeader title="İtiraz" onBack={() => router.back()} />
+        <View
+          className="flex-1 items-center justify-center"
+          style={{ padding: 24 }}
+        >
+          <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
+            İtiraz bulunamadı.
+          </Text>
+        </View>
+      </View>
     );
   }
 
@@ -38,7 +83,11 @@ export default function DisputeDetailScreen() {
             { disputeId: d.id, outcome },
             {
               onSuccess: () => router.back(),
-              onError: (e) => Alert.alert('Hata', e instanceof Error ? e.message : 'İşlem başarısız'),
+              onError: (e) =>
+                Alert.alert(
+                  'Hata',
+                  e instanceof Error ? e.message : 'İşlem başarısız',
+                ),
             },
           );
         },
@@ -47,50 +96,141 @@ export default function DisputeDetailScreen() {
   };
 
   return (
-    <ScreenContainer scrollable>
-      <Stack.Screen options={{ title: 'İtiraz', headerShown: true }} />
-      <Text className="text-base font-semibold text-gray-900">İtiraz gerekçesi</Text>
-      <Text className="mt-1 mb-4 text-sm text-gray-700">{d.reason}</Text>
+    <View className="flex-1 bg-bg">
+      <NavHeader title="İtiraz" onBack={() => router.back()} />
+      <ScrollView
+        contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 32 }}
+      >
+        <Banner tone="warning" title="İtiraz gerekçesi" body={d.reason} />
 
-      <Text className="mb-2 text-base font-semibold text-gray-900">Maç özeti</Text>
-      <View className="mb-4 rounded-lg border border-gray-200 bg-white p-3">
-        <Text className="text-xs text-gray-600">Kategori: {d.match.category}</Text>
-        <Text className="text-xs text-gray-600">Format: {d.match.format}</Text>
-        <Text className="mt-1 text-sm font-semibold text-gray-900">
-          Skor: {d.match.score_team_a} - {d.match.score_team_b}
-        </Text>
-        <Text className="mt-1 text-xs text-gray-600">
-          Kazanan: {d.match.winner_team ?? 'belirsiz'}
-        </Text>
-      </View>
+        <Section title="Maç özeti">
+          <Row label="Kategori" value={CATEGORY_LABELS[d.match.category] ?? d.match.category} />
+          <Row label="Format" value={FORMAT_LABELS[d.match.format] ?? d.match.format} />
+          <Row
+            label="Skor"
+            value={`${d.match.score_team_a} - ${d.match.score_team_b}`}
+            bold
+          />
+          <Row label="Kazanan" value={d.match.winner_team ?? 'belirsiz'} />
+        </Section>
 
-      <Text className="mb-2 text-base font-semibold text-gray-900">Submissions</Text>
-      {d.submissions.length === 0 ? (
-        <Text className="mb-4 text-xs text-gray-500">Submission yok.</Text>
-      ) : (
-        d.submissions.map((s) => (
-          <View key={`${s.submitted_by}-${s.submitted_at}`} className="mb-2 rounded-lg border border-gray-200 bg-white p-3">
-            <Text className="text-xs font-semibold text-gray-900">{s.submitted_by_name}</Text>
-            <Text className="mt-1 text-[10px] text-gray-500">
-              {new Date(s.submitted_at).toLocaleString('tr-TR')}
+        <Section title="Skor kayıtları">
+          {d.submissions.length === 0 ? (
+            <Text
+              className="font-sans text-text-3"
+              style={{ fontSize: 12.5, paddingVertical: 4 }}
+            >
+              Kayıt yok.
             </Text>
-            <Text className="mt-1 text-[10px] text-gray-700">{JSON.stringify(s.score_details)}</Text>
-          </View>
-        ))
-      )}
+          ) : (
+            d.submissions.map((s) => (
+              <View
+                key={`${s.submitted_by}-${s.submitted_at}`}
+                style={{
+                  paddingVertical: 10,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.surface3,
+                }}
+              >
+                <Text
+                  className="font-sans font-bold text-text"
+                  style={{ fontSize: 13 }}
+                >
+                  {s.submitted_by_name}
+                </Text>
+                <Text
+                  className="font-num text-text-3"
+                  style={{ fontSize: 11, marginTop: 2 }}
+                >
+                  {new Date(s.submitted_at).toLocaleString('tr-TR')}
+                </Text>
+                <Text
+                  className="font-num text-text-2"
+                  style={{ fontSize: 11, marginTop: 4 }}
+                  numberOfLines={3}
+                >
+                  {JSON.stringify(s.score_details)}
+                </Text>
+              </View>
+            ))
+          )}
+        </Section>
 
-      <View className="mt-4 gap-2">
-        <Button onPress={() => submit('approve_a', 'Skor A')}>A lehine onayla</Button>
-        <Button onPress={() => submit('approve_b', 'Skor B')} variant="secondary">
-          B lehine onayla
-        </Button>
-        <Button onPress={() => submit('void', 'Voided')} variant="ghost">
-          Maç voided
-        </Button>
-        <Button onPress={() => submit('replay', 'Tekrar oynat')} variant="ghost">
-          Tekrar oynat
-        </Button>
-      </View>
-    </ScreenContainer>
+        <View style={{ gap: 10, marginTop: 4 }}>
+          <Button onPress={() => submit('approve_a', 'Skor A')} variant="primary" full>
+            A lehine onayla
+          </Button>
+          <Button onPress={() => submit('approve_b', 'Skor B')} variant="secondary" full>
+            B lehine onayla
+          </Button>
+          <Button onPress={() => submit('void', 'Voided')} variant="danger" full>
+            Maçı geçersiz say
+          </Button>
+          <Button onPress={() => submit('replay', 'Tekrar oynat')} variant="ghost" full>
+            Tekrar oynat
+          </Button>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View
+      style={{
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.borderStrong,
+        borderRadius: 18,
+        padding: 14,
+      }}
+    >
+      <Text
+        className="font-sans font-extrabold"
+        style={{
+          fontSize: 11,
+          letterSpacing: 0.66,
+          color: colors.text3,
+          marginBottom: 8,
+          textTransform: 'uppercase',
+        }}
+      >
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 6,
+      }}
+    >
+      <Text
+        className="font-sans text-text-3"
+        style={{ fontSize: 12.5 }}
+      >
+        {label}
+      </Text>
+      <Text
+        className={['font-sans text-text', bold ? 'font-extrabold' : 'font-semibold'].join(' ')}
+        style={{ fontSize: bold ? 14 : 13 }}
+      >
+        {value}
+      </Text>
+    </View>
   );
 }
