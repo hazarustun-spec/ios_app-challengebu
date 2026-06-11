@@ -251,7 +251,10 @@ export default function Gallery() {
           </Card>
 
           <Card variant="featured">
-            <Text className="text-[11px] font-extrabold tracking-[1.1px] uppercase text-white/80">
+            <Text
+              className="text-[11px] font-extrabold uppercase text-white"
+              style={{ letterSpacing: 1.1 }}
+            >
               Sezon Lideri
             </Text>
             <Text className="mt-1 font-display text-[22px] font-extrabold text-white">
