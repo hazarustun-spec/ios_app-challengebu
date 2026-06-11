@@ -18,7 +18,7 @@ export async function bootstrapAuth() {
   });
 }
 
-async function loadProfile(_userId: string) {
+export async function loadProfile(_userId?: string) {
   // Use the SECURITY DEFINER RPC so we can read the owner's `role` field
   // even though SELECT(role) is revoked from authenticated.
   const { data, error } = await supabase.rpc('get_my_profile');
