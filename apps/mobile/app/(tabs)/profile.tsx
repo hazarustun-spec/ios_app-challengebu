@@ -117,7 +117,7 @@ export default function ProfileTab() {
         large
         title="Profil"
         actionIcon="settings"
-        onAction={() => router.push('/(app)/settings')}
+        onAction={() => router.push('/settings' as never)}
       />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         {/* Hero */}

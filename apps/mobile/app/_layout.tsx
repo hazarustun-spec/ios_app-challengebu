@@ -64,6 +64,7 @@ export default function RootLayout() {
               name="notifications"
               options={{ headerShown: true, title: 'Bildirimler' }}
             />
+            <Stack.Screen name="settings" />
             <Stack.Screen name="(admin)" />
             <Stack.Screen name="(dev)" />
           </Stack>
