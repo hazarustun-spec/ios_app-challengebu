@@ -16,6 +16,7 @@
 // bundle.
 
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import { BellWithBadge } from './BellWithBadge';
 
@@ -36,10 +37,15 @@ export function GreetHeader({
   unreadCount = 0,
   onBellPress,
 }: GreetHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
     <View
       className="flex-row items-center justify-between"
-      style={{ paddingHorizontal: 18, paddingTop: 14, paddingBottom: 8 }}
+      style={{
+        paddingHorizontal: 18,
+        paddingTop: insets.top + 14,
+        paddingBottom: 8,
+      }}
     >
       <View style={{ flex: 1 }}>
         <Text

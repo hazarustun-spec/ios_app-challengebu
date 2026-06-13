@@ -93,9 +93,10 @@ interface SlotConfig {
 }
 
 const SLOTS: SlotConfig[] = [
-  { name: 'index', icon: 'ranking' }, // Sıralama (landing)
+  { name: 'index', icon: 'home' }, // Anasayfa (landing)
   { name: 'matches', icon: 'matches' },
   { name: 'new-match', icon: 'plus', isCenter: true },
+  { name: 'leaderboard', icon: 'ranking' }, // Sıralama (Stack push)
   { name: 'notifications', icon: 'bell', isNotif: true },
   { name: 'profile', icon: 'user' },
 ];

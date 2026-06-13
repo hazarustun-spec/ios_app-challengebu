@@ -51,6 +51,7 @@ const SEASON_DAYS_LEFT = 41;
 
 interface ActiveMatchStub {
   id: string;
+  opponentId: string;
   opponentName: string;
   kind: 'ranking' | 'friendly';
   whenLabel: string;
@@ -59,12 +60,14 @@ interface ActiveMatchStub {
 const ACTIVE_MATCHES: ActiveMatchStub[] = [
   {
     id: '1',
+    opponentId: 'p-berk',
     opponentName: 'Berk Aydın',
     kind: 'ranking',
     whenLabel: 'Bugün 18:30 · Kort 1',
   },
   {
     id: '2',
+    opponentId: 'p-mert',
     opponentName: 'Mert Şahin',
     kind: 'friendly',
     whenLabel: 'Yarın 12:00 · Kort 2',
@@ -73,6 +76,7 @@ const ACTIVE_MATCHES: ActiveMatchStub[] = [
 
 interface RecentMatchStub {
   id: string;
+  opponentId: string;
   opponentName: string;
   win: boolean;
   score: string;
@@ -83,6 +87,7 @@ interface RecentMatchStub {
 const RECENT_MATCHES: RecentMatchStub[] = [
   {
     id: 'r1',
+    opponentId: 'p-onur',
     opponentName: 'Onur Çelik',
     win: true,
     score: '4-2',
@@ -91,6 +96,7 @@ const RECENT_MATCHES: RecentMatchStub[] = [
   },
   {
     id: 'r2',
+    opponentId: 'p-eren',
     opponentName: 'Eren Doğan',
     win: false,
     score: '3-4',
@@ -151,7 +157,7 @@ export default function HomeScreen() {
                   className="font-num font-extrabold text-white"
                   style={{
                     fontSize: 42,
-                    lineHeight: 38,
+                    lineHeight: 50,
                     letterSpacing: -0.84,
                   }}
                 >
@@ -303,6 +309,7 @@ export default function HomeScreen() {
             <ActiveMatchCard
               key={m.id}
               opp={m.opponentName}
+              opponentId={m.opponentId}
               kind={m.kind}
               whenLabel={m.whenLabel}
             />
@@ -321,6 +328,7 @@ export default function HomeScreen() {
             <RecentMatchCard
               key={m.id}
               opp={m.opponentName}
+              opponentId={m.opponentId}
               win={m.win}
               score={m.score}
               delta={m.delta}
@@ -365,7 +373,7 @@ export default function HomeScreen() {
               className="font-sans font-semibold text-text-2"
               style={{ fontSize: 12, marginTop: 2 }}
             >
-              İlk 8&apos;desin · finaleye{' '}
+              İlk 8&apos;desin · finale{' '}
               <Text
                 className="font-num font-extrabold"
                 style={{ color: colors.clayText }}
@@ -420,15 +428,16 @@ function SectionTitle({ children, action, onActionPress }: SectionTitleProps) {
 
 interface ActiveMatchCardProps {
   opp: string;
+  opponentId: string;
   kind: 'ranking' | 'friendly';
   whenLabel: string;
 }
 
-function ActiveMatchCard({ opp, kind, whenLabel }: ActiveMatchCardProps) {
+function ActiveMatchCard({ opp, opponentId, kind, whenLabel }: ActiveMatchCardProps) {
   const ranked = kind === 'ranking';
   return (
     <Pressable
-      onPress={() => router.push('/(tabs)/matches' as never)}
+      onPress={() => router.push(`/user/${opponentId}` as never)}
       className="flex-row items-center bg-surface border-base border-border-strong"
       style={{
         padding: 12,
@@ -480,6 +489,7 @@ function ActiveMatchCard({ opp, kind, whenLabel }: ActiveMatchCardProps) {
 
 interface RecentMatchCardProps {
   opp: string;
+  opponentId: string;
   win: boolean;
   score: string;
   delta: number;
@@ -488,6 +498,7 @@ interface RecentMatchCardProps {
 
 function RecentMatchCard({
   opp,
+  opponentId,
   win,
   score,
   delta,
@@ -495,7 +506,8 @@ function RecentMatchCard({
 }: RecentMatchCardProps) {
   const deltaPositive = delta >= 0;
   return (
-    <View
+    <Pressable
+      onPress={() => router.push(`/user/${opponentId}` as never)}
       className="flex-row items-center bg-surface border-base border-border-strong"
       style={{
         padding: 12,
@@ -563,6 +575,6 @@ function RecentMatchCard({
           {Math.abs(delta)}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }

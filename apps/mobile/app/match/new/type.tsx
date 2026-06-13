@@ -53,10 +53,10 @@ export default function NewMatchType() {
     <View className="flex-1 bg-bg">
       <NavHeader
         large
+        close
         title="Yeni Maç"
         subtitle="Ne tür bir maç oynamak istersin?"
-        actionIcon="x"
-        onAction={() => router.back()}
+        onBack={() => router.back()}
       />
       <View style={{ padding: 18, paddingTop: 14, gap: 16, flex: 1 }}>
         {CARDS.map((c) => (

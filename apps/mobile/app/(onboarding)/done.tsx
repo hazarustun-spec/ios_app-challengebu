@@ -48,7 +48,9 @@ const INITIAL_ELO = 1200;
 
 export default function ObDone() {
   const insets = useSafeAreaInsets();
-  const firstName = useOnboardingStore((s) => s.firstName);
+  // Snapshot the name at mount — `reset()` runs on successful submit and
+  // would otherwise blank the greeting back to the "oyuncu" fallback.
+  const [firstName] = useState(() => useOnboardingStore.getState().firstName);
   const reset = useOnboardingStore((s) => s.reset);
   const submit = useSubmitOnboarding();
 

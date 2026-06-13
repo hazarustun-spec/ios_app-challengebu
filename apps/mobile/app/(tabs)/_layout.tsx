@@ -41,7 +41,7 @@ export default function TabsLayout() {
         )}
         screenOptions={{ headerShown: false }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Sıralama' }} />
+        <Tabs.Screen name="index" options={{ title: 'Anasayfa' }} />
         <Tabs.Screen name="matches" options={{ title: 'Maçlar' }} />
         <Tabs.Screen
           name="new-match"
@@ -50,8 +50,18 @@ export default function TabsLayout() {
             tabPress: (e) => {
               // Never settle on the empty "+" tab — bounce to the modal wizard.
               e.preventDefault();
-              // TODO(Phase E10): wire `/match/new/type` once the wizard ships.
               router.push('/match/new/type' as never);
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="leaderboard"
+          options={{ title: 'Sıralama' }}
+          listeners={{
+            tabPress: (e) => {
+              // Placeholder — actual Sıralama lives at /leaderboard (Stack push).
+              e.preventDefault();
+              router.push('/leaderboard' as never);
             },
           }}
         />

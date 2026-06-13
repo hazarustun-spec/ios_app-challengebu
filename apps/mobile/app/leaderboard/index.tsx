@@ -168,6 +168,7 @@ export default function Leaderboard() {
         large
         title="Sıralama"
         subtitle="Güz Sezonu · 41 gün kaldı"
+        onBack={() => router.back()}
         actionIcon="filter"
         onAction={() => router.push('/leaderboard/filter' as never)}
       />
@@ -176,10 +177,11 @@ export default function Leaderboard() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
         contentContainerStyle={{
           paddingHorizontal: 18,
-          paddingTop: 2,
-          paddingBottom: 6,
+          paddingTop: 6,
+          paddingBottom: 14,
           gap: 8,
         }}
       >
@@ -193,7 +195,7 @@ export default function Leaderboard() {
               className="flex-row items-center rounded-pill"
               style={{
                 paddingHorizontal: 15,
-                paddingVertical: 11,
+                minHeight: 38,
                 gap: 7,
                 borderWidth: 1.5,
                 borderColor: on ? 'transparent' : colors.borderStrong,
@@ -204,6 +206,7 @@ export default function Leaderboard() {
                 className="font-sans font-bold"
                 style={{
                   fontSize: 13.5,
+                  lineHeight: 18,
                   color: on ? colors.bg : colors.text2,
                 }}
               >
@@ -304,7 +307,7 @@ export default function Leaderboard() {
         >
           <Text
             className="font-num font-extrabold text-white"
-            style={{ fontSize: 46, lineHeight: 41, letterSpacing: -1.38 }}
+            style={{ fontSize: 46, lineHeight: 54, letterSpacing: -1.38 }}
           >
             41
           </Text>
