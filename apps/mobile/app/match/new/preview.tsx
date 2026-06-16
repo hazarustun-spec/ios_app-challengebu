@@ -17,7 +17,7 @@
 //   - useNewMatchStore → draft state (kind, path, category, format, date,
 //     time, court, opponent)
 //   - useMyRankings → real ELO for the VS hero and ELO prediction card
-//   - useCourts → resolve nm.court (name string) → courtId (UUID) for API
+//   - useCourts → resolve nm.court (UUID) → court name for the summary row
 //   - useCreateMatchRequest → mutation called on CTA press
 
 import { useState } from 'react';
@@ -28,6 +28,7 @@ import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
 import { FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
+import { formatDateLabel } from '../../../lib/match-dates';
 import { useNewMatchStore } from '../../../stores/new-match-store';
 import { useAuthStore } from '../../../stores/auth-store';
 import { useMyRankings } from '../../../hooks/use-my-rankings';
@@ -65,9 +66,10 @@ export default function MatchPreview() {
   const rankings = rankingsQ.data ?? [];
   const ME_ELO = pickRatingForCategory(rankings, nm.category);
 
-  // --- Courts (to resolve name → id for the API call) ---
+  // --- Courts (to resolve the stored court UUID → display name) ---
   const courtsQ = useCourts();
   const courts = courtsQ.data ?? [];
+  const courtName = courts.find((c) => c.id === nm.court)?.name ?? '—';
 
   // --- Submit mutation ---
   const createRequest = useCreateMatchRequest();
@@ -88,16 +90,12 @@ export default function MatchPreview() {
   const rows: Array<[string, string]> = [
     ['Tip', nm.kind === 'ranking' ? '🏆 Sıralama Maçı' : '🤝 Dostluk Maçı'],
     ['Format', `${fmt.name} · ${fmt.tag}`],
-    ['Tarih', `${nm.date} · ${nm.time}`],
-    ['Kort', nm.court],
+    ['Tarih', `${formatDateLabel(nm.date)} · ${nm.time}`],
+    ['Kort', courtName],
   ];
 
   const handleSubmit = async () => {
     if (submitting) return;
-
-    // Resolve courtId from name
-    const courtRecord = courts.find((c) => c.name === nm.court);
-    const courtId = courtRecord?.id ?? nm.court; // fallback: use name as-is if courts haven't loaded
 
     setSubmitting(true);
     try {
@@ -109,7 +107,7 @@ export default function MatchPreview() {
         isRated: nm.kind === 'ranking',
         proposedDate: nm.date,
         proposedTime: nm.time,
-        courtId,
+        courtId: nm.court,
         creatorPartnerId: nm.partner?.userId,
       });
       nm.reset();

@@ -7,12 +7,13 @@
 // `function NewMatchDetail(...)`.
 //
 // Sheets reuse the `Sheet` primitive (one visibility flag selects which
-// of the five inline Sheets is open). DAYS and TIMES remain static
-// (season-aware date suggestions are out of scope). The COURTS list is
-// wired live via useCourts() (reads the `courts` table, active rows
-// ordered by display_order).
+// of the five inline Sheets is open). The date picker offers the next 10
+// days (lib/match-dates.nextDays) and STORES the ISO value the API needs
+// while displaying a friendly Turkish label; TIMES stay as preset slots.
+// The court list is wired live via useCourts() and stores the court UUID
+// (the first active court is auto-selected so a valid id is always sent).
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -20,6 +21,7 @@ import { Sheet } from '../../../components/ui/Sheet';
 import { Button } from '../../../components/ui/Button';
 import { Icon, type IconName } from '../../../components/ui/Icon';
 import { FORMATS } from '../../../lib/formats';
+import { formatDateLabel, nextDays } from '../../../lib/match-dates';
 import {
   useNewMatchStore,
   type CategoryKey,
@@ -43,7 +45,6 @@ const CATEGORIES: CategoryDef[] = [
   { key: 'open_cift', label: 'Open Çift', group: 'cift' },
 ];
 
-const DAYS = ['Bugün', 'Yarın', '8 Haz Paz', '9 Haz Pzt', '10 Haz Sal', '11 Haz Çar'];
 const TIMES = ['10:00', '12:00', '14:00', '16:00', '18:30', '20:00', '21:30'];
 
 type SheetKey = 'cat' | 'fmt' | 'date' | 'time' | 'court';
@@ -94,10 +95,23 @@ export default function NewMatchDetail() {
     useNewMatchStore();
   const [openSheet, setOpenSheet] = useState<SheetKey | null>(null);
   const courtsQuery = useCourts();
+  const courts = courtsQuery.data ?? [];
+
+  // Upcoming days (today + next 9), recomputed once per mount so the picker
+  // never shows stale calendar dates.
+  const days = useMemo(() => nextDays(10), []);
+
+  // Default the court to the first active one as soon as the list loads, so a
+  // valid court UUID is always submitted even if the user skips the sheet.
+  useEffect(() => {
+    if (!court && courts.length > 0) setField('court', courts[0].id);
+  }, [court, courts, setField]);
 
   const cat = CATEGORIES.find((c) => c.key === category)!;
   const fmt = FORMATS.find((f) => f.key === format)!;
   const isDoubles = cat.group === 'cift';
+  const courtName =
+    courts.find((c) => c.id === court)?.name ?? 'Kort seç';
 
   return (
     <View className="flex-1 bg-bg">
@@ -119,7 +133,7 @@ export default function NewMatchDetail() {
           <View style={{ flex: 1 }}>
             <Selector
               label="Tarih"
-              value={date}
+              value={formatDateLabel(date)}
               icon="calendar"
               onPress={() => setOpenSheet('date')}
             />
@@ -135,7 +149,7 @@ export default function NewMatchDetail() {
         </View>
         <Selector
           label="Kort"
-          value={court}
+          value={courtName}
           icon="pin"
           onPress={() => setOpenSheet('court')}
         />
@@ -272,13 +286,14 @@ export default function NewMatchDetail() {
         onClose={() => setOpenSheet(null)}
         title="Tarih seç"
       >
-        {DAYS.map((d) => (
+        {days.map((d) => (
           <Pressable
-            key={d}
+            key={d.iso}
             onPress={() => {
-              setField('date', d);
+              setField('date', d.iso);
               setOpenSheet(null);
             }}
+            className="flex-row items-center justify-between"
             style={{
               width: '100%',
               padding: 15,
@@ -291,8 +306,11 @@ export default function NewMatchDetail() {
               className="font-sans font-bold text-text"
               style={{ fontSize: 15 }}
             >
-              {d}
+              {d.label}
             </Text>
+            {date === d.iso && (
+              <Icon name="check" size={18} color={colors.clay} stroke={3} />
+            )}
           </Pressable>
         ))}
       </Sheet>
@@ -362,11 +380,11 @@ export default function NewMatchDetail() {
             </Text>
           </View>
         ) : (
-          (courtsQuery.data ?? []).map((c) => (
+          courts.map((c) => (
             <Pressable
               key={c.id}
               onPress={() => {
-                setField('court', c.name);
+                setField('court', c.id);
                 setOpenSheet(null);
               }}
               className="flex-row items-center"
@@ -386,7 +404,7 @@ export default function NewMatchDetail() {
               >
                 {c.name}
               </Text>
-              {court === c.name && (
+              {court === c.id && (
                 <Icon name="check" size={18} color={colors.clay} stroke={3} />
               )}
             </Pressable>

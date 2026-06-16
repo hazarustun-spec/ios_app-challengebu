@@ -20,6 +20,7 @@
 
 import { create } from 'zustand';
 import type { FormatKey } from '../lib/formats';
+import { toIso } from '../lib/match-dates';
 
 export type MatchKind = 'ranking' | 'friendly';
 export type MatchPath = 'direct' | 'open';
@@ -43,11 +44,11 @@ export interface NewMatchState {
   path: MatchPath;
   category: CategoryKey;
   format: FormatKey;
-  /** Display label, e.g. "Bugün", "Yarın", "8 Haz". */
+  /** Strict ISO calendar date (YYYY-MM-DD) — the shape the API requires. */
   date: string;
   /** "HH:mm". */
   time: string;
-  /** Court label (e.g. "Kort 1"). Backed by the real `courts` table later. */
+  /** Court UUID from the `courts` table (empty until the user picks one). */
   court: string;
   opponent: OpponentChoice | null;
   /** Only set on doubles categories — partner for the player creating the match. */
@@ -59,20 +60,26 @@ export interface NewMatchState {
   reset: () => void;
 }
 
-const INITIAL: Omit<NewMatchState, 'setField' | 'reset'> = {
+// `date` defaults to "today" — re-derived on every reset() so a long-lived
+// app session never starts the wizard on a stale calendar date.
+const baseInitial: Omit<NewMatchState, 'setField' | 'reset' | 'date'> = {
   kind: 'ranking',
   path: 'direct',
   category: 'erkek_tek',
   format: 'klasik',
-  date: 'Bugün',
   time: '18:30',
-  court: 'Kort 1',
+  court: '',
   opponent: null,
   partner: null,
 };
 
+const freshInitial = (): Omit<NewMatchState, 'setField' | 'reset'> => ({
+  ...baseInitial,
+  date: toIso(new Date()),
+});
+
 export const useNewMatchStore = create<NewMatchState>((set) => ({
-  ...INITIAL,
+  ...freshInitial(),
   setField: (k, v) => set((s) => ({ ...s, [k]: v })),
-  reset: () => set(INITIAL),
+  reset: () => set(freshInitial()),
 }));
