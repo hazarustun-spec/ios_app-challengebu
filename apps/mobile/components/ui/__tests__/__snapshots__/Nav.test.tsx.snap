@@ -520,7 +520,7 @@ exports[`TabBar renders 5 slots with index active 1`] = `
               "children": [],
               "props": {
                 "color": "#FFFFFF",
-                "name": "ranking",
+                "name": "home",
                 "size": 23,
                 "stroke": 2.4,
               },
@@ -604,198 +604,15 @@ exports[`TabBar renders 5 slots with index active 1`] = `
               "children": [],
               "props": {
                 "color": "#161618",
-                "name": "bell",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "notifications",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "user",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "profile",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-      ],
-      "props": {
-        "className": "h-16 flex-row items-center justify-between rounded-pill border-base border-border-strong bg-lime px-2",
-      },
-      "type": "View",
-    },
-  ],
-  "props": {
-    "className": "px-4 pt-2",
-    "style": {
-      "paddingBottom": 42,
-    },
-  },
-  "type": "View",
-}
-`;
-
-exports[`TabBar notif badge appears when count > 0 and notif tab is inactive 1`] = `
-{
-  "children": [
-    {
-      "children": [
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#FFFFFF",
                 "name": "ranking",
                 "size": 23,
-                "stroke": 2.4,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "index",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": true,
-            },
-            "className": "items-center justify-center rounded-full bg-court",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "matches",
-                "size": 23,
                 "stroke": 2.1,
               },
               "type": "Icon",
             },
           ],
           "props": {
-            "accessibilityLabel": "matches",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#FFFFFF",
-                "name": "plus",
-                "size": 25,
-                "stroke": 2.7,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "new-match",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-court border-2 border-white",
-            "onPress": "[Function]",
-            "style": {
-              "height": 52,
-              "width": 52,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "bell",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-            {
-              "children": [
-                {
-                  "children": [
-                    "3",
-                  ],
-                  "props": {
-                    "className": "font-sans text-[9.5px] font-extrabold text-white",
-                  },
-                  "type": "Text",
-                },
-              ],
-              "props": {
-                "className": "absolute h-[15px] min-w-[15px] items-center justify-center rounded-pill border-base border-lime bg-pink-deep px-1",
-                "style": {
-                  "right": 7,
-                  "top": 6,
-                },
-              },
-              "type": "View",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "notifications",
+            "accessibilityLabel": "leaderboard",
             "accessibilityRole": "button",
             "accessibilityState": {
               "selected": false,
