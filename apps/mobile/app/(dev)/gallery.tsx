@@ -135,14 +135,10 @@ export default function Gallery() {
         {/* ---------- 1. Tab bar ---------- */}
         <Section title="1. Tab bar">
           <Text className="text-[12px] text-text-3">
-            Lime pill, ink active fill, central + button, notif badge.
+            Lime pill, ink active fill, central + button.
           </Text>
           <View className="-mx-4">
-            <TabBar
-              state={MOCK_TAB_STATE}
-              navigation={MOCK_TAB_NAV}
-              notifBadgeCount={3}
-            />
+            <TabBar state={MOCK_TAB_STATE} navigation={MOCK_TAB_NAV} />
           </View>
         </Section>
 

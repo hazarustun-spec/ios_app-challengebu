@@ -254,7 +254,7 @@ const mockRoutes = [
   { key: 'index-1', name: 'index' },
   { key: 'matches-1', name: 'matches' },
   { key: 'new-match-1', name: 'new-match' },
-  { key: 'notifications-1', name: 'notifications' },
+  { key: 'leaderboard-1', name: 'leaderboard' },
   { key: 'profile-1', name: 'profile' },
 ];
 
@@ -303,66 +303,10 @@ describe('TabBar', () => {
     expect(String(slots[2]?.props.className)).toContain('border-white');
   });
 
-  test('notif badge appears when count > 0 and notif tab is inactive', () => {
-    const tree = normalize(
-      TabBar({
-        state: { index: 0, routes: mockRoutes },
-        navigation: makeNav(),
-        notifBadgeCount: 3,
-      }),
-    );
-    expect(tree).toMatchSnapshot();
-    expect(collectText(tree)).toContain('3');
-    // Badge bubble uses pink-deep background class.
-    const badge = find(
-      tree,
-      (n) =>
-        n.type === 'View' && String(n.props.className).includes('bg-pink-deep'),
-    );
-    expect(badge).not.toBeNull();
-  });
-
-  test('notif badge clamps to 99+ when count > 99', () => {
-    const tree = normalize(
-      TabBar({
-        state: { index: 0, routes: mockRoutes },
-        navigation: makeNav(),
-        notifBadgeCount: 132,
-      }),
-    );
-    expect(collectText(tree)).toContain('99+');
-  });
-
-  test('notif badge hidden when notif tab is active', () => {
-    const tree = normalize(
-      TabBar({
-        state: { index: 3, routes: mockRoutes }, // notifications active
-        navigation: makeNav(),
-        notifBadgeCount: 3,
-      }),
-    );
-    const badge = find(
-      tree,
-      (n) =>
-        n.type === 'View' && String(n.props.className).includes('bg-pink-deep'),
-    );
-    expect(badge).toBeNull();
-  });
-
-  test('notif badge hidden when count is 0', () => {
-    const tree = normalize(
-      TabBar({
-        state: { index: 0, routes: mockRoutes },
-        navigation: makeNav(),
-      }),
-    );
-    const badge = find(
-      tree,
-      (n) =>
-        n.type === 'View' && String(n.props.className).includes('bg-pink-deep'),
-    );
-    expect(badge).toBeNull();
-  });
+  // Note: the notification tab + unread badge were removed from TabBar in the
+  // Plan 8 notifications refactor (notifications moved to a standalone screen
+  // reached via the home header bell). The badge-specific TabBar tests that
+  // lived here were dropped along with the `notifBadgeCount` prop.
 
   test('lime pill container carries the design-source classes', () => {
     const tree = normalize(
