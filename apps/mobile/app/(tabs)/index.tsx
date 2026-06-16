@@ -1,4 +1,4 @@
-// Anasayfa (Home) — Plan 8 Phase E2.
+// Anasayfa (Home) — Plan 8 Phase E2, wired to live data (E-polish pass).
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-home.jsx (Home)
 //
 // Landing screen after onboarding completes. Renders, top-to-bottom:
@@ -13,15 +13,13 @@
 //   5. "Son sonuçlar" section — last few finalized matches
 //   6. Sezon banner — countdown card to the season finale (clay-softer)
 //
-// Data wiring is deliberately STUBBED in this batch — Plan 8 Phase E2
-// is a visual port of the design source, not a full integration pass.
-// Each mock constant has a `TODO(plan-8-E*)` marker so the polish pass
-// (which queries `useMyRankings`, `useActiveMatches`, `useMatchHistory`,
-// `useEloHistory`, `useUpcomingFinaleStatus`) knows what to swap.
-//
-// The user's display name is read live from `useAuthStore.profile` so
-// the screen feels personalized as soon as it loads — the rest of the
-// data is hardcoded.
+// Live-data sources:
+//   - ELO hero (rating, rank, delta, trend): useMyRankings + useEloHistory
+//   - Active matches: useActiveMatches  (status: awaiting_confirmation | disputed)
+//   - Recent matches: useMyMatchHistory (status: confirmed | voided, latest 2)
+//   - Season banner: useCurrentSeason  (days to finale_starts_at)
+//   - Unread bell: useUnreadCount
+//   - Display name: useAuthStore.profile
 
 import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -29,92 +27,118 @@ import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
 import { Icon } from '../../components/ui/Icon';
 import { Sparkline } from '../../components/ui/Sparkline';
+import { useActiveMatches, type ActiveMatchRow } from '../../hooks/use-active-matches';
+import { useEloHistory } from '../../hooks/use-elo-history';
+import { useMyMatchHistory } from '../../hooks/use-match-history';
+import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useUnreadCount } from '../../hooks/use-unread-count';
 import { levelForElo, levelProgress } from '../../lib/levels';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
-// Mock data — replaced in the polish pass once Phase E hooks are in place
+// Category label map — mirrors the convention used across the codebase.
 // ---------------------------------------------------------------------------
 
-// TODO(plan-8-E-polish): derive from `useMyRankings` (current category ELO).
-const ME_ELO = 1487;
-// TODO(plan-8-E-polish): derive from `useMyRankings` (current category rank).
-const ME_RANK = 4;
-// TODO(plan-8-E-polish): derive from latest match in `useMatchHistory`.
-const ELO_DELTA = 22;
-// TODO(plan-8-E-polish): derive from `useEloHistory(10)` for current category.
-const ELO_TREND = [1465, 1462, 1472, 1480, 1475, 1487];
-// TODO(plan-8-E-polish): derive from `useUpcomingFinaleStatus`.
-const SEASON_DAYS_LEFT = 41;
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'ERKEK TEK',
+  kadin_tek: 'KADIN TEK',
+  open_tek: 'OPEN TEK',
+  erkek_cift: 'ERKEK ÇİFT',
+  kadin_cift: 'KADIN ÇİFT',
+  karma_cift: 'KARMA ÇİFT',
+  open_cift: 'OPEN ÇİFT',
+};
 
-interface ActiveMatchStub {
-  id: string;
-  opponentId: string;
-  opponentName: string;
-  kind: 'ranking' | 'friendly';
-  whenLabel: string;
-}
-// TODO(plan-8-E-polish): replace with `useActiveMatches`.
-const ACTIVE_MATCHES: ActiveMatchStub[] = [
-  {
-    id: '1',
-    opponentId: 'p-berk',
-    opponentName: 'Berk Aydın',
-    kind: 'ranking',
-    whenLabel: 'Bugün 18:30 · Kort 1',
-  },
-  {
-    id: '2',
-    opponentId: 'p-mert',
-    opponentName: 'Mert Şahin',
-    kind: 'friendly',
-    whenLabel: 'Yarın 12:00 · Kort 2',
-  },
-];
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-interface RecentMatchStub {
-  id: string;
-  opponentId: string;
-  opponentName: string;
-  win: boolean;
-  score: string;
-  delta: number;
-  whenLabel: string;
+/** Pick the "primary" ranking row to show in the hero.
+ *  Priority: erkek_tek > kadin_tek > open_tek > first row returned. */
+function pickPrimaryCategory(rows: { category: string; rating: number; rank: number }[]) {
+  const ORDER = ['erkek_tek', 'kadin_tek', 'open_tek'];
+  for (const cat of ORDER) {
+    const row = rows.find((r) => r.category === cat);
+    if (row) return row;
+  }
+  return rows[0] ?? null;
 }
-// TODO(plan-8-E-polish): replace with `useMatchHistory({ limit: 2 })`.
-const RECENT_MATCHES: RecentMatchStub[] = [
-  {
-    id: 'r1',
-    opponentId: 'p-onur',
-    opponentName: 'Onur Çelik',
-    win: true,
-    score: '4-2',
-    delta: 22,
-    whenLabel: '2 gün önce',
-  },
-  {
-    id: 'r2',
-    opponentId: 'p-eren',
-    opponentName: 'Eren Doğan',
-    win: false,
-    score: '3-4',
-    delta: -14,
-    whenLabel: '5 gün önce',
-  },
-];
+
+/** Format played_at date relative to today ("Bugün 18:30", "Dün", "3 gün önce"). */
+function relativeDate(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+  if (d >= startOfToday) {
+    const hhmm = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    return `Bugün ${hhmm}`;
+  }
+  if (d >= startOfYesterday) return 'Dün';
+  const diffDays = Math.floor((startOfToday.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  return `${diffDays} gün önce`;
+}
+
+/** Days until a future ISO date string (negative if in the past). */
+function daysUntil(isoTarget: string): number {
+  const now = new Date();
+  const target = new Date(isoTarget);
+  return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 // ---------------------------------------------------------------------------
 // Home
 // ---------------------------------------------------------------------------
 
 export default function HomeScreen() {
+  const userId = useAuthStore((s) => s.user?.id);
   const profile = useAuthStore((s) => s.profile);
   const { data: unreadCount = 0 } = useUnreadCount();
   const displayName = profile?.firstName ?? 'Oyuncu';
+
+  // --- ELO hero data ---
+  const rankingsQ = useMyRankings();
+  const eloHistoryQ = useEloHistory(userId);
+
+  const rankings = rankingsQ.data ?? [];
+  const primaryRanking = pickPrimaryCategory(rankings);
+  const primaryCat = primaryRanking?.category ?? 'erkek_tek';
+  const ME_ELO = primaryRanking?.rating ?? 1200;
+  const ME_RANK = primaryRanking?.rank ?? 0;
+
+  // ELO trend (last 10 points in primary category)
+  const catPoints = (eloHistoryQ.data?.byCategory ?? {})[primaryCat] ?? [];
+  const ELO_TREND: number[] =
+    catPoints.length > 0
+      ? catPoints.slice(-10).map((p) => p.elo)
+      : [ME_ELO]; // single-point fallback keeps the sparkline stable
+
+  // ELO delta: difference between the most recent point's elo and eloBefore
+  const latestPoint = catPoints.length > 0 ? catPoints[catPoints.length - 1] : null;
+  const ELO_DELTA = latestPoint ? latestPoint.elo - latestPoint.eloBefore : 0;
+  const deltaPositiveHero = ELO_DELTA >= 0;
+
   const lv = levelForElo(ME_ELO);
   const lp = levelProgress(ME_ELO);
+
+  // --- Season banner ---
+  const seasonQ = useCurrentSeason();
+  const season = seasonQ.data;
+  const SEASON_DAYS_LEFT =
+    season?.finale_starts_at ? Math.max(0, daysUntil(season.finale_starts_at)) : null;
+
+  // --- Active matches ---
+  const activeMatchesQ = useActiveMatches();
+  const ACTIVE_MATCHES: ActiveMatchRow[] = activeMatchesQ.data ?? [];
+
+  // --- Recent matches (last 2 confirmed/voided) ---
+  const matchHistoryQ = useMyMatchHistory();
+  const RECENT_MATCHES: ActiveMatchRow[] = (matchHistoryQ.data ?? []).slice(0, 2);
+
+  const categoryHeroLabel = CATEGORY_LABELS[primaryCat] ?? primaryCat.toUpperCase();
 
   return (
     <View className="flex-1 bg-bg">
@@ -147,7 +171,7 @@ export default function HomeScreen() {
                   color: 'rgba(255,255,255,0.72)',
                 }}
               >
-                GÜNCEL ELO · ERKEK TEK
+                GÜNCEL ELO · {categoryHeroLabel}
               </Text>
               <View
                 className="flex-row items-end"
@@ -167,34 +191,55 @@ export default function HomeScreen() {
                   className="flex-row items-center"
                   style={{ gap: 1, marginBottom: 5 }}
                 >
-                  <Icon name="chevU" size={14} color={colors.lime} stroke={3} />
+                  <Icon
+                    name={deltaPositiveHero ? 'chevU' : 'chevD'}
+                    size={14}
+                    color={deltaPositiveHero ? colors.lime : '#FF8A80'}
+                    stroke={3}
+                  />
                   <Text
                     className="font-num font-extrabold"
-                    style={{ fontSize: 14, color: colors.lime }}
+                    style={{ fontSize: 14, color: deltaPositiveHero ? colors.lime : '#FF8A80' }}
                   >
-                    {ELO_DELTA}
+                    {Math.abs(ELO_DELTA)}
                   </Text>
                 </View>
               </View>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text
-                className="font-num font-extrabold text-white"
-                style={{ fontSize: 26, lineHeight: 26 }}
-              >
-                #{ME_RANK}
-              </Text>
-              <Text
-                className="font-sans font-bold"
-                style={{
-                  fontSize: 10.5,
-                  letterSpacing: 0.63,
-                  color: 'rgba(255,255,255,0.7)',
-                  marginTop: 3,
-                }}
-              >
-                SIRA
-              </Text>
+              {ME_RANK > 0 ? (
+                <>
+                  <Text
+                    className="font-num font-extrabold text-white"
+                    style={{ fontSize: 26, lineHeight: 26 }}
+                  >
+                    #{ME_RANK}
+                  </Text>
+                  <Text
+                    className="font-sans font-bold"
+                    style={{
+                      fontSize: 10.5,
+                      letterSpacing: 0.63,
+                      color: 'rgba(255,255,255,0.7)',
+                      marginTop: 3,
+                    }}
+                  >
+                    SIRA
+                  </Text>
+                </>
+              ) : (
+                <Text
+                  className="font-sans font-bold"
+                  style={{
+                    fontSize: 10.5,
+                    letterSpacing: 0.63,
+                    color: 'rgba(255,255,255,0.7)',
+                    marginTop: 3,
+                  }}
+                >
+                  —
+                </Text>
+              )}
             </View>
           </View>
 
@@ -304,17 +349,24 @@ export default function HomeScreen() {
         >
           Aktif maçlar
         </SectionTitle>
-        <View style={{ gap: 10 }}>
-          {ACTIVE_MATCHES.map((m) => (
-            <ActiveMatchCard
-              key={m.id}
-              opp={m.opponentName}
-              opponentId={m.opponentId}
-              kind={m.kind}
-              whenLabel={m.whenLabel}
-            />
-          ))}
-        </View>
+        {ACTIVE_MATCHES.length === 0 ? (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 13, paddingHorizontal: 4 }}
+          >
+            Henüz aktif maçın yok.
+          </Text>
+        ) : (
+          <View style={{ gap: 10 }}>
+            {ACTIVE_MATCHES.map((m) => (
+              <ActiveMatchCard
+                key={m.id}
+                match={m}
+                myUserId={userId ?? ''}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Son sonuçlar */}
         <SectionTitle
@@ -323,68 +375,75 @@ export default function HomeScreen() {
         >
           Son sonuçlar
         </SectionTitle>
-        <View style={{ gap: 10 }}>
-          {RECENT_MATCHES.map((m) => (
-            <RecentMatchCard
-              key={m.id}
-              opp={m.opponentName}
-              opponentId={m.opponentId}
-              win={m.win}
-              score={m.score}
-              delta={m.delta}
-              whenLabel={m.whenLabel}
-            />
-          ))}
-        </View>
+        {RECENT_MATCHES.length === 0 ? (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 13, paddingHorizontal: 4 }}
+          >
+            Henüz tamamlanmış maçın yok.
+          </Text>
+        ) : (
+          <View style={{ gap: 10 }}>
+            {RECENT_MATCHES.map((m) => (
+              <RecentMatchCard
+                key={m.id}
+                match={m}
+                myUserId={userId ?? ''}
+              />
+            ))}
+          </View>
+        )}
 
-        {/* Sezon banner */}
-        <Pressable
-          onPress={() => router.push('/season' as never)}
-          className="flex-row items-center bg-clay-softer border-base border-border-strong"
-          style={{
-            marginTop: 4,
-            gap: 13,
-            padding: 15,
-            borderRadius: 26,
-          }}
-        >
-          <View
+        {/* Sezon banner — only shown when season data is available */}
+        {season && SEASON_DAYS_LEFT !== null && (
+          <Pressable
+            onPress={() => router.push('/season' as never)}
+            className="flex-row items-center bg-clay-softer border-base border-border-strong"
             style={{
-              width: 46,
-              height: 46,
-              borderRadius: 18,
-              borderWidth: 1.5,
-              borderColor: colors.borderStrong,
-              backgroundColor: colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
+              marginTop: 4,
+              gap: 13,
+              padding: 15,
+              borderRadius: 26,
             }}
           >
-            <Icon name="trophy" size={23} color={colors.clayText} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              className="font-sans font-extrabold text-text"
-              style={{ fontSize: 14.5 }}
+            <View
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: 18,
+                borderWidth: 1.5,
+                borderColor: colors.borderStrong,
+                backgroundColor: colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              Güz Sezonu finali yaklaşıyor
-            </Text>
-            <Text
-              className="font-sans font-semibold text-text-2"
-              style={{ fontSize: 12, marginTop: 2 }}
-            >
-              İlk 8&apos;desin · finale{' '}
+              <Icon name="trophy" size={23} color={colors.clayText} />
+            </View>
+            <View style={{ flex: 1 }}>
               <Text
-                className="font-num font-extrabold"
-                style={{ color: colors.clayText }}
+                className="font-sans font-extrabold text-text"
+                style={{ fontSize: 14.5 }}
               >
-                {SEASON_DAYS_LEFT} gün
-              </Text>{' '}
-              kaldı
-            </Text>
-          </View>
-          <Icon name="chevR" size={20} color={colors.text3} />
-        </Pressable>
+                Güz Sezonu finali yaklaşıyor
+              </Text>
+              <Text
+                className="font-sans font-semibold text-text-2"
+                style={{ fontSize: 12, marginTop: 2 }}
+              >
+                finale{' '}
+                <Text
+                  className="font-num font-extrabold"
+                  style={{ color: colors.clayText }}
+                >
+                  {SEASON_DAYS_LEFT} gün
+                </Text>{' '}
+                kaldı
+              </Text>
+            </View>
+            <Icon name="chevR" size={20} color={colors.text3} />
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );
@@ -426,18 +485,49 @@ function SectionTitle({ children, action, onActionPress }: SectionTitleProps) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// ActiveMatchCard
+// ---------------------------------------------------------------------------
+// The ActiveMatchRow has team_a_player_ids / team_b_player_ids (UUID arrays)
+// but no participant names. Fetching names per-card would be N+1 profile
+// queries; instead we show the match category + court/time as the primary
+// label and use Avatar initials from the opponent ID string (yields a
+// consistent deterministic color but shows "?" initials). Navigates to the
+// real match detail screen via the match's own ID.
+
 interface ActiveMatchCardProps {
-  opp: string;
-  opponentId: string;
-  kind: 'ranking' | 'friendly';
-  whenLabel: string;
+  match: ActiveMatchRow;
+  myUserId: string;
 }
 
-function ActiveMatchCard({ opp, opponentId, kind, whenLabel }: ActiveMatchCardProps) {
-  const ranked = kind === 'ranking';
+const ACTIVE_CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
+};
+
+function ActiveMatchCard({ match, myUserId }: ActiveMatchCardProps) {
+  const ranked = match.is_rated;
+  const catLabel = ACTIVE_CATEGORY_LABELS[match.category] ?? match.category;
+  const courtLabel = match.court?.name ? ` · ${match.court.name}` : '';
+  const playedAt = new Date(match.played_at);
+  const timeStr = playedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = relativeDate(match.played_at);
+  const whenLabel = `${dateStr} ${timeStr}${courtLabel}`;
+
+  // Opponent ID(s): the other team's first player
+  const onTeamA = match.team_a_player_ids.includes(myUserId);
+  const opponentIds = onTeamA ? match.team_b_player_ids : match.team_a_player_ids;
+  // Use opponent ID as avatar "name" — yields consistent initials from UUID chars.
+  const avatarKey = opponentIds[0] ?? match.id;
+
   return (
     <Pressable
-      onPress={() => router.push(`/user/${opponentId}` as never)}
+      onPress={() => router.push(`/match/${match.id}` as never)}
       className="flex-row items-center bg-surface border-base border-border-strong"
       style={{
         padding: 12,
@@ -446,14 +536,14 @@ function ActiveMatchCard({ opp, opponentId, kind, whenLabel }: ActiveMatchCardPr
         borderRadius: 18,
       }}
     >
-      <Avatar name={opp} size={44} />
+      <Avatar name={avatarKey} size={44} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
           <Text
             className="font-sans font-bold text-text"
             style={{ fontSize: 14.5 }}
           >
-            {opp}
+            {catLabel}
           </Text>
           <View
             style={{
@@ -487,27 +577,45 @@ function ActiveMatchCard({ opp, opponentId, kind, whenLabel }: ActiveMatchCardPr
   );
 }
 
+// ---------------------------------------------------------------------------
+// RecentMatchCard
+// ---------------------------------------------------------------------------
+// Same note as above: no participant names in the match row. We derive
+// win/loss from winner_team vs myUserId's team, score from score_team_a/b,
+// and delta from rating_after - rating_before for the user's team.
+
 interface RecentMatchCardProps {
-  opp: string;
-  opponentId: string;
-  win: boolean;
-  score: string;
-  delta: number;
-  whenLabel: string;
+  match: ActiveMatchRow;
+  myUserId: string;
 }
 
-function RecentMatchCard({
-  opp,
-  opponentId,
-  win,
-  score,
-  delta,
-  whenLabel,
-}: RecentMatchCardProps) {
+function RecentMatchCard({ match, myUserId }: RecentMatchCardProps) {
+  const onTeamA = match.team_a_player_ids.includes(myUserId);
+  const win = match.winner_team !== null && match.winner_team !== 'void'
+    ? (onTeamA ? match.winner_team === 'a' : match.winner_team === 'b')
+    : false;
+
+  const myScore = onTeamA ? match.score_team_a : match.score_team_b;
+  const oppScore = onTeamA ? match.score_team_b : match.score_team_a;
+  const score = `${myScore}-${oppScore}`;
+
+  const ratingBefore = onTeamA ? match.rating_before_team_a : match.rating_before_team_b;
+  const ratingAfter = onTeamA ? match.rating_after_team_a : match.rating_after_team_b;
+  const delta =
+    ratingBefore !== null && ratingAfter !== null ? ratingAfter - ratingBefore : 0;
   const deltaPositive = delta >= 0;
+
+  const whenLabel = relativeDate(match.played_at);
+
+  const catLabel = ACTIVE_CATEGORY_LABELS[match.category] ?? match.category;
+
+  // Opponent avatar key
+  const opponentIds = onTeamA ? match.team_b_player_ids : match.team_a_player_ids;
+  const avatarKey = opponentIds[0] ?? match.id;
+
   return (
     <Pressable
-      onPress={() => router.push(`/user/${opponentId}` as never)}
+      onPress={() => router.push(`/match/${match.id}` as never)}
       className="flex-row items-center bg-surface border-base border-border-strong"
       style={{
         padding: 12,
@@ -540,7 +648,7 @@ function RecentMatchCard({
           className="font-sans font-bold text-text"
           style={{ fontSize: 14 }}
         >
-          {opp}
+          {catLabel}
         </Text>
         <Text
           className="font-sans font-semibold text-text-3"
