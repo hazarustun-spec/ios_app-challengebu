@@ -1,16 +1,20 @@
-// apps/mobile/app/match/[id]/dispute.tsx — Plan 8 Phase E9.
+// apps/mobile/app/match/[id]/dispute.tsx — Plan 8 Phase E9, wired to live data.
 //
 // Dispute form — pick one of four reasons (score, notplayed, format, other),
-// add a free-form note, submit. CTA is gated on the reason picker. The real
-// mutation (`createDispute`) lands later; for now we replace to the matches
-// tab on submit.
+// add a free-form note, submit. CTA is gated on the reason picker.
+// Live data: match context via useMatchDetail(id), opponent name via
+// useOpponentNames, submission via useRaiseDispute. On success navigates back
+// to the matches tab; on error surfaces an inline error message.
 
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
+import { useMatchDetail } from '../../../hooks/use-match-detail';
+import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
+import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { colors } from '../../../theme/colors';
 
 type DisputeReason = 'score' | 'notplayed' | 'format' | 'other';
@@ -23,9 +27,62 @@ const REASONS: Array<{ key: DisputeReason; label: string }> = [
 ];
 
 export default function DisputeForm() {
-  useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [reason, setReason] = useState<DisputeReason | null>(null);
   const [note, setNote] = useState('');
+
+  const matchQ = useMatchDetail(id);
+  const opponentNames = useOpponentNames();
+  const raiseDispute = useRaiseDispute();
+
+  const match = matchQ.data ?? null;
+  const opponentInfo = match ? opponentNames.resolve(match) : null;
+  const opponentName = opponentInfo?.name ?? 'Rakip';
+
+  const handleSubmit = () => {
+    if (!reason || !id) return;
+    const payload = note.trim() ? `${reason}: ${note.trim()}` : reason;
+    raiseDispute.mutate(
+      { matchId: id, reason: payload },
+      {
+        onSuccess: () => {
+          router.replace('/(tabs)/matches' as never);
+        },
+        onError: (err) => {
+          const msg =
+            err instanceof Error ? err.message : 'İtiraz gönderilemedi. Tekrar dene.';
+          Alert.alert('Hata', msg);
+        },
+      }
+    );
+  };
+
+  if (matchQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="İtiraz Et" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (matchQ.isError || (matchQ.isFetched && !match)) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="İtiraz Et" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text
+            className="font-sans text-text-2"
+            style={{ fontSize: 14, textAlign: 'center' }}
+          >
+            Maç bilgisi yüklenemedi. Lütfen geri dönüp tekrar dene.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
@@ -40,6 +97,9 @@ export default function DisputeForm() {
             className="font-sans text-text-2"
             style={{ flex: 1, fontSize: 13, lineHeight: 19 }}
           >
+            {opponentName !== 'Rakip'
+              ? `${opponentName} ile olan maçına itiraz ediyorsun. `
+              : ''}
             İtirazın bir admin tarafından incelenecek. Karar verilene kadar
             ELO değişimi askıya alınır.
           </Text>
@@ -125,14 +185,11 @@ export default function DisputeForm() {
         <Button
           full
           size="lg"
-          disabled={!reason}
+          disabled={!reason || raiseDispute.isPending}
           icon={<Icon name="flag" size={17} color={colors.onLime} />}
-          onPress={() => {
-            // TODO(plan-8-E-polish): createDispute mutation
-            router.replace('/(tabs)/matches' as never);
-          }}
+          onPress={handleSubmit}
         >
-          İtirazı gönder
+          {raiseDispute.isPending ? 'Gönderiliyor…' : 'İtirazı gönder'}
         </Button>
       </View>
     </View>

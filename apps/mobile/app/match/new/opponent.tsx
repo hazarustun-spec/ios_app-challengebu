@@ -1,16 +1,16 @@
-// apps/mobile/app/match/new/opponent.tsx — Plan 8 Phase E13.
+// apps/mobile/app/match/new/opponent.tsx — Plan 8 Phase E13, wired to live data.
 //
 // Step 4 of "Yeni Maç" — picks the opponent (and partner, for doubles)
 // from a searchable player list. Ports `NewMatchOpponent` from
 //   docs/superpowers/specs/plan-8-design-bundle/project/app/screens-match-flow.jsx
 // `function NewMatchOpponent(...)`.
 //
-// Today the list is a static mock — a follow-up polish task will replace
-// `MOCK_PLAYERS` with `usePlayerSearch(category)` so we hit the real
-// leaderboard pool filtered by the wizard's chosen category.
+// Live data: usePlayers({ gender }) filtered by the wizard's chosen category.
+// Note: usePlayers does not return ELO — opponent.elo is stored as 0 until a
+// future hook exposes season_elo alongside the profile roster.
 
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Field } from '../../../components/ui/Field';
@@ -20,37 +20,81 @@ import { Icon } from '../../../components/ui/Icon';
 import { levelForElo } from '../../../lib/levels';
 import {
   useNewMatchStore,
+  type CategoryKey,
   type OpponentChoice,
 } from '../../../stores/new-match-store';
+import { usePlayers, type PlayerRow } from '../../../hooks/use-players';
 import { colors } from '../../../theme/colors';
 
-// TODO(plan-8-E-polish): replace with usePlayerSearch(category) hook
-// driven by the players + season_elo tables.
-const MOCK_PLAYERS: OpponentChoice[] = [
-  { userId: 'p1', name: 'Aleyna Kaya', elo: 1487 },
-  { userId: 'p2', name: 'Berk Aydın', elo: 1748 },
-  { userId: 'p3', name: 'Mert Şahin', elo: 1655 },
-  { userId: 'p4', name: 'Onur Çelik', elo: 1432 },
-  { userId: 'p5', name: 'Emre Yıldız', elo: 1788 },
-  { userId: 'p6', name: 'Ali Koç', elo: 1487 },
-  { userId: 'p7', name: 'Can Öztürk', elo: 1598 },
-  { userId: 'p8', name: 'Eren Doğan', elo: 1320 },
-];
+/** Map the wizard's category to the gender filter accepted by usePlayers. */
+function categoryToGender(
+  category: CategoryKey,
+): 'erkek' | 'kadin' | 'open_only' | undefined {
+  if (category.startsWith('erkek_')) return 'erkek';
+  if (category.startsWith('kadin_')) return 'kadin';
+  // open_* and karma_* categories include all genders — no filter.
+  return undefined;
+}
+
+/** Convert a PlayerRow to the OpponentChoice shape the store expects.
+ *  ELO is not available from usePlayers; it defaults to 0 and is omitted
+ *  from the display. A future hook can surface season_elo per player. */
+function toOpponentChoice(p: PlayerRow): OpponentChoice {
+  return {
+    userId: p.user_id,
+    name: `${p.first_name} ${p.last_name}`,
+    elo: 0,
+  };
+}
 
 export default function NewMatchOpponent() {
-  const { path, opponent, setField } = useNewMatchStore();
+  const { path, category, opponent, setField } = useNewMatchStore();
   const [q, setQ] = useState('');
   const isOpen = path === 'open';
-  const filtered = MOCK_PLAYERS.filter((p) =>
-    p.name.toLowerCase().includes(q.toLowerCase()),
+
+  const gender = categoryToGender(category);
+  const playersQ = usePlayers(gender ? { gender } : undefined);
+  const allPlayers: PlayerRow[] = playersQ.data ?? [];
+
+  const filtered = allPlayers.filter((p) => {
+    const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
+    return fullName.includes(q.toLowerCase());
+  });
+
+  const header = (
+    <NavHeader
+      title={isOpen ? 'İlan notu' : 'Rakip seç'}
+      onBack={() => router.back()}
+    />
   );
+
+  if (playersQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (playersQ.isError) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text className="font-sans text-text-3" style={{ fontSize: 14, textAlign: 'center' }}>
+            Oyuncular yüklenemedi. Lütfen tekrar dene.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader
-        title={isOpen ? 'İlan notu' : 'Rakip seç'}
-        onBack={() => router.back()}
-      />
+      {header}
       <View style={{ padding: 18, paddingTop: 4, paddingBottom: 10 }}>
         <Field
           icon="search"
@@ -60,57 +104,67 @@ export default function NewMatchOpponent() {
         />
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0, gap: 8 }}>
-        {filtered.map((p) => {
-          const lv = levelForElo(p.elo);
-          const on = opponent?.userId === p.userId;
-          return (
-            <Pressable
-              key={p.userId}
-              onPress={() => setField('opponent', p)}
-              className="flex-row items-center rounded-md"
-              style={{
-                padding: 11,
-                paddingHorizontal: 12,
-                gap: 12,
-                borderWidth: 1.5,
-                borderColor: on ? colors.clay : colors.borderStrong,
-                backgroundColor: on ? colors.claySofter : colors.surface,
-              }}
-            >
-              <Avatar name={p.name} size={42} />
-              <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14.5 }}
-                >
-                  {p.name}
-                </Text>
-                <Text
-                  className="font-num font-bold"
-                  style={{ fontSize: 12.5, color: lv.color, marginTop: 1 }}
-                >
-                  {p.elo} · {lv.name}
-                </Text>
-              </View>
-              <View
+        {filtered.length === 0 ? (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 13, paddingHorizontal: 4, paddingTop: 8 }}
+          >
+            {q ? 'Eşleşen oyuncu bulunamadı.' : 'Henüz kayıtlı oyuncu yok.'}
+          </Text>
+        ) : (
+          filtered.map((p) => {
+            const choice = toOpponentChoice(p);
+            const lv = levelForElo(choice.elo);
+            const on = opponent?.userId === choice.userId;
+            return (
+              <Pressable
+                key={choice.userId}
+                onPress={() => setField('opponent', choice)}
+                className="flex-row items-center rounded-md"
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  borderWidth: on ? 0 : 2,
-                  borderColor: colors.borderStrong,
-                  backgroundColor: on ? colors.clay : 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  padding: 11,
+                  paddingHorizontal: 12,
+                  gap: 12,
+                  borderWidth: 1.5,
+                  borderColor: on ? colors.clay : colors.borderStrong,
+                  backgroundColor: on ? colors.claySofter : colors.surface,
                 }}
               >
-                {on && (
-                  <Icon name="check" size={13} color="#FFFFFF" stroke={3} />
-                )}
-              </View>
-            </Pressable>
-          );
-        })}
+                <Avatar name={choice.name} size={42} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    className="font-sans font-bold text-text"
+                    style={{ fontSize: 14.5 }}
+                  >
+                    {choice.name}
+                  </Text>
+                  <Text
+                    className="font-num font-bold"
+                    style={{ fontSize: 12.5, color: lv.color, marginTop: 1 }}
+                  >
+                    {lv.name}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    borderWidth: on ? 0 : 2,
+                    borderColor: colors.borderStrong,
+                    backgroundColor: on ? colors.clay : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {on && (
+                    <Icon name="check" size={13} color="#FFFFFF" stroke={3} />
+                  )}
+                </View>
+              </Pressable>
+            );
+          })
+        )}
       </ScrollView>
       <View style={{ padding: 18 }}>
         <Button

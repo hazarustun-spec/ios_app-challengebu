@@ -7,12 +7,13 @@
 // `function NewMatchDetail(...)`.
 //
 // Sheets reuse the `Sheet` primitive (one visibility flag selects which
-// of the five inline Sheets is open). Lists (DAYS, TIMES, COURTS) are
-// static placeholders for now — a later Phase E polish will swap them
-// for live data sources (courts table + season-aware date suggestions).
+// of the five inline Sheets is open). DAYS and TIMES remain static
+// (season-aware date suggestions are out of scope). The COURTS list is
+// wired live via useCourts() (reads the `courts` table, active rows
+// ordered by display_order).
 
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Sheet } from '../../../components/ui/Sheet';
@@ -23,6 +24,7 @@ import {
   useNewMatchStore,
   type CategoryKey,
 } from '../../../stores/new-match-store';
+import { useCourts } from '../../../hooks/use-courts';
 import { colors } from '../../../theme/colors';
 
 interface CategoryDef {
@@ -43,8 +45,6 @@ const CATEGORIES: CategoryDef[] = [
 
 const DAYS = ['Bugün', 'Yarın', '8 Haz Paz', '9 Haz Pzt', '10 Haz Sal', '11 Haz Çar'];
 const TIMES = ['10:00', '12:00', '14:00', '16:00', '18:30', '20:00', '21:30'];
-// TODO(plan-8-E-polish): drive from real `courts` table once available.
-const COURTS = ['Kort 1', 'Kort 2', 'Bebek Kort', 'Hisar Kort'];
 
 type SheetKey = 'cat' | 'fmt' | 'date' | 'time' | 'court';
 
@@ -93,6 +93,7 @@ export default function NewMatchDetail() {
   const { category, format, date, time, court, setField, path } =
     useNewMatchStore();
   const [openSheet, setOpenSheet] = useState<SheetKey | null>(null);
+  const courtsQuery = useCourts();
 
   const cat = CATEGORIES.find((c) => c.key === category)!;
   const fmt = FORMATS.find((f) => f.key === format)!;
@@ -332,41 +333,65 @@ export default function NewMatchDetail() {
         </View>
       </Sheet>
 
-      {/* Court sheet — list rows with pin + check. */}
+      {/* Court sheet — list rows with pin + check. Live data from useCourts(). */}
       <Sheet
         visible={openSheet === 'court'}
         onClose={() => setOpenSheet(null)}
         title="Kort seç"
       >
-        {COURTS.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => {
-              setField('court', c);
-              setOpenSheet(null);
-            }}
-            className="flex-row items-center"
-            style={{
-              width: '100%',
-              paddingVertical: 15,
-              paddingHorizontal: 8,
-              gap: 12,
-              borderBottomWidth: 1,
-              borderColor: colors.borderStrong,
-            }}
-          >
-            <Icon name="pin" size={20} color={colors.clay} />
+        {courtsQuery.isLoading ? (
+          <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+            <ActivityIndicator color={colors.clay} />
+          </View>
+        ) : courtsQuery.isError ? (
+          <View style={{ paddingVertical: 16, paddingHorizontal: 8 }}>
             <Text
-              className="font-sans font-bold text-text"
-              style={{ flex: 1, fontSize: 15 }}
+              className="font-sans text-text-3"
+              style={{ fontSize: 13.5, textAlign: 'center' }}
             >
-              {c}
+              Kortlar yüklenemedi. Lütfen tekrar dene.
             </Text>
-            {court === c && (
-              <Icon name="check" size={18} color={colors.clay} stroke={3} />
-            )}
-          </Pressable>
-        ))}
+          </View>
+        ) : (courtsQuery.data ?? []).length === 0 ? (
+          <View style={{ paddingVertical: 16, paddingHorizontal: 8 }}>
+            <Text
+              className="font-sans text-text-3"
+              style={{ fontSize: 13.5, textAlign: 'center' }}
+            >
+              Aktif kort bulunamadı.
+            </Text>
+          </View>
+        ) : (
+          (courtsQuery.data ?? []).map((c) => (
+            <Pressable
+              key={c.id}
+              onPress={() => {
+                setField('court', c.name);
+                setOpenSheet(null);
+              }}
+              className="flex-row items-center"
+              style={{
+                width: '100%',
+                paddingVertical: 15,
+                paddingHorizontal: 8,
+                gap: 12,
+                borderBottomWidth: 1,
+                borderColor: colors.borderStrong,
+              }}
+            >
+              <Icon name="pin" size={20} color={colors.clay} />
+              <Text
+                className="font-sans font-bold text-text"
+                style={{ flex: 1, fontSize: 15 }}
+              >
+                {c.name}
+              </Text>
+              {court === c.name && (
+                <Icon name="check" size={18} color={colors.clay} stroke={3} />
+              )}
+            </Pressable>
+          ))
+        )}
       </Sheet>
     </View>
   );

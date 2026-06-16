@@ -1,8 +1,8 @@
-// apps/mobile/app/match/new/preview.tsx — Plan 8 Phase E14.
+// apps/mobile/app/match/new/preview.tsx — Plan 8 Phase E14 (live-wired).
 //
-// Step 5 of "Yeni Maç" — final confirmation. Ports `MatchPreview` from
-//   docs/superpowers/specs/plan-8-design-bundle/project/app/screens-match-flow.jsx
-// `function MatchPreview(...)`. Composition:
+// Step 5 of "Yeni Maç" — final confirmation, wired to live hooks.
+// Reads draft from useNewMatchStore; on submit calls useCreateMatchRequest.
+// Composition:
 //
 //   1. VS hero — me avatar + name/ELO  ·  VS  ·  opponent avatar
 //      + name/ELO.
@@ -12,26 +12,46 @@
 //   3. Summary table — tip / format / tarih·saat / kort rows.
 //   4. (ranking only) "Format kurallarını oku (zorunlu)" link → E15.
 //   5. Sticky "Teklifi gönder" CTA.
+//
+// Live data:
+//   - useNewMatchStore → draft state (kind, path, category, format, date,
+//     time, court, opponent)
+//   - useMyRankings → real ELO for the VS hero and ELO prediction card
+//   - useCourts → resolve nm.court (name string) → courtId (UUID) for API
+//   - useCreateMatchRequest → mutation called on CTA press
 
-import { ScrollView, Text, View, Pressable } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
-import { FORMATS } from '../../../lib/formats';
+import { FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
 import { useNewMatchStore } from '../../../stores/new-match-store';
 import { useAuthStore } from '../../../stores/auth-store';
+import { useMyRankings } from '../../../hooks/use-my-rankings';
+import { useCourts } from '../../../hooks/use-courts';
+import { useCreateMatchRequest } from '../../../hooks/use-create-match-request';
 import { colors } from '../../../theme/colors';
 
-// Placeholder until we surface the player's real season_elo into the
-// auth store. The current `profile` summary doesn't carry ELO yet.
-const ME_ELO = 1487;
 const K_FACTOR = 32;
 
 /** Standard ELO expectation for player A vs player B. */
 function expected(myElo: number, oppElo: number): number {
   return 1 / (1 + Math.pow(10, (oppElo - myElo) / 400));
+}
+
+/** Pick the ranking row that best matches the chosen category.
+ *  Falls back to the first row available, or null if none loaded yet. */
+function pickRatingForCategory(
+  rows: { category: string; rating: number }[],
+  category: string,
+): number | null {
+  const exact = rows.find((r) => r.category === category);
+  if (exact) return exact.rating;
+  const fallback = rows[0];
+  return fallback?.rating ?? null;
 }
 
 export default function MatchPreview() {
@@ -40,13 +60,30 @@ export default function MatchPreview() {
   const meName = profile?.firstName ?? 'Sen';
   const fmt = FORMATS.find((f) => f.key === nm.format)!;
 
-  // Fallback opponent only kicks in if someone deep-links directly to
-  // /match/new/preview without going through the wizard.
-  const opp =
-    nm.opponent ?? { name: 'Berk Aydın', elo: 1748, userId: 'fallback' };
-  const e = expected(ME_ELO, opp.elo);
-  const winDelta = Math.round(K_FACTOR * (1 - e));
-  const lossDelta = -Math.round(K_FACTOR * e);
+  // --- Live ELO (my own) ---
+  const rankingsQ = useMyRankings();
+  const rankings = rankingsQ.data ?? [];
+  const ME_ELO = pickRatingForCategory(rankings, nm.category);
+
+  // --- Courts (to resolve name → id for the API call) ---
+  const courtsQ = useCourts();
+  const courts = courtsQ.data ?? [];
+
+  // --- Submit mutation ---
+  const createRequest = useCreateMatchRequest();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Opponent from the wizard — null if user somehow deep-links directly.
+  const opp = nm.opponent;
+
+  // ELO prediction deltas (only when both ELOs are known and match is ranked)
+  const eloReady = ME_ELO !== null && opp !== null;
+  const winDelta = eloReady
+    ? Math.round(K_FACTOR * (1 - expected(ME_ELO!, opp!.elo)))
+    : null;
+  const lossDelta = eloReady
+    ? -Math.round(K_FACTOR * expected(ME_ELO!, opp!.elo))
+    : null;
 
   const rows: Array<[string, string]> = [
     ['Tip', nm.kind === 'ranking' ? '🏆 Sıralama Maçı' : '🤝 Dostluk Maçı'],
@@ -54,6 +91,38 @@ export default function MatchPreview() {
     ['Tarih', `${nm.date} · ${nm.time}`],
     ['Kort', nm.court],
   ];
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+
+    // Resolve courtId from name
+    const courtRecord = courts.find((c) => c.name === nm.court);
+    const courtId = courtRecord?.id ?? nm.court; // fallback: use name as-is if courts haven't loaded
+
+    setSubmitting(true);
+    try {
+      await createRequest.mutateAsync({
+        type: nm.path === 'open' ? 'open_call' : 'direct_challenge',
+        targetId: nm.opponent?.userId,
+        category: nm.category,
+        format: UI_TO_DB_FORMAT[nm.format],
+        isRated: nm.kind === 'ranking',
+        proposedDate: nm.date,
+        proposedTime: nm.time,
+        courtId,
+        creatorPartnerId: nm.partner?.userId,
+      });
+      nm.reset();
+      router.dismissAll();
+      router.replace('/(tabs)/matches' as never);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
+      Alert.alert('Teklif gönderilemedi', msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <View className="flex-1 bg-bg">
@@ -76,7 +145,7 @@ export default function MatchPreview() {
               className="font-num font-bold text-text-3"
               style={{ fontSize: 12 }}
             >
-              {ME_ELO}
+              {rankingsQ.isLoading ? '—' : (ME_ELO ?? '—')}
             </Text>
           </View>
           <Text
@@ -86,18 +155,18 @@ export default function MatchPreview() {
             VS
           </Text>
           <View style={{ alignItems: 'center' }}>
-            <Avatar name={opp.name} size={64} />
+            <Avatar name={opp?.name ?? '?'} size={64} />
             <Text
               className="font-sans font-bold text-text"
               style={{ fontSize: 13.5, marginTop: 8 }}
             >
-              {opp.name.split(' ')[0]}
+              {opp ? opp.name.split(' ')[0] : '—'}
             </Text>
             <Text
               className="font-num font-bold text-text-3"
               style={{ fontSize: 12 }}
             >
-              {opp.elo}
+              {opp?.elo ?? '—'}
             </Text>
           </View>
         </View>
@@ -133,7 +202,7 @@ export default function MatchPreview() {
                   className="font-num font-extrabold"
                   style={{ fontSize: 26, color: colors.win, marginTop: 3 }}
                 >
-                  +{winDelta}
+                  {winDelta !== null ? `+${winDelta}` : '—'}
                 </Text>
               </View>
               <View
@@ -154,7 +223,7 @@ export default function MatchPreview() {
                   className="font-num font-extrabold"
                   style={{ fontSize: 26, color: colors.loss, marginTop: 3 }}
                 >
-                  {lossDelta}
+                  {lossDelta !== null ? lossDelta : '—'}
                 </Text>
               </View>
             </View>
@@ -246,16 +315,16 @@ export default function MatchPreview() {
         <Button
           full
           size="lg"
-          icon={<Icon name="share" size={17} color={colors.onLime} />}
-          onPress={() => {
-            // TODO(plan-8-E-polish): real createMatchRequest mutation +
-            // success toast. For now we exit the wizard back to the
-            // matches tab as a stand-in.
-            router.dismissAll();
-            router.replace('/(tabs)/matches' as never);
-          }}
+          icon={
+            submitting ? (
+              <ActivityIndicator size="small" color={colors.onLime} />
+            ) : (
+              <Icon name="share" size={17} color={colors.onLime} />
+            )
+          }
+          onPress={handleSubmit}
         >
-          Teklifi gönder
+          {submitting ? 'Gönderiliyor…' : 'Teklifi gönder'}
         </Button>
       </View>
     </View>

@@ -11,19 +11,21 @@
 //   • Undo replays a snapshot stack. Disabled when the stack is empty.
 //   • Navigates to `/match/[id]/result` with the final state via search
 //     params (no Zustand needed at this stage).
+//   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
+//   • Wired to live data — no mock constants remain.
 
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Icon } from '../../../components/ui/Icon';
 import { ScoreInput } from '../../../components/ui/ScoreInput';
+import { useMatchDetail } from '../../../hooks/use-match-detail';
+import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { colors } from '../../../theme/colors';
 
-// TODO(plan-8-E-polish): real match + opponent name via useMatchDetail
-const MOCK_OPP = 'Berk Aydın';
 const PTS = ['0', '15', '30', '40', 'Ad'];
 
 interface Snapshot {
@@ -35,11 +37,20 @@ interface Snapshot {
 
 export default function ActiveMatch() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const matchQ = useMatchDetail(id);
+  const opponentNames = useOpponentNames();
   const [gA, setGA] = useState(0);
   const [gB, setGB] = useState(0);
   const [pA, setPA] = useState(0);
   const [pB, setPB] = useState(0);
   const [hist, setHist] = useState<Snapshot[]>([]);
+
+  // Resolve opponent name from live match data. Falls back to 'Rakip' while
+  // loading or when the match row hasn't arrived yet.
+  const match = matchQ.data ?? null;
+  const opponent = match ? opponentNames.resolve(match) : null;
+  const oppName: string = opponent?.name ?? 'Rakip';
+  const oppFirstName: string = opponent?.primaryName?.split(' ')[0] ?? 'Rakip';
 
   const total = gA + gB;
   const isVoid = gA === 3 && gB === 3;
@@ -96,21 +107,49 @@ export default function ActiveMatch() {
         win: String(win),
         score: `${gA}-${gB}`,
         voided: String(isVoid),
-        opp: MOCK_OPP,
+        opp: oppName,
       },
     } as never);
   };
 
   const rows = [
     { name: 'Sen', g: gA, p: ptLabel(pA, pB), me: true },
-    { name: MOCK_OPP, g: gB, p: ptLabel(pB, pA), me: false },
+    { name: oppName, g: gB, p: ptLabel(pB, pA), me: false },
   ];
+
+  const navSubtitle = match?.court?.name ? match.court.name : undefined;
+
+  // Loading state — show spinner while match data is in flight
+  if (matchQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="Canlı Maç" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  // Error state — graceful fallback
+  if (matchQ.isError) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="Canlı Maç" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text className="font-sans text-text-3" style={{ textAlign: 'center', fontSize: 14 }}>
+            Maç bilgisi yüklenemedi. Lütfen tekrar dene.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
       <NavHeader
         title="Canlı Maç"
-        subtitle="BÜ Klasik · Kort 1"
+        subtitle={navSubtitle}
         onBack={() => router.back()}
       />
       <ScrollView
@@ -184,7 +223,7 @@ export default function ActiveMatch() {
                 onPress={() => award('A')}
               />
               <ScoreInput
-                label={`${MOCK_OPP.split(' ')[0]} sayı`}
+                label={`${oppFirstName} sayı`}
                 onPress={() => award('B')}
               />
             </View>

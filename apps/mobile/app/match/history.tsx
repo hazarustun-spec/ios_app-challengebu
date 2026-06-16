@@ -1,4 +1,4 @@
-// Geçmiş Maçlar (Match History) — Plan 8 Phase E16.
+// Geçmiş Maçlar (Match History) — Plan 8 Phase E16, wired to live data.
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-matches.jsx
 //   (`MatchHistory`)
 //
@@ -12,99 +12,121 @@
 //        · trailing score + Δelo (or "voided")
 //      Tapping a row navigates to /match/[id].
 //
-// Data wiring is intentionally STUBBED in this batch — Plan 8 Phase E16
-// is a visual port. The polish pass will swap `MOCK_HISTORY` for the
-// real `useMatchHistory()` query result.
+// Live-data sources:
+//   - Match list: useMyMatchHistory (status: confirmed | voided)
+//   - Opponent names: useOpponentNames().resolve(match)
+//   - Win/score/delta: myPerspective(match, myUserId) from lib/match-opponent
 
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Avatar } from '../../components/ui/Avatar';
-import { FORMATS, type FormatKey } from '../../lib/formats';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
+import { myPerspective } from '../../lib/match-opponent';
+import { useMyMatchHistory } from '../../hooks/use-match-history';
+import { useOpponentNames } from '../../hooks/use-opponent-names';
+import { useAuthStore } from '../../stores/auth-store';
+import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { colors } from '../../theme/colors';
 
-// TODO(plan-8-E-polish): replace with `useMatchHistory()` query result.
-const MOCK_HISTORY: Array<{
-  id: string;
-  opp: string;
-  win: boolean;
-  score: string;
-  format: FormatKey;
-  date: string;
-  delta: number;
-  cat: string;
-  void?: boolean;
-}> = [
-  {
-    id: 'h1',
-    opp: 'Tolga Aksoy',
-    win: true,
-    score: '4-1',
-    format: 'klasik',
-    date: '2 Haz',
-    delta: 18,
-    cat: 'Erkek Tek',
-  },
-  {
-    id: 'h2',
-    opp: 'Sinan Polat',
-    win: true,
-    score: '4-0',
-    format: 'klasik',
-    date: '29 May',
-    delta: 24,
-    cat: 'Erkek Tek',
-  },
-  {
-    id: 'h3',
-    opp: 'Berk Aydın',
-    win: false,
-    score: '6-8',
-    format: 'proset',
-    date: '24 May',
-    delta: -15,
-    cat: 'Erkek Tek',
-  },
-  {
-    id: 'h4',
-    opp: 'Emre Yıldız',
-    win: false,
-    score: '3-3',
-    format: 'klasik',
-    date: '19 May',
-    delta: 0,
-    cat: 'Erkek Tek',
-    void: true,
-  },
-  {
-    id: 'h5',
-    opp: 'Deniz Arslan',
-    win: true,
-    score: '10-6',
-    format: 'tiebreak',
-    date: '14 May',
-    delta: 12,
-    cat: 'Open Tek',
-  },
-];
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
+};
+
+function formatMatchDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+}
+
+// ---------------------------------------------------------------------------
+// Main screen
+// ---------------------------------------------------------------------------
 
 export default function MatchHistory() {
+  const userId = useAuthStore((s) => s.user?.id) ?? '';
+  const historyQ = useMyMatchHistory();
+  const opponentNames = useOpponentNames();
+
+  const matches: ActiveMatchRow[] = historyQ.data ?? [];
+
+  // Compute stat strip from live data
+  const wins = matches.filter((m) => {
+    if (m.winner_team === 'void' || m.winner_team === null) return false;
+    const p = myPerspective(m, userId);
+    return p.won === true;
+  }).length;
+  const losses = matches.filter((m) => {
+    if (m.winner_team === 'void' || m.winner_team === null) return false;
+    const p = myPerspective(m, userId);
+    return p.won === false;
+  }).length;
+  const decided = wins + losses;
+  const winRate = decided > 0 ? `${Math.round((wins / decided) * 100)}%` : '—';
+
+  const header = (
+    <NavHeader
+      title="Geçmiş Maçlar"
+      onBack={() => router.back()}
+      actionIcon="filter"
+      onAction={() => {}}
+    />
+  );
+
+  if (historyQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (matches.length === 0) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <EmptyState
+          icon="trophy"
+          title="Henüz geçmiş maç yok"
+          body="Tamamlanan maçların burada görünecek."
+        />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader
-        title="Geçmiş Maçlar"
-        onBack={() => router.back()}
-        actionIcon="filter"
-        onAction={() => {}}
-      />
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }}>
+      {header}
+      <ScrollView
+        contentContainerStyle={{ padding: 16, gap: 14 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={historyQ.isRefetching}
+            onRefresh={() => historyQ.refetch()}
+            tintColor={colors.clay}
+          />
+        }
+      >
         {/* Stat strip */}
         <View className="flex-row" style={{ gap: 8 }}>
           {(
             [
-              ['18', 'Galibiyet', colors.win],
-              ['9', 'Mağlubiyet', colors.loss],
-              ['67%', 'Oran', colors.text],
+              [String(wins), 'Galibiyet', colors.win],
+              [String(losses), 'Mağlubiyet', colors.loss],
+              [winRate, 'Oran', colors.text],
             ] as const
           ).map(([v, l, c]) => (
             <View
@@ -136,13 +158,29 @@ export default function MatchHistory() {
 
         {/* History rows */}
         <View style={{ gap: 8 }}>
-          {MOCK_HISTORY.map((m) => {
-            const fmt = FORMATS.find((f) => f.key === m.format)!;
-            const stripColor = m.void
+          {matches.map((m) => {
+            const perspective = myPerspective(m, userId);
+            const isVoid = m.winner_team === 'void';
+            const win = perspective.won === true;
+            const score = `${perspective.myScore}-${perspective.oppScore}`;
+            const delta = perspective.eloDelta ?? 0;
+
+            const stripColor = isVoid
               ? colors.warn
-              : m.win
+              : win
                 ? colors.win
                 : colors.loss;
+
+            // Convert DB format enum to UI key for FORMATS lookup
+            const uiFormatKey = DB_TO_UI_FORMAT[m.format] ?? null;
+            const fmt = uiFormatKey ? FORMATS.find((f) => f.key === uiFormatKey) : null;
+            const fmtName = fmt?.name ?? m.format;
+
+            const dateLabel = formatMatchDate(m.played_at);
+            const catLabel = CATEGORY_LABELS[m.category] ?? m.category;
+
+            const opponent = opponentNames.resolve(m);
+
             return (
               <Pressable
                 key={m.id}
@@ -158,19 +196,19 @@ export default function MatchHistory() {
                     backgroundColor: stripColor,
                   }}
                 />
-                <Avatar name={m.opp} size={40} />
+                <Avatar name={opponent.primaryName} size={40} />
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text
                     className="font-sans font-bold text-text"
                     style={{ fontSize: 14.5 }}
                   >
-                    {m.opp}
+                    {opponent.name}
                   </Text>
                   <Text
                     className="font-sans text-text-3"
                     style={{ fontSize: 12, marginTop: 2 }}
                   >
-                    {fmt.name} · {m.date}
+                    {fmtName} · {catLabel} · {dateLabel}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -178,23 +216,23 @@ export default function MatchHistory() {
                     className="font-num font-bold text-text"
                     style={{ fontSize: 17 }}
                   >
-                    {m.score}
+                    {score}
                   </Text>
                   <Text
                     className="font-num font-bold"
                     style={{
                       fontSize: 12,
                       marginTop: 1,
-                      color: m.void
+                      color: isVoid
                         ? colors.warn
-                        : m.delta > 0
+                        : delta > 0
                           ? colors.win
-                          : m.delta < 0
+                          : delta < 0
                             ? colors.loss
                             : colors.text3,
                     }}
                   >
-                    {m.void ? 'voided' : `${m.delta > 0 ? '+' : ''}${m.delta}`}
+                    {isVoid ? 'voided' : `${delta > 0 ? '+' : ''}${delta}`}
                   </Text>
                 </View>
               </Pressable>

@@ -1,59 +1,92 @@
-// apps/mobile/app/match/[id]/result.tsx — Plan 8 Phase E8.
+// apps/mobile/app/match/[id]/result.tsx — Plan 8 Phase E8, live-wired.
 //
 // Match summary screen. Renders the win/loss/void tag, the avatars +
 // final score, and (for non-void matches) an ELO delta card with a
-// CountUp animation interpolating from the player's current ELO to
-// `current + delta`.
+// CountUp animation interpolating from the player's ELO before the match
+// to `rating_before + eloDelta`.
 //
-// Search params (passed from the score screen via `router.replace`):
-//   • win    — 'true' | 'false'
-//   • score  — e.g. '4-2'
-//   • voided — 'true' | 'false'
-//   • opp    — opponent display name
+// Live data: useMatchDetail(id) → ActiveMatchRow; myPerspective() orients
+// win/score/eloDelta toward the current user; useOpponentNames().resolve()
+// provides the opponent display name from the roster.
+//
+// Route params: only `id` is consumed; the legacy win/score/voided/opp
+// search params are no longer used — all values come from the match row.
 
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon, type IconName } from '../../../components/ui/Icon';
 import { colors } from '../../../theme/colors';
-
-// TODO(plan-8-E-polish): pull from profile / useMe()
-const ME_ELO = 1487;
+import { useMatchDetail } from '../../../hooks/use-match-detail';
+import { useOpponentNames } from '../../../hooks/use-opponent-names';
+import { myPerspective } from '../../../lib/match-opponent';
+import { useAuthStore } from '../../../stores/auth-store';
 
 export default function MatchResult() {
-  const { id, win, score, voided, opp } = useLocalSearchParams<{
-    id: string;
-    win?: string;
-    score?: string;
-    voided?: string;
-    opp?: string;
-  }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const userId = useAuthStore((s) => s.user?.id);
 
-  const isWin = win === 'true';
-  const isVoid = voided === 'true';
-  const opponent = opp ?? 'Berk Aydın';
-  const finalScore = score ?? '4-2';
-  const delta = isVoid ? 0 : isWin ? 22 : -16;
+  const matchQ = useMatchDetail(id);
+  const opponentNames = useOpponentNames();
 
-  // Simple CountUp — interpolate from current ELO to current + delta over
-  // ~600ms using 20 steps. Skipped on voided matches (delta=0, no anim).
-  const [currentElo, setCurrentElo] = useState(ME_ELO);
+  const match = matchQ.data ?? null;
+
+  // Derive perspective from live match data
+  const perspective = match && userId ? myPerspective(match, userId) : null;
+  const isWin = perspective?.won === true;
+  const isVoid = match ? match.winner_team === 'void' : false;
+  const myScore = perspective?.myScore ?? 0;
+  const oppScore = perspective?.oppScore ?? 0;
+  const finalScore = match ? `${myScore}-${oppScore}` : '—';
+
+  // eloDelta from live data; null when not yet rated/confirmed
+  const delta = perspective?.eloDelta ?? null;
+  const deltaDisplay = isVoid ? 0 : (delta ?? 0);
+
+  // rating_before for the current user's team — used as the CountUp start value
+  const myTeamSide =
+    match && userId
+      ? match.team_a_player_ids.includes(userId)
+        ? 'a'
+        : match.team_b_player_ids.includes(userId)
+          ? 'b'
+          : 'a'
+      : 'a';
+  const ratingBefore =
+    match
+      ? myTeamSide === 'a'
+        ? (match.rating_before_team_a ?? null)
+        : (match.rating_before_team_b ?? null)
+      : null;
+
+  // Opponent name from roster
+  const opponent = match ? opponentNames.resolve(match) : null;
+  const opponentName = opponentNames.isLoading
+    ? 'Rakip'
+    : (opponent?.name ?? 'Rakip');
+
+  // CountUp: interpolate from ratingBefore to ratingBefore + delta over ~600ms (20 steps).
+  // Falls back to ratingBefore when delta is null or match is void.
+  const startElo = ratingBefore ?? 0;
+  const targetElo = startElo + deltaDisplay;
+  const [currentElo, setCurrentElo] = useState(startElo);
+
   useEffect(() => {
-    if (isVoid) return;
-    const target = ME_ELO + delta;
+    setCurrentElo(startElo);
+    if (isVoid || deltaDisplay === 0 || startElo === 0) return;
     const steps = 20;
-    const inc = (target - ME_ELO) / steps;
+    const inc = (targetElo - startElo) / steps;
     let i = 0;
     const t = setInterval(() => {
       i += 1;
-      setCurrentElo(Math.round(ME_ELO + inc * i));
+      setCurrentElo(Math.round(startElo + inc * i));
       if (i >= steps) clearInterval(t);
     }, 30);
     return () => clearInterval(t);
-  }, [delta, isVoid]);
+  }, [startElo, targetElo, deltaDisplay, isVoid]);
 
   const tagColor = isVoid ? colors.warn : isWin ? colors.win : colors.loss;
   const tagBg = isVoid ? colors.warnSoft : isWin ? colors.limeSoft : '#FCE6E4';
@@ -63,6 +96,43 @@ export default function MatchResult() {
       ? 'Kazandın!'
       : 'Kaybettin';
   const tagIcon: IconName = isVoid ? 'info' : isWin ? 'trophy' : 'x';
+
+  // Loading state
+  if (matchQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader
+          title="Maç Sonucu"
+          close
+          onBack={() => router.replace('/(tabs)/matches' as never)}
+        />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  // Error or missing match
+  if (matchQ.isError || !match) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader
+          title="Maç Sonucu"
+          close
+          onBack={() => router.replace('/(tabs)/matches' as never)}
+        />
+        <View className="flex-1 items-center justify-center" style={{ padding: 32 }}>
+          <Text
+            className="font-sans font-semibold text-text-3"
+            style={{ fontSize: 14, textAlign: 'center' }}
+          >
+            Maç sonucu yüklenemedi.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
@@ -107,7 +177,7 @@ export default function MatchResult() {
               {finalScore}
             </Text>
             <Avatar
-              name={opponent}
+              name={opponentName}
               size={58}
               ring={!isWin && !isVoid ? colors.win : undefined}
             />
@@ -120,7 +190,7 @@ export default function MatchResult() {
           </Text>
         </View>
 
-        {!isVoid && (
+        {!isVoid && delta !== null && (
           <View
             className="bg-surface rounded-lg"
             style={{ padding: 18, borderWidth: 1, borderColor: colors.borderStrong }}
@@ -139,7 +209,7 @@ export default function MatchResult() {
                 className="font-num font-bold text-text-3"
                 style={{ fontSize: 26 }}
               >
-                {ME_ELO}
+                {startElo}
               </Text>
               <Icon name="chevR" size={20} color={colors.text3} />
               <Text
@@ -167,8 +237,8 @@ export default function MatchResult() {
                     color: isWin ? colors.win : colors.loss,
                   }}
                 >
-                  {delta > 0 ? '+' : ''}
-                  {delta}
+                  {deltaDisplay > 0 ? '+' : ''}
+                  {deltaDisplay}
                 </Text>
               </View>
             </View>
