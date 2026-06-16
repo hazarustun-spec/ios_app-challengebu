@@ -33,7 +33,7 @@
 // notifications, profile. The Expo Router screen names in `(tabs)/_layout.tsx`
 // must be created in the same order; the wiring lives in Phase E1.
 
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import { Icon, type IconName } from './Icon';
@@ -70,8 +70,6 @@ interface TabNavigationLike {
 export interface TabBarProps {
   state: TabStateLike;
   navigation: TabNavigationLike;
-  /** Optional notification badge count. Hidden when 0 or when the notif tab is active. */
-  notifBadgeCount?: number;
   // The runtime React Navigation type ships `descriptors` + `insets`; we
   // accept them but never read them, so they stay optional + opaque.
   descriptors?: unknown;
@@ -88,8 +86,6 @@ interface SlotConfig {
   icon: IconName;
   /** Central "+" — visually dominant, never persists as the active tab. */
   isCenter?: boolean;
-  /** Slot that receives the notif badge count prop. */
-  isNotif?: boolean;
 }
 
 const SLOTS: SlotConfig[] = [
@@ -97,11 +93,10 @@ const SLOTS: SlotConfig[] = [
   { name: 'matches', icon: 'matches' },
   { name: 'new-match', icon: 'plus', isCenter: true },
   { name: 'leaderboard', icon: 'ranking' }, // Sıralama (Stack push)
-  { name: 'notifications', icon: 'bell', isNotif: true },
   { name: 'profile', icon: 'user' },
 ];
 
-export function TabBar({ state, navigation, notifBadgeCount = 0 }: TabBarProps) {
+export function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const activeIndex = state.index;
 
@@ -113,7 +108,6 @@ export function TabBar({ state, navigation, notifBadgeCount = 0 }: TabBarProps) 
           if (!route) return null;
           const isActive = activeIndex === i;
           const isCenter = !!slot.isCenter;
-          const badgeCount = slot.isNotif ? notifBadgeCount : 0;
           const inkBg = isActive || isCenter;
           const size = isCenter ? 52 : 48;
 
@@ -155,16 +149,6 @@ export function TabBar({ state, navigation, notifBadgeCount = 0 }: TabBarProps) 
                 color={inkBg ? '#FFFFFF' : colors.onLime}
                 stroke={isCenter ? 2.7 : isActive ? 2.4 : 2.1}
               />
-              {badgeCount > 0 && !isActive && (
-                <View
-                  style={{ top: 6, right: 7 }}
-                  className="absolute h-[15px] min-w-[15px] items-center justify-center rounded-pill border-base border-lime bg-pink-deep px-1"
-                >
-                  <Text className="font-sans text-[9.5px] font-extrabold text-white">
-                    {badgeCount > 99 ? '99+' : String(badgeCount)}
-                  </Text>
-                </View>
-              )}
             </Pressable>
           );
         })}

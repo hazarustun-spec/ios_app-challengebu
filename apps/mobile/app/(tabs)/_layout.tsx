@@ -27,18 +27,13 @@ import { router, Tabs } from 'expo-router';
 import { View } from 'react-native';
 import { NotificationListener } from '../../components/notifications/NotificationListener';
 import { TabBar } from '../../components/ui/TabBar';
-import { useUnreadCount } from '../../hooks/use-unread-count';
 
 export default function TabsLayout() {
-  const { data: unreadCount = 0 } = useUnreadCount();
-
   return (
     <View className="flex-1">
       <NotificationListener />
       <Tabs
-        tabBar={(props) => (
-          <TabBar {...props} notifBadgeCount={unreadCount} />
-        )}
+        tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}
       >
         <Tabs.Screen name="index" options={{ title: 'Anasayfa' }} />
@@ -65,7 +60,6 @@ export default function TabsLayout() {
             },
           }}
         />
-        <Tabs.Screen name="notifications" options={{ title: 'Bildirim' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
       </Tabs>
     </View>
