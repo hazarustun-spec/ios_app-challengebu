@@ -33,6 +33,8 @@ import { useMyMatchHistory } from '../../hooks/use-match-history';
 import { useMyRankings } from '../../hooks/use-my-rankings';
 import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useUnreadCount } from '../../hooks/use-unread-count';
+import { useOpponentNames } from '../../hooks/use-opponent-names';
+import { myPerspective } from '../../lib/match-opponent';
 import { levelForElo, levelProgress } from '../../lib/levels';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
@@ -137,6 +139,9 @@ export default function HomeScreen() {
   // --- Recent matches (last 2 confirmed/voided) ---
   const matchHistoryQ = useMyMatchHistory();
   const RECENT_MATCHES: ActiveMatchRow[] = (matchHistoryQ.data ?? []).slice(0, 2);
+
+  // --- Opponent name resolver (single roster fetch, shared across all cards) ---
+  const opponentNames = useOpponentNames();
 
   const categoryHeroLabel = CATEGORY_LABELS[primaryCat] ?? primaryCat.toUpperCase();
 
@@ -363,6 +368,7 @@ export default function HomeScreen() {
                 key={m.id}
                 match={m}
                 myUserId={userId ?? ''}
+                resolveOpponent={opponentNames.resolve}
               />
             ))}
           </View>
@@ -389,6 +395,7 @@ export default function HomeScreen() {
                 key={m.id}
                 match={m}
                 myUserId={userId ?? ''}
+                resolveOpponent={opponentNames.resolve}
               />
             ))}
           </View>
@@ -498,32 +505,18 @@ function SectionTitle({ children, action, onActionPress }: SectionTitleProps) {
 interface ActiveMatchCardProps {
   match: ActiveMatchRow;
   myUserId: string;
+  resolveOpponent: (match: ActiveMatchRow) => { ids: string[]; name: string; primaryId: string | null; primaryName: string };
 }
 
-const ACTIVE_CATEGORY_LABELS: Record<string, string> = {
-  erkek_tek: 'Erkek Tek',
-  kadin_tek: 'Kadın Tek',
-  open_tek: 'Open Tek',
-  erkek_cift: 'Erkek Çift',
-  kadin_cift: 'Kadın Çift',
-  karma_cift: 'Karma Çift',
-  open_cift: 'Open Çift',
-};
-
-function ActiveMatchCard({ match, myUserId }: ActiveMatchCardProps) {
+function ActiveMatchCard({ match, myUserId: _myUserId, resolveOpponent }: ActiveMatchCardProps) {
   const ranked = match.is_rated;
-  const catLabel = ACTIVE_CATEGORY_LABELS[match.category] ?? match.category;
   const courtLabel = match.court?.name ? ` · ${match.court.name}` : '';
   const playedAt = new Date(match.played_at);
   const timeStr = playedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   const dateStr = relativeDate(match.played_at);
   const whenLabel = `${dateStr} ${timeStr}${courtLabel}`;
 
-  // Opponent ID(s): the other team's first player
-  const onTeamA = match.team_a_player_ids.includes(myUserId);
-  const opponentIds = onTeamA ? match.team_b_player_ids : match.team_a_player_ids;
-  // Use opponent ID as avatar "name" — yields consistent initials from UUID chars.
-  const avatarKey = opponentIds[0] ?? match.id;
+  const opponent = resolveOpponent(match);
 
   return (
     <Pressable
@@ -536,14 +529,14 @@ function ActiveMatchCard({ match, myUserId }: ActiveMatchCardProps) {
         borderRadius: 18,
       }}
     >
-      <Avatar name={avatarKey} size={44} />
+      <Avatar name={opponent.primaryName} size={44} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
           <Text
             className="font-sans font-bold text-text"
             style={{ fontSize: 14.5 }}
           >
-            {catLabel}
+            {opponent.name}
           </Text>
           <View
             style={{
@@ -587,31 +580,19 @@ function ActiveMatchCard({ match, myUserId }: ActiveMatchCardProps) {
 interface RecentMatchCardProps {
   match: ActiveMatchRow;
   myUserId: string;
+  resolveOpponent: (match: ActiveMatchRow) => { ids: string[]; name: string; primaryId: string | null; primaryName: string };
 }
 
-function RecentMatchCard({ match, myUserId }: RecentMatchCardProps) {
-  const onTeamA = match.team_a_player_ids.includes(myUserId);
-  const win = match.winner_team !== null && match.winner_team !== 'void'
-    ? (onTeamA ? match.winner_team === 'a' : match.winner_team === 'b')
-    : false;
-
-  const myScore = onTeamA ? match.score_team_a : match.score_team_b;
-  const oppScore = onTeamA ? match.score_team_b : match.score_team_a;
-  const score = `${myScore}-${oppScore}`;
-
-  const ratingBefore = onTeamA ? match.rating_before_team_a : match.rating_before_team_b;
-  const ratingAfter = onTeamA ? match.rating_after_team_a : match.rating_after_team_b;
-  const delta =
-    ratingBefore !== null && ratingAfter !== null ? ratingAfter - ratingBefore : 0;
+function RecentMatchCard({ match, myUserId, resolveOpponent }: RecentMatchCardProps) {
+  const perspective = myPerspective(match, myUserId);
+  const win = perspective.won === true;
+  const score = `${perspective.myScore}-${perspective.oppScore}`;
+  const delta = perspective.eloDelta ?? 0;
   const deltaPositive = delta >= 0;
 
   const whenLabel = relativeDate(match.played_at);
 
-  const catLabel = ACTIVE_CATEGORY_LABELS[match.category] ?? match.category;
-
-  // Opponent avatar key
-  const opponentIds = onTeamA ? match.team_b_player_ids : match.team_a_player_ids;
-  const avatarKey = opponentIds[0] ?? match.id;
+  const opponent = resolveOpponent(match);
 
   return (
     <Pressable
@@ -648,7 +629,7 @@ function RecentMatchCard({ match, myUserId }: RecentMatchCardProps) {
           className="font-sans font-bold text-text"
           style={{ fontSize: 14 }}
         >
-          {catLabel}
+          {opponent.name}
         </Text>
         <Text
           className="font-sans font-semibold text-text-3"
