@@ -1,51 +1,205 @@
-// Active season — Plan 8 Phase F8.
+// Active season — Plan 8 Phase F8, live-wired.
 //
-// Ports the design bundle's `Season` (see
-// docs/superpowers/specs/plan-8-design-bundle/project/app/screens-season.jsx
-// `function Season()`) to React Native + NativeWind.
+// Ports the design bundle's `Season` screen to React Native + NativeWind.
+// Live data comes from useCurrentSeason (season metadata + countdown) and
+// useUpcomingFinaleStatus (phase badge). My standing row uses useMyRankings.
 //
 // Countdown hero + my standing + finale timeline + bracket CTA + annual
 // championship link.
-//
-// TODO(plan-8-F-polish): swap SEASON/FINALE_TIMELINE statics for
-// useCurrentSeason / useFinaleSchedule hooks.
 
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon, type IconName } from '../../components/ui/Icon';
+import { useCurrentSeason } from '../../hooks/use-current-season';
+import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
+import { useMyRankings } from '../../hooks/use-my-rankings';
 import { colors } from '../../theme/colors';
 
-// TODO(plan-8-F-polish): useCurrentSeason
-const SEASON = {
-  name: 'Güz Sezonu',
-  dates: '1 Eyl – 15 Oca',
-  finaleDates: '16-25 Ocak',
-  daysLeft: 41,
-  finalePct: 0.72,
-  myRank: 4,
-  myCategory: 'Erkek Tek',
-  inTop8: true,
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const SEASON_NAME_MAP: Record<string, string> = {
+  guz: 'Güz',
+  bahar: 'Bahar',
+  yaz: 'Yaz',
 };
 
-const FINALE_TIMELINE: Array<[string, string, string, IconName]> = [
-  ['Çeyrek Final', '16-19 Oca', 'BÜ Klasik', 'flame'],
-  ['Yarı Final', '20-22 Oca', 'BÜ Klasik', 'bolt'],
-  ['Final', '24-25 Oca', '3 Set Klasik', 'trophy'],
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
+};
+
+function buildSeasonLabel(name: string, year: number): string {
+  const label = SEASON_NAME_MAP[name] ?? name;
+  return `${label} ${year} Sezonu`;
+}
+
+function formatDateRange(isoA: string, isoB: string): string {
+  const a = new Date(isoA);
+  const b = new Date(isoB);
+  const fmtShort = (d: Date) =>
+    d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  return `${fmtShort(a)} – ${fmtShort(b)}`;
+}
+
+/** Days until a future ISO date string (0 if in the past). */
+function daysUntil(isoTarget: string): number {
+  const now = new Date();
+  const target = new Date(isoTarget);
+  return Math.max(0, Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+}
+
+/** Fraction of season elapsed (starts_at → finale_starts_at). Clamped [0, 1]. */
+function seasonProgress(startsAt: string, finaleStartsAt: string): number {
+  const start = Date.parse(startsAt);
+  const end = Date.parse(finaleStartsAt);
+  const now = Date.now();
+  if (end <= start) return 0;
+  return Math.min(1, Math.max(0, (now - start) / (end - start)));
+}
+
+/** Pick the "primary" ranking row (erkek_tek > kadin_tek > open_tek > first). */
+function pickPrimaryRanking(rows: Array<{ category: string; rating: number; rank: number }>) {
+  const ORDER = ['erkek_tek', 'kadin_tek', 'open_tek'];
+  for (const cat of ORDER) {
+    const row = rows.find((r) => r.category === cat);
+    if (row) return row;
+  }
+  return rows[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Finale timeline — static bracket phase structure
+// The specific round dates derive from the live season's finale_starts_at /
+// finale_ends_at; no hook provides per-round dates. We surface the overall
+// window and label the phases so the list remains consistent with the design.
+// ---------------------------------------------------------------------------
+
+const FINALE_PHASES: Array<[string, IconName]> = [
+  ['Çeyrek Final', 'flame'],
+  ['Yarı Final', 'bolt'],
+  ['Final', 'trophy'],
 ];
 
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
+
 export default function Season() {
+  const seasonQ = useCurrentSeason();
+  const finaleStatusQ = useUpcomingFinaleStatus();
+  const rankingsQ = useMyRankings();
+
+  const season = seasonQ.data ?? null;
+  const isLoading = seasonQ.isLoading;
+  const isError = seasonQ.isError;
+
+  // Derived season values
+  const sezonLabel = season ? buildSeasonLabel(season.name, season.year) : 'Sezon';
+  const datesRange = season ? formatDateRange(season.starts_at, season.ends_at) : '';
+  const finaleDatesRange = season
+    ? formatDateRange(season.finale_starts_at, season.finale_ends_at)
+    : '';
+  const daysLeft = season ? daysUntil(season.finale_starts_at) : null;
+  const finalePct = season
+    ? seasonProgress(season.starts_at, season.finale_starts_at)
+    : 0;
+
+  // My standing
+  const myRankings = rankingsQ.data ?? [];
+  const primaryRanking = pickPrimaryRanking(myRankings);
+  const myRank = primaryRanking?.rank ?? null;
+  const myCategoryLabel = primaryRanking
+    ? (CATEGORY_LABELS[primaryRanking.category] ?? primaryRanking.category)
+    : null;
+  const inTop8 = myRank !== null && myRank <= 8;
+
+  const header = (
+    <NavHeader
+      large
+      title={sezonLabel}
+      subtitle={season ? `${datesRange} · Aktif ladder` : 'Yükleniyor…'}
+      actionIcon="clock"
+      onAction={() => router.push('/season/archive' as never)}
+    />
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center" style={{ gap: 12 }}>
+          <Text className="font-sans text-text-3" style={{ fontSize: 14 }}>
+            Sezon bilgisi yüklenemedi.
+          </Text>
+          <Pressable onPress={() => seasonQ.refetch()}>
+            <Text className="font-sans font-bold" style={{ fontSize: 14, color: colors.court }}>
+              Tekrar dene
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (!season) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader
+          large
+          title="Sezon"
+          subtitle="Aktif sezon yok"
+          actionIcon="clock"
+          onAction={() => router.push('/season/archive' as never)}
+        />
+        <EmptyState
+          icon="trophy"
+          title="Aktif sezon yok"
+          body="Yeni bir sezon açıldığında burada görünecek. Arşive göz atabilirsin."
+          action="Arşivi gör"
+          onAction={() => router.push('/season/archive' as never)}
+        />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader
-        large
-        title={SEASON.name}
-        subtitle={`${SEASON.dates} · Aktif ladder`}
-        actionIcon="clock"
-        onAction={() => router.push('/season/archive' as never)}
-      />
-      <ScrollView contentContainerStyle={{ padding: 18, gap: 16 }}>
+      {header}
+      <ScrollView
+        contentContainerStyle={{ padding: 18, gap: 16 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={seasonQ.isRefetching || rankingsQ.isRefetching}
+            onRefresh={() => {
+              seasonQ.refetch();
+              rankingsQ.refetch();
+              finaleStatusQ.refetch();
+            }}
+            tintColor={colors.clay}
+          />
+        }
+      >
         {/* Countdown hero */}
         <View
           className="bg-court rounded-xl overflow-hidden"
@@ -53,15 +207,17 @@ export default function Season() {
         >
           <View className="flex-row items-start justify-between">
             <View>
-              <Text className="text-white/85 font-bold" style={{ fontSize: 12.5 }}>Finale window'a</Text>
+              <Text className="text-white/85 font-bold" style={{ fontSize: 12.5 }}>
+                Finale window'a
+              </Text>
               <Text
                 className="font-num font-extrabold text-white"
                 style={{ fontSize: 40, lineHeight: 40, letterSpacing: -1.2 }}
               >
-                {SEASON.daysLeft} gün
+                {daysLeft !== null ? `${daysLeft} gün` : '—'}
               </Text>
               <Text className="text-white/85" style={{ fontSize: 12.5, marginTop: 4 }}>
-                {SEASON.finaleDates} · son 10 gün
+                {finaleDatesRange} · finale window
               </Text>
             </View>
             <Icon name="trophy" size={32} color="rgba(255,255,255,0.9)" />
@@ -77,7 +233,7 @@ export default function Season() {
             >
               <View
                 style={{
-                  width: `${SEASON.finalePct * 100}%`,
+                  width: `${Math.round(finalePct * 100)}%`,
                   height: '100%',
                   backgroundColor: '#FFFFFF',
                   borderRadius: 9999,
@@ -86,7 +242,7 @@ export default function Season() {
             </View>
             <View className="flex-row justify-between" style={{ marginTop: 7 }}>
               <Text className="text-white/85 font-semibold" style={{ fontSize: 11 }}>
-                Sezon %{Math.round(SEASON.finalePct * 100)}
+                Sezon %{Math.round(finalePct * 100)}
               </Text>
               <Text className="text-white/85 font-semibold" style={{ fontSize: 11 }}>
                 Top 8 finale gider
@@ -96,38 +252,40 @@ export default function Season() {
         </View>
 
         {/* My standing */}
-        <Pressable
-          onPress={() => router.push('/leaderboard' as never)}
-          className="flex-row items-center bg-clay-softer rounded-md"
-          style={{ padding: 14, gap: 14, borderWidth: 1, borderColor: colors.claySoft }}
-        >
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              backgroundColor: colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+        {primaryRanking && myRank !== null && myCategoryLabel !== null ? (
+          <Pressable
+            onPress={() => router.push('/leaderboard' as never)}
+            className="flex-row items-center bg-clay-softer rounded-md"
+            style={{ padding: 14, gap: 14, borderWidth: 1, borderColor: colors.claySoft }}
           >
-            <Text className="font-num font-extrabold" style={{ fontSize: 9, color: colors.text3 }}>
-              SEN
-            </Text>
-            <Text className="font-num font-extrabold" style={{ fontSize: 18, color: colors.clay }}>
-              {SEASON.myRank}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
-              {SEASON.myCategory} · {SEASON.myRank}. sırada
-            </Text>
-            <Text className="font-sans text-text-2" style={{ fontSize: 12.5, marginTop: 2 }}>
-              {SEASON.inTop8 ? "Finale için ilk 8'desin 🎯" : "Finale için ilk 8'i zorla"}
-            </Text>
-          </View>
-          <Icon name="chevR" size={18} color={colors.text3} />
-        </Pressable>
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text className="font-num font-extrabold" style={{ fontSize: 9, color: colors.text3 }}>
+                SEN
+              </Text>
+              <Text className="font-num font-extrabold" style={{ fontSize: 18, color: colors.clay }}>
+                {myRank}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
+                {myCategoryLabel} · {myRank}. sırada
+              </Text>
+              <Text className="font-sans text-text-2" style={{ fontSize: 12.5, marginTop: 2 }}>
+                {inTop8 ? "Finale için ilk 8'desin 🎯" : "Finale için ilk 8'i zorla"}
+              </Text>
+            </View>
+            <Icon name="chevR" size={18} color={colors.text3} />
+          </Pressable>
+        ) : null}
 
         {/* Finale calendar */}
         <Text
@@ -144,9 +302,9 @@ export default function Season() {
             borderColor: colors.borderStrong,
           }}
         >
-          {FINALE_TIMELINE.map(([t, d, f, ic], i) => (
+          {FINALE_PHASES.map(([phaseName, ic], i) => (
             <View
-              key={t}
+              key={phaseName}
               className="flex-row items-center"
               style={{
                 padding: 14,
@@ -170,15 +328,12 @@ export default function Season() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
-                  {t}
+                  {phaseName}
                 </Text>
                 <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 1 }}>
-                  {f}
+                  {finaleDatesRange}
                 </Text>
               </View>
-              <Text className="font-num font-bold text-text-2" style={{ fontSize: 12.5 }}>
-                {d}
-              </Text>
             </View>
           ))}
         </View>

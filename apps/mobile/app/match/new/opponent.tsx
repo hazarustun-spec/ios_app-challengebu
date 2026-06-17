@@ -6,8 +6,8 @@
 // `function NewMatchOpponent(...)`.
 //
 // Live data: usePlayers({ gender }) filtered by the wizard's chosen category.
-// Note: usePlayers does not return ELO — opponent.elo is stored as 0 until a
-// future hook exposes season_elo alongside the profile roster.
+// ELO: useLadder(category).ratingOf(player.user_id) supplies the real season
+// ELO for each player row and the stored OpponentChoice.elo value.
 
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
@@ -24,6 +24,7 @@ import {
   type OpponentChoice,
 } from '../../../stores/new-match-store';
 import { usePlayers, type PlayerRow } from '../../../hooks/use-players';
+import { useLadder } from '../../../hooks/use-ladder';
 import { colors } from '../../../theme/colors';
 
 /** Map the wizard's category to the gender filter accepted by usePlayers. */
@@ -36,14 +37,12 @@ function categoryToGender(
   return undefined;
 }
 
-/** Convert a PlayerRow to the OpponentChoice shape the store expects.
- *  ELO is not available from usePlayers; it defaults to 0 and is omitted
- *  from the display. A future hook can surface season_elo per player. */
-function toOpponentChoice(p: PlayerRow): OpponentChoice {
+/** Convert a PlayerRow + resolved ELO to the OpponentChoice shape the store expects. */
+function toOpponentChoice(p: PlayerRow, elo: number): OpponentChoice {
   return {
     userId: p.user_id,
     name: `${p.first_name} ${p.last_name}`,
-    elo: 0,
+    elo,
   };
 }
 
@@ -54,6 +53,7 @@ export default function NewMatchOpponent() {
 
   const gender = categoryToGender(category);
   const playersQ = usePlayers(gender ? { gender } : undefined);
+  const { ratingOf } = useLadder(category);
   const allPlayers: PlayerRow[] = playersQ.data ?? [];
 
   const filtered = allPlayers.filter((p) => {
@@ -113,8 +113,9 @@ export default function NewMatchOpponent() {
           </Text>
         ) : (
           filtered.map((p) => {
-            const choice = toOpponentChoice(p);
-            const lv = levelForElo(choice.elo);
+            const elo = ratingOf(p.user_id) ?? 0;
+            const choice = toOpponentChoice(p, elo);
+            const lv = levelForElo(elo);
             const on = opponent?.userId === choice.userId;
             return (
               <Pressable

@@ -11,13 +11,14 @@
 //   1. NavHeader with back, title="Başvuranlar",
 //      subtitle derived from the match request's category/format.
 //   2. Clay-softer info banner — "Birini kabul ettiğinde ilan kapanır…"
-//   3. Applicant cards — avatar + name row, quoted note in a
-//      surface-2 block, and Profil / Kabul et buttons.
+//   3. Applicant cards — avatar + name row (with ELO/level badge), quoted note
+//      in a surface-2 block, and Profil / Kabul et buttons.
 //
 // Live data:
 //   - useMatchApplications(requestId) — applicant list (names embedded)
 //   - useAcceptApplication() — accept one applicant (closes the listing)
-//   - useMatchRequestDetail(requestId) — request metadata for subtitle
+//   - useMatchRequestDetail(requestId) — request metadata for subtitle + category
+//   - usePlayerRatings() — per-applicant ELO lookup for the request's category
 
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -25,12 +26,15 @@ import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
+import { LevelIcon } from '../../../components/ui/LevelIcon';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import {
   useMatchApplications,
   useAcceptApplication,
 } from '../../../hooks/use-match-applications';
 import { useMatchRequestDetail } from '../../../hooks/use-match-request-detail';
+import { usePlayerRatings } from '../../../hooks/use-ladder';
+import { levelForElo } from '../../../lib/levels';
 import { colors } from '../../../theme/colors';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -49,6 +53,7 @@ export default function OpenApplicants() {
   const applications = useMatchApplications(requestId);
   const requestDetail = useMatchRequestDetail(requestId);
   const acceptMutation = useAcceptApplication();
+  const playerRatings = usePlayerRatings();
 
   const apps = applications.data ?? [];
 
@@ -176,6 +181,8 @@ export default function OpenApplicants() {
         <View style={{ gap: 10 }}>
           {apps.map((a) => {
             const fullName = `${a.applicant.first_name} ${a.applicant.last_name}`;
+            const elo = playerRatings.ratingOf(a.applicant_id, req?.category);
+            const lv = elo !== null ? levelForElo(elo) : null;
             return (
               <View
                 key={a.id}
@@ -194,6 +201,26 @@ export default function OpenApplicants() {
                     >
                       {fullName}
                     </Text>
+                    {elo !== null && lv !== null && (
+                      <View
+                        className="flex-row items-center"
+                        style={{ gap: 5, marginTop: 3 }}
+                      >
+                        <LevelIcon level={lv} size={13} />
+                        <Text
+                          className="font-sans font-semibold"
+                          style={{ fontSize: 12, color: lv.color }}
+                        >
+                          {lv.name}
+                        </Text>
+                        <Text
+                          className="font-num font-bold"
+                          style={{ fontSize: 12, color: colors.text3 }}
+                        >
+                          · {elo} ELO
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
                 {!!a.note && (

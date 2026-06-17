@@ -1,4 +1,4 @@
-// Maçlar Hub (Matches) — Plan 8 Phase E3, wired to live data (E-polish pass).
+// Maçlar Hub (Matches) — Plan 8 Phase E3, wired to live data (ELO-badge pass).
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-matches.jsx
 //   (`MatchesHub` + `UpcomingList` + `OffersList` + `FeedList` + `KindDot`)
 //
@@ -23,6 +23,7 @@
 //   - useRejectMatchRequest    → Reddet button
 //   - useOpenCallsFeed         → İlanlar tab
 //   - useApplyToOpenCall       → İlana başvur button
+//   - usePlayerRatings         → per-player ELO badge on Teklifler + İlanlar cards
 
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
@@ -45,8 +46,10 @@ import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useOpenCallsFeed } from '../../hooks/use-open-calls';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
+import { usePlayerRatings } from '../../hooks/use-ladder';
 import { DB_TO_UI_FORMAT } from '../../lib/formats';
 import type { FormatKey } from '../../lib/formats';
+import { levelForElo } from '../../lib/levels';
 import { colors } from '../../theme/colors';
 
 type HubView = 'upcoming' | 'offers' | 'feed';
@@ -121,6 +124,7 @@ export default function MatchesTab() {
   const accept = useAcceptMatchRequest();
   const reject = useRejectMatchRequest();
   const applyMutation = useApplyToOpenCall();
+  const playerRatings = usePlayerRatings();
 
   const isRefetching =
     (view === 'upcoming' && matchesQ.isRefetching) ||
@@ -173,12 +177,14 @@ export default function MatchesTab() {
             requestsQ={requestsQ}
             accept={accept}
             reject={reject}
+            ratingOf={playerRatings.ratingOf}
           />
         )}
         {view === 'feed' && (
           <FeedList
             feedQ={feedQ}
             applyMutation={applyMutation}
+            ratingOf={playerRatings.ratingOf}
           />
         )}
       </ScrollView>
@@ -405,9 +411,10 @@ interface OffersListProps {
   requestsQ: ReturnType<typeof useIncomingMatchRequests>;
   accept: ReturnType<typeof useAcceptMatchRequest>;
   reject: ReturnType<typeof useRejectMatchRequest>;
+  ratingOf: (profileId: string | undefined, category: string | undefined) => number | null;
 }
 
-function OffersList({ requestsQ, accept, reject }: OffersListProps) {
+function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
   const requests: MatchRequestRow[] = (requestsQ.data ?? []).filter(
     (r) => r.status === 'pending',
   );
@@ -446,6 +453,9 @@ function OffersList({ requestsQ, accept, reject }: OffersListProps) {
         const isAccepting = accept.isPending && acceptVars?.requestId === m.id;
         const isRejecting = reject.isPending && rejectVars?.requestId === m.id;
 
+        const creatorElo = ratingOf(m.creator_id, m.category);
+        const creatorLevel = creatorElo !== null ? levelForElo(creatorElo) : null;
+
         return (
           <View
             key={m.id}
@@ -458,12 +468,31 @@ function OffersList({ requestsQ, accept, reject }: OffersListProps) {
             >
               <Avatar name={creatorName} size={46} />
               <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 15.5 }}
-                >
-                  {creatorName}
-                </Text>
+                <View className="flex-row items-center" style={{ gap: 7 }}>
+                  <Text
+                    className="font-sans font-bold text-text"
+                    style={{ fontSize: 15.5 }}
+                  >
+                    {creatorName}
+                  </Text>
+                  {creatorElo !== null && creatorLevel !== null && (
+                    <View
+                      className="rounded-pill"
+                      style={{
+                        paddingHorizontal: 7,
+                        paddingVertical: 2,
+                        backgroundColor: `${creatorLevel.color}22`,
+                      }}
+                    >
+                      <Text
+                        className="font-num font-extrabold"
+                        style={{ fontSize: 11, color: creatorLevel.color }}
+                      >
+                        {creatorElo}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text
                   className="font-sans text-text-3"
                   style={{ fontSize: 12.5, marginTop: 2 }}
@@ -529,9 +558,10 @@ function OffersList({ requestsQ, accept, reject }: OffersListProps) {
 interface FeedListProps {
   feedQ: ReturnType<typeof useOpenCallsFeed>;
   applyMutation: ReturnType<typeof useApplyToOpenCall>;
+  ratingOf: (profileId: string | undefined, category: string | undefined) => number | null;
 }
 
-function FeedList({ feedQ, applyMutation }: FeedListProps) {
+function FeedList({ feedQ, applyMutation, ratingOf }: FeedListProps) {
   const listings: MatchRequestRow[] = feedQ.data ?? [];
 
   if (feedQ.isLoading) {
@@ -592,6 +622,9 @@ function FeedList({ feedQ, applyMutation }: FeedListProps) {
         const isApplying =
           applyMutation.isPending && applyVars?.requestId === m.id;
 
+        const creatorElo = ratingOf(m.creator_id, m.category);
+        const creatorLevel = creatorElo !== null ? levelForElo(creatorElo) : null;
+
         return (
           <View
             key={m.id}
@@ -605,8 +638,8 @@ function FeedList({ feedQ, applyMutation }: FeedListProps) {
               <Avatar name={creatorName} size={42} />
               <View style={{ flex: 1 }}>
                 <View
-                  className="flex-row items-baseline"
-                  style={{ gap: 5 }}
+                  className="flex-row items-center"
+                  style={{ gap: 7 }}
                 >
                   <Text
                     className="font-sans font-bold text-text"
@@ -614,6 +647,23 @@ function FeedList({ feedQ, applyMutation }: FeedListProps) {
                   >
                     {creatorName}
                   </Text>
+                  {creatorElo !== null && creatorLevel !== null && (
+                    <View
+                      className="rounded-pill"
+                      style={{
+                        paddingHorizontal: 7,
+                        paddingVertical: 2,
+                        backgroundColor: `${creatorLevel.color}22`,
+                      }}
+                    >
+                      <Text
+                        className="font-num font-extrabold"
+                        style={{ fontSize: 11, color: creatorLevel.color }}
+                      >
+                        {creatorElo}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <Text
                   className="font-sans text-text-3"
