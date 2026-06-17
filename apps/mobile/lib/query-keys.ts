@@ -105,6 +105,10 @@ export const queryKeys = {
     pastChampion: (userId: string) =>
       [...queryKeys.yearly.all, 'past-champion', userId] as const,
   },
+  suggestions: {
+    all: ['suggestions'] as const,
+    byCategory: (category: string) => ['suggestions', category] as const,
+  },
   courts: ['courts'] as const,
   departments: ['departments'] as const,
   profile: (userId: string) => ['profile', userId] as const,
