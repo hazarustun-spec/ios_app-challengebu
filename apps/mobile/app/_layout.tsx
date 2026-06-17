@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppGuards } from '../components/AppGuards';
 import { CelebrationMount } from '../components/profile/CelebrationMount';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { ToastProvider } from '../components/ui/ToastProvider';
@@ -67,6 +68,7 @@ export default function RootLayout() {
             <Stack.Screen name="(admin)" />
             <Stack.Screen name="(dev)" />
           </Stack>
+          <AppGuards />
           <CelebrationMount />
           <StatusBar style="dark" />
           </ToastProvider>
