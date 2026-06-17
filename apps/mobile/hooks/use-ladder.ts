@@ -109,3 +109,42 @@ export function useLadder(category: string | undefined) {
     ratingOf,
   };
 }
+
+/**
+ * All-categories ELO lookup, for lists that mix categories (e.g. the match
+ * offers/listings feed or open-call applicants). One query, cached; resolve
+ * any player's rating in any category via `ratingOf(profileId, category)`.
+ */
+export function usePlayerRatings() {
+  const query = useQuery<Map<string, number>>({
+    queryKey: [...queryKeys.ladder.all, 'all-ratings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('elo_ratings')
+        .select('profile_id, category, rating');
+      if (error) throw error;
+      const m = new Map<string, number>();
+      for (const r of (data ?? []) as {
+        profile_id: string;
+        category: string;
+        rating: number;
+      }[]) {
+        m.set(`${r.profile_id}:${r.category}`, r.rating);
+      }
+      return m;
+    },
+  });
+
+  const map = query.data;
+  const ratingOf = useMemo(() => {
+    return (
+      profileId: string | undefined,
+      category: string | undefined,
+    ): number | null => {
+      if (!profileId || !category || !map) return null;
+      return map.get(`${profileId}:${category}`) ?? null;
+    };
+  }, [map]);
+
+  return { isLoading: query.isLoading, ratingOf };
+}
