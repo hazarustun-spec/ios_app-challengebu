@@ -74,7 +74,7 @@ Deno.test('notif categories: new values accepted, old values rejected', async ()
   await cleanupTestData();
 });
 
-Deno.test('notif categories: default prefs trigger seeds 8 categories per new profile', async () => {
+Deno.test('notif categories: default prefs trigger seeds 9 categories per new profile', async () => {
   await cleanupTestData();
   const supa = adminClient();
   const user = await createTestUser({ email: 'notif-default@test.local' });
@@ -83,15 +83,15 @@ Deno.test('notif categories: default prefs trigger seeds 8 categories per new pr
     .select('category, enabled')
     .eq('profile_id', user.userId);
 
-  // Pin enabled=true for all 8 — Plan 8 A3 deliberately flipped the legacy
+  // Pin enabled=true for all — Plan 8 A3 deliberately flipped the legacy
   // elo_and_ranking=false default to ladder_movement=true. Without this
   // assertion, a future migration that silently turns one off would slip
-  // through unnoticed.
+  // through unnoticed. message_received was added by the messaging feature.
   const allOn = (data ?? []).every((r) => r.enabled === true);
-  assertEquals(allOn, true, `expected all 8 default prefs to be enabled=true`);
+  assertEquals(allOn, true, `expected all default prefs to be enabled=true`);
 
   const cats = (data ?? []).map((r) => r.category).sort();
-  assertEquals(cats.length, 8, `expected 8 default prefs, got ${cats.length}`);
+  assertEquals(cats.length, 9, `expected 9 default prefs, got ${cats.length}`);
   assertEquals(cats, [
     'badges_earned',
     'community_announcements',
@@ -99,6 +99,7 @@ Deno.test('notif categories: default prefs trigger seeds 8 categories per new pr
     'match_invitations',
     'match_reminders',
     'match_score_pending',
+    'message_received',
     'open_listings',
     'season_lifecycle',
   ]);
