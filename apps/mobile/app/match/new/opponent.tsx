@@ -143,7 +143,7 @@ export default function NewMatchOpponent() {
                     className="font-num font-bold"
                     style={{ fontSize: 12.5, color: lv.color, marginTop: 1 }}
                   >
-                    {lv.name}
+                    {lv.name} · {elo > 0 ? elo : '—'}
                   </Text>
                 </View>
                 <View

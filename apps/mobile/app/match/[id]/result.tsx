@@ -30,6 +30,7 @@ import { CardMatchResult } from '../../../components/share/CardMatchResult';
 export default function MatchResult() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useAuthStore((s) => s.user?.id);
+  const profile = useAuthStore((s) => s.profile);
   const [shareVisible, setShareVisible] = useState(false);
 
   const matchQ = useMatchDetail(id);
@@ -101,7 +102,7 @@ export default function MatchResult() {
   const tagIcon: IconName = isVoid ? 'info' : isWin ? 'trophy' : 'x';
 
   // My name for the share card — prefer profile but fall back to "Sen"
-  const myName = 'Sen';
+  const myName = profile?.firstName ?? 'Sen';
 
   // Loading state
   if (matchQ.isLoading) {

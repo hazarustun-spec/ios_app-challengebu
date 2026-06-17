@@ -78,6 +78,7 @@ type Category = 'erkek_tek' | 'open_tek' | 'erkek_cift';
 
 export default function EloHistory() {
   const userId = useAuthStore((s) => s.user?.id);
+  const profile = useAuthStore((s) => s.profile);
   const [cat, setCat] = useState<Category>('erkek_tek');
   const [shareVisible, setShareVisible] = useState(false);
 
@@ -338,7 +339,7 @@ export default function EloHistory() {
         title="ELO kartını paylaş"
       >
         <CardEloProgress
-          name="Sen"
+          name={profile?.firstName ?? 'Sen'}
           currentElo={current}
           levelName={levelName}
           categoryLabel={catLabel}
