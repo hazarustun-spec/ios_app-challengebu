@@ -24,10 +24,13 @@ import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { myPerspective } from '../../../lib/match-opponent';
 import { useAuthStore } from '../../../stores/auth-store';
+import { ShareSheet } from '../../../components/share/ShareSheet';
+import { CardMatchResult } from '../../../components/share/CardMatchResult';
 
 export default function MatchResult() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useAuthStore((s) => s.user?.id);
+  const [shareVisible, setShareVisible] = useState(false);
 
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
@@ -97,6 +100,9 @@ export default function MatchResult() {
       : 'Kaybettin';
   const tagIcon: IconName = isVoid ? 'info' : isWin ? 'trophy' : 'x';
 
+  // My name for the share card — prefer profile but fall back to "Sen"
+  const myName = 'Sen';
+
   // Loading state
   if (matchQ.isLoading) {
     return (
@@ -140,6 +146,8 @@ export default function MatchResult() {
         title="Maç Sonucu"
         close
         onBack={() => router.replace('/(tabs)/matches' as never)}
+        actionIcon="share"
+        onAction={() => setShareVisible(true)}
       />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
         <View style={{ alignItems: 'center', gap: 16, paddingVertical: 12 }}>
@@ -296,6 +304,23 @@ export default function MatchResult() {
           </Button>
         </View>
       </View>
+
+      {/* Share card sheet */}
+      <ShareSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        title="Maç kartını paylaş"
+      >
+        <CardMatchResult
+          myName={myName}
+          opponentName={opponentName}
+          myScore={myScore}
+          oppScore={oppScore}
+          won={perspective?.won ?? null}
+          eloDelta={deltaDisplay !== 0 ? deltaDisplay : null}
+          myElo={ratingBefore ?? undefined}
+        />
+      </ShareSheet>
     </View>
   );
 }

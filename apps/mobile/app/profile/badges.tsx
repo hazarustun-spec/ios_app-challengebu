@@ -19,11 +19,15 @@ import { useAllBadges } from '../../hooks/use-all-badges';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { usePinBadges } from '../../hooks/use-pin-badges';
 import { colors } from '../../theme/colors';
+import { ShareSheet } from '../../components/share/ShareSheet';
+import { CardBadgeWon } from '../../components/share/CardBadgeWon';
+import type { MyBadgeRow } from '../../hooks/use-my-badges';
 
 export default function Badges() {
   const allBadgesQ = useAllBadges();
   const myBadgesQ = useMyBadges();
   const pinMutation = usePinBadges();
+  const [shareBadge, setShareBadge] = useState<MyBadgeRow | null>(null);
 
   const catalog = allBadgesQ.data ?? [];
   const earned = myBadgesQ.data ?? [];
@@ -148,6 +152,13 @@ export default function Badges() {
                 <Pressable
                   key={b.id}
                   onPress={() => has && togglePin(b.id)}
+                  onLongPress={() => {
+                    if (has) {
+                      const earnedRow = earned.find((e) => e.badge_id === b.id);
+                      if (earnedRow) setShareBadge(earnedRow);
+                    }
+                  }}
+                  delayLongPress={500}
                   style={{
                     width: '48%',
                     padding: 16,
@@ -161,6 +172,7 @@ export default function Badges() {
                     position: 'relative',
                   }}
                 >
+                  {/* Pin indicator */}
                   {isPin && (
                     <View
                       style={{
@@ -177,6 +189,27 @@ export default function Badges() {
                     >
                       <Icon name="check" size={11} color="#FFFFFF" stroke={3} />
                     </View>
+                  )}
+                  {/* Share affordance on earned badges */}
+                  {has && !isPin && (
+                    <Pressable
+                      onPress={() => {
+                        const earnedRow = earned.find((e) => e.badge_id === b.id);
+                        if (earnedRow) setShareBadge(earnedRow);
+                      }}
+                      hitSlop={8}
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        width: 22,
+                        height: 22,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Icon name="share" size={14} color={colors.text3} stroke={1.8} />
+                    </Pressable>
                   )}
                   <View
                     style={{
@@ -229,6 +262,22 @@ export default function Badges() {
           {pinMutation.isPending ? 'Kaydediliyor…' : 'Vitrini kaydet'}
         </Button>
       </View>
+
+      {/* Badge share sheet */}
+      {shareBadge != null && (
+        <ShareSheet
+          visible={shareBadge !== null}
+          onClose={() => setShareBadge(null)}
+          title="Rozeti paylaş"
+        >
+          <CardBadgeWon
+            name="Sen"
+            badgeLabel={shareBadge.name_tr}
+            badgeEmoji={shareBadge.icon}
+            subtitle={shareBadge.description_tr}
+          />
+        </ShareSheet>
+      )}
     </View>
   );
 }

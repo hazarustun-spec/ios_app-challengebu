@@ -19,6 +19,9 @@ import { Segmented } from '../../components/ui/Segmented';
 import { useEloHistory, type EloPoint, type SeasonBoundary } from '../../hooks/use-elo-history';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
+import { ShareSheet } from '../../components/share/ShareSheet';
+import { CardEloProgress } from '../../components/share/CardEloProgress';
+import { levelForElo } from '../../lib/levels';
 
 const W = 320;
 const H = 150;
@@ -76,6 +79,7 @@ type Category = 'erkek_tek' | 'open_tek' | 'erkek_cift';
 export default function EloHistory() {
   const userId = useAuthStore((s) => s.user?.id);
   const [cat, setCat] = useState<Category>('erkek_tek');
+  const [shareVisible, setShareVisible] = useState(false);
 
   const { data, isLoading, isError } = useEloHistory(userId);
 
@@ -101,8 +105,16 @@ export default function EloHistory() {
   const totalGain = eloValues.length > 1 ? current - firstElo : 0;
   const totalGainLabel = totalGain >= 0 ? `+${totalGain}` : `${totalGain}`;
 
+  const levelName = current > 0 ? levelForElo(current).name : '';
+  const gainLabel = totalGainLabel;
+
   const header = (
-    <NavHeader title="ELO Geçmişi" onBack={() => router.back()} />
+    <NavHeader
+      title="ELO Geçmişi"
+      onBack={() => router.back()}
+      actionIcon={eloValues.length > 0 ? 'share' : undefined}
+      onAction={eloValues.length > 0 ? () => setShareVisible(true) : undefined}
+    />
   );
 
   const segmented = (
@@ -168,6 +180,13 @@ export default function EloHistory() {
       </View>
     );
   }
+
+  const catLabel =
+    cat === 'erkek_tek'
+      ? 'Erkek Tek'
+      : cat === 'open_tek'
+        ? 'Open Tek'
+        : 'Erkek Çift';
 
   return (
     <View className="flex-1 bg-bg">
@@ -311,6 +330,23 @@ export default function EloHistory() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Share card sheet */}
+      <ShareSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        title="ELO kartını paylaş"
+      >
+        <CardEloProgress
+          name="Sen"
+          currentElo={current}
+          levelName={levelName}
+          categoryLabel={catLabel}
+          trend={eloValues}
+          gainLabel={gainLabel}
+          matchCount={eloValues.length}
+        />
+      </ShareSheet>
     </View>
   );
 }
