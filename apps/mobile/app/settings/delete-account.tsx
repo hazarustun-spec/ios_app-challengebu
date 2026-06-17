@@ -9,22 +9,24 @@
 // Step 2 — type-to-confirm gate: user must type SİL (or SIL — Turkish layout
 // with no dotted i). Only then the danger button enables.
 //
-// TODO(plan-8-G-polish): wire to a real `anonymize-account` Edge Function +
-// supabase.auth.signOut() before redirecting to /(auth)/welcome. Today the
-// confirmation just bounces back to the auth landing without persisting the
-// delete request.
+// Confirming calls useDeleteAccount() → the `anonymize-account` Edge Function
+// (scrubs the profile in place, drops push tokens, revokes sessions) then
+// clears the local session and redirects to /(auth)/welcome. Satisfies Apple
+// guideline 5.1.1(v) (in-app account deletion).
 
 import { useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { Icon, type IconName } from '../../components/ui/Icon';
+import { useDeleteAccount } from '../../hooks/use-delete-account';
 import { colors } from '../../theme/colors';
 
 export default function DeleteAccount() {
   const [step, setStep] = useState<1 | 2>(1);
   const [confirm, setConfirm] = useState('');
+  const deleteAccount = useDeleteAccount();
 
   if (step === 1) {
     return (
@@ -141,14 +143,27 @@ export default function DeleteAccount() {
           full
           size="lg"
           variant="danger"
-          disabled={!canDelete}
+          disabled={!canDelete || deleteAccount.isPending}
+          icon={
+            deleteAccount.isPending ? (
+              <ActivityIndicator size="small" color={colors.surface} />
+            ) : undefined
+          }
           onPress={() => {
-            // TODO(plan-8-G-polish): real anonymize-account mutation +
-            // supabase.auth.signOut() before redirecting.
-            router.replace('/(auth)/welcome' as never);
+            if (deleteAccount.isPending) return;
+            deleteAccount.mutate(undefined, {
+              onSuccess: () => router.replace('/(auth)/welcome' as never),
+              onError: (err: unknown) => {
+                const msg =
+                  err instanceof Error
+                    ? err.message
+                    : 'Hesap silinemedi. Lütfen tekrar dene.';
+                Alert.alert('Hesap silinemedi', msg);
+              },
+            });
           }}
         >
-          Hesabımı kalıcı olarak sil
+          {deleteAccount.isPending ? 'Siliniyor…' : 'Hesabımı kalıcı olarak sil'}
         </Button>
       </View>
     </View>

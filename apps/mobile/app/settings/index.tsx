@@ -12,12 +12,15 @@
 //   - Destructive group: "Çıkış yap" → useSignOut; "Hesabı sil" →
 //     /settings/delete-account 2-step flow.
 //
-// TODO(plan-8-G-polish): wire the master push toggle to the device-level
-// permissions state once we have a `usePushPermission` hook. Today the
-// row is a static `true` so the design doesn't ship with a missing thumb.
+// The master "Push bildirimleri" toggle reflects the live OS notification
+// permission (read on focus). iOS does not allow toggling push from inside
+// the app, so flipping it opens the system Settings instead. Granular
+// per-category control lives at /settings/notification-preferences.
 
-import { ScrollView, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Linking, ScrollView, Text, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { router, useFocusEffect } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { ListRow } from '../../components/ui/ListRow';
 import { Toggle } from '../../components/ui/Toggle';
@@ -27,9 +30,29 @@ import { colors } from '../../theme/colors';
 
 const APP_VERSION = '1.0.0';
 
+// Hosted Kurallar/Gizlilik page (GitHub Pages) — set once the legal pages are
+// published for App Store K3. While empty, the "Hakkında" row is a plain
+// version-info row (no chevron, no navigation) rather than a dead button.
+const RULES_URL = '';
+
 export default function Settings() {
   const signOut = useSignOut();
   const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
+  const [pushGranted, setPushGranted] = useState(false);
+
+  // Reflect the real OS permission whenever the screen regains focus (e.g.
+  // after the user returns from the system Settings app).
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      Notifications.getPermissionsAsync().then(({ status }) => {
+        if (active) setPushGranted(status === 'granted');
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   return (
     <View className="flex-1 bg-bg">
@@ -39,8 +62,8 @@ export default function Settings() {
           <ListRow
             icon="bell"
             title="Push bildirimleri"
-            subtitle="Tüm bildirimler"
-            right={<Toggle value={true} onChange={() => {}} />}
+            subtitle={pushGranted ? 'Açık · sistem ayarları' : 'Kapalı · sistem ayarları'}
+            right={<Toggle value={pushGranted} onChange={() => Linking.openSettings()} />}
           />
           <Divider />
           <ListRow
@@ -67,7 +90,7 @@ export default function Settings() {
             title="Yarışma kategorisi"
             subtitle="Erkek · değiştir"
             chevron
-            onPress={() => {}}
+            onPress={() => router.push('/profile/edit' as never)}
           />
           <Divider />
           <ListRow
@@ -75,12 +98,20 @@ export default function Settings() {
             title="Gizlilik"
             subtitle="Bölüm, sınıf görünürlüğü"
             chevron
-            onPress={() => {}}
+            onPress={() => router.push('/profile/edit' as never)}
           />
         </Section>
 
         <Section label="Diğer">
-          <ListRow icon="info" title="Hakkında & kurallar" chevron onPress={() => {}} />
+          <ListRow
+            icon="info"
+            title="Hakkında & kurallar"
+            subtitle={`Tennis Challenger · v${APP_VERSION}`}
+            chevron={!!RULES_URL}
+            onPress={() => {
+              if (RULES_URL) Linking.openURL(RULES_URL);
+            }}
+          />
           {isAdmin && (
             <>
               <Divider />
