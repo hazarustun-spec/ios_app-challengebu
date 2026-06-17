@@ -27,6 +27,7 @@ export const CATEGORY_LABEL_STRINGS: Record<NotificationCategory, string> = {
   community_announcements: 'Topluluk duyuruları',
   open_listings: 'Açık ilanlar',
   match_reminders: 'Hatırlatmalar',
+  message_received: 'Mesajlar',
 };
 
 export const ALL_CATEGORIES: readonly NotificationCategory[] = NOTIFICATION_CATEGORIES;

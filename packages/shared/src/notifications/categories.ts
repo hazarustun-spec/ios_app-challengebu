@@ -92,6 +92,6 @@ export const CATEGORY_LABELS: Record<NotificationCategory, CategoryLabel> = {
   message_received: {
     title: 'Mesajlar',
     subtitle: 'Yeni mesajlar',
-    icon: 'chat',
+    icon: 'mail',
   },
 };

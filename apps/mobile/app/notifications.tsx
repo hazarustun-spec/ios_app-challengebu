@@ -55,6 +55,7 @@ const CATEGORY_META: Record<
   community_announcements: { icon: 'megaphone', color: colors.acPurple },
   open_listings: { icon: 'handshake', color: colors.win },
   match_reminders: { icon: 'clock', color: colors.warn },
+  message_received: { icon: 'mail', color: colors.info },
 };
 
 type DayLabel = 'Bugün' | 'Dün' | 'Daha önce';
