@@ -109,6 +109,13 @@ export const queryKeys = {
     all: ['suggestions'] as const,
     byCategory: (category: string) => ['suggestions', category] as const,
   },
+  conversations: {
+    all: ['conversations'] as const,
+    list: () => [...queryKeys.conversations.all, 'list'] as const,
+    messages: (conversationId: string) =>
+      [...queryKeys.conversations.all, 'messages', conversationId] as const,
+    unreadCount: () => [...queryKeys.conversations.all, 'unread-count'] as const,
+  },
   courts: ['courts'] as const,
   departments: ['departments'] as const,
   profile: (userId: string) => ['profile', userId] as const,
