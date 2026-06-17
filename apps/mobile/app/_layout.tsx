@@ -47,23 +47,13 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(onboarding)" />
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(app)" />
             <Stack.Screen name="index" />
-            <Stack.Screen name="create-match" options={{ headerShown: true, title: 'Maç Oluştur' }} />
             <Stack.Screen name="match/[id]" />
-            <Stack.Screen name="match-request/[id]" options={{ headerShown: true, title: 'Maç teklifi' }} />
-            <Stack.Screen name="play/[matchId]" options={{ headerShown: true, title: 'Maç oyna' }} />
-            <Stack.Screen name="play/confirm/[matchId]" options={{ headerShown: true, title: 'Onayla' }} />
-            <Stack.Screen name="dispute/[matchId]" options={{ headerShown: true, title: 'İtiraz et' }} />
-            <Stack.Screen name="applications/[requestId]" options={{ headerShown: true, title: 'Başvurular' }} />
             <Stack.Screen name="profile" />
             <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
             <Stack.Screen name="tournament/[id]" options={{ headerShown: true, title: 'Sezon Finali' }} />
-            <Stack.Screen
-              name="notification-preferences"
-              options={{ headerShown: true, title: 'Bildirim Tercihleri' }}
-            />
             <Stack.Screen name="notifications" />
+            <Stack.Screen name="messages" />
             <Stack.Screen name="settings" />
             <Stack.Screen name="(admin)" />
             <Stack.Screen name="(dev)" />

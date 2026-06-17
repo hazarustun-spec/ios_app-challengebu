@@ -9,7 +9,7 @@
 // Submission runs on mount, guarded by local `submitted` state so React 18's
 // double-mount in dev does not insert twice. On success we re-load the auth
 // profile so the root index redirect (`app/index.tsx`) routes the user to
-// `/(app)/home`. On failure we surface a Turkish error and let the user
+// `/(tabs)`. On failure we surface a Turkish error and let the user
 // retry via the primary CTA.
 
 import { useEffect, useRef, useState } from 'react';
