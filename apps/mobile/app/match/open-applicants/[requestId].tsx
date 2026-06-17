@@ -34,6 +34,7 @@ import {
 } from '../../../hooks/use-match-applications';
 import { useMatchRequestDetail } from '../../../hooks/use-match-request-detail';
 import { usePlayerRatings } from '../../../hooks/use-ladder';
+import { useStartConversation } from '../../../hooks/use-start-conversation';
 import { levelForElo } from '../../../lib/levels';
 import { colors } from '../../../theme/colors';
 
@@ -54,6 +55,7 @@ export default function OpenApplicants() {
   const requestDetail = useMatchRequestDetail(requestId);
   const acceptMutation = useAcceptApplication();
   const playerRatings = usePlayerRatings();
+  const { start: startConversation } = useStartConversation();
 
   const apps = applications.data ?? [];
 
@@ -255,6 +257,31 @@ export default function OpenApplicants() {
                       Profil
                     </Button>
                   </View>
+                  {!!requestId && (
+                    <View style={{ flex: 1 }}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        full
+                        icon={
+                          <Icon
+                            name="mail"
+                            size={14}
+                            color={colors.text}
+                          />
+                        }
+                        onPress={() =>
+                          startConversation({
+                            requestId,
+                            otherUserId: a.applicant_id,
+                            name: fullName,
+                          })
+                        }
+                      >
+                        Mesaj
+                      </Button>
+                    </View>
+                  )}
                   <View style={{ flex: 1.4 }}>
                     <Button
                       size="sm"

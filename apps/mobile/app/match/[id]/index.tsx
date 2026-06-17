@@ -18,6 +18,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { FormatChip } from '../../../components/ui/FormatChip';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
+import { useStartConversation } from '../../../hooks/use-start-conversation';
 import { useAuthStore } from '../../../stores/auth-store';
 import { DB_TO_UI_FORMAT } from '../../../lib/formats';
 import { colors } from '../../../theme/colors';
@@ -64,6 +65,7 @@ export default function MatchDetail() {
 
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
+  const { start: startConversation } = useStartConversation();
   const profile = useAuthStore((s) => s.profile);
   const myFirstName = profile?.firstName ?? 'Sen';
 
@@ -219,6 +221,23 @@ export default function MatchDetail() {
         >
           Skoru gir
         </Button>
+        {m.match_request_id != null && opponent.primaryId != null && (
+          <Button
+            full
+            size="md"
+            variant="secondary"
+            icon={<Icon name="mail" size={16} color={colors.text} />}
+            onPress={() =>
+              startConversation({
+                requestId: m.match_request_id!,
+                otherUserId: opponent.primaryId!,
+                name: opponent.name,
+              })
+            }
+          >
+            Mesaj
+          </Button>
+        )}
         <Button
           full
           size="md"

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { router } from 'expo-router';
 import { invokeFunction } from '../lib/invoke-function';
 import { useAuthStore } from '../stores/auth-store';
 
@@ -25,6 +26,39 @@ export function usePushRegistration() {
     registered.current = profile.userId;
     void registerForPushAsync(session.access_token);
   }, [profile?.userId, session?.access_token]);
+
+  // Handle notification taps — route by payload category.
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
+
+        // Message deep-link: navigate to the specific conversation thread.
+        if (typeof data.conversationId === 'string') {
+          router.push({
+            pathname: '/messages/[conversationId]',
+            params: {
+              conversationId: data.conversationId,
+              otherUserId: typeof data.otherUserId === 'string' ? data.otherUserId : '',
+              name: typeof data.name === 'string' ? data.name : '',
+            },
+          } as never);
+          return;
+        }
+
+        // Match-related deep-links.
+        if (typeof data.matchId === 'string') {
+          router.push(`/match/${data.matchId}` as never);
+          return;
+        }
+        if (typeof data.tournamentId === 'string') {
+          router.push(`/tournament/${data.tournamentId}` as never);
+          return;
+        }
+      },
+    );
+    return () => sub.remove();
+  }, []);
 }
 
 async function registerForPushAsync(accessToken: string): Promise<void> {
