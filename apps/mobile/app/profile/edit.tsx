@@ -1,17 +1,21 @@
-// Profile edit — Plan 8 Phase F2.
-//
-// Ports the design bundle's `ProfileEdit` (see
-// docs/superpowers/specs/plan-8-design-bundle/project/app/screens-profile-edit.jsx
-// `function ProfileEdit(...)`) to React Native + NativeWind.
+// Profile edit — Plan 8 Phase F2, wired to live data.
 //
 // Fields: avatar w/ camera badge → Ad Soyad · Zamir (seg) · Bölüm · Sınıf +
 // Dominant el (seg) · Tenis seviyesi (seg) · Müsaitlik (6 slot grid).
 //
-// TODO(plan-8-F-polish): wire to use-update-profile mutation + supabase
-// auth identity; keeps local UI state for the design pass.
+// Live data: useMyProfile() for prefill; useUpdateProfile() to save;
+// useUploadAvatar() + pickAvatar() for avatar replacement.
 
-import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Field } from '../../components/ui/Field';
@@ -20,7 +24,10 @@ import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
 import { Segmented } from '../../components/ui/Segmented';
 import { Icon } from '../../components/ui/Icon';
-import { useAuthStore } from '../../stores/auth-store';
+import { pickAvatar } from '../../components/profile/AvatarPicker';
+import { useMyProfile } from '../../hooks/use-profile';
+import { useUpdateProfile, type UpdateProfileInput } from '../../hooks/use-update-profile';
+import { useUploadAvatar } from '../../hooks/use-upload-avatar';
 import { colors } from '../../theme/colors';
 
 const PRONOUNS = ['he/him', 'she/her', 'they/them'] as const;
@@ -35,37 +42,138 @@ const SLOTS: { key: string; label: string }[] = [
   { key: 'we_eve', label: 'Hafta sonu akşam' },
 ];
 
-export default function ProfileEdit() {
-  const profile = useAuthStore((s) => s.profile);
-  const extras = profile as
-    | (NonNullable<typeof profile> & {
-        pronoun?: string;
-        dominantHand?: string;
-        skillLevel?: string;
-        departmentName?: string;
-        classYear?: string | number;
-      })
-    | null;
+/** Map DB class_year enum to a display string. */
+function classYearLabel(year: UpdateProfileInput['class_year'] | null | undefined): string {
+  if (!year) return '';
+  const map: Record<UpdateProfileInput['class_year'], string> = {
+    hazirlik: 'Hazırlık',
+    '1': '1. sınıf',
+    '2': '2. sınıf',
+    '3': '3. sınıf',
+    '4': '4. sınıf',
+    yl: 'Yüksek Lisans',
+    doktora: 'Doktora',
+  };
+  return map[year] ?? year;
+}
 
-  const [pronoun, setPronoun] = useState<Pronoun>(
-    (extras?.pronoun as Pronoun) ?? 'they/them',
-  );
-  const [hand, setHand] = useState<'sag' | 'sol'>(
-    (extras?.dominantHand as 'sag' | 'sol') ?? 'sag',
-  );
-  const [level, setLevel] = useState<'baslangic' | 'orta' | 'ileri'>(
-    (extras?.skillLevel as 'baslangic' | 'orta' | 'ileri') ?? 'orta',
-  );
-  const [avail, setAvail] = useState<string[]>(['wd_eve', 'we_am']);
+export default function ProfileEdit() {
+  const { data: profile, isLoading, isError } = useMyProfile();
+  const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
+
+  // Local avatar URI — set after a successful pick/upload so the preview
+  // updates immediately without waiting for a query refetch.
+  const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
+
+  // Form state — seeded from live profile once loaded.
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [pronoun, setPronoun] = useState<Pronoun>('they/them');
+  const [hand, setHand] = useState<'sag' | 'sol'>('sag');
+  const [level, setLevel] = useState<'baslangic' | 'orta' | 'ileri'>('orta');
+  const [avail, setAvail] = useState<string[]>([]);
+
+  // Seed form fields when profile loads.
+  useEffect(() => {
+    if (!profile) return;
+    setFirstName(profile.first_name ?? '');
+    setLastName(profile.last_name ?? '');
+    // Only 'he/him' | 'she/her' | 'they/them' are surfaced in this form;
+    // 'other' falls back to 'they/them' since the UI has no custom field.
+    const p = profile.pronoun;
+    setPronoun(p === 'he/him' || p === 'she/her' ? p : 'they/them');
+    setHand(profile.dominant_hand ?? 'sag');
+    setLevel(profile.skill_self_assessment ?? 'orta');
+    setAvail(profile.availability_windows ?? []);
+  }, [profile]);
 
   const toggle = (k: string) =>
     setAvail((a) => (a.includes(k) ? a.filter((x) => x !== k) : [...a, k]));
 
-  const name = profile?.firstName
-    ? `${profile.firstName} ${profile.lastName ?? ''}`.trim()
-    : 'Oyuncu';
-  const dept = extras?.departmentName ?? '';
-  const year = extras?.classYear ?? '';
+  const handlePickAvatar = async () => {
+    const uri = await pickAvatar();
+    if (!uri) return;
+    uploadAvatar.mutate(
+      { localUri: uri },
+      {
+        onSuccess: (res) => {
+          if (res?.url) setLocalAvatarUri(res.url);
+        },
+        onError: (err) => {
+          Alert.alert('Hata', err instanceof Error ? err.message : 'Fotoğraf yüklenemedi.');
+        },
+      },
+    );
+  };
+
+  const handleSave = () => {
+    if (!profile) return;
+    const input: UpdateProfileInput = {
+      first_name: firstName.trim() || profile.first_name,
+      last_name: lastName.trim() || profile.last_name,
+      pronoun,
+      pronoun_custom: pronoun === 'they/them' ? profile.pronoun_custom : null,
+      department_id: profile.department_id,
+      show_department: profile.show_department,
+      class_year: profile.class_year,
+      show_class_year: profile.show_class_year,
+      skill_self_assessment: level,
+      dominant_hand: hand,
+      availability_windows: avail,
+      gender_category: profile.gender_category,
+    };
+    updateProfile.mutate(input, {
+      onSuccess: () => router.back(),
+      onError: (err) => {
+        Alert.alert('Hata', err instanceof Error ? err.message : 'Kaydedilemedi.');
+      },
+    });
+  };
+
+  const name =
+    firstName || lastName
+      ? `${firstName} ${lastName}`.trim()
+      : profile
+        ? `${profile.first_name} ${profile.last_name}`.trim()
+        : 'Oyuncu';
+
+  const deptName = profile?.departments?.name ?? '';
+  const yearLabel = classYearLabel(profile?.class_year);
+
+  // The resolved avatar URI: uploaded-in-session > profile avatar_url > initials.
+  const avatarUri = localAvatarUri ?? profile?.avatar_url ?? undefined;
+
+  const isBusy = updateProfile.isPending || uploadAvatar.isPending;
+
+  // ---- Loading state ----
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="Profili düzenle" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  // ---- Error state ----
+  if (isError || !profile) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader title="Profili düzenle" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text
+            className="font-sans text-text-2"
+            style={{ fontSize: 14, textAlign: 'center' }}
+          >
+            Profil bilgileri yüklenemedi. Tekrar dene.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
@@ -86,26 +194,54 @@ export default function ProfileEdit() {
           }}
         >
           <View style={{ position: 'relative' }}>
-            <Avatar name={name} size={92} />
-            <View
-              style={{
-                position: 'absolute',
-                right: -2,
-                bottom: -2,
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: colors.text,
-                borderWidth: 1.5,
-                borderColor: colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Icon name="camera" size={15} color="#FFFFFF" stroke={2.2} />
-            </View>
+            {avatarUri ? (
+              <Image
+                source={{ uri: avatarUri }}
+                style={{ width: 92, height: 92, borderRadius: 46 }}
+              />
+            ) : (
+              <Avatar name={name} size={92} />
+            )}
+            {uploadAvatar.isPending ? (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: -2,
+                  bottom: -2,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: colors.text,
+                  borderWidth: 1.5,
+                  borderColor: colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              </View>
+            ) : (
+              <Pressable
+                onPress={handlePickAvatar}
+                style={{
+                  position: 'absolute',
+                  right: -2,
+                  bottom: -2,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: colors.text,
+                  borderWidth: 1.5,
+                  borderColor: colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icon name="camera" size={15} color="#FFFFFF" stroke={2.2} />
+              </Pressable>
+            )}
           </View>
-          <Pressable>
+          <Pressable onPress={handlePickAvatar} disabled={uploadAvatar.isPending}>
             <Text
               className="font-sans font-bold"
               style={{ fontSize: 13, color: colors.court }}
@@ -116,7 +252,15 @@ export default function ProfileEdit() {
         </View>
 
         <View style={{ gap: 18 }}>
-          <Field label="Ad Soyad" value={name} />
+          <Field
+            label="Ad Soyad"
+            value={`${firstName} ${lastName}`.trim()}
+            onChange={(v) => {
+              const parts = v.trim().split(/\s+/);
+              setFirstName(parts[0] ?? '');
+              setLastName(parts.slice(1).join(' '));
+            }}
+          />
 
           <View>
             <Text
@@ -127,28 +271,32 @@ export default function ProfileEdit() {
             </Text>
             <Segmented
               value={pronoun}
-              onChange={setPronoun}
+              onChange={(v) => setPronoun(v)}
               options={PRONOUNS.map((p) => ({ value: p, label: p }))}
             />
           </View>
 
-          <Field
-            label="Bölüm"
-            value={dept}
-            icon="search"
-            suffix="değiştir"
-          />
+          {deptName ? (
+            <Field
+              label="Bölüm"
+              value={deptName}
+              icon="search"
+              suffix="değiştir"
+            />
+          ) : null}
 
           <View className="flex-row" style={{ gap: 14 }}>
-            <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-extrabold text-text-3"
-                style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
-              >
-                SINIF
-              </Text>
-              <Field value={year ? `${year}. sınıf` : ''} />
-            </View>
+            {yearLabel ? (
+              <View style={{ flex: 1 }}>
+                <Text
+                  className="font-sans font-extrabold text-text-3"
+                  style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+                >
+                  SINIF
+                </Text>
+                <Field value={yearLabel} />
+              </View>
+            ) : null}
             <View style={{ flex: 1 }}>
               <Text
                 className="font-sans font-extrabold text-text-3"
@@ -158,7 +306,7 @@ export default function ProfileEdit() {
               </Text>
               <Segmented
                 value={hand}
-                onChange={setHand}
+                onChange={(v) => setHand(v)}
                 options={[
                   { value: 'sag', label: 'Sağ' },
                   { value: 'sol', label: 'Sol' },
@@ -176,7 +324,7 @@ export default function ProfileEdit() {
             </Text>
             <Segmented
               value={level}
-              onChange={setLevel}
+              onChange={(v) => setLevel(v)}
               options={[
                 { value: 'baslangic', label: 'Başlangıç' },
                 { value: 'orta', label: 'Orta' },
@@ -234,8 +382,8 @@ export default function ProfileEdit() {
           borderColor: colors.borderStrong,
         }}
       >
-        <Button full size="lg" onPress={() => router.back()}>
-          Kaydet
+        <Button full size="lg" onPress={handleSave} disabled={isBusy}>
+          {updateProfile.isPending ? 'Kaydediliyor…' : 'Kaydet'}
         </Button>
       </View>
     </View>

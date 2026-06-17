@@ -1,4 +1,4 @@
-// Profile tab — Plan 8 Phase F1.
+// Profile tab — Plan 8 Phase F1, wired to live data (F-polish pass).
 //
 // Ports the design bundle's `Profile` screen (see
 // docs/superpowers/specs/plan-8-design-bundle/project/app/screens-profile.jsx
@@ -11,52 +11,60 @@
 //   - Scroll pill tab strip (Sıralamalar / İstatistikler / Rozetler /
 //     ELO / Maçlar). Only "Sıralamalar" stays in-screen — every other
 //     tab navigates into the matching sub-screen.
-//   - MY_RANKS list: big color-rotated cards (lime / court / ink) that
+//   - Rankings list: big color-rotated cards (lime / court / ink) that
 //     open the category leaderboard.
 //
-// TODO(plan-8-F-polish): swap MY_BADGES / MY_RANKS / ME_ELO for real
-// hooks. Today they are inline mocks aligned with the design bundle's
-// dummy data so the screen reads and feels right.
+// Live-data sources:
+//   - Hero ELO + level: useMyRankings (primary category rating)
+//   - ELO delta: useEloHistory (last confirmed match delta for primary cat)
+//   - Rankings list: useMyRankings (all categories)
+//   - Badges (vitrin): useMyBadges (first 3 pinned, then most recent)
+//   - Display name / profile extras: useAuthStore.profile
 
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { LevelRing } from '../../components/ui/LevelRing';
 import { LevelIcon } from '../../components/ui/LevelIcon';
-import { Icon, type IconName } from '../../components/ui/Icon';
 import { useAuthStore } from '../../stores/auth-store';
 import { levelForElo, levelProgress } from '../../lib/levels';
 import { colors } from '../../theme/colors';
+import { useMyRankings, type RankingRow } from '../../hooks/use-my-rankings';
+import { useEloHistory } from '../../hooks/use-elo-history';
+import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 
-// TODO(plan-8-F-polish): real hooks for elo / badges / ranks
-const ME_ELO = 1612;
+// ---------------------------------------------------------------------------
+// Category label map
+// ---------------------------------------------------------------------------
 
-interface BadgeChip {
-  key: string;
-  name: string;
-  icon: IconName;
-  color: string;
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Pick the "primary" ranking row to show in the hero.
+ *  Priority: erkek_tek > kadin_tek > open_tek > first row returned. */
+function pickPrimaryCategory(rows: RankingRow[]): RankingRow | null {
+  const ORDER = ['erkek_tek', 'kadin_tek', 'open_tek'];
+  for (const cat of ORDER) {
+    const row = rows.find((r) => r.category === cat);
+    if (row) return row;
+  }
+  return rows[0] ?? null;
 }
 
-const MY_BADGES: BadgeChip[] = [
-  { key: 'first_win', name: 'İlk Galibiyet', icon: 'medal', color: colors.acGold },
-  { key: 'streak5', name: '5 Maç Serisi', icon: 'flame', color: colors.acGreen },
-  { key: 'giant', name: 'Dev Avcısı', icon: 'bolt', color: colors.acNavy },
-];
-
-interface RankCard {
-  cat: string;
-  label: string;
-  rank: number;
-  elo: number;
-  delta: number;
-}
-
-const MY_RANKS: RankCard[] = [
-  { cat: 'erkek_tek', label: 'Erkek Tek', rank: 4, elo: 1612, delta: 22 },
-  { cat: 'open_tek', label: 'Open Tek', rank: 9, elo: 1612, delta: 22 },
-  { cat: 'erkek_cift', label: 'Erkek Çift', rank: 2, elo: 1540, delta: -8 },
-];
+// ---------------------------------------------------------------------------
+// Static data
+// ---------------------------------------------------------------------------
 
 interface TabDef {
   key: 'rank' | 'stats' | 'badges' | 'elo' | 'matches';
@@ -86,8 +94,26 @@ const THEMES: RankTheme[] = [
   { bg: colors.text, fg: colors.bg, sub: 'rgba(255,255,255,0.6)', pill: 'rgba(255,255,255,0.14)', pillFg: colors.bg },
 ];
 
+// ---------------------------------------------------------------------------
+// Badge vitrin: prefer pinned badges (pinned_at not null), then most recent
+// ---------------------------------------------------------------------------
+
+function pickVitrinBadges(badges: MyBadgeRow[]): MyBadgeRow[] {
+  const pinned = badges.filter((b) => b.pinned_at !== null).slice(0, 3);
+  if (pinned.length >= 3) return pinned;
+  const pinnedKeys = new Set(pinned.map((b) => b.user_badge_id));
+  const rest = badges.filter((b) => !pinnedKeys.has(b.user_badge_id));
+  return [...pinned, ...rest].slice(0, 3);
+}
+
+// ---------------------------------------------------------------------------
+// ProfileTab
+// ---------------------------------------------------------------------------
+
 export default function ProfileTab() {
   const profile = useAuthStore((s) => s.profile);
+  const userId = useAuthStore((s) => s.user?.id);
+
   // The auth-store today only ships first/last/role/onboarding. Optional Plan 8
   // profile fields (pronoun / department / class year / dominant hand) are
   // pulled defensively until the store grows to match — keeps this screen
@@ -108,8 +134,44 @@ export default function ProfileTab() {
   const year = extras?.classYear ?? '';
   const hand = extras?.dominantHand === 'sol' ? 'Sol' : 'Sağ';
 
+  // --- Rankings ---
+  const rankingsQ = useMyRankings();
+  const rankings = rankingsQ.data ?? [];
+  const primaryRanking = pickPrimaryCategory(rankings);
+  const primaryCat = primaryRanking?.category ?? 'erkek_tek';
+  const ME_ELO = primaryRanking?.rating ?? 1200;
+
+  // --- ELO history for delta ---
+  const eloHistoryQ = useEloHistory(userId);
+  const catPoints = (eloHistoryQ.data?.byCategory ?? {})[primaryCat] ?? [];
+  const latestPoint = catPoints.length > 0 ? catPoints[catPoints.length - 1] : null;
+  const ELO_DELTA = latestPoint ? latestPoint.elo - latestPoint.eloBefore : 0;
+
+  // --- Badges ---
+  const badgesQ = useMyBadges();
+  const allBadges = badgesQ.data ?? [];
+  const vitrinBadges = pickVitrinBadges(allBadges);
+
   const lv = levelForElo(ME_ELO);
   const lp = levelProgress(ME_ELO);
+
+  const isLoading = rankingsQ.isLoading;
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <NavHeader
+          large
+          title="Profil"
+          actionIcon="settings"
+          onAction={() => router.push('/settings' as never)}
+        />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
@@ -172,7 +234,7 @@ export default function ProfileTab() {
               className="font-sans text-text-3"
               style={{ fontSize: 12.5, marginTop: 3 }}
             >
-              {dept} · {year}. sınıf · {hand} el
+              {dept} · {year ? `${year}. sınıf · ` : ''}{hand} el
             </Text>
             {lp.next && (
               <View style={{ marginTop: 7, maxWidth: 210 }}>
@@ -224,36 +286,49 @@ export default function ProfileTab() {
               </Text>
             </Pressable>
           </View>
-          <View className="flex-row" style={{ gap: 10 }}>
-            {MY_BADGES.map((b) => (
-              <View
-                key={b.key}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.surface,
-                  borderRadius: 18,
-                  borderWidth: 1,
-                  borderColor: colors.borderStrong,
-                  padding: 12,
-                  paddingHorizontal: 6,
-                  alignItems: 'center',
-                }}
-              >
-                <Icon name={b.icon} size={22} color={b.color} />
-                <Text
-                  className="font-sans font-bold text-text-2"
+          {badgesQ.isLoading ? (
+            <View style={{ height: 72, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator size="small" color={colors.clay} />
+            </View>
+          ) : vitrinBadges.length === 0 ? (
+            <Text
+              className="font-sans text-text-3"
+              style={{ fontSize: 12.5, paddingVertical: 8 }}
+            >
+              Henüz rozet yok.
+            </Text>
+          ) : (
+            <View className="flex-row" style={{ gap: 10 }}>
+              {vitrinBadges.map((b) => (
+                <View
+                  key={b.user_badge_id}
                   style={{
-                    fontSize: 10.5,
-                    marginTop: 6,
-                    textAlign: 'center',
-                    lineHeight: 13,
+                    flex: 1,
+                    backgroundColor: colors.surface,
+                    borderRadius: 18,
+                    borderWidth: 1,
+                    borderColor: colors.borderStrong,
+                    padding: 12,
+                    paddingHorizontal: 6,
+                    alignItems: 'center',
                   }}
                 >
-                  {b.name}
-                </Text>
-              </View>
-            ))}
-          </View>
+                  <Text style={{ fontSize: 22 }}>{b.icon}</Text>
+                  <Text
+                    className="font-sans font-bold text-text-2"
+                    style={{
+                      fontSize: 10.5,
+                      marginTop: 6,
+                      textAlign: 'center',
+                      lineHeight: 13,
+                    }}
+                  >
+                    {b.name_tr}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Tab strip */}
@@ -299,98 +374,112 @@ export default function ProfileTab() {
 
         {/* Rankings list */}
         <View style={{ padding: 18, gap: 12 }}>
-          {MY_RANKS.map((r, i) => {
-            const theme = THEMES[i % 3] ?? THEMES[0]!;
-            const rl = levelForElo(r.elo);
-            return (
-              <Pressable
-                key={r.cat}
-                onPress={() =>
-                  router.push(`/leaderboard?cat=${r.cat}` as never)
-                }
-                style={{
-                  backgroundColor: theme.bg,
-                  borderRadius: 26,
-                  borderWidth: 1.5,
-                  borderColor: colors.borderStrong,
-                  padding: 20,
-                  overflow: 'hidden',
-                }}
-              >
-                <View
-                  className="flex-row items-center justify-between"
-                  style={{ marginBottom: 18 }}
+          {rankings.length === 0 ? (
+            <Text
+              className="font-sans text-text-3"
+              style={{ fontSize: 13, paddingHorizontal: 4 }}
+            >
+              Henüz sıralama verin yok.
+            </Text>
+          ) : (
+            rankings.map((r, i) => {
+              const theme = THEMES[i % 3] ?? THEMES[0]!;
+              const rl = levelForElo(r.rating);
+              const catLabel = CATEGORY_LABELS[r.category] ?? r.category;
+              // ELO delta is only available for the primary category via eloHistoryQ
+              const delta = r.category === primaryCat ? ELO_DELTA : 0;
+              return (
+                <Pressable
+                  key={r.category}
+                  onPress={() =>
+                    router.push(`/leaderboard?cat=${r.category}` as never)
+                  }
+                  style={{
+                    backgroundColor: theme.bg,
+                    borderRadius: 26,
+                    borderWidth: 1.5,
+                    borderColor: colors.borderStrong,
+                    padding: 20,
+                    overflow: 'hidden',
+                  }}
                 >
                   <View
-                    style={{
-                      backgroundColor: theme.pill,
-                      paddingHorizontal: 11,
-                      paddingVertical: 5,
-                      borderRadius: 9999,
-                    }}
+                    className="flex-row items-center justify-between"
+                    style={{ marginBottom: 18 }}
                   >
-                    <Text
-                      className="font-sans font-extrabold"
+                    <View
                       style={{
-                        fontSize: 10.5,
-                        letterSpacing: 0.84,
-                        color: theme.pillFg,
+                        backgroundColor: theme.pill,
+                        paddingHorizontal: 11,
+                        paddingVertical: 5,
+                        borderRadius: 9999,
                       }}
                     >
-                      {r.label.toUpperCase()}
-                    </Text>
+                      <Text
+                        className="font-sans font-extrabold"
+                        style={{
+                          fontSize: 10.5,
+                          letterSpacing: 0.84,
+                          color: theme.pillFg,
+                        }}
+                      >
+                        {catLabel.toUpperCase()}
+                      </Text>
+                    </View>
+                    {r.category === primaryCat && (
+                      <Text
+                        className="font-num font-extrabold"
+                        style={{
+                          fontSize: 12.5,
+                          color: theme.fg,
+                          opacity: 0.9,
+                        }}
+                      >
+                        {delta > 0 ? '▲ ' : delta < 0 ? '▼ ' : '– '}
+                        {Math.abs(delta)}
+                      </Text>
+                    )}
                   </View>
-                  <Text
-                    className="font-num font-extrabold"
-                    style={{
-                      fontSize: 12.5,
-                      color: theme.fg,
-                      opacity: 0.9,
-                    }}
-                  >
-                    {r.delta > 0 ? '▲ ' : r.delta < 0 ? '▼ ' : '– '}
-                    {Math.abs(r.delta)}
-                  </Text>
-                </View>
-                <View className="flex-row items-end justify-between">
-                  <View>
-                    <Text
-                      className="font-num font-display font-extrabold"
-                      style={{ fontSize: 40, lineHeight: 40, color: theme.fg }}
-                    >
-                      #{r.rank}
-                    </Text>
-                    <View
-                      className="flex-row items-center"
-                      style={{ gap: 6, marginTop: 8 }}
-                    >
-                      <LevelIcon level={rl} size={15} />
+                  <View className="flex-row items-end justify-between">
+                    <View>
+                      <Text
+                        className="font-num font-display font-extrabold"
+                        style={{ fontSize: 40, lineHeight: 40, color: theme.fg }}
+                      >
+                        #{r.rank}
+                      </Text>
+                      <View
+                        className="flex-row items-center"
+                        style={{ gap: 6, marginTop: 8 }}
+                      >
+                        <LevelIcon level={rl} size={15} />
+                        <Text
+                          className="font-sans font-bold"
+                          style={{ fontSize: 13, color: theme.sub }}
+                        >
+                          {rl.name}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
                       <Text
                         className="font-sans font-bold"
-                        style={{ fontSize: 13, color: theme.sub }}
+                        style={{ fontSize: 11, color: theme.sub, marginBottom: 2 }}
                       >
-                        {rl.name}
+                        ELO
+                      </Text>
+                      <Text
+                        className="font-num font-display font-extrabold"
+                        style={{ fontSize: 30, lineHeight: 30, color: theme.fg }}
+                      >
+                        {r.rating}
                       </Text>
                     </View>
                   </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text
-                      className="font-sans font-bold"
-                      style={{ fontSize: 11, color: theme.sub, marginBottom: 2 }}
-                    >
-                      ELO
-                    </Text>
-                    <Text
-                      className="font-num font-display font-extrabold"
-                      style={{ fontSize: 30, lineHeight: 30, color: theme.fg }}
-                    >
-                      {r.elo}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
+                </Pressable>
+              );
+            })
+          )}
         </View>
       </ScrollView>
     </View>

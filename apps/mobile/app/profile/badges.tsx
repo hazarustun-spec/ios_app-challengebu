@@ -1,61 +1,114 @@
-// Badges — Plan 8 Phase F4.
-//
-// Ports the design bundle's `Badges` (see
-// docs/superpowers/specs/plan-8-design-bundle/project/app/screens-profile.jsx
-// `function Badges()`) to React Native + NativeWind.
+// Badges — Plan 8 Phase F4, wired to live data.
 //
 // Grid of all badges (earned + locked) with a 3-pin selection for the
 // profile vitrin. Picking the same badge a second time un-pins it; new
 // pins past 3 are silently ignored (matches the source).
 //
-// TODO(plan-8-F-polish): swap `BADGES` / `EARNED` / `INITIAL_PIN` for the
-// real badge catalogue + user_badges + user_badge_pins data.
+// Live data:
+//   - useAllBadges()  → full catalog (BadgeCatalogRow[])
+//   - useMyBadges()   → user's earned badges, pinned_at marks current showcase
+//   - usePinBadges()  → mutation to persist the 3-pin showcase
 
-import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
-import { Icon, type IconName } from '../../components/ui/Icon';
+import { Icon } from '../../components/ui/Icon';
+import { useAllBadges } from '../../hooks/use-all-badges';
+import { useMyBadges } from '../../hooks/use-my-badges';
+import { usePinBadges } from '../../hooks/use-pin-badges';
 import { colors } from '../../theme/colors';
 
-interface BadgeDef {
-  key: string;
-  name: string;
-  desc: string;
-  icon: IconName;
-  color: string;
-}
-
-// TODO(plan-8-F-polish): real catalog from /lib/badges + user data
-const BADGES: BadgeDef[] = [
-  { key: 'first_win', name: 'İlk Galibiyet', desc: 'İlk sıralama maçını kazan.', icon: 'medal', color: colors.acGold },
-  { key: 'streak5', name: '5 Maç Serisi', desc: 'Üst üste 5 galibiyet.', icon: 'flame', color: colors.acGreen },
-  { key: 'giant', name: 'Dev Avcısı', desc: '150+ ELO üstü rakibi yen.', icon: 'bolt', color: colors.acNavy },
-  { key: 'iron', name: 'Demir İrade', desc: "3-3'ten dönüp kazan.", icon: 'shield', color: colors.acBlue },
-  { key: 'season_top', name: 'Sezon Şampiyonu', desc: 'Sezon finalini kazan.', icon: 'crown', color: colors.acGold },
-  { key: 'marathon', name: 'Maraton', desc: '20+ oyunluk maç tamamla.', icon: 'clock', color: colors.acDgreen },
-  { key: 'social', name: 'Sosyal Kelebek', desc: '10 farklı rakiple oyna.', icon: 'handshake', color: colors.acBlue },
-  { key: 'perfect', name: 'Kusursuz', desc: '4-0 / 10-0 / 8-0 kazan.', icon: 'star', color: colors.acGold },
-];
-
-const EARNED = ['first_win', 'streak5', 'giant', 'social', 'marathon'];
-const INITIAL_PIN = ['first_win', 'streak5', 'giant'];
-
 export default function Badges() {
-  const [pinned, setPinned] = useState<string[]>(INITIAL_PIN);
+  const allBadgesQ = useAllBadges();
+  const myBadgesQ = useMyBadges();
+  const pinMutation = usePinBadges();
 
-  const togglePin = (k: string) => {
+  const catalog = allBadgesQ.data ?? [];
+  const earned = myBadgesQ.data ?? [];
+
+  // Set of badge_ids the user has earned
+  const earnedIds = new Set(earned.map((b) => b.badge_id));
+
+  // Derive initial pinned badge_ids from pinned_at field
+  const initialPinned = earned
+    .filter((b) => b.pinned_at !== null)
+    .map((b) => b.badge_id);
+
+  const [pinned, setPinned] = useState<string[]>(initialPinned);
+
+  // Sync pinned state when earned badges load (after first fetch)
+  useEffect(() => {
+    if (myBadgesQ.isSuccess) {
+      const fromServer = earned
+        .filter((b) => b.pinned_at !== null)
+        .map((b) => b.badge_id);
+      setPinned(fromServer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myBadgesQ.isSuccess, myBadgesQ.dataUpdatedAt]);
+
+  const togglePin = (badgeId: string) => {
     setPinned((p) =>
-      p.includes(k) ? p.filter((x) => x !== k) : p.length < 3 ? [...p, k] : p,
+      p.includes(badgeId)
+        ? p.filter((x) => x !== badgeId)
+        : p.length < 3
+          ? [...p, badgeId]
+          : p,
     );
   };
+
+  const handleSave = () => {
+    pinMutation.mutate(
+      { selectedBadgeIds: pinned },
+      { onSuccess: () => router.back() },
+    );
+  };
+
+  const isLoading = allBadgesQ.isLoading || myBadgesQ.isLoading;
+  const isError = allBadgesQ.isError || myBadgesQ.isError;
+
+  const header = (
+    <NavHeader
+      title="Rozetler"
+      subtitle={`${earned.length}/${catalog.length} kazanıldı`}
+      onBack={() => router.back()}
+    />
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        <View className="flex-1 items-center justify-center" style={{ padding: 32 }}>
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 14, textAlign: 'center' }}
+          >
+            Rozetler yüklenemedi. Lütfen tekrar dene.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
       <NavHeader
         title="Rozetler"
-        subtitle={`${EARNED.length}/${BADGES.length} kazanıldı`}
+        subtitle={`${earned.length}/${catalog.length} kazanıldı`}
         onBack={() => router.back()}
       />
       <ScrollView contentContainerStyle={{ padding: 18, gap: 14 }}>
@@ -79,91 +132,101 @@ export default function Badges() {
           </Text>
         </View>
 
-        <View
-          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
-        >
-          {BADGES.map((b) => {
-            const has = EARNED.includes(b.key);
-            const isPin = pinned.includes(b.key);
-            return (
-              <Pressable
-                key={b.key}
-                onPress={() => has && togglePin(b.key)}
-                style={{
-                  width: '48%',
-                  padding: 16,
-                  paddingHorizontal: 12,
-                  alignItems: 'center',
-                  borderRadius: 18,
-                  borderWidth: 1.5,
-                  borderColor: isPin ? colors.clay : colors.borderStrong,
-                  backgroundColor: colors.surface,
-                  opacity: has ? 1 : 0.55,
-                  position: 'relative',
-                }}
-              >
-                {isPin && (
+        {catalog.length === 0 ? (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 13, textAlign: 'center', paddingVertical: 24 }}
+          >
+            Rozet kataloğu henüz boş.
+          </Text>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            {catalog.map((b) => {
+              const has = earnedIds.has(b.id);
+              const isPin = pinned.includes(b.id);
+              return (
+                <Pressable
+                  key={b.id}
+                  onPress={() => has && togglePin(b.id)}
+                  style={{
+                    width: '48%',
+                    padding: 16,
+                    paddingHorizontal: 12,
+                    alignItems: 'center',
+                    borderRadius: 18,
+                    borderWidth: 1.5,
+                    borderColor: isPin ? colors.clay : colors.borderStrong,
+                    backgroundColor: colors.surface,
+                    opacity: has ? 1 : 0.55,
+                    position: 'relative',
+                  }}
+                >
+                  {isPin && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        width: 18,
+                        height: 18,
+                        borderRadius: 9,
+                        backgroundColor: colors.clay,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Icon name="check" size={11} color="#FFFFFF" stroke={3} />
+                    </View>
+                  )}
                   <View
                     style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      width: 18,
-                      height: 18,
-                      borderRadius: 9,
-                      backgroundColor: colors.clay,
+                      width: 46,
+                      height: 46,
+                      borderRadius: 23,
+                      backgroundColor: has ? `${colors.acGold}24` : colors.surface2,
                       alignItems: 'center',
                       justifyContent: 'center',
+                      marginBottom: 10,
                     }}
                   >
-                    <Icon name="check" size={11} color="#FFFFFF" stroke={3} />
+                    {has ? (
+                      <Text style={{ fontSize: 22 }}>{b.icon}</Text>
+                    ) : (
+                      <Icon name="lock" size={22} color={colors.text3} />
+                    )}
                   </View>
-                )}
-                <View
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 23,
-                    backgroundColor: has
-                      ? `${b.color}24`
-                      : colors.surface2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 10,
-                  }}
-                >
-                  <Icon
-                    name={has ? b.icon : 'lock'}
-                    size={22}
-                    color={has ? b.color : colors.text3}
-                  />
-                </View>
-                <Text
-                  className="font-sans font-extrabold text-text"
-                  style={{ fontSize: 13.5, textAlign: 'center' }}
-                >
-                  {b.name}
-                </Text>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{
-                    fontSize: 11,
-                    marginTop: 4,
-                    lineHeight: 15,
-                    textAlign: 'center',
-                  }}
-                >
-                  {b.desc}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <Text
+                    className="font-sans font-extrabold text-text"
+                    style={{ fontSize: 13.5, textAlign: 'center' }}
+                  >
+                    {b.name_tr}
+                  </Text>
+                  <Text
+                    className="font-sans text-text-3"
+                    style={{
+                      fontSize: 11,
+                      marginTop: 4,
+                      lineHeight: 15,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {b.description_tr}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
 
       <View style={{ padding: 18 }}>
-        <Button full size="lg" onPress={() => router.back()}>
-          Vitrini kaydet
+        <Button
+          full
+          size="lg"
+          onPress={handleSave}
+          disabled={pinMutation.isPending}
+        >
+          {pinMutation.isPending ? 'Kaydediliyor…' : 'Vitrini kaydet'}
         </Button>
       </View>
     </View>

@@ -8,66 +8,171 @@
 // The interactive scrubber sits inside the SVG itself — tapping a point
 // updates `sel`; the "Maç N / 1612 ELO" footer reads from `sel`.
 //
-// TODO(plan-8-F-polish): useEloHistory(category) hook + real season
-// markers from current_season.
+// Live data: useEloHistory(userId) per selected category.
 
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import Svg, { Circle, Polyline, Polygon, Line } from 'react-native-svg';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Segmented } from '../../components/ui/Segmented';
+import { useEloHistory, type EloPoint, type SeasonBoundary } from '../../hooks/use-elo-history';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
-
-// TODO(plan-8-F-polish): swap for useEloHistory(category)
-const DATA: number[] = [
-  1200, 1218, 1205, 1240, 1262, 1255, 1288, 1310, 1295, 1340, 1380, 1365, 1410,
-  1452, 1480, 1430, 1466, 1510, 1548, 1530, 1566, 1590, 1612,
-];
-const SEASON_MARKERS: number[] = [0, 11];
 
 const W = 320;
 const H = 150;
 const PAD = 8;
 
 function makePath(data: number[]) {
-  const min = Math.min(...data) - 30;
-  const max = Math.max(...data) + 30;
+  if (data.length === 0) return { x: () => PAD, y: () => H / 2, points: '' };
+  const min = data.length === 1 ? data[0] - 30 : Math.min(...data) - 30;
+  const max = data.length === 1 ? data[0] + 30 : Math.max(...data) + 30;
   const range = max - min || 1;
-  const x = (i: number) => PAD + (i * (W - PAD * 2)) / (data.length - 1);
+  const x = (i: number) =>
+    data.length === 1
+      ? W / 2
+      : PAD + (i * (W - PAD * 2)) / (data.length - 1);
   const y = (v: number) => H - PAD - ((v - min) / range) * (H - PAD * 2);
   const points = data.map((v, i) => `${x(i)},${y(v)}`).join(' ');
   return { x, y, points };
 }
 
+/** Map season boundary timestamps to point indices in an EloPoint array. */
+function seasonMarkerIndices(
+  points: EloPoint[],
+  boundaries: SeasonBoundary[],
+): number[] {
+  if (points.length === 0 || boundaries.length === 0) return [];
+  return boundaries
+    .map((b) => {
+      const ts = new Date(b.timestamp).getTime();
+      // Find the first point whose played_at >= the boundary timestamp.
+      const idx = points.findIndex((p) => new Date(p.played_at).getTime() >= ts);
+      return idx;
+    })
+    .filter((idx) => idx >= 0 && idx < points.length);
+}
+
+/** Count seasons that have a start boundary within this category's match range. */
+function countSeasonsForCategory(
+  points: EloPoint[],
+  boundaries: SeasonBoundary[],
+): number {
+  if (points.length === 0) return 0;
+  const first = new Date(points[0].played_at).getTime();
+  const last = new Date(points[points.length - 1].played_at).getTime();
+  // Count boundaries whose timestamp falls on or before the last match date.
+  // We add +1 to account for the season the first match belongs to.
+  const within = boundaries.filter((b) => {
+    const ts = new Date(b.timestamp).getTime();
+    return ts >= first && ts <= last;
+  }).length;
+  return within + 1;
+}
+
 type Category = 'erkek_tek' | 'open_tek' | 'erkek_cift';
 
 export default function EloHistory() {
+  const userId = useAuthStore((s) => s.user?.id);
   const [cat, setCat] = useState<Category>('erkek_tek');
-  const [sel, setSel] = useState(DATA.length - 1);
-  const { x, y, points } = makePath(DATA);
-  const current = DATA[DATA.length - 1] ?? 0;
-  const peak = Math.max(...DATA);
-  const selValue = DATA[sel] ?? 0;
-  // category state intentionally unused server-side until F-polish wires the
-  // hook; consumed by the Segmented control above for design realism.
-  void cat;
+
+  const { data, isLoading, isError } = useEloHistory(userId);
+
+  const catPoints: EloPoint[] = (data?.byCategory ?? {})[cat] ?? [];
+  const eloValues: number[] = catPoints.map((p) => p.elo);
+  const seasonBoundaries: SeasonBoundary[] = data?.seasonBoundaries ?? [];
+
+  const seasonMarkers = seasonMarkerIndices(catPoints, seasonBoundaries);
+  const seasonCount = countSeasonsForCategory(catPoints, seasonBoundaries);
+
+  // sel index tracks selected point; reset when category changes via derived state.
+  const [sel, setSel] = useState(0);
+  // Clamp sel to valid range after category switch.
+  const safeMax = Math.max(0, eloValues.length - 1);
+  const clampedSel = Math.min(sel, safeMax);
+
+  const { x, y, points } = makePath(eloValues);
+  const current = eloValues.length > 0 ? eloValues[eloValues.length - 1] ?? 0 : 0;
+  const peak = eloValues.length > 0 ? Math.max(...eloValues) : 0;
+  const selValue = eloValues[clampedSel] ?? 0;
+
+  const firstElo = eloValues.length > 0 ? eloValues[0] ?? 0 : 0;
+  const totalGain = eloValues.length > 1 ? current - firstElo : 0;
+  const totalGainLabel = totalGain >= 0 ? `+${totalGain}` : `${totalGain}`;
+
+  const header = (
+    <NavHeader title="ELO Geçmişi" onBack={() => router.back()} />
+  );
+
+  const segmented = (
+    <View style={{ paddingHorizontal: 18, paddingTop: 4 }}>
+      <Segmented
+        size="sm"
+        value={cat}
+        onChange={(v) => {
+          setCat(v as Category);
+          setSel(0);
+        }}
+        options={[
+          { value: 'erkek_tek', label: 'Erkek Tek' },
+          { value: 'open_tek', label: 'Open Tek' },
+          { value: 'erkek_cift', label: 'Erkek Çift' },
+        ]}
+      />
+    </View>
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        {segmented}
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.clay} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        {segmented}
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text
+            className="font-sans font-semibold text-text-3"
+            style={{ fontSize: 13.5, textAlign: 'center' }}
+          >
+            ELO geçmişi yüklenemedi. Lütfen tekrar deneyin.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (eloValues.length === 0) {
+    return (
+      <View className="flex-1 bg-bg">
+        {header}
+        {segmented}
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
+          <Text
+            className="font-sans font-semibold text-text-3"
+            style={{ fontSize: 13.5, textAlign: 'center' }}
+          >
+            Bu kategoride henüz derecelendirme maçın yok.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader title="ELO Geçmişi" onBack={() => router.back()} />
-      <View style={{ paddingHorizontal: 18, paddingTop: 4 }}>
-        <Segmented
-          size="sm"
-          value={cat}
-          onChange={setCat}
-          options={[
-            { value: 'erkek_tek', label: 'Erkek Tek' },
-            { value: 'open_tek', label: 'Open Tek' },
-            { value: 'erkek_cift', label: 'Erkek Çift' },
-          ]}
-        />
-      </View>
+      {header}
+      {segmented}
       <ScrollView contentContainerStyle={{ padding: 18, gap: 14 }}>
         <View
           className="bg-surface rounded-lg"
@@ -112,7 +217,7 @@ export default function EloHistory() {
           </View>
 
           <Svg width={W} height={H}>
-            {SEASON_MARKERS.map((s, i) => (
+            {seasonMarkers.map((s, i) => (
               <Line
                 key={i}
                 x1={x(s)}
@@ -124,11 +229,13 @@ export default function EloHistory() {
                 strokeDasharray="3 3"
               />
             ))}
-            <Polygon
-              points={`${points} ${x(DATA.length - 1)},${H - PAD} ${x(0)},${H - PAD}`}
-              fill={colors.clay}
-              opacity={0.07}
-            />
+            {eloValues.length > 1 && (
+              <Polygon
+                points={`${points} ${x(eloValues.length - 1)},${H - PAD} ${x(0)},${H - PAD}`}
+                fill={colors.clay}
+                opacity={0.07}
+              />
+            )}
             <Polyline
               points={points}
               fill="none"
@@ -137,13 +244,13 @@ export default function EloHistory() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {DATA.map((v, i) => (
+            {eloValues.map((v, i) => (
               <Circle
                 key={i}
                 cx={x(i)}
                 cy={y(v)}
-                r={sel === i ? 5 : 3}
-                fill={sel === i ? colors.clay : colors.surface}
+                r={clampedSel === i ? 5 : 3}
+                fill={clampedSel === i ? colors.clay : colors.surface}
                 stroke={colors.clay}
                 strokeWidth={2}
                 onPress={() => setSel(i)}
@@ -159,7 +266,7 @@ export default function EloHistory() {
               className="font-sans font-semibold text-text-3"
               style={{ fontSize: 11 }}
             >
-              Maç {sel + 1}
+              Maç {clampedSel + 1}
             </Text>
             <Text
               className="font-num font-extrabold"
@@ -173,9 +280,9 @@ export default function EloHistory() {
         <View className="flex-row" style={{ gap: 8 }}>
           {(
             [
-              ['+412', 'Toplam kazanım', colors.win],
-              ['23', 'Maç', colors.text],
-              ['2', 'Sezon', colors.text],
+              [totalGainLabel, 'Toplam kazanım', totalGain >= 0 ? colors.win : colors.loss],
+              [String(eloValues.length), 'Maç', colors.text],
+              [String(seasonCount), 'Sezon', colors.text],
             ] as const
           ).map(([v, l, c]) => (
             <View
