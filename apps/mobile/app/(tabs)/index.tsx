@@ -27,6 +27,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
 import { Icon } from '../../components/ui/Icon';
 import { Sparkline } from '../../components/ui/Sparkline';
+import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
 import { useActiveMatches, type ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyMatchHistory } from '../../hooks/use-match-history';
@@ -346,6 +347,13 @@ export default function HomeScreen() {
             <Icon name="ranking" size={22} color={colors.text} />
           </Pressable>
         </View>
+
+        {/* Sana uygun rakipler — compact strip (top 3).
+            Uses primaryCat derived from the user's own rankings (same variable
+            that drives the ELO hero above). Falls back to erkek_tek when no
+            ranking row exists yet (same fallback chain as pickPrimaryCategory). */}
+        <SectionTitle>Sana uygun rakipler</SectionTitle>
+        <OpponentSuggestStrip category={primaryCat} variant="compact" />
 
         {/* Aktif maçlar */}
         <SectionTitle

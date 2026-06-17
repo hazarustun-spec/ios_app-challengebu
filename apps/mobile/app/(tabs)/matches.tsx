@@ -35,6 +35,7 @@ import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { FormatChip } from '../../components/ui/FormatChip';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
 import { useActiveMatches } from '../../hooks/use-active-matches';
 import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
@@ -47,6 +48,8 @@ import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useOpenCallsFeed } from '../../hooks/use-open-calls';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
 import { usePlayerRatings } from '../../hooks/use-ladder';
+import { useMyRankings } from '../../hooks/use-my-rankings';
+import { primaryCategoryOf } from '../../lib/primary-category';
 import { DB_TO_UI_FORMAT } from '../../lib/formats';
 import type { FormatKey } from '../../lib/formats';
 import { levelForElo } from '../../lib/levels';
@@ -115,6 +118,10 @@ function toFormatKey(dbFormat: string): FormatKey {
 export default function MatchesTab() {
   const [view, setView] = useState<HubView>('upcoming');
 
+  // Suggestions are personalized to the player's primary category.
+  const rankingsQ = useMyRankings();
+  const primaryCat = primaryCategoryOf(rankingsQ.data);
+
   // Hoist all queries here so we can feed a single refreshControl to the
   // outer ScrollView without nesting ScrollViews.
   const matchesQ = useActiveMatches();
@@ -166,6 +173,18 @@ export default function MatchesTab() {
           />
         }
       >
+        {/* Sana uygun rakipler — full strip (top 5), always visible above segments.
+            Category = the player's primary ranked category (primaryCategoryOf). */}
+        <View style={{ gap: 8 }}>
+          <Text
+            className="font-display font-extrabold text-text"
+            style={{ fontSize: 15, letterSpacing: -0.15, paddingHorizontal: 2 }}
+          >
+            Sana uygun rakipler
+          </Text>
+          <OpponentSuggestStrip category={primaryCat} variant="full" />
+        </View>
+
         {view === 'upcoming' && (
           <UpcomingList
             matchesQ={matchesQ}
