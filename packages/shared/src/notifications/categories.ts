@@ -14,6 +14,7 @@ export const NOTIFICATION_CATEGORIES = [
   'community_announcements',
   'open_listings',
   'match_reminders',
+  'message_received',
 ] as const;
 
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
@@ -33,6 +34,7 @@ export const DEFAULT_ON: Record<NotificationCategory, boolean> = {
   community_announcements: true,
   open_listings: true,
   match_reminders: true,
+  message_received: true,
 };
 
 export interface CategoryLabel {
@@ -86,5 +88,10 @@ export const CATEGORY_LABELS: Record<NotificationCategory, CategoryLabel> = {
     title: 'Hatırlatmalar',
     subtitle: 'Yaklaşan maç hatırlatması',
     icon: 'clock',
+  },
+  message_received: {
+    title: 'Mesajlar',
+    subtitle: 'Yeni mesajlar',
+    icon: 'chat',
   },
 };

@@ -108,6 +108,13 @@ export async function cleanupTestData(): Promise<void> {
   // tournament_matches.match_id → matches has NO ACTION on delete, so clear it before matches.
   await supa.from('tournament_matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  // Messaging + moderation: messages cascade from conversations (which cascade
+  // from match_requests); user_blocks/user_reports cascade from profiles. Nuke
+  // explicitly (defense-in-depth) before the match_requests/profile deletes.
+  await supa.from('messages').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supa.from('conversations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supa.from('user_reports').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supa.from('user_blocks').delete().neq('blocker_id', '00000000-0000-0000-0000-000000000000');
   // match_request_applications cascade from match_requests, but nuke explicitly
   // (defense-in-depth, mirrors audit_log/announcements/notifications pattern).
   await supa.from('match_request_applications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
