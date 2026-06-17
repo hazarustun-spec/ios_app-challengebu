@@ -60,6 +60,10 @@ export const queryKeys = {
     list: (filters?: { gender?: string }) => [...queryKeys.players.all, 'list', filters] as const,
     detail: (userId: string) => [...queryKeys.players.all, 'detail', userId] as const,
   },
+  ladder: {
+    all: ['ladder'] as const,
+    byCategory: (category: string) => [...queryKeys.ladder.all, category] as const,
+  },
   notifications: {
     all: ['notifications'] as const,
     list: () => [...queryKeys.notifications.all, 'list'] as const,
