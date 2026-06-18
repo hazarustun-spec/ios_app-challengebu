@@ -118,13 +118,18 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
       accessibilityRole="button"
       accessibilityLabel={slot.name}
       accessibilityState={{ selected: isActive }}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        // Same color token as the sliding indicator so the center "+" and the
+        // active pill are pixel-identical blues (avoids any NativeWind-vs-token
+        // discrepancy). Center keeps a white ring; non-center slots stay
+        // transparent and get their highlight from the sliding indicator.
+        backgroundColor: isCenter ? colors.court : 'transparent',
+      }}
       className={[
         'items-center justify-center rounded-full',
-        // The center keeps a permanent fill + white ring. Non-center actives
-        // get their highlight from the sliding indicator, so their own
-        // background stays transparent.
-        isCenter ? 'bg-court border-2 border-white' : 'bg-transparent',
+        isCenter ? 'border-2 border-white' : '',
       ].join(' ')}
     >
       <Animated.View style={iconStyle}>
@@ -208,19 +213,19 @@ export function TabBar({ state, navigation }: TabBarProps) {
             const route = state.routes[i];
             if (!route) return null;
             const isActive = activeIndex === i;
-            const isCenter = !!slot.isCenter;
 
             const handlePress = () => {
-              if (isCenter) {
-                navigation.navigate(slot.name);
-                return;
-              }
+              // Emit tabPress so screen listeners can intercept. The center "+"
+              // listener in (tabs)/_layout.tsx calls preventDefault + pushes the
+              // new-match wizard; without emitting it the "+" would just land on
+              // the empty new-match placeholder.
               const event = navigation.emit({
                 type: 'tabPress',
                 target: route.key,
                 canPreventDefault: true,
               });
-              if (!isActive && !event.defaultPrevented) {
+              if (event.defaultPrevented) return;
+              if (!isActive) {
                 navigation.navigate(route.name);
               }
             };
