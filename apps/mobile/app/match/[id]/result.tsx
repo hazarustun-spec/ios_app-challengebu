@@ -13,7 +13,24 @@
 // search params are no longer used — all values come from the match row.
 
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { ScreenEnter } from '../../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -27,6 +44,19 @@ import { myPerspective } from '../../../lib/match-opponent';
 import { useAuthStore } from '../../../stores/auth-store';
 import { ShareSheet } from '../../../components/share/ShareSheet';
 import { CardMatchResult } from '../../../components/share/CardMatchResult';
+import { Confetti } from '../../../components/ui/Confetti';
+
+// AnimatedTextInput: drives the ELO count-up at 60fps via reanimated.
+// Must be defined OUTSIDE the component so createAnimatedComponent runs once.
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+// SpaceGrotesk-ExtraBold is the fontFamily behind the NativeWind `font-num` class.
+const NUM_FONT_FAMILY = 'SpaceGrotesk-ExtraBold';
+
+// Avatar size used in the score row (must match the JSX below).
+const AVATAR_SIZE = 58;
+// Glow circle is slightly larger than the avatar.
+const GLOW_SIZE = AVATAR_SIZE + 28;
 
 export default function MatchResult() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -73,25 +103,45 @@ export default function MatchResult() {
     ? 'Rakip'
     : (opponent?.name ?? 'Rakip');
 
-  // CountUp: interpolate from ratingBefore to ratingBefore + delta over ~600ms (20 steps).
-  // Falls back to ratingBefore when delta is null or match is void.
+  // CountUp: reanimated TextInput drives ELO from startElo → targetElo over 900ms.
   const startElo = ratingBefore ?? 0;
   const targetElo = startElo + deltaDisplay;
-  const [currentElo, setCurrentElo] = useState(startElo);
+  const counter = useSharedValue(startElo);
 
   useEffect(() => {
-    setCurrentElo(startElo);
+    counter.value = startElo;
     if (isVoid || deltaDisplay === 0 || startElo === 0) return;
-    const steps = 20;
-    const inc = (targetElo - startElo) / steps;
-    let i = 0;
-    const t = setInterval(() => {
-      i += 1;
-      setCurrentElo(Math.round(startElo + inc * i));
-      if (i >= steps) clearInterval(t);
-    }, 30);
-    return () => clearInterval(t);
+    counter.value = withTiming(targetElo, {
+      duration: 900,
+      easing: Easing.out(Easing.cubic),
+    });
   }, [startElo, targetElo, deltaDisplay, isVoid]);
+
+  const animatedEloProps = useAnimatedProps(() => ({
+    text: String(Math.round(counter.value)),
+  } as any /* RN TextInput `text` prop driven by reanimated */));
+
+  // (1) Success haptic on mount — win only
+  useEffect(() => {
+    if (isWin && !isVoid) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => {},
+      );
+    }
+  }, []);
+
+  // (3) Green glow halo — pulses 3× (~6 half-cycles) then rests
+  const glow = useSharedValue(0);
+  useEffect(() => {
+    if (isWin && !isVoid) {
+      glow.value = withRepeat(withTiming(1, { duration: 700 }), 6, true);
+    }
+  }, []);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(glow.value, [0, 1], [0, 0.45]),
+    transform: [{ scale: interpolate(glow.value, [0, 1], [1, 1.22]) }],
+  }));
 
   const tagColor = isVoid ? colors.warn : isWin ? colors.win : colors.loss;
   const tagBg = isVoid ? colors.warnSoft : isWin ? colors.limeSoft : '#FCE6E4';
@@ -101,6 +151,7 @@ export default function MatchResult() {
       ? 'Kazandın!'
       : 'Kaybettin';
   const tagIcon: IconName = isVoid ? 'info' : isWin ? 'trophy' : 'x';
+  const eloColor = isWin ? colors.win : colors.loss;
 
   // My name for the share card — prefer profile but fall back to "Sen"
   const myName = profile?.firstName ?? 'Sen';
@@ -175,20 +226,31 @@ export default function MatchResult() {
             className="flex-row items-center justify-center"
             style={{ gap: 16 }}
           >
-            <Avatar
-              name="Sen"
-              size={58}
-              ring={isWin && !isVoid ? colors.win : undefined}
-            />
+            {/* Winner avatar with optional green glow halo */}
+            <View style={styles.avatarContainer}>
+              {isWin && !isVoid && (
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.glowCircle, glowStyle]}
+                />
+              )}
+              <Avatar
+                name="Sen"
+                size={AVATAR_SIZE}
+                ring={isWin && !isVoid ? colors.win : undefined}
+              />
+            </View>
+
             <Text
               className="font-num font-extrabold text-text"
               style={{ fontSize: 40, letterSpacing: -1.2 }}
             >
               {finalScore}
             </Text>
+
             <Avatar
               name={opponentName}
-              size={58}
+              size={AVATAR_SIZE}
               ring={!isWin && !isVoid ? colors.win : undefined}
             />
           </View>
@@ -222,15 +284,25 @@ export default function MatchResult() {
                 {startElo}
               </Text>
               <Icon name="chevR" size={20} color={colors.text3} />
-              <Text
-                className="font-num font-extrabold"
+              {/* Reanimated TextInput count-up — same visual as the old <Text> */}
+              <AnimatedTextInput
+                editable={false}
+                underlineColorAndroid="transparent"
+                value={String(Math.round(startElo))}
+                animatedProps={animatedEloProps}
                 style={{
                   fontSize: 30,
-                  color: isWin ? colors.win : colors.loss,
+                  lineHeight: 34,
+                  color: eloColor,
+                  fontFamily: NUM_FONT_FAMILY,
+                  fontWeight: '800',
+                  padding: 0,
+                  margin: 0,
+                  includeFontPadding: false,
+                  textAlign: 'center',
+                  minWidth: 60,
                 }}
-              >
-                {currentElo}
-              </Text>
+              />
               <View
                 className="rounded-pill"
                 style={{
@@ -323,6 +395,28 @@ export default function MatchResult() {
           myElo={ratingBefore ?? undefined}
         />
       </ShareSheet>
+
+      {/* (4) Confetti overlay — win only, one-shot on mount */}
+      {isWin && !isVoid && <Confetti />}
     </ScreenEnter>
   );
 }
+
+const styles = StyleSheet.create({
+  avatarContainer: {
+    position: 'relative',
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glowCircle: {
+    position: 'absolute',
+    width: GLOW_SIZE,
+    height: GLOW_SIZE,
+    borderRadius: GLOW_SIZE / 2,
+    backgroundColor: colors.win,
+    // Sit behind the Avatar (Avatar renders after in the same container)
+    zIndex: -1,
+  },
+});
