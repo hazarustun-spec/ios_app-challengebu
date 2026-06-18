@@ -50,7 +50,15 @@
       ],
       "expo-font",
       "expo-splash-screen",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "buildReactNativeFromSource": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
