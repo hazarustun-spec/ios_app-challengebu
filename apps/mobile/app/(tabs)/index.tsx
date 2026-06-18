@@ -332,7 +332,7 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
           <Pressable
-            onPress={() => router.push('/leaderboard' as never)}
+            onPress={() => router.push('/(tabs)/leaderboard' as never)}
             style={{
               width: 56,
               height: 56,

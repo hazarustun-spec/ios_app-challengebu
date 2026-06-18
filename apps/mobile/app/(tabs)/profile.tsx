@@ -392,7 +392,7 @@ export default function ProfileTab() {
                 <Pressable
                   key={r.category}
                   onPress={() =>
-                    router.push(`/leaderboard?cat=${r.category}` as never)
+                    router.push(`/(tabs)/leaderboard?cat=${r.category}` as never)
                   }
                   style={{
                     backgroundColor: theme.bg,

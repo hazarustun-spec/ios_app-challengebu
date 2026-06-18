@@ -49,17 +49,7 @@ export default function TabsLayout() {
             },
           }}
         />
-        <Tabs.Screen
-          name="leaderboard"
-          options={{ title: 'Sıralama' }}
-          listeners={{
-            tabPress: (e) => {
-              // Placeholder — actual Sıralama lives at /leaderboard (Stack push).
-              e.preventDefault();
-              router.push('/leaderboard' as never);
-            },
-          }}
-        />
+        <Tabs.Screen name="leaderboard" options={{ title: 'Sıralama' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
       </Tabs>
     </View>

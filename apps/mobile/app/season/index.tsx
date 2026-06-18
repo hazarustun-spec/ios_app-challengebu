@@ -254,7 +254,7 @@ export default function Season() {
         {/* My standing */}
         {primaryRanking && myRank !== null && myCategoryLabel !== null ? (
           <Pressable
-            onPress={() => router.push('/leaderboard' as never)}
+            onPress={() => router.push('/(tabs)/leaderboard' as never)}
             className="flex-row items-center bg-clay-softer rounded-md"
             style={{ padding: 14, gap: 14, borderWidth: 1, borderColor: colors.claySoft }}
           >
