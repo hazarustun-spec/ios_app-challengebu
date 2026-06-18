@@ -10,6 +10,12 @@
 //
 // Rank uses standard competition ranking (1, 2, 2, 4) to match the
 // per-user `get_user_rankings` RPC's window function.
+//
+// Display set: players whose public_profiles row exists AND status is one of
+// 'active' | 'frozen_30' | 'hibernating_60'. Rows with 'inactive_90' or
+// 'anonymized' are excluded. Rank is computed over ALL elo_ratings rows first
+// (including excluded ones), so rank gaps appear where excluded players sit —
+// matching the real standing from get_user_rankings.
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -24,6 +30,8 @@ export interface LadderRow {
   rating: number;
   matchesPlayed: number;
   rank: number;
+  status: string;
+  availabilityWindows: string[];
 }
 
 interface EloRow {
@@ -37,7 +45,11 @@ interface NameRow {
   last_name: string;
   avatar_url: string | null;
   status: string;
+  availability_windows: string[] | null;
 }
+
+/** Statuses that are visible on the leaderboard (rank gaps occur for others). */
+const VISIBLE_STATUSES = new Set(['active', 'frozen_30', 'hibernating_60']);
 
 export function useLadder(category: string | undefined) {
   const query = useQuery<LadderRow[]>({
@@ -55,7 +67,7 @@ export function useLadder(category: string | undefined) {
           .order('rating', { ascending: false }),
         supabase
           .from('public_profiles')
-          .select('user_id, first_name, last_name, avatar_url, status'),
+          .select('user_id, first_name, last_name, avatar_url, status, availability_windows'),
       ]);
       if (eloRes.error) throw eloRes.error;
       if (nameRes.error) throw nameRes.error;
@@ -64,18 +76,22 @@ export function useLadder(category: string | undefined) {
       for (const n of (nameRes.data ?? []) as NameRow[]) nameMap.set(n.user_id, n);
 
       const out: LadderRow[] = [];
+      // Competition rank (1224 style) computed over ALL elo_ratings rows ordered
+      // by rating desc — same basis as get_user_rankings window function.
+      // Rank increments for every row in the full ordered set (including excluded
+      // players), so displayed rank reflects true standing even with gaps.
       let rank = 0;
       let seen = 0;
       let prevRating: number | null = null;
       for (const r of (eloRes.data ?? []) as EloRow[]) {
-        const n = nameMap.get(r.profile_id);
-        // Skip players without a public profile (anonymized) or not active.
-        if (!n || n.status !== 'active') continue;
         seen += 1;
         if (r.rating !== prevRating) {
           rank = seen;
           prevRating = r.rating;
         }
+        const n = nameMap.get(r.profile_id);
+        // Skip players without a public profile or with excluded status.
+        if (!n || !VISIBLE_STATUSES.has(n.status)) continue;
         out.push({
           profileId: r.profile_id,
           firstName: n.first_name,
@@ -84,6 +100,8 @@ export function useLadder(category: string | undefined) {
           rating: r.rating,
           matchesPlayed: r.matches_played,
           rank,
+          status: n.status,
+          availabilityWindows: n.availability_windows ?? [],
         });
       }
       return out;

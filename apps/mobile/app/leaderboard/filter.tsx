@@ -1,32 +1,41 @@
-// apps/mobile/app/leaderboard/filter.tsx — Plan 8 Phase F (F7).
+// apps/mobile/app/leaderboard/filter.tsx — Plan 8 Phase F (F7), store-wired.
 //
-// Ladder filter panel at `/leaderboard/filter`. Ports the design bundle's
-// `function FilterPanel(...)` (see
-//   docs/superpowers/specs/plan-8-design-bundle/project/app/screens-leaderboard.jsx)
-// to React Native + NativeWind.
+// Ladder filter panel at `/leaderboard/filter?cat=<category>`.
+// All state is now held in useLeaderboardFilterStore (Zustand) so both this
+// panel and the leaderboard tab stay in sync without prop-drilling.
 //
 // Controls:
-//   - ELO range (two `@react-native-community/slider` thumbs, 50pt gap floor)
-//   - Müsaitlik grid (2×2 — hafta içi sabah/akşam, hafta sonu sabah/akşam)
-//   - Donmuş + Hibernasyon toggles (Toggle primitive)
+//   - ELO range (two @react-native-community/slider thumbs, 50pt gap floor)
+//   - Müsaitlik grid (3×2 — hafta içi/sonu × sabah/öğlen/akşam, 6 total)
+//   - Donmuş + Hibernasyon toggles
 //
-// "Sıfırla" resets to defaults, primary CTA shows match count (mocked).
+// "Sıfırla" calls store.reset(), primary CTA shows the live filtered count
+// for the current category and navigates back on press.
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
 import { Toggle } from '../../components/ui/Toggle';
 import { Icon } from '../../components/ui/Icon';
 import { colors } from '../../theme/colors';
+import { useLadder } from '../../hooks/use-ladder';
+import {
+  useLeaderboardFilterStore,
+  applyLadderFilter,
+  type LadderFilter,
+} from '../../stores/leaderboard-filter-store';
 
+// 6 availability slots in natural order: weekday am/noon/eve then weekend am/noon/eve
 const SLOTS: Array<{ key: string; label: string }> = [
   { key: 'wd_am', label: 'Hafta içi sabah' },
+  { key: 'wd_noon', label: 'Hafta içi öğlen' },
   { key: 'wd_eve', label: 'Hafta içi akşam' },
   { key: 'we_am', label: 'Hafta sonu sabah' },
+  { key: 'we_noon', label: 'Hafta sonu öğlen' },
   { key: 'we_eve', label: 'Hafta sonu akşam' },
 ];
 
@@ -35,22 +44,36 @@ const ELO_MAX = 2000;
 const ELO_GAP = 50;
 
 export default function FilterPanel() {
-  const [lo, setLo] = useState(1100);
-  const [hi, setHi] = useState(1950);
-  const [avail, setAvail] = useState<string[]>(['wd_eve']);
-  const [frozen, setFrozen] = useState(true);
-  const [hib, setHib] = useState(false);
+  const params = useLocalSearchParams<{ cat?: string }>();
+  const cat = params.cat ?? 'erkek_tek';
 
-  const toggle = (k: string) =>
-    setAvail((a) => (a.includes(k) ? a.filter((x) => x !== k) : [...a, k]));
+  // Store reads
+  const eloMin = useLeaderboardFilterStore((s) => s.eloMin);
+  const eloMax = useLeaderboardFilterStore((s) => s.eloMax);
+  const availability = useLeaderboardFilterStore((s) => s.availability);
+  const showFrozen = useLeaderboardFilterStore((s) => s.showFrozen);
+  const showHibernating = useLeaderboardFilterStore((s) => s.showHibernating);
 
-  const reset = () => {
-    setLo(1100);
-    setHi(1950);
-    setAvail([]);
-    setFrozen(true);
-    setHib(false);
-  };
+  // Store actions
+  const setElo = useLeaderboardFilterStore((s) => s.setElo);
+  const toggleAvailability = useLeaderboardFilterStore((s) => s.toggleAvailability);
+  const setShowFrozen = useLeaderboardFilterStore((s) => s.setShowFrozen);
+  const setShowHibernating = useLeaderboardFilterStore((s) => s.setShowHibernating);
+  const reset = useLeaderboardFilterStore((s) => s.reset);
+
+  // Live count: fetch the same ladder that the leaderboard tab shows for `cat`,
+  // then apply the current filter values to get the matching player count.
+  const { rows } = useLadder(cat);
+
+  const currentFilter: LadderFilter = useMemo(
+    () => ({ eloMin, eloMax, availability, showFrozen, showHibernating }),
+    [eloMin, eloMax, availability, showFrozen, showHibernating],
+  );
+
+  const count = useMemo(
+    () => applyLadderFilter(rows, currentFilter).length,
+    [rows, currentFilter],
+  );
 
   return (
     <View className="flex-1 bg-bg">
@@ -77,15 +100,15 @@ export default function FilterPanel() {
               className="font-num font-bold"
               style={{ fontSize: 14, color: colors.clay }}
             >
-              {lo} – {hi}
+              {eloMin} – {eloMax}
             </Text>
           </View>
           <Slider
             minimumValue={ELO_MIN}
             maximumValue={ELO_MAX}
             step={10}
-            value={lo}
-            onValueChange={(v) => setLo(Math.min(v, hi - ELO_GAP))}
+            value={eloMin}
+            onValueChange={(v) => setElo(Math.min(v, eloMax - ELO_GAP), eloMax)}
             minimumTrackTintColor={colors.clay}
             maximumTrackTintColor={colors.surface3}
             thumbTintColor={colors.clay}
@@ -94,8 +117,8 @@ export default function FilterPanel() {
             minimumValue={ELO_MIN}
             maximumValue={ELO_MAX}
             step={10}
-            value={hi}
-            onValueChange={(v) => setHi(Math.max(v, lo + ELO_GAP))}
+            value={eloMax}
+            onValueChange={(v) => setElo(eloMin, Math.max(v, eloMin + ELO_GAP))}
             minimumTrackTintColor={colors.clay}
             maximumTrackTintColor={colors.surface3}
             thumbTintColor={colors.clay}
@@ -114,11 +137,11 @@ export default function FilterPanel() {
             style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
           >
             {SLOTS.map((s) => {
-              const on = avail.includes(s.key);
+              const on = availability.includes(s.key);
               return (
                 <Pressable
                   key={s.key}
-                  onPress={() => toggle(s.key)}
+                  onPress={() => toggleAvailability(s.key)}
                   className="flex-row items-center"
                   style={{
                     width: '48%',
@@ -130,7 +153,7 @@ export default function FilterPanel() {
                     backgroundColor: on ? colors.claySoft : colors.surface,
                   }}
                 >
-                  <CheckBox checked={on} onChange={() => toggle(s.key)} />
+                  <CheckBox checked={on} onChange={() => toggleAvailability(s.key)} />
                   <Text
                     className="font-sans font-bold text-text"
                     style={{ fontSize: 12.5 }}
@@ -146,7 +169,7 @@ export default function FilterPanel() {
         {/* Status toggles */}
         <View style={{ gap: 4 }}>
           <Pressable
-            onPress={() => setFrozen(!frozen)}
+            onPress={() => setShowFrozen(!showFrozen)}
             className="flex-row items-center"
             style={{ paddingVertical: 12, gap: 12 }}
           >
@@ -165,10 +188,10 @@ export default function FilterPanel() {
                 30+ gündür inaktif
               </Text>
             </View>
-            <Toggle value={frozen} onChange={setFrozen} />
+            <Toggle value={showFrozen} onChange={setShowFrozen} />
           </Pressable>
           <Pressable
-            onPress={() => setHib(!hib)}
+            onPress={() => setShowHibernating(!showHibernating)}
             className="flex-row items-center"
             style={{ paddingVertical: 12, gap: 12 }}
           >
@@ -187,14 +210,14 @@ export default function FilterPanel() {
                 Sezon arası dinlenenler
               </Text>
             </View>
-            <Toggle value={hib} onChange={setHib} />
+            <Toggle value={showHibernating} onChange={setShowHibernating} />
           </Pressable>
         </View>
       </ScrollView>
 
       <View style={{ padding: 20 }}>
         <Button full size="lg" onPress={() => router.back()}>
-          42 oyuncu göster
+          {`${count} oyuncu göster`}
         </Button>
       </View>
     </View>

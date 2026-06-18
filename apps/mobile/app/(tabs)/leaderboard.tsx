@@ -17,7 +17,7 @@
 //   - Top-3 podium strip (2nd left, 1st center elevated, 3rd right)
 //   - Rank rows for the rest of the ladder
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -38,6 +38,12 @@ import { useLadder, type LadderRow } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
 import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useAuthStore } from '../../stores/auth-store';
+import {
+  useLeaderboardFilterStore,
+  applyLadderFilter,
+  isFilterActive,
+  type LadderFilter,
+} from '../../stores/leaderboard-filter-store';
 
 type Cat =
   | 'erkek_tek'
@@ -103,6 +109,21 @@ export default function Leaderboard() {
   const myRankingsQ = useMyRankings();
   const seasonQ = useCurrentSeason();
 
+  // Filter store — read all filter fields as a stable object for useMemo.
+  const eloMin = useLeaderboardFilterStore((s) => s.eloMin);
+  const eloMax = useLeaderboardFilterStore((s) => s.eloMax);
+  const availability = useLeaderboardFilterStore((s) => s.availability);
+  const showFrozen = useLeaderboardFilterStore((s) => s.showFrozen);
+  const showHibernating = useLeaderboardFilterStore((s) => s.showHibernating);
+
+  const filter: LadderFilter = useMemo(
+    () => ({ eloMin, eloMax, availability, showFrozen, showHibernating }),
+    [eloMin, eloMax, availability, showFrozen, showHibernating],
+  );
+
+  const filtered = useMemo(() => applyLadderFilter(rows, filter), [rows, filter]);
+  const filterOn = isFilterActive(filter);
+
   const season = seasonQ.data ?? null;
   const daysLeft = season?.finale_starts_at ? daysUntil(season.finale_starts_at) : null;
   const sezonLabel = season ? seasonLabel(season.name, season.year) : 'Sezon';
@@ -115,7 +136,8 @@ export default function Leaderboard() {
     }
   }
 
-  // Find the current user's row in the ladder.
+  // Find the current user's row in the FULL (unfiltered) ladder so the "Sen"
+  // standing card always shows the user's real standing regardless of filters.
   const meRow: LadderRow | undefined = userId
     ? rows.find((r) => r.profileId === userId)
     : undefined;
@@ -127,10 +149,9 @@ export default function Leaderboard() {
       ? `${meRow.firstName} ${meRow.lastName}`.trim()
       : 'Sen';
 
-  // Podium: top 3 rows (already ranked desc)
-  const podiumRows = rows.slice(0, 3);
-  // Rest: rank 4+
-  const restRows = rows.slice(3);
+  // Podium: top 3 of the filtered set; rest: 4th onward of the filtered set.
+  const podiumRows = filtered.slice(0, 3);
+  const restRows = filtered.slice(3);
 
   // Progress bar: fraction of season elapsed (starts_at → finale_starts_at).
   let progressPct = 0.7; // fallback
@@ -144,17 +165,36 @@ export default function Leaderboard() {
   }
 
   const header = (
-    <NavHeader
-      large
-      title="Sıralama"
-      subtitle={
-        daysLeft !== null
-          ? `${sezonLabel} · ${daysLeft} gün kaldı`
-          : sezonLabel
-      }
-      actionIcon="filter"
-      onAction={() => router.push('/leaderboard/filter' as never)}
-    />
+    <View style={{ position: 'relative' }}>
+      <NavHeader
+        large
+        title="Sıralama"
+        subtitle={
+          daysLeft !== null
+            ? `${sezonLabel} · ${daysLeft} gün kaldı`
+            : sezonLabel
+        }
+        actionIcon="filter"
+        onAction={() =>
+          router.push((`/leaderboard/filter?cat=${cat}`) as never)
+        }
+      />
+      {/* Filter-active indicator dot — shown when a non-default filter is set */}
+      {filterOn && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 14,
+            right: 18,
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: colors.court,
+          }}
+        />
+      )}
+    </View>
   );
 
   if (isLoading) {
@@ -553,8 +593,8 @@ export default function Leaderboard() {
           </View>
         )}
 
-        {/* Empty state for the list */}
-        {rows.length === 0 ? (
+        {/* Empty state for the list (based on filtered count) */}
+        {filtered.length === 0 ? (
           <Text
             className="font-sans text-text-3"
             style={{ fontSize: 13, textAlign: 'center', paddingVertical: 24 }}
