@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
+import { AuthError } from '../_shared/auth-guard.ts';
+import { requireInternalOrAdmin } from '../_shared/internal-guard.ts';
 
 const inputSchema = z.object({ matchId: z.string().uuid() });
 
@@ -25,6 +27,7 @@ Deno.serve(async (req) => {
 
   try {
     const supa = getServiceClient();
+    await requireInternalOrAdmin(req, supa);
     const raw = await req.json();
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) return errorResponse('Invalid input', 400, parsed.error.format());
@@ -58,6 +61,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ awarded: result });
   } catch (err) {
+    if (err instanceof AuthError) return errorResponse(err.message, err.status);
     return internalError(err);
   }
 });

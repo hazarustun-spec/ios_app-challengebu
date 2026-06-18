@@ -19,6 +19,19 @@ Deno.serve(async (req) => {
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) return errorResponse('Invalid input', 400, parsed.error.format());
 
+    // Ownership check: if the token is already registered to a different user,
+    // delete that stale row before inserting ours. This prevents caller A from
+    // silently hijacking (IDOR-overwriting) caller B's push-token row.
+    const { data: existing } = await supa
+      .from('push_tokens')
+      .select('profile_id')
+      .eq('token', parsed.data.token)
+      .maybeSingle();
+
+    if (existing && existing.profile_id !== auth.userId) {
+      await supa.from('push_tokens').delete().eq('token', parsed.data.token);
+    }
+
     await supa.from('push_tokens').upsert(
       {
         profile_id: auth.userId,

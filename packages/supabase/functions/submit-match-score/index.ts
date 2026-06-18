@@ -41,7 +41,10 @@ Deno.serve(async (req) => {
       .eq('id', input.matchId)
       .single();
     if (!match) return errorResponse('Match not found', 404);
-    if (match.status !== 'awaiting_confirmation') return conflict(`Match is ${match.status}`);
+    // Reject re-submission once the match has been settled (confirmed, voided, disputed, etc.)
+    if (match.status !== 'awaiting_confirmation') {
+      return conflict(`Match is already ${match.status} — score submission not allowed`);
+    }
 
     const isParticipant =
       match.team_a_player_ids.includes(auth.userId) ||
@@ -83,15 +86,22 @@ Deno.serve(async (req) => {
     const allSubmitted = allPlayers.every((p) => latestPerPlayer.has(p));
     if (!allSubmitted) return jsonResponse({ matched: false });
 
-    const first = JSON.stringify(latestPerPlayer.get(allPlayers[0]));
-    const allMatch = allPlayers.every((p) => JSON.stringify(latestPerPlayer.get(p)) === first);
+    const firstKey = allPlayers[0];
+    const firstDetails = latestPerPlayer.get(firstKey) as Record<string, unknown>;
+    const firstStr = JSON.stringify(firstDetails);
+    const allMatch = allPlayers.every((p) => JSON.stringify(latestPerPlayer.get(p)) === firstStr);
     if (!allMatch) return jsonResponse({ matched: false });
 
+    // Write the agreed score from the stored (deduped) submissions, NOT from
+    // the current caller's live input. This prevents a flip-race where the
+    // final caller could sneak in a different score between consensus check
+    // and the DB write.
+    const agreedDetails = firstDetails;
     await supa.from('matches').update({
-      score_team_a: input.scoreTeamA,
-      score_team_b: input.scoreTeamB,
-      winner_team: input.winnerTeam,
-      score_details: scoreDetails,
+      score_team_a: agreedDetails.scoreTeamA as number,
+      score_team_b: agreedDetails.scoreTeamB as number,
+      winner_team: agreedDetails.winnerTeam as string,
+      score_details: agreedDetails,
     }).eq('id', match.id);
 
     return jsonResponse({ matched: true });

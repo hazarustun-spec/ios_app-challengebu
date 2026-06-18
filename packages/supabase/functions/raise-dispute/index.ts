@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     const { data: match } = await supa
       .from('matches')
-      .select('id, status, team_a_player_ids, team_b_player_ids')
+      .select('id, status, winner_team, team_a_player_ids, team_b_player_ids')
       .eq('id', parsed.data.matchId)
       .single();
     if (!match) return errorResponse('Match not found', 404);
@@ -29,6 +29,9 @@ Deno.serve(async (req) => {
     if (!allPlayers.includes(auth.userId)) return forbidden('Only participants can raise disputes');
     if (match.status === 'confirmed' || match.status === 'voided' || match.status === 'disputed') {
       return conflict(`Match is ${match.status} — cannot dispute`);
+    }
+    if (!match.winner_team) {
+      return errorResponse('Scores must be submitted before a dispute can be raised', 400);
     }
 
     const { data: dispute, error } = await supa.from('disputes').insert({
