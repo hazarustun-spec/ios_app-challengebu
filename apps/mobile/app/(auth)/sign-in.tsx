@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import {
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   Text,
@@ -27,6 +28,7 @@ import { Field } from '../../components/ui/Field';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { colors } from '../../theme/colors';
 import { supabase } from '../../lib/supabase';
+import { LEGAL_URLS } from '../../lib/legal';
 
 const QUICK_DOMAINS = [
   '@std.bogazici.edu.tr',
@@ -163,9 +165,23 @@ export default function SignIn() {
             className="font-sans flex-1 text-text-2"
             style={{ fontSize: 13, lineHeight: 19 }}
           >
-            <Text className="text-text font-bold">KVKK Aydınlatma Metni</Text>{' '}
+            <Text
+              className="font-bold"
+              style={{ color: colors.court, textDecorationLine: 'underline' }}
+              onPress={() => Linking.openURL(LEGAL_URLS.kvkk)}
+              accessibilityRole="link"
+            >
+              KVKK Aydınlatma Metni
+            </Text>{' '}
             ve{' '}
-            <Text className="text-text font-bold">Gizlilik Politikası</Text>
+            <Text
+              className="font-bold"
+              style={{ color: colors.court, textDecorationLine: 'underline' }}
+              onPress={() => Linking.openURL(LEGAL_URLS.privacy)}
+              accessibilityRole="link"
+            >
+              Gizlilik Politikası
+            </Text>
             {"'nı"} okudum, kabul ediyorum.
           </Text>
         </Pressable>

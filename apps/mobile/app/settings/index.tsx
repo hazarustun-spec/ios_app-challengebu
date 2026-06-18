@@ -27,13 +27,12 @@ import { Toggle } from '../../components/ui/Toggle';
 import { useSignOut } from '../../hooks/use-sign-out';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
+import { LEGAL_URLS } from '../../lib/legal';
 
 const APP_VERSION = '1.0.0';
 
-// Hosted Kurallar/Gizlilik page (GitHub Pages) — set once the legal pages are
-// published for App Store K3. While empty, the "Hakkında" row is a plain
-// version-info row (no chevron, no navigation) rather than a dead button.
-const RULES_URL = '';
+// Hosted legal pages (GitHub Pages) — wired for App Store legal compliance.
+const RULES_URL = LEGAL_URLS.terms;
 
 export default function Settings() {
   const signOut = useSignOut();
@@ -107,10 +106,22 @@ export default function Settings() {
             icon="info"
             title="Hakkında & kurallar"
             subtitle={`Tennis Challenger · v${APP_VERSION}`}
-            chevron={!!RULES_URL}
-            onPress={() => {
-              if (RULES_URL) Linking.openURL(RULES_URL);
-            }}
+            chevron
+            onPress={() => Linking.openURL(RULES_URL)}
+          />
+          <Divider />
+          <ListRow
+            icon="eye"
+            title="Gizlilik Politikası"
+            chevron
+            onPress={() => Linking.openURL(LEGAL_URLS.privacy)}
+          />
+          <Divider />
+          <ListRow
+            icon="info"
+            title="KVKK Aydınlatma Metni"
+            chevron
+            onPress={() => Linking.openURL(LEGAL_URLS.kvkk)}
           />
           {isAdmin && (
             <>
