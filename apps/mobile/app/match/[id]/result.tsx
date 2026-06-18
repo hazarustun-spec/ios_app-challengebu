@@ -416,7 +416,8 @@ const styles = StyleSheet.create({
     height: GLOW_SIZE,
     borderRadius: GLOW_SIZE / 2,
     backgroundColor: colors.win,
-    // Sit behind the Avatar (Avatar renders after in the same container)
-    zIndex: -1,
+    // Rendered before the Avatar in the same container, so paint order already
+    // layers it behind — no negative zIndex (which can clip behind the screen
+    // background on iOS).
   },
 });
