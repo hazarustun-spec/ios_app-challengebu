@@ -1,6 +1,19 @@
 import { assertEquals } from 'jsr:@std/assert';
 import { adminClient, cleanupTestData, createTestUser, invokeFunction } from './helpers.ts';
 
+// A match is only disputable once both players have agreed on a score (winner_team is set).
+// We submit matching scores from both players so the match has a winner_team before
+// any test tries to raise a dispute — this reflects the real production lifecycle.
+const disputeScore = {
+  scoreTeamA: 4,
+  scoreTeamB: 2,
+  winnerTeam: 'a' as const,
+  els: [
+    { el: 1, winner: 'a' }, { el: 2, winner: 'a' }, { el: 3, winner: 'b' },
+    { el: 4, winner: 'b' }, { el: 5, winner: 'a' }, { el: 6, winner: 'a' },
+  ],
+};
+
 async function setupAwaitingMatch(): Promise<{
   aliceToken: string; bobToken: string; carolToken: string; matchId: string;
 }> {
@@ -24,11 +37,18 @@ async function setupAwaitingMatch(): Promise<{
     { requestId: (req as { id: string }).id },
     bob.accessToken,
   );
+  const matchId = (acc as { matchId: string }).matchId;
+
+  // Submit matching scores from both players so winner_team is set.
+  // A dispute can only be raised after a score has been submitted (security guard).
+  await invokeFunction('submit-match-score', { matchId, ...disputeScore }, alice.accessToken);
+  await invokeFunction('submit-match-score', { matchId, ...disputeScore }, bob.accessToken);
+
   return {
     aliceToken: alice.accessToken,
     bobToken: bob.accessToken,
     carolToken: carol.accessToken,
-    matchId: (acc as { matchId: string }).matchId,
+    matchId,
   };
 }
 
@@ -90,18 +110,9 @@ Deno.test('raise-dispute: cannot dispute already-disputed match', async () => {
 
 Deno.test('raise-dispute: cannot dispute confirmed match', async () => {
   await cleanupTestData();
+  // setupAwaitingMatch already submits matching scores; just confirm the match.
   const { aliceToken, bobToken, matchId } = await setupAwaitingMatch();
 
-  // Submit and confirm the match
-  const score = {
-    matchId, scoreTeamA: 4, scoreTeamB: 2, winnerTeam: 'a' as const,
-    els: [
-      { el: 1, winner: 'a' }, { el: 2, winner: 'a' }, { el: 3, winner: 'b' },
-      { el: 4, winner: 'b' }, { el: 5, winner: 'a' }, { el: 6, winner: 'a' },
-    ],
-  };
-  await invokeFunction('submit-match-score', score, aliceToken);
-  await invokeFunction('submit-match-score', score, bobToken);
   await invokeFunction('confirm-match', { matchId }, aliceToken);
   await invokeFunction('confirm-match', { matchId }, bobToken);
 

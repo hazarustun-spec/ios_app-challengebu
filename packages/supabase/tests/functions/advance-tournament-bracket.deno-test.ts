@@ -1,5 +1,21 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, cleanupTestData, createTestUser, invokeFunction } from './helpers.ts';
+import { adminClient, cleanupTestData, createTestUser, FUNCTIONS_URL, ANON_KEY, SERVICE_ROLE_KEY } from './helpers.ts';
+
+/** Invoke advance-tournament-bracket as an internal service call (service role key). */
+async function invokeAdvanceBracket(body: unknown): Promise<{ status: number; body: unknown }> {
+  const res = await fetch(`${FUNCTIONS_URL}/advance-tournament-bracket`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
+      'apikey': ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  const contentType = res.headers.get('content-type') ?? '';
+  const responseBody = contentType.includes('application/json') ? await res.json() : await res.text();
+  return { status: res.status, body: responseBody };
+}
 
 Deno.test('advance-tournament-bracket: writes winner seed into parent slot', async () => {
   await cleanupTestData();
@@ -63,7 +79,7 @@ Deno.test('advance-tournament-bracket: writes winner seed into parent slot', asy
     seed_b: 8,
   });
 
-  const { status, body } = await invokeFunction('advance-tournament-bracket', { matchId: m!.id });
+  const { status, body } = await invokeAdvanceBracket({ matchId: m!.id });
   assertEquals(status, 200);
   assertEquals((body as { advanced: boolean }).advanced, true);
 
@@ -140,7 +156,7 @@ Deno.test('advance-tournament-bracket: doubles (size 4) Final flips tournament t
     seed_b: 4,
   });
 
-  const { status, body } = await invokeFunction('advance-tournament-bracket', { matchId: m!.id });
+  const { status, body } = await invokeAdvanceBracket({ matchId: m!.id });
   assertEquals(status, 200);
   const respBody = body as { advanced: boolean; tournamentCompleted?: boolean };
   assertEquals(respBody.advanced, false);
@@ -198,7 +214,7 @@ Deno.test('advance-tournament-bracket: ignores non-tournament match', async () =
     confirmed_by: [alice.userId, bob.userId],
   }).select('id').single();
 
-  const { status, body } = await invokeFunction('advance-tournament-bracket', { matchId: m!.id });
+  const { status, body } = await invokeAdvanceBracket({ matchId: m!.id });
   assertEquals(status, 200);
   assertEquals((body as { advanced: boolean }).advanced, false);
 });
