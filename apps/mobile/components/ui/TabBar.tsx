@@ -1,48 +1,39 @@
-// TabBar primitive — Plan 8 Phase C8.
+// TabBar primitive — Plan 8 Phase C8 (+ tab-switch animations).
 //
 // Ports the design bundle's `TabBar` (see
-// docs/superpowers/specs/plan-8-design-bundle/project/app/shell.jsx
-// `function TabBar(...)`) to React Native + NativeWind, packaged as a
-// drop-in `tabBar` prop for Expo Router's `<Tabs />` navigator.
+// docs/superpowers/specs/plan-8-design-bundle/project/app/shell.jsx) to React
+// Native + NativeWind, packaged as a drop-in `tabBar` prop for Expo Router's
+// `<Tabs />` navigator.
 //
 // Visual structure:
 //   Lime pill container (h-16, rounded-pill, 1.5px ink border)
-//   ├─ Sıralama  (48x48 circle, court-blue fill when active, otherwise transparent)
-//   ├─ Maçlar    (idem)
-//   ├─ "+"       central, 52x52 court-blue circle, 2px WHITE ring, plus glyph;
-//   │            never settles on a tab — taps navigate to the modal
-//   │            `new-match` route
-//   ├─ Bildirim  (idem) + pink-deep numeric badge bubble (hidden when active)
-//   └─ Profil    (idem)
-//   Safe-area inset is added below via `react-native-safe-area-context`.
+//   ├─ Anasayfa · Maçlar · "+" (center) · Sıralama · Profil
+//   The active highlight is a single court-blue circle that SLIDES between
+//   tabs (the previous version snapped instantly). Each icon springs on press.
+//   The central "+" keeps a permanent court-blue fill + white ring and never
+//   settles on a tab (taps route to the new-match modal).
 //
-// React Navigation integration:
-//   The component is shaped to satisfy the `tabBar` prop signature of
-//   `expo-router` / `@react-navigation/bottom-tabs`. We accept the same
-//   `state` + `navigation` props the navigator passes in.
-//
-//   `@react-navigation/bottom-tabs` is not installed as a direct dep — it's
-//   only present transitively inside `expo-router`'s `build/` tree. To keep
-//   type-checking honest without forcing an extra `bun add` we define a
-//   local structural type that captures the slice of `BottomTabBarProps` we
-//   actually consume (`state.index`, `state.routes`, `navigation.navigate`,
-//   `navigation.emit`). Anything Expo Router passes that we don't read is
-//   accepted via the optional `descriptors` / `insets` indexed fields.
-//
-// Slot order matches the Plan 8 design source: ranking, matches, plus,
-// notifications, profile. The Expo Router screen names in `(tabs)/_layout.tsx`
-// must be created in the same order; the wiring lives in Phase E1.
+// React Navigation integration: shaped to satisfy the `tabBar` prop of
+// expo-router / @react-navigation/bottom-tabs. We accept the `state` +
+// `navigation` props the navigator passes and read only the slice we need
+// (see the structural shims below).
 
-import { Pressable, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import { Icon, type IconName } from './Icon';
 
 // ---------------------------------------------------------------------------
-// Structural BottomTabBarProps shim
+// Structural BottomTabBarProps shim — only the fields we touch are typed.
 // ---------------------------------------------------------------------------
-// Only the fields we touch are typed. Expo Router passes the full
-// `BottomTabBarProps` shape at runtime; we ignore everything else.
 
 interface TabRouteLike {
   key: string;
@@ -54,13 +45,6 @@ interface TabStateLike {
   routes: TabRouteLike[];
 }
 
-// `emit` in `@react-navigation/bottom-tabs` is overloaded per-event-type
-// with a literal `canPreventDefault: true` for `tabPress`. Our shim only
-// fires `tabPress` and only reads `defaultPrevented`. Typing the argument
-// AND the return as `any` keeps the shape structurally compatible with
-// whatever the real bottom-tabs typings hand us at runtime — the
-// alternative (writing the full overload by hand) duplicates upstream
-// complexity for zero local benefit.
 interface TabNavigationLike {
   navigate: (name: string) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,8 +54,6 @@ interface TabNavigationLike {
 export interface TabBarProps {
   state: TabStateLike;
   navigation: TabNavigationLike;
-  // The runtime React Navigation type ships `descriptors` + `insets`; we
-  // accept them but never read them, so they stay optional + opaque.
   descriptors?: unknown;
   insets?: unknown;
 }
@@ -92,66 +74,165 @@ const SLOTS: SlotConfig[] = [
   { name: 'index', icon: 'home' }, // Anasayfa (landing)
   { name: 'matches', icon: 'matches' },
   { name: 'new-match', icon: 'plus', isCenter: true },
-  { name: 'leaderboard', icon: 'ranking' }, // Sıralama (Stack push)
+  { name: 'leaderboard', icon: 'ranking' }, // Sıralama
   { name: 'profile', icon: 'user' },
 ];
+
+const SLOT_SIZE = 48;
+
+// ---------------------------------------------------------------------------
+// TabSlot — one pressable icon with a press-bounce.
+// ---------------------------------------------------------------------------
+
+interface TabSlotProps {
+  slot: SlotConfig;
+  isActive: boolean;
+  onPress: () => void;
+  onLayout: (e: LayoutChangeEvent) => void;
+}
+
+function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
+  const scale = useSharedValue(1);
+  const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  const isCenter = !!slot.isCenter;
+  const inkBg = isActive || isCenter;
+  const size = isCenter ? 52 : SLOT_SIZE;
+
+  const handlePress = () => {
+    // Quick squash → spring back.
+    scale.value = withSequence(
+      withTiming(0.8, { duration: 90 }),
+      withSpring(1, { damping: 9, stiffness: 320 }),
+    );
+    onPress();
+  };
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      onLayout={onLayout}
+      accessibilityRole="button"
+      accessibilityLabel={slot.name}
+      accessibilityState={{ selected: isActive }}
+      style={{ width: size, height: size }}
+      className={[
+        'items-center justify-center rounded-full',
+        // The center keeps a permanent fill + white ring. Non-center actives
+        // get their highlight from the sliding indicator, so their own
+        // background stays transparent.
+        isCenter ? 'bg-court border-2 border-white' : 'bg-transparent',
+      ].join(' ')}
+    >
+      <Animated.View style={iconStyle}>
+        <Icon
+          name={slot.icon}
+          size={isCenter ? 25 : 23}
+          color={inkBg ? '#FFFFFF' : colors.onLime}
+          stroke={isCenter ? 2.7 : isActive ? 2.4 : 2.1}
+        />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// TabBar
+// ---------------------------------------------------------------------------
 
 export function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const activeIndex = state.index;
 
+  // Measured top-left of each slot within the inner (padding-free) row, so the
+  // sliding indicator can land exactly on the active slot.
+  const positions = useRef<Record<number, { x: number; y: number }>>({});
+  const indicatorX = useSharedValue<number | null>(null);
+  const indicatorY = useSharedValue(0);
+
+  const onSlotLayout = (i: number) => (e: LayoutChangeEvent) => {
+    const { x, y } = e.nativeEvent.layout;
+    positions.current[i] = { x, y };
+    if (i === activeIndex) {
+      indicatorY.value = y;
+      if (indicatorX.value === null) indicatorX.value = x; // place without animating on first paint
+    }
+  };
+
+  useEffect(() => {
+    const p = positions.current[activeIndex];
+    if (!p) return;
+    indicatorY.value = p.y;
+    if (indicatorX.value === null) {
+      indicatorX.value = p.x;
+    } else {
+      indicatorX.value = withSpring(p.x, { damping: 16, stiffness: 220, mass: 0.8 });
+    }
+  }, [activeIndex, indicatorX, indicatorY]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: indicatorX.value === null ? 0 : 1,
+    transform: [
+      { translateX: indicatorX.value ?? 0 },
+      { translateY: indicatorY.value },
+    ],
+  }));
+
   return (
     <View style={{ paddingBottom: insets.bottom + 8 }} className="px-4 pt-2">
-      <View className="h-16 flex-row items-center justify-between rounded-pill border-base border-border-strong bg-lime px-2">
-        {SLOTS.map((slot, i) => {
-          const route = state.routes[i];
-          if (!route) return null;
-          const isActive = activeIndex === i;
-          const isCenter = !!slot.isCenter;
-          const inkBg = isActive || isCenter;
-          const size = isCenter ? 52 : 48;
+      <View className="h-16 flex-row items-center rounded-pill border-base border-border-strong bg-lime px-2">
+        {/* Inner padding-free row: shared origin for the indicator + slots. */}
+        <View
+          style={{ flex: 1, position: 'relative' }}
+          className="flex-row items-center justify-between"
+        >
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              {
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: SLOT_SIZE,
+                height: SLOT_SIZE,
+                borderRadius: SLOT_SIZE / 2,
+                backgroundColor: colors.court,
+              },
+              indicatorStyle,
+            ]}
+          />
+          {SLOTS.map((slot, i) => {
+            const route = state.routes[i];
+            if (!route) return null;
+            const isActive = activeIndex === i;
+            const isCenter = !!slot.isCenter;
 
-          const handlePress = () => {
-            // Central "+" always routes to the modal — never stays on a tab.
-            if (isCenter) {
-              navigation.navigate(slot.name);
-              return;
-            }
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isActive && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+            const handlePress = () => {
+              if (isCenter) {
+                navigation.navigate(slot.name);
+                return;
+              }
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isActive && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          return (
-            <Pressable
-              key={slot.name}
-              onPress={handlePress}
-              accessibilityRole="button"
-              accessibilityLabel={slot.name}
-              accessibilityState={{ selected: isActive }}
-              style={{ width: size, height: size }}
-              className={[
-                'items-center justify-center rounded-full',
-                inkBg ? 'bg-court' : 'bg-transparent',
-                isCenter ? 'border-2 border-white' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <Icon
-                name={slot.icon}
-                size={isCenter ? 25 : 23}
-                color={inkBg ? '#FFFFFF' : colors.onLime}
-                stroke={isCenter ? 2.7 : isActive ? 2.4 : 2.1}
+            return (
+              <TabSlot
+                key={slot.name}
+                slot={slot}
+                isActive={isActive}
+                onPress={handlePress}
+                onLayout={onSlotLayout(i)}
               />
-            </Pressable>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
     </View>
   );
