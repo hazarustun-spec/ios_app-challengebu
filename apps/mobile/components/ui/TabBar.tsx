@@ -20,6 +20,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -100,6 +101,8 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
   const size = isCenter ? 52 : SLOT_SIZE;
 
   const handlePress = () => {
+    // Light haptic tap (best-effort; no-op on the simulator/unsupported).
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     // Quick squash → spring back.
     scale.value = withSequence(
       withTiming(0.8, { duration: 90 }),
