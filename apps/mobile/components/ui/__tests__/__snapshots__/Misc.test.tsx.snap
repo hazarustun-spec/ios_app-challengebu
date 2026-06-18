@@ -171,16 +171,59 @@ exports[`GreetHeader without sub line 1`] = `
 }
 `;
 
-exports[`LevelRing mid-tier ELO forwards the level color as Avatar ring 1`] = `
+exports[`LevelRing mid-tier ELO renders Avatar (no ring prop) + SVG overlay 1`] = `
 {
-  "children": [],
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "name": "Mert Şahin",
+        "size": 82,
+        "uri": undefined,
+      },
+      "type": "Avatar",
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "props": {
+            "animatedProps": {
+              "strokeDashoffset": 0,
+            },
+            "cx": 41,
+            "cy": 41,
+            "fill": "none",
+            "r": 39.36,
+            "stroke": "#2742A0",
+            "strokeDasharray": 247.3228931048462,
+            "strokeLinecap": "round",
+            "strokeWidth": 3.28,
+            "transform": "rotate(-90 41 41)",
+          },
+          "type": "Circle",
+        },
+      ],
+      "props": {
+        "height": 82,
+        "pointerEvents": "none",
+        "style": {
+          "left": 0,
+          "position": "absolute",
+          "top": 0,
+        },
+        "width": 82,
+      },
+      "type": "Svg",
+    },
+  ],
   "props": {
-    "name": "Mert Şahin",
-    "ring": "#2742A0",
-    "size": 82,
-    "uri": undefined,
+    "style": {
+      "height": 82,
+      "width": 82,
+    },
   },
-  "type": "Avatar",
+  "type": "View",
 }
 `;
 
@@ -643,42 +686,88 @@ exports[`ScoreInput disabled drops onPress + adds opacity-50 1`] = `
 
 exports[`Skel default size 1`] = `
 {
-  "children": [],
-  "props": {
-    "style": [
-      {
-        "opacity": 0.45,
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "style": [
+          {
+            "backgroundColor": "rgba(255,255,255,0.65)",
+            "borderRadius": 4,
+            "bottom": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": 80,
+          },
+          {
+            "transform": [
+              {
+                "translateX": 80,
+              },
+            ],
+          },
+        ],
       },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "onLayout": "[Function]",
+    "style": [
       {
         "backgroundColor": "#F3F3F1",
         "borderRadius": 6,
         "height": 16,
+        "overflow": "hidden",
         "width": "100%",
       },
       undefined,
     ],
   },
-  "type": "Animated.View",
+  "type": "View",
 }
 `;
 
 exports[`Skel custom dimensions 1`] = `
 {
-  "children": [],
-  "props": {
-    "style": [
-      {
-        "opacity": 0.45,
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "style": [
+          {
+            "backgroundColor": "rgba(255,255,255,0.65)",
+            "borderRadius": 4,
+            "bottom": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": 80,
+          },
+          {
+            "transform": [
+              {
+                "translateX": 80,
+              },
+            ],
+          },
+        ],
       },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "onLayout": "[Function]",
+    "style": [
       {
         "backgroundColor": "#F3F3F1",
         "borderRadius": 16,
         "height": 32,
+        "overflow": "hidden",
         "width": 120,
       },
       undefined,
     ],
   },
-  "type": "Animated.View",
+  "type": "View",
 }
 `;

@@ -56,30 +56,53 @@ mock.module('react-native-svg', () => ({
 // and replace the worklet hooks with deterministic no-ops. Real reanimated
 // runs these on the UI thread via a worklet runtime bun:test cannot
 // provide.
-mock.module('react-native-reanimated', () => ({
-  default: {
+mock.module('react-native-reanimated', () => {
+  const AnimatedNamespace = {
     View: makeTag('Animated.View'),
-  },
-  useSharedValue: (initial: number) => ({ value: initial }),
-  useDerivedValue: (factory: () => unknown) => {
-    let value: unknown;
-    try {
-      value = factory();
-    } catch {
-      value = 0;
-    }
-    return { value };
-  },
-  useAnimatedStyle: (factory: () => Record<string, unknown>) => {
-    try {
-      return factory();
-    } catch {
-      return {};
-    }
-  },
-  withTiming: (toValue: number) => toValue,
-  withRepeat: (toValue: unknown) => toValue,
-}));
+    createAnimatedComponent: (C: unknown) => C,
+  };
+  return {
+    default: AnimatedNamespace,
+    useSharedValue: (initial: number) => ({ value: initial }),
+    useDerivedValue: (factory: () => unknown) => {
+      let value: unknown;
+      try {
+        value = factory();
+      } catch {
+        value = 0;
+      }
+      return { value };
+    },
+    useAnimatedStyle: (factory: () => Record<string, unknown>) => {
+      try {
+        return factory();
+      } catch {
+        return {};
+      }
+    },
+    useAnimatedProps: (factory: () => Record<string, unknown>) => {
+      try {
+        return factory();
+      } catch {
+        return {};
+      }
+    },
+    withTiming: (toValue: number) => toValue,
+    withRepeat: (toValue: unknown) => toValue,
+    withDelay: (_delay: number, toValue: unknown) => toValue,
+    interpolate: (value: number, _input: number[], output: number[]) => {
+      // Simple linear interpolation stub.
+      if (!output || output.length < 2) return 0;
+      return value <= 0 ? output[0] : value >= 1 ? output[output.length - 1] : output[0];
+    },
+    Easing: {
+      inOut: () => (t: number) => t,
+      ease: (t: number) => t,
+      out: () => (t: number) => t,
+      cubic: (t: number) => t,
+    },
+  };
+});
 
 // Import AFTER the mocks so the components pick up the stubs.
 const { GreetHeader } = await import('../GreetHeader');
@@ -132,7 +155,7 @@ function normalize(node: unknown): Normalized {
     unknown
   >;
   // Drop callback identities so snapshots stay stable across runs.
-  for (const key of ['onPress', 'onChange', 'onBellPress', 'onAction'] as const) {
+  for (const key of ['onPress', 'onChange', 'onBellPress', 'onAction', 'onLayout'] as const) {
     if (key in rest) {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
@@ -217,22 +240,23 @@ describe('GreetHeader', () => {
 // ---------------------------------------------------------------------------
 
 describe('LevelRing', () => {
-  test('mid-tier ELO forwards the level color as Avatar ring', () => {
-    // LevelRing renders <Avatar ...> with the level color forwarded to
-    // `ring`. We snapshot the (un-rendered) Avatar element and assert on
-    // its props directly — calling Avatar would require rendering through
-    // React (initials hashing, palette lookup, ring math) which is
-    // already covered by Avatar's own snapshot test.
+  test('mid-tier ELO renders Avatar (no ring prop) + SVG overlay', () => {
+    // Wave 1: LevelRing now overlays an animated SVG ring instead of
+    // forwarding the `ring` color to Avatar's border. The Avatar is
+    // rendered WITHOUT `ring` (undefined) and an Svg is placed on top.
     const tree = normalize(
       LevelRing({ name: 'Mert Şahin', elo: 1612 }),
     );
     expect(tree).toMatchSnapshot();
-    // ELO 1612 falls in the "rekabet" level → color #2742A0.
+    // Avatar present with correct name + size but no ring prop.
     const avatar = find(tree, (n) => n.type === 'Avatar');
     expect(avatar).not.toBeNull();
-    expect(avatar?.props.ring).toBe('#2742A0');
+    expect(avatar?.props.ring).toBeUndefined();
     expect(avatar?.props.name).toBe('Mert Şahin');
     expect(avatar?.props.size).toBe(82);
+    // SVG overlay present somewhere in the tree.
+    const svg = find(tree, (n) => n.type === 'Svg');
+    expect(svg).not.toBeNull();
   });
 });
 

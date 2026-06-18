@@ -23,6 +23,7 @@
 
 import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
 import { Icon } from '../../components/ui/Icon';
@@ -147,7 +148,7 @@ export default function HomeScreen() {
   const categoryHeroLabel = CATEGORY_LABELS[primaryCat] ?? primaryCat.toUpperCase();
 
   return (
-    <View className="flex-1 bg-bg">
+    <ScreenEnter className="flex-1 bg-bg">
       <GreetHeader
         name={displayName}
         sub="Bugün maç günü mü?"
@@ -460,7 +461,7 @@ export default function HomeScreen() {
           </Pressable>
         )}
       </ScrollView>
-    </View>
+    </ScreenEnter>
   );
 }
 

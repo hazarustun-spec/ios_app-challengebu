@@ -27,6 +27,7 @@
 
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Segmented } from '../../components/ui/Segmented';
@@ -148,7 +149,7 @@ export default function MatchesTab() {
   }
 
   return (
-    <View className="flex-1 bg-bg">
+    <ScreenEnter className="flex-1 bg-bg">
       <NavHeader
         large
         title="Maçlar"
@@ -264,7 +265,7 @@ export default function MatchesTab() {
           />
         )}
       </ScrollView>
-    </View>
+    </ScreenEnter>
   );
 }
 

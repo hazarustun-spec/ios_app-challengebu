@@ -22,6 +22,7 @@
 //   - Display name / profile extras: useAuthStore.profile
 
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { LevelRing } from '../../components/ui/LevelRing';
@@ -174,7 +175,7 @@ export default function ProfileTab() {
   }
 
   return (
-    <View className="flex-1 bg-bg">
+    <ScreenEnter className="flex-1 bg-bg">
       <NavHeader
         large
         title="Profil"
@@ -482,6 +483,6 @@ export default function ProfileTab() {
           )}
         </View>
       </ScrollView>
-    </View>
+    </ScreenEnter>
   );
 }

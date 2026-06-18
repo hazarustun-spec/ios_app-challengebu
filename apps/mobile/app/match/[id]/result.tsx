@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ScreenEnter } from '../../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
@@ -142,7 +143,7 @@ export default function MatchResult() {
   }
 
   return (
-    <View className="flex-1 bg-bg">
+    <ScreenEnter className="flex-1 bg-bg">
       <NavHeader
         title="Maç Sonucu"
         close
@@ -322,6 +323,6 @@ export default function MatchResult() {
           myElo={ratingBefore ?? undefined}
         />
       </ShareSheet>
-    </View>
+    </ScreenEnter>
   );
 }

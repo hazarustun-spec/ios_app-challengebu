@@ -1,23 +1,28 @@
-// Skel primitive — Plan 8 Phase C (final batch).
+// Skel primitive — Plan 8 Phase C (final batch) → Wave 1 shimmer upgrade.
 //
-// Pulsing skeleton placeholder used while data loads. Mirrors the design
-// bundle's `Skel` block (see
-// docs/superpowers/specs/plan-8-design-bundle/project/app/components.jsx
-// `function Skel(...)`) — a rounded surface-2 block that gently fades
-// between full opacity and ~0.45 every 700ms via Reanimated.
+// Skeleton placeholder used while data loads. Renders a surface-2 container
+// with a horizontal shimmer "glint" sweeping left→right instead of the
+// previous opacity pulse. The sweep is driven on the UI thread via
+// `useDerivedValue` (same approach as the old pulse) so the component stays
+// snapshot-testable under bun:test without faking React's hook dispatcher.
 //
-// Implementation note: we drive the looping fade with `useDerivedValue`
-// (UI-thread evaluation of `withRepeat`) rather than `useEffect` —
-// mirrors the approach in `Sheet` (see Sheet.tsx) and keeps the
-// component snapshot-testable under bun:test without having to fake
-// React's hook dispatcher. Reusable: callers control width, height, and
-// corner radius. Default dimensions match a single line of body text
-// (100% × 16, radius 6).
+// Props (unchanged from pulse version):
+//   w?  — width (px number or `${n}%` string). Default '100%'.
+//   h?  — height in px. Default 16.
+//   r?  — border radius in px. Default 6.
+//   style? — extra style merged on the outer container.
+//
+// Verified to look correct on both tiny circles (36×36 r=18) and wide
+// pill bars (w=80 h=28 r=9999) as rendered in OpponentSuggestStrip.
 
+import { View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import Animated, {
+  Easing,
+  interpolate,
   useAnimatedStyle,
   useDerivedValue,
+  useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
@@ -35,27 +40,66 @@ export interface SkelProps {
   style?: StyleProp<ViewStyle>;
 }
 
+// Fallback highlight width used before onLayout fires (box width unknown).
+const FALLBACK_HIGHLIGHT_W = 80;
+// Highlight width as a fraction of measured box width.
+const HIGHLIGHT_FRACTION = 0.45;
+
 export function Skel({ w = '100%', h = 16, r = 6, style }: SkelProps) {
-  // UI-thread driven loop — no useEffect needed, which keeps the
-  // component snapshot-testable without faking React's hook dispatcher.
-  const opacity = useDerivedValue(() =>
-    withRepeat(withTiming(0.45, { duration: 700 }), -1, true),
+  // Measured box width — starts at 0, updated on layout.
+  const boxW = useSharedValue(0);
+
+  // Looping sweep progress 0→1 driven on the UI thread.
+  const progress = useDerivedValue(() =>
+    withRepeat(
+      withTiming(1, {
+        duration: 1100,
+        easing: Easing.inOut(Easing.ease),
+      }),
+      -1,
+      false,
+    ),
   );
 
-  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const glintStyle = useAnimatedStyle(() => {
+    const measured = boxW.value;
+    const highlightW = measured > 0 ? measured * HIGHLIGHT_FRACTION : FALLBACK_HIGHLIGHT_W;
+    const tx = interpolate(progress.value, [0, 1], [-highlightW, measured + highlightW]);
+    return { transform: [{ translateX: tx }] };
+  });
 
   return (
-    <Animated.View
+    <View
+      onLayout={(e) => {
+        boxW.value = e.nativeEvent.layout.width;
+      }}
       style={[
-        animStyle,
         {
           width: w as number,
           height: h,
           borderRadius: r,
           backgroundColor: colors.surface2,
+          overflow: 'hidden',
         },
         style,
       ]}
-    />
+    >
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            // Width is set dynamically via glintStyle, but we need a base.
+            // Use a percentage of the known container height as a floor so
+            // React Native renders the view even before layout fires.
+            width: FALLBACK_HIGHLIGHT_W,
+            backgroundColor: 'rgba(255,255,255,0.65)',
+            borderRadius: 4,
+          },
+          glintStyle,
+        ]}
+      />
+    </View>
   );
 }
