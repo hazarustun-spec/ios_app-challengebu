@@ -187,7 +187,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
   }));
 
   return (
-    <View style={{ paddingBottom: insets.bottom + 8 }} className="px-4 pt-2">
+    <View style={{ paddingBottom: insets.bottom + 8 }} className="bg-bg px-4 pt-2">
       <View className="h-16 flex-row items-center rounded-pill border-base border-border-strong bg-lime px-2">
         {/* Inner padding-free row: shared origin for the indicator + slots. */}
         <View
