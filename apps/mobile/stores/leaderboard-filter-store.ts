@@ -7,6 +7,7 @@
 
 import { create } from 'zustand';
 import type { LadderRow } from '../hooks/use-ladder';
+import { SLOT_TO_DB } from '../lib/availability';
 
 // ─── Public types ────────────────────────────────────────────────────────────
 
@@ -44,10 +45,11 @@ export function applyLadderFilter(rows: LadderRow[], f: LadderFilter): LadderRow
   return rows.filter((row) => {
     // ELO range
     if (row.rating < f.eloMin || row.rating > f.eloMax) return false;
-    // Availability: empty means "any"
+    // Availability: empty means "any". Filter holds UI slot keys (wd_am…);
+    // the row stores DB values (weekday_morning…), so translate before compare.
     if (
       f.availability.length > 0 &&
-      !f.availability.some((k) => row.availabilityWindows.includes(k))
+      !f.availability.some((k) => row.availabilityWindows.includes(SLOT_TO_DB[k] ?? k))
     ) {
       return false;
     }

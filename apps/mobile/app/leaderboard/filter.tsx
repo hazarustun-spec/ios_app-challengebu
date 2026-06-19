@@ -28,16 +28,7 @@ import {
   applyLadderFilter,
   type LadderFilter,
 } from '../../stores/leaderboard-filter-store';
-
-// 6 availability slots in natural order: weekday am/noon/eve then weekend am/noon/eve
-const SLOTS: Array<{ key: string; label: string }> = [
-  { key: 'wd_am', label: 'Hafta içi sabah' },
-  { key: 'wd_noon', label: 'Hafta içi öğlen' },
-  { key: 'wd_eve', label: 'Hafta içi akşam' },
-  { key: 'we_am', label: 'Hafta sonu sabah' },
-  { key: 'we_noon', label: 'Hafta sonu öğlen' },
-  { key: 'we_eve', label: 'Hafta sonu akşam' },
-];
+import { AVAILABILITY_SLOTS as SLOTS } from '../../lib/availability';
 
 const ELO_MIN = 900;
 const ELO_MAX = 2000;

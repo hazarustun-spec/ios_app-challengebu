@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
+import { SLOT_TO_DB } from '../lib/availability';
 import { useAuthStore } from '../stores/auth-store';
 import type {
-  AvailabilitySlot,
   GenderCategory,
   OnboardingState,
 } from '../stores/onboarding-store';
@@ -14,16 +14,6 @@ interface Args {
   draft: DraftSnapshot;
 }
 
-// Map the OBFrame wizard's 6-slot grid (wd_*/we_*) to the canonical
-// availability_windows column values (weekday_*/weekend_*).
-const SLOT_TO_DB: Record<AvailabilitySlot, string> = {
-  wd_am: 'weekday_morning',
-  wd_noon: 'weekday_noon',
-  wd_eve: 'weekday_evening',
-  we_am: 'weekend_morning',
-  we_noon: 'weekend_noon',
-  we_eve: 'weekend_evening',
-};
 
 export function useSubmitOnboarding() {
   return useMutation({
