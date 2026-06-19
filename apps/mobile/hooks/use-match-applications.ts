@@ -103,6 +103,10 @@ export function useAcceptApplication() {
         queryKey: queryKeys.matchApplications.byRequest(variables.requestId),
       });
       qc.invalidateQueries({ queryKey: queryKeys.matchRequests.all });
+      // The request is now 'accepted' (drop it from the İlanlar feed) and a
+      // match was created (surface it in "Yaklaşan").
+      qc.invalidateQueries({ queryKey: queryKeys.openCalls.all });
+      qc.invalidateQueries({ queryKey: queryKeys.activeMatches.all });
     },
   });
 }
