@@ -62,10 +62,28 @@ export function useApplyToMatchRequest() {
       });
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
-      qc.invalidateQueries({
-        queryKey: queryKeys.matchApplications.byRequest(variables.requestId),
-      });
+    onSuccess: () => {
+      // Refresh both the per-request applicant list and the caller's own
+      // "applied" set used by the İlanlar feed.
+      qc.invalidateQueries({ queryKey: queryKeys.matchApplications.all });
+    },
+  });
+}
+
+/** The current user's own open-call applications (new `match_request_applications`). */
+export function useMyMatchApplications() {
+  const userId = useAuthStore((s) => s.user?.id);
+  return useQuery<{ request_id: string }[]>({
+    queryKey: queryKeys.matchApplications.mine(),
+    enabled: !!userId,
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from('match_request_applications')
+        .select('request_id')
+        .eq('applicant_id', userId);
+      if (error) throw error;
+      return (data ?? []) as { request_id: string }[];
     },
   });
 }

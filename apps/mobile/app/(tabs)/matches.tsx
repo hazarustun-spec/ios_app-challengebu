@@ -48,8 +48,10 @@ import {
 import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useOpenCallsFeed, useMyOpenCalls } from '../../hooks/use-open-calls';
-import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
-import { useMyApplications } from '../../hooks/use-applications';
+import {
+  useApplyToMatchRequest,
+  useMyMatchApplications,
+} from '../../hooks/use-match-applications';
 import { useDeleteOpenCall } from '../../hooks/use-delete-open-call';
 import { useToast } from '../../components/ui/ToastProvider';
 import { usePlayerRatings } from '../../hooks/use-ladder';
@@ -139,10 +141,10 @@ export default function MatchesTab() {
   const myOpenQ = useMyOpenCalls();
   const accept = useAcceptMatchRequest();
   const reject = useRejectMatchRequest();
-  const applyMutation = useApplyToOpenCall();
-  const myAppsQ = useMyApplications();
+  const applyMutation = useApplyToMatchRequest();
+  const myAppsQ = useMyMatchApplications();
   const appliedIds = useMemo(
-    () => new Set((myAppsQ.data ?? []).map((a) => a.match_request_id)),
+    () => new Set((myAppsQ.data ?? []).map((a) => a.request_id)),
     [myAppsQ.data],
   );
   const playerRatings = usePlayerRatings();
@@ -650,7 +652,7 @@ interface FeedListProps {
   feedQ: ReturnType<typeof useOpenCallsFeed>;
   myQ: ReturnType<typeof useMyOpenCalls>;
   appliedIds: Set<string>;
-  applyMutation: ReturnType<typeof useApplyToOpenCall>;
+  applyMutation: ReturnType<typeof useApplyToMatchRequest>;
   ratingOf: (profileId: string | undefined, category: string | undefined) => number | null;
 }
 

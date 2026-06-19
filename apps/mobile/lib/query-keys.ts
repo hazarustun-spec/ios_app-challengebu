@@ -20,6 +20,7 @@ export const queryKeys = {
     all: ['match-applications'] as const,
     byRequest: (id: string) =>
       [...queryKeys.matchApplications.all, 'request', id] as const,
+    mine: () => [...queryKeys.matchApplications.all, 'mine'] as const,
   },
   activeMatches: {
     all: ['active-matches'] as const,
