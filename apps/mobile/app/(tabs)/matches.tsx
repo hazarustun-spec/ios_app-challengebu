@@ -482,10 +482,12 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
                   full
                   icon={<Icon name="spark" size={15} color={colors.onLime} />}
                   onPress={() =>
-                    router.push(`/match/${m.id}/score` as never)
+                    m.winner_team == null
+                      ? router.push(`/match/${m.id}/start` as never)
+                      : router.push(`/match/${m.id}/score` as never)
                   }
                 >
-                  Skor gir
+                  {m.winner_team == null ? 'Maçı Başlat' : 'Skor gir'}
                 </Button>
               </View>
             </View>

@@ -3,8 +3,13 @@ import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
 import type { ActiveMatchRow } from './use-active-matches';
 
+/** ActiveMatchRow extended with the start-handshake column. */
+export interface MatchDetailRow extends ActiveMatchRow {
+  started_by: string[];
+}
+
 export function useMatchDetail(id: string | undefined) {
-  return useQuery<ActiveMatchRow | null>({
+  return useQuery<MatchDetailRow | null>({
     queryKey: queryKeys.activeMatches.detail(id ?? ''),
     queryFn: async () => {
       if (!id) return null;
@@ -14,6 +19,7 @@ export function useMatchDetail(id: string | undefined) {
           id, match_request_id, category, format, is_rated, played_at, status,
           team_a_player_ids, team_b_player_ids,
           score_team_a, score_team_b, winner_team, score_details, confirmed_by,
+          started_by,
           rating_before_team_a, rating_after_team_a,
           rating_before_team_b, rating_after_team_b,
           created_at,
@@ -22,7 +28,7 @@ export function useMatchDetail(id: string | undefined) {
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;
-      return data as unknown as ActiveMatchRow | null;
+      return data as unknown as MatchDetailRow | null;
     },
     enabled: !!id,
   });

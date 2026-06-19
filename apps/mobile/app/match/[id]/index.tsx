@@ -217,9 +217,13 @@ export default function MatchDetail() {
           full
           size="lg"
           icon={<Icon name="spark" size={17} color={colors.onLime} />}
-          onPress={() => router.push(`/match/${id}/score` as never)}
+          onPress={() =>
+            m.winner_team == null
+              ? router.push(`/match/${id}/start` as never)
+              : router.push(`/match/${id}/score` as never)
+          }
         >
-          Skoru gir
+          {m.winner_team == null ? 'Maçı Başlat' : 'Skoru gir'}
         </Button>
         {m.match_request_id != null && opponent.primaryId != null && (
           <Button
