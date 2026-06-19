@@ -47,7 +47,7 @@ import {
 } from '../../hooks/use-match-requests';
 import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
-import { useOpenCallsFeed } from '../../hooks/use-open-calls';
+import { useOpenCallsFeed, useMyOpenCalls } from '../../hooks/use-open-calls';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
 import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
@@ -130,6 +130,7 @@ export default function MatchesTab() {
   const opponentNames = useOpponentNames();
   const requestsQ = useIncomingMatchRequests();
   const feedQ = useOpenCallsFeed();
+  const myOpenQ = useMyOpenCalls();
   const accept = useAcceptMatchRequest();
   const reject = useRejectMatchRequest();
   const applyMutation = useApplyToOpenCall();
@@ -260,6 +261,7 @@ export default function MatchesTab() {
         {view === 'feed' && (
           <FeedList
             feedQ={feedQ}
+            myQ={myOpenQ}
             applyMutation={applyMutation}
             ratingOf={playerRatings.ratingOf}
           />
@@ -634,12 +636,64 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
 
 interface FeedListProps {
   feedQ: ReturnType<typeof useOpenCallsFeed>;
+  myQ: ReturnType<typeof useMyOpenCalls>;
   applyMutation: ReturnType<typeof useApplyToOpenCall>;
   ratingOf: (profileId: string | undefined, category: string | undefined) => number | null;
 }
 
-function FeedList({ feedQ, applyMutation, ratingOf }: FeedListProps) {
+function FeedList({ feedQ, myQ, applyMutation, ratingOf }: FeedListProps) {
   const listings: MatchRequestRow[] = feedQ.data ?? [];
+  const mine: MatchRequestRow[] = myQ.data ?? [];
+
+  // The user's own open calls are excluded from the community feed, so surface
+  // them here at the top — otherwise creating one looks like nothing happened.
+  const mySection =
+    mine.length > 0 ? (
+      <View style={{ marginBottom: 18, gap: 8 }}>
+        <Text
+          className="font-display font-bold text-text"
+          style={{ fontSize: 15, marginBottom: 2 }}
+        >
+          Senin açık ilanların
+        </Text>
+        {mine.map((m) => {
+          const catLabel = CATEGORY_LABELS[m.category] ?? m.category;
+          const windowLabel = m.proposed_date
+            ? formatRequestDateTime(m.proposed_date, m.proposed_time)
+            : 'Esnek';
+          const courtName = (m as { court?: { name?: string } }).court?.name ?? '';
+          return (
+            <Pressable
+              key={m.id}
+              onPress={() =>
+                router.push('/match/open-applicants/my-listing' as never)
+              }
+              className="flex-row items-center bg-surface rounded-md"
+              style={{
+                padding: 13,
+                gap: 11,
+                borderWidth: 1.5,
+                borderColor: colors.borderStrong,
+              }}
+            >
+              <Icon name="flag" size={20} color={colors.court} />
+              <View style={{ flex: 1 }}>
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
+                  {catLabel} · {windowLabel}
+                </Text>
+                <Text
+                  className="font-sans text-text-3"
+                  style={{ fontSize: 12, marginTop: 2 }}
+                >
+                  {courtName ? `${courtName} · ` : ''}başvuranları gör
+                </Text>
+              </View>
+              <Icon name="chevR" size={18} color={colors.text3} />
+            </Pressable>
+          );
+        })}
+      </View>
+    ) : null;
 
   if (feedQ.isLoading) {
     return (
@@ -652,38 +706,42 @@ function FeedList({ feedQ, applyMutation, ratingOf }: FeedListProps) {
   if (listings.length === 0) {
     return (
       <>
+        {mySection}
         <EmptyState
           icon="flag"
-          title="Açık ilan yok"
+          title={mine.length > 0 ? 'Başka açık ilan yok' : 'Açık ilan yok'}
           body="Topluluk üyeleri açık ilan oluşturduğunda burada görünecek."
           action="İlan oluştur"
           onAction={() => router.push('/match/new/type' as never)}
         />
-        <Pressable
-          onPress={() =>
-            router.push('/match/open-applicants/my-listing' as never)
-          }
-          className="rounded-md"
-          style={{
-            marginTop: 4,
-            padding: 13,
-            backgroundColor: colors.surface2,
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            className="font-sans font-bold text-text-2"
-            style={{ fontSize: 13.5 }}
+        {mine.length === 0 && (
+          <Pressable
+            onPress={() =>
+              router.push('/match/open-applicants/my-listing' as never)
+            }
+            className="rounded-md"
+            style={{
+              marginTop: 4,
+              padding: 13,
+              backgroundColor: colors.surface2,
+              alignItems: 'center',
+            }}
           >
-            Kendi ilanına başvuranları gör →
-          </Text>
-        </Pressable>
+            <Text
+              className="font-sans font-bold text-text-2"
+              style={{ fontSize: 13.5 }}
+            >
+              Kendi ilanına başvuranları gör →
+            </Text>
+          </Pressable>
+        )}
       </>
     );
   }
 
   return (
     <>
+      {mySection}
       {listings.map((m) => {
         const fmtKey = toFormatKey(m.format);
         const creatorName = m.creator_profile

@@ -8,6 +8,7 @@ export const queryKeys = {
   openCalls: {
     all: ['open-calls'] as const,
     feed: () => [...queryKeys.openCalls.all, 'feed'] as const,
+    mine: () => [...queryKeys.openCalls.all, 'mine'] as const,
     detail: (id: string) => [...queryKeys.openCalls.all, 'detail', id] as const,
   },
   applications: {
