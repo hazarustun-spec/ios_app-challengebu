@@ -154,6 +154,9 @@ export default function NotificationsScreen() {
     <NavHeader
       large
       title="Bildirimler"
+      onBack={() =>
+        router.canGoBack() ? router.back() : router.replace('/(tabs)')
+      }
       actionIcon={unread > 0 ? 'check' : undefined}
       onAction={unread > 0 ? () => markAll.mutate() : undefined}
     />
