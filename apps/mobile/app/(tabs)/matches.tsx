@@ -26,7 +26,7 @@
 //   - usePlayerRatings         → per-player ELO badge on Teklifler + İlanlar cards
 
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -50,6 +50,7 @@ import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useOpenCallsFeed, useMyOpenCalls } from '../../hooks/use-open-calls';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
 import { useMyApplications } from '../../hooks/use-applications';
+import { useDeleteOpenCall } from '../../hooks/use-delete-open-call';
 import { useToast } from '../../components/ui/ToastProvider';
 import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
@@ -104,7 +105,10 @@ function formatMatchTime(iso: string): string {
  *  a human label like "Cmt 14:00". */
 function formatRequestDateTime(date: string, time: string): string {
   if (!date) return time ?? '';
-  const d = new Date(`${date}T${time ?? '00:00'}:00`);
+  // proposed_time may arrive as 'HH:MM' or 'HH:MM:SS' — normalize to HH:MM.
+  const t = (time || '00:00').slice(0, 5);
+  const d = new Date(`${date}T${t}:00`);
+  if (Number.isNaN(d.getTime())) return (time || '').slice(0, 5);
   const dayStr = d.toLocaleDateString('tr-TR', { weekday: 'short' });
   const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   return `${dayStr} ${timeStr}`;
@@ -652,6 +656,7 @@ interface FeedListProps {
 
 function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListProps) {
   const toast = useToast();
+  const deleteOpenCall = useDeleteOpenCall();
   const listings: MatchRequestRow[] = feedQ.data ?? [];
   const mine: MatchRequestRow[] = myQ.data ?? [];
 
@@ -672,34 +677,50 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
             ? formatRequestDateTime(m.proposed_date, m.proposed_time)
             : 'Esnek';
           const courtName = (m as { court?: { name?: string } }).court?.name ?? '';
+          const confirmDelete = () =>
+            Alert.alert('İlanı sil', 'Bu açık ilan ve gelen başvurular silinsin mi?', [
+              { text: 'Vazgeç', style: 'cancel' },
+              {
+                text: 'Sil',
+                style: 'destructive',
+                onPress: () =>
+                  deleteOpenCall.mutate(m.id, {
+                    onSuccess: () => toast.show('İlan silindi'),
+                    onError: () => toast.show('İlan silinemedi', 'error'),
+                  }),
+              },
+            ]);
           return (
-            <Pressable
+            <View
               key={m.id}
-              onPress={() =>
-                router.push('/match/open-applicants/my-listing' as never)
-              }
               className="flex-row items-center bg-surface rounded-md"
               style={{
-                padding: 13,
-                gap: 11,
+                paddingLeft: 13,
+                paddingRight: 6,
+                gap: 6,
                 borderWidth: 1.5,
                 borderColor: colors.borderStrong,
               }}
             >
-              <Icon name="flag" size={20} color={colors.court} />
-              <View style={{ flex: 1 }}>
-                <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
-                  {catLabel} · {windowLabel}
-                </Text>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ fontSize: 12, marginTop: 2 }}
-                >
-                  {courtName ? `${courtName} · ` : ''}başvuranları gör
-                </Text>
-              </View>
-              <Icon name="chevR" size={18} color={colors.text3} />
-            </Pressable>
+              <Pressable
+                onPress={() => router.push('/match/open-applicants/my-listing' as never)}
+                className="flex-row items-center"
+                style={{ flex: 1, gap: 11, paddingVertical: 13 }}
+              >
+                <Icon name="flag" size={20} color={colors.court} />
+                <View style={{ flex: 1 }}>
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
+                    {catLabel} · {windowLabel}
+                  </Text>
+                  <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 2 }}>
+                    {courtName ? `${courtName} · ` : ''}başvuranları gör
+                  </Text>
+                </View>
+              </Pressable>
+              <Pressable onPress={confirmDelete} hitSlop={8} style={{ padding: 10 }} accessibilityLabel="İlanı sil">
+                <Icon name="trash" size={18} color={colors.loss} />
+              </Pressable>
+            </View>
           );
         })}
       </View>
