@@ -71,7 +71,11 @@ export default function SignIn() {
 
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader onBack={() => router.back()} />
+      <NavHeader
+        onBack={() =>
+          router.canGoBack() ? router.back() : router.replace('/(auth)/welcome')
+        }
+      />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
         keyboardShouldPersistTaps="handled"
