@@ -19,8 +19,15 @@ export function NotificationListener() {
       }, 250);
     };
 
+    // Unique channel name per subscription. `removeChannel` (in cleanup) is
+    // async, so on a fast remount / login→logout→login a stale channel with a
+    // fixed topic can still be subscribed when the next mount calls
+    // `supabase.channel(sameTopic)` — which returns that subscribed instance
+    // and makes `.on()` throw "cannot add postgres_changes callbacks after
+    // subscribe()". A unique suffix guarantees a fresh channel every time; the
+    // server-side `recipient_id` filter is what actually scopes the data.
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
       .on(
         'postgres_changes',
         {
