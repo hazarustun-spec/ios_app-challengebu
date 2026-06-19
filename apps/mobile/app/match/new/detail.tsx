@@ -197,9 +197,18 @@ export default function NewMatchDetail() {
         <Button
           full
           size="lg"
-          onPress={() => router.push('/match/new/opponent' as never)}
+          onPress={() => {
+            if (path === 'open') {
+              // Open calls have no specific target — clear any stale opponent
+              // and skip straight to preview (no opponent selection step).
+              setField('opponent', null);
+              router.push('/match/new/preview' as never);
+            } else {
+              router.push('/match/new/opponent' as never);
+            }
+          }}
         >
-          {path === 'open' ? 'İlan detayına geç' : 'Rakip seç'}
+          {path === 'open' ? 'İlanı önizle' : 'Rakip seç'}
         </Button>
       </View>
 

@@ -75,8 +75,10 @@ export default function MatchPreview() {
   const createRequest = useCreateMatchRequest();
   const [submitting, setSubmitting] = useState(false);
 
-  // Opponent from the wizard — null if user somehow deep-links directly.
-  const opp = nm.opponent;
+  // Open calls have no specific target — anyone applies later. Direct
+  // challenges carry the chosen opponent.
+  const isOpen = nm.path === 'open';
+  const opp = isOpen ? null : nm.opponent;
 
   // ELO prediction deltas (only when both ELOs are known and match is ranked)
   const eloReady = ME_ELO !== null && opp !== null;
@@ -100,8 +102,8 @@ export default function MatchPreview() {
     setSubmitting(true);
     try {
       await createRequest.mutateAsync({
-        type: nm.path === 'open' ? 'open_call' : 'direct_challenge',
-        targetId: nm.opponent?.userId,
+        type: isOpen ? 'open_call' : 'direct_challenge',
+        targetId: isOpen ? undefined : nm.opponent?.userId,
         category: nm.category,
         format: UI_TO_DB_FORMAT[nm.format],
         isRated: nm.kind === 'ranking',
@@ -153,18 +155,18 @@ export default function MatchPreview() {
             VS
           </Text>
           <View style={{ alignItems: 'center' }}>
-            <Avatar name={opp?.name ?? '?'} size={64} />
+            <Avatar name={isOpen ? 'İlan' : (opp?.name ?? '?')} size={64} />
             <Text
               className="font-sans font-bold text-text"
               style={{ fontSize: 13.5, marginTop: 8 }}
             >
-              {opp ? opp.name.split(' ')[0] : '—'}
+              {isOpen ? 'Açık İlan' : opp ? opp.name.split(' ')[0] : '—'}
             </Text>
             <Text
               className="font-num font-bold text-text-3"
               style={{ fontSize: 12 }}
             >
-              {opp?.elo ?? '—'}
+              {isOpen ? 'rakip bekleniyor' : (opp?.elo ?? '—')}
             </Text>
           </View>
         </View>
