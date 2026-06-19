@@ -21,7 +21,7 @@ import { Sheet } from '../../../components/ui/Sheet';
 import { Button } from '../../../components/ui/Button';
 import { Icon, type IconName } from '../../../components/ui/Icon';
 import { FORMATS } from '../../../lib/formats';
-import { formatDateLabel, nextDays } from '../../../lib/match-dates';
+import { formatDateLabel, nextDays, toIso } from '../../../lib/match-dates';
 import {
   useNewMatchStore,
   type CategoryKey,
@@ -45,7 +45,11 @@ const CATEGORIES: CategoryDef[] = [
   { key: 'open_cift', label: 'Open Çift', group: 'cift' },
 ];
 
-const TIMES = ['10:00', '12:00', '14:00', '16:00', '18:30', '20:00', '21:30'];
+// Hourly court slots, 09:00–18:00.
+const TIMES = [
+  '09:00', '10:00', '11:00', '12:00', '13:00',
+  '14:00', '15:00', '16:00', '17:00', '18:00',
+];
 
 type SheetKey = 'cat' | 'fmt' | 'date' | 'time' | 'court';
 
@@ -106,6 +110,25 @@ export default function NewMatchDetail() {
   useEffect(() => {
     if (!court && courts.length > 0) setField('court', courts[0].id);
   }, [court, courts, setField]);
+
+  // When the chosen date is today, hide slots that are already in the past.
+  const availableTimes = useMemo(() => {
+    if (date !== toIso(new Date())) return TIMES;
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    return TIMES.filter((t) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m > nowMin;
+    });
+  }, [date]);
+
+  // If the stored time fell into the past (e.g. the date switched to today),
+  // snap it to the first still-valid slot so we never submit a past kickoff.
+  useEffect(() => {
+    if (time && !availableTimes.includes(time)) {
+      setField('time', availableTimes[0] ?? '');
+    }
+  }, [availableTimes, time, setField]);
 
   const cat = CATEGORIES.find((c) => c.key === category)!;
   const fmt = FORMATS.find((f) => f.key === format)!;
@@ -322,7 +345,15 @@ export default function NewMatchDetail() {
         title="Saat seç"
       >
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {TIMES.map((t) => (
+          {availableTimes.length === 0 && (
+            <Text
+              className="font-sans text-text-3"
+              style={{ fontSize: 13.5, paddingVertical: 8 }}
+            >
+              Bugün için uygun saat kalmadı — başka bir gün seç.
+            </Text>
+          )}
+          {availableTimes.map((t) => (
             <Pressable
               key={t}
               onPress={() => {
