@@ -130,7 +130,7 @@ export default function Welcome() {
           className="font-sans font-semibold text-text-3"
           style={{ fontSize: 12.5, textAlign: 'center', lineHeight: 19 }}
         >
-          Öğrenci, personel ve mezun Boğaziçi hesapları.
+          Öğrenci, akademisyen ve mezun Boğaziçi hesapları.
         </Text>
       </View>
     </View>

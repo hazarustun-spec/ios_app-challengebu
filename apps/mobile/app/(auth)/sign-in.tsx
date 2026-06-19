@@ -111,7 +111,7 @@ export default function SignIn() {
           hint={
             dirty && !valid
               ? BOUN_EMAIL_ERROR_TR
-              : 'Öğrenci, akademisyen, personel, emekli ve mezun hesapları kabul edilir.'
+              : 'Öğrenci, akademisyen, emekli ve mezun hesapları kabul edilir.'
           }
         />
 
