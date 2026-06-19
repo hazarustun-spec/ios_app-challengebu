@@ -703,7 +703,7 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
               }}
             >
               <Pressable
-                onPress={() => router.push('/match/open-applicants/my-listing' as never)}
+                onPress={() => router.push(`/match/open-applicants/${m.id}` as never)}
                 className="flex-row items-center"
                 style={{ flex: 1, gap: 11, paddingVertical: 13 }}
               >
@@ -745,27 +745,6 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
           action="İlan oluştur"
           onAction={() => router.push('/match/new/type' as never)}
         />
-        {mine.length === 0 && (
-          <Pressable
-            onPress={() =>
-              router.push('/match/open-applicants/my-listing' as never)
-            }
-            className="rounded-md"
-            style={{
-              marginTop: 4,
-              padding: 13,
-              backgroundColor: colors.surface2,
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              className="font-sans font-bold text-text-2"
-              style={{ fontSize: 13.5 }}
-            >
-              Kendi ilanına başvuranları gör →
-            </Text>
-          </Pressable>
-        )}
       </>
     );
   }
