@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import type { Level } from '@tennis/shared';
 import { Button } from '../ui/Button';
 import { Confetti } from '../ui/Confetti';
+import { RankBadge } from '../ui/RankBadge';
 import { colors } from '../../theme/colors';
 
 interface Props {
@@ -91,7 +92,7 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
               style={{
                 marginTop: 8,
                 width: HALO_SIZE,
-                height: HALO_SIZE,
+                height: 150,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
@@ -110,15 +111,10 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
                   },
                 ]}
               />
-              {/* Icon */}
-              <Animated.Text
-                style={[
-                  iconStyle,
-                  { fontSize: 60, textAlign: 'center', zIndex: 1 },
-                ]}
-              >
-                {after.icon}
-              </Animated.Text>
+              {/* Rank medallion */}
+              <Animated.View style={[iconStyle, { zIndex: 1 }]}>
+                <RankBadge level={after.code} size={110} fallback={after.icon} />
+              </Animated.View>
             </View>
 
             <Text className="mt-3 text-xl font-bold text-gray-900">{after.name_tr}</Text>

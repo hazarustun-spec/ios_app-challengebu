@@ -220,7 +220,8 @@ export default function ProfileTab() {
                 </Text>
               </View>
             </View>
-            <View
+            <Pressable
+              onPress={() => router.push('/profile/ranks' as never)}
               className="flex-row items-center"
               style={{ marginTop: 5, gap: 6 }}
             >
@@ -231,7 +232,13 @@ export default function ProfileTab() {
               >
                 {lv.name}
               </Text>
-            </View>
+              <Text
+                className="font-sans text-text-3"
+                style={{ fontSize: 13 }}
+              >
+                ›
+              </Text>
+            </Pressable>
             <Text
               className="font-sans text-text-3"
               style={{ fontSize: 12.5, marginTop: 3 }}
