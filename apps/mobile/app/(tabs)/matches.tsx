@@ -25,7 +25,7 @@
 //   - useApplyToOpenCall       → İlana başvur button
 //   - usePlayerRatings         → per-player ELO badge on Teklifler + İlanlar cards
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
@@ -49,6 +49,8 @@ import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useOpenCallsFeed, useMyOpenCalls } from '../../hooks/use-open-calls';
 import { useApplyToOpenCall } from '../../hooks/use-apply-to-open-call';
+import { useMyApplications } from '../../hooks/use-applications';
+import { useToast } from '../../components/ui/ToastProvider';
 import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
 import { primaryCategoryOf } from '../../lib/primary-category';
@@ -134,6 +136,11 @@ export default function MatchesTab() {
   const accept = useAcceptMatchRequest();
   const reject = useRejectMatchRequest();
   const applyMutation = useApplyToOpenCall();
+  const myAppsQ = useMyApplications();
+  const appliedIds = useMemo(
+    () => new Set((myAppsQ.data ?? []).map((a) => a.match_request_id)),
+    [myAppsQ.data],
+  );
   const playerRatings = usePlayerRatings();
 
   const { data: unreadMessages = 0 } = useUnreadMessageCount();
@@ -262,6 +269,7 @@ export default function MatchesTab() {
           <FeedList
             feedQ={feedQ}
             myQ={myOpenQ}
+            appliedIds={appliedIds}
             applyMutation={applyMutation}
             ratingOf={playerRatings.ratingOf}
           />
@@ -637,11 +645,13 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
 interface FeedListProps {
   feedQ: ReturnType<typeof useOpenCallsFeed>;
   myQ: ReturnType<typeof useMyOpenCalls>;
+  appliedIds: Set<string>;
   applyMutation: ReturnType<typeof useApplyToOpenCall>;
   ratingOf: (profileId: string | undefined, category: string | undefined) => number | null;
 }
 
-function FeedList({ feedQ, myQ, applyMutation, ratingOf }: FeedListProps) {
+function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListProps) {
+  const toast = useToast();
   const listings: MatchRequestRow[] = feedQ.data ?? [];
   const mine: MatchRequestRow[] = myQ.data ?? [];
 
@@ -756,6 +766,7 @@ function FeedList({ feedQ, myQ, applyMutation, ratingOf }: FeedListProps) {
         const applyVars = applyMutation.variables as { requestId: string } | undefined;
         const isApplying =
           applyMutation.isPending && applyVars?.requestId === m.id;
+        const applied = appliedIds.has(m.id);
 
         const creatorElo = ratingOf(m.creator_id, m.category);
         const creatorLevel = creatorElo !== null ? levelForElo(creatorElo) : null;
@@ -834,10 +845,26 @@ function FeedList({ feedQ, myQ, applyMutation, ratingOf }: FeedListProps) {
                   color={colors.onLime}
                 />
               }
-              onPress={() => applyMutation.mutate({ requestId: m.id })}
-              disabled={isApplying}
+              onPress={() =>
+                applyMutation.mutate(
+                  { requestId: m.id },
+                  {
+                    onSuccess: () => toast.show('Başvurun gönderildi'),
+                    onError: (e) =>
+                      toast.show(
+                        e instanceof Error ? e.message : 'Başvuru gönderilemedi',
+                        'error',
+                      ),
+                  },
+                )
+              }
+              disabled={isApplying || applied}
             >
-              {isApplying ? 'Başvuruluyor…' : 'İlana başvur'}
+              {applied
+                ? 'Başvuruldu ✓'
+                : isApplying
+                  ? 'Başvuruluyor…'
+                  : 'İlana başvur'}
             </Button>
           </View>
         );
