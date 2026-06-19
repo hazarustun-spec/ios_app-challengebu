@@ -10,6 +10,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import type { AwardedBadgeView } from '../../stores/post-match-celebration-store';
 import { Button } from '../ui/Button';
+import { BadgeArt } from '../ui/BadgeArt';
 import { Confetti } from '../ui/Confetti';
 import { ShareSheet } from '../share/ShareSheet';
 import { CardBadgeWon } from '../share/CardBadgeWon';
@@ -78,9 +79,9 @@ export function BadgeUnlockModal({ visible, badge, onClose }: Props) {
               <Text className="text-xs font-semibold uppercase text-amber-600">
                 Yeni Rozet
               </Text>
-              <Animated.Text style={[{ marginTop: 8, fontSize: 60, textAlign: 'center' }, iconStyle]}>
-                {badge.icon}
-              </Animated.Text>
+              <Animated.View style={[{ marginTop: 8, alignItems: 'center' }, iconStyle]}>
+                <BadgeArt code={badge.code} size={96} fallback={badge.icon} />
+              </Animated.View>
               <Text className="mt-3 text-xl font-bold text-gray-900">{badge.name_tr}</Text>
               <Text className="mt-2 text-center text-sm text-gray-600">
                 {badge.description_tr}

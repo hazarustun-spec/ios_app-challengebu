@@ -26,6 +26,7 @@ import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { LevelRing } from '../../components/ui/LevelRing';
+import { BadgeArt } from '../../components/ui/BadgeArt';
 import { LevelIcon } from '../../components/ui/LevelIcon';
 import { useAuthStore } from '../../stores/auth-store';
 import { levelForElo, levelProgress } from '../../lib/levels';
@@ -314,7 +315,7 @@ export default function ProfileTab() {
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ fontSize: 22 }}>{b.icon}</Text>
+                  <BadgeArt code={b.code} size={42} fallback={b.icon} />
                   <Text
                     className="font-sans font-bold text-text-2"
                     style={{

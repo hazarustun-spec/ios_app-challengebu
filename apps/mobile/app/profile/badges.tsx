@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
+import { BadgeArt } from '../../components/ui/BadgeArt';
 import { useAllBadges } from '../../hooks/use-all-badges';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { usePinBadges } from '../../hooks/use-pin-badges';
@@ -223,7 +224,7 @@ export default function Badges() {
                     }}
                   >
                     {has ? (
-                      <Text style={{ fontSize: 22 }}>{b.icon}</Text>
+                      <BadgeArt code={b.code} size={46} fallback={b.icon} />
                     ) : (
                       <Icon name="lock" size={22} color={colors.text3} />
                     )}
@@ -274,6 +275,7 @@ export default function Badges() {
             name="Sen"
             badgeLabel={shareBadge.name_tr}
             badgeEmoji={shareBadge.icon}
+            badgeCode={shareBadge.code}
             subtitle={shareBadge.description_tr}
           />
         </ShareSheet>

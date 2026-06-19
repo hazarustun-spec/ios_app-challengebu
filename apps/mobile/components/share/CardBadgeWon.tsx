@@ -9,14 +9,17 @@
 
 import { Text, View } from 'react-native';
 import { Avatar } from '../ui/Avatar';
+import { BadgeArt } from '../ui/BadgeArt';
 import { colors } from '../../theme/colors';
 import { CardFooter } from './CardMatchResult';
 
 export interface CardBadgeWonProps {
   name: string;
   badgeLabel: string;
-  /** Emoji character or short string to render inside the medallion */
+  /** Emoji character or short string to render inside the medallion (fallback) */
   badgeEmoji: string;
+  /** DB badge code — renders the designed vector badge when available */
+  badgeCode?: string;
   /** Optional subtitle, e.g. "5'te 5. Durduran yok." */
   subtitle?: string;
 }
@@ -28,6 +31,7 @@ export function CardBadgeWon({
   name,
   badgeLabel,
   badgeEmoji,
+  badgeCode,
   subtitle,
 }: CardBadgeWonProps) {
   return (
@@ -102,15 +106,15 @@ export function CardBadgeWon({
               justifyContent: 'center',
             }}
           >
-            <Text
-              style={{
-                fontSize: 220,
-                lineHeight: 240,
-                textAlign: 'center',
-              }}
-            >
-              {badgeEmoji}
-            </Text>
+            {badgeCode ? (
+              <BadgeArt code={badgeCode} size={380} fallback={badgeEmoji} />
+            ) : (
+              <Text
+                style={{ fontSize: 220, lineHeight: 240, textAlign: 'center' }}
+              >
+                {badgeEmoji}
+              </Text>
+            )}
           </View>
         </View>
 
