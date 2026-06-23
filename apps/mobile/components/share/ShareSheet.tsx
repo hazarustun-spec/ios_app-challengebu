@@ -113,7 +113,13 @@ export function ShareSheet({
               style={{
                 width: DESIGN_W,
                 height: DESIGN_H,
-                transform: [{ scale }, { translateX: -(DESIGN_W * (1 - scale)) / 2 }, { translateY: -(DESIGN_H * (1 - scale)) / 2 }],
+                // Scale from the top-left corner so the 1080×1920 card fills the
+                // preview box. (RN applies a bare {scale} from the center, and a
+                // translate after it lands in scaled space — which left the card
+                // mostly outside the box, rendering blank. transformOrigin is
+                // supported on RN 0.74+.)
+                transform: [{ scale }],
+                transformOrigin: 'top left',
               }}
             >
               {children}
