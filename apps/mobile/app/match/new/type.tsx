@@ -8,11 +8,14 @@
 // vs pink-deep), each with a faded watermark glyph + tag pill + arrow
 // CTA.
 
+import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Icon, type IconName } from '../../../components/ui/Icon';
-import { useNewMatchStore, type MatchKind } from '../../../stores/new-match-store';
+import { useNewMatchStore, type MatchKind, type CategoryKey } from '../../../stores/new-match-store';
+import { useMyProfile } from '../../../hooks/use-profile';
+import { defaultCategoryForGender } from '../../../lib/primary-category';
 import { colors } from '../../../theme/colors';
 
 interface KindCardConfig {
@@ -48,6 +51,15 @@ const CARDS: KindCardConfig[] = [
 
 export default function NewMatchType() {
   const setField = useNewMatchStore((s) => s.setField);
+
+  // Pre-seed the wizard's category with a gender-appropriate default so that
+  // female (kadin) and open_only users don't see "Erkek Tek" pre-selected.
+  const myProfileQ = useMyProfile();
+  useEffect(() => {
+    if (myProfileQ.data?.gender_category) {
+      setField('category', defaultCategoryForGender(myProfileQ.data.gender_category) as CategoryKey);
+    }
+  }, [myProfileQ.data?.gender_category]);
 
   return (
     <View className="flex-1 bg-bg">

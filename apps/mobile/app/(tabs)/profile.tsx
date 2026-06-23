@@ -34,6 +34,7 @@ import { colors } from '../../theme/colors';
 import { useMyRankings, type RankingRow } from '../../hooks/use-my-rankings';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
+import { useMyProfile } from '../../hooks/use-profile';
 
 // ---------------------------------------------------------------------------
 // Category label map
@@ -116,25 +117,17 @@ export default function ProfileTab() {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.user?.id);
 
-  // The auth-store today only ships first/last/role/onboarding. Optional Plan 8
-  // profile fields (pronoun / department / class year / dominant hand) are
-  // pulled defensively until the store grows to match — keeps this screen
-  // shippable without a cross-cutting refactor.
-  const extras = profile as
-    | (NonNullable<typeof profile> & {
-        pronoun?: string;
-        departmentName?: string;
-        classYear?: string | number;
-        dominantHand?: string;
-      })
-    | null;
+  // Full profile from RPC — carries pronoun, department, class_year, dominant_hand.
+  const myProfileQ = useMyProfile();
+  const fullProfile = myProfileQ.data;
+
   const name = profile?.firstName
     ? `${profile.firstName} ${profile.lastName ?? ''}`.trim()
     : 'Oyuncu';
-  const pronoun = extras?.pronoun ?? 'they/them';
-  const dept = extras?.departmentName ?? 'Bölüm';
-  const year = extras?.classYear ?? '';
-  const hand = extras?.dominantHand === 'sol' ? 'Sol' : 'Sağ';
+  const pronoun = fullProfile?.pronoun ?? 'they/them';
+  const dept = fullProfile?.departments?.name ?? 'Bölüm';
+  const year = fullProfile?.class_year ?? '';
+  const hand = fullProfile?.dominant_hand === 'sol' ? 'Sol' : 'Sağ';
 
   // --- Rankings ---
   const rankingsQ = useMyRankings();

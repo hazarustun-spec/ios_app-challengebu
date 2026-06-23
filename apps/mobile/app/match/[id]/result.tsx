@@ -161,14 +161,31 @@ export default function MatchResult() {
     transform: [{ scale: interpolate(glow.value, [0, 1], [1, 1.22]) }],
   }));
 
-  const tagColor = isVoid ? colors.warn : isWin ? colors.win : colors.loss;
-  const tagBg = isVoid ? colors.warnSoft : isWin ? colors.limeSoft : '#FCE6E4';
-  const tagText = isVoid
-    ? 'Berabere (voided)'
-    : isWin
-      ? 'Kazandın!'
-      : 'Kaybettin';
-  const tagIcon: IconName = isVoid ? 'info' : isWin ? 'trophy' : 'x';
+  // When scores haven't both been submitted yet, show a neutral pending state
+  // rather than defaulting to "Kaybettin" / "0-0" which is misleading.
+  const isPending = !scoresSettled;
+  const tagColor = isPending
+    ? colors.text3
+    : isVoid
+      ? colors.warn
+      : isWin
+        ? colors.win
+        : colors.loss;
+  const tagBg = isPending
+    ? colors.surface
+    : isVoid
+      ? colors.warnSoft
+      : isWin
+        ? colors.limeSoft
+        : '#FCE6E4';
+  const tagText = isPending
+    ? 'Skor onayı bekleniyor'
+    : isVoid
+      ? 'Berabere (voided)'
+      : isWin
+        ? 'Kazandın!'
+        : 'Kaybettin';
+  const tagIcon: IconName = isPending ? 'info' : isVoid ? 'info' : isWin ? 'trophy' : 'x';
   const eloColor = isWin ? colors.win : colors.loss;
 
   // My name for the share card — prefer profile but fall back to "Sen"
@@ -280,7 +297,7 @@ export default function MatchResult() {
           </Text>
         </View>
 
-        {!isVoid && delta !== null && (
+        {!isVoid && delta !== null && !isPending && (
           <View
             className="bg-surface rounded-lg"
             style={{ padding: 18, borderWidth: 1, borderColor: colors.borderStrong }}
@@ -289,7 +306,7 @@ export default function MatchResult() {
               className="font-sans font-bold text-text-3"
               style={{ fontSize: 12.5 }}
             >
-              Tahmini ELO değişimi
+              {isSettled ? 'ELO değişimi' : 'Tahmini ELO değişimi'}
             </Text>
             <View
               className="flex-row items-center"
@@ -346,8 +363,9 @@ export default function MatchResult() {
               className="font-sans text-text-3"
               style={{ fontSize: 12, marginTop: 12, lineHeight: 18 }}
             >
-              Çarpan: {finalScore} → {isWin ? '1.1×' : '1.0×'}. Onaylandığında
-              kesinleşir.
+              {isSettled
+                ? `Çarpan: ${finalScore} → ${isWin ? '1.1×' : '1.0×'}.`
+                : `Çarpan: ${finalScore} → ${isWin ? '1.1×' : '1.0×'}. Onaylandığında kesinleşir.`}
             </Text>
           </View>
         )}

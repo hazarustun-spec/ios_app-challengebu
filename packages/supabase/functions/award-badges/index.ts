@@ -56,7 +56,30 @@ Deno.serve(async (req) => {
     const result: AwardedPerUser[] = [];
     for (const userId of allPlayers) {
       const newBadges = await evaluateForUser(supa, byCode, match, userId);
-      if (newBadges.length > 0) result.push({ userId, badges: newBadges });
+      if (newBadges.length > 0) {
+        result.push({ userId, badges: newBadges });
+        // Notify the user about their new badge(s) — non-fatal if it fails.
+        const badgeNames = newBadges.map((b) => b.name_tr);
+        const body =
+          badgeNames.length === 1
+            ? `${badgeNames[0]} rozetini kazandın.`
+            : `${badgeNames.join(', ')} rozetlerini kazandın.`;
+        await supa
+          .from('notifications')
+          .insert({
+            recipient_id: userId,
+            category: 'badges_earned',
+            title: 'Yeni rozet! 🏅',
+            body,
+            data: {
+              badge_ids: newBadges.map((b) => b.id),
+              action: 'badges_earned',
+            },
+          })
+          .then(({ error }) => {
+            if (error) console.error('Failed to insert badge notification', error);
+          });
+      }
     }
 
     return jsonResponse({ awarded: result });

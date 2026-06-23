@@ -39,6 +39,8 @@ import { useOpponentNames } from '../../hooks/use-opponent-names';
 import { myPerspective } from '../../lib/match-opponent';
 import { levelForElo, levelProgress } from '../../lib/levels';
 import { useAuthStore } from '../../stores/auth-store';
+import { useMyProfile } from '../../hooks/use-profile';
+import { defaultCategoryForGender } from '../../lib/primary-category';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -103,13 +105,18 @@ export default function HomeScreen() {
   const { data: unreadCount = 0 } = useUnreadCount();
   const displayName = profile?.firstName ?? 'Oyuncu';
 
+  // Full profile for gender_category — used to pick the right default category
+  // when the user has no ranking rows yet (new user scenario).
+  const myProfileQ = useMyProfile();
+  const genderCategory = myProfileQ.data?.gender_category ?? null;
+
   // --- ELO hero data ---
   const rankingsQ = useMyRankings();
   const eloHistoryQ = useEloHistory(userId);
 
   const rankings = rankingsQ.data ?? [];
   const primaryRanking = pickPrimaryCategory(rankings);
-  const primaryCat = primaryRanking?.category ?? 'erkek_tek';
+  const primaryCat = primaryRanking?.category ?? defaultCategoryForGender(genderCategory);
   const ME_ELO = primaryRanking?.rating ?? 1200;
   const ME_RANK = primaryRanking?.rank ?? 0;
 
