@@ -1,0 +1,27 @@
+# Login via email OTP (account A = alice) → lands on onboarding (new user).
+appId: tr.edu.boun.tennischallenger
+env:
+  EMAIL: "alice@std.bogazici.edu.tr"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "E-postanı gir"
+- tapOn: "ad.soyad@std.bogazici.edu.tr"
+- inputText: ${EMAIL}
+- hideKeyboard
+# KVKK checkbox circle is at the far LEFT of the consent row (tapping the row
+# text opens the legal link instead), so tap the checkbox by point.
+- tapOn:
+    point: "9%,57%"
+- tapOn: "Kod gönder"
+- assertVisible: "Gelen kutunu kontrol et"
+- runScript: get-otp.js
+# Enter the 6 digits one at a time (the boxes auto-advance focus).
+- inputText: ${output.d0}
+- inputText: ${output.d1}
+- inputText: ${output.d2}
+- inputText: ${output.d3}
+- inputText: ${output.d4}
+- inputText: ${output.d5}
+- waitForAnimationToEnd
+- takeScreenshot: 01c-after-otp

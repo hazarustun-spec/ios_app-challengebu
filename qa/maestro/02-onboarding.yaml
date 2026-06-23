@@ -1,0 +1,41 @@
+# Onboarding (10 steps) → home. Runs after 01-login lands on step 1/10.
+# Account A = Alice (she/her, Kadın). All 10 steps verified to render content.
+appId: tr.edu.boun.tennischallenger
+---
+# 1/10 name (tap fields by point — tapping the AD/SOYAD labels won't focus them)
+- tapOn: { point: "50%,27%" }
+- inputText: "Alice"
+- tapOn: { point: "50%,36%" }
+- inputText: "Aksoy"
+- hideKeyboard
+- tapOn: "Devam"
+# 2/10 phone (optional) → skip
+- tapOn: "Atla"
+# 3/10 pronoun
+- tapOn: "she/her"
+- tapOn: "Devam"
+# 4/10 competition category
+- tapOn: "Kadın, Kadın Tek.*"
+- tapOn: "Devam"
+# 5/10 class year
+- tapOn: { text: "3", index: 0 }
+- tapOn: "Devam"
+# 6/10 department (picker)
+- tapOn: "Bölüm seç"
+- tapOn: "Fizik"
+- tapOn: "Devam"
+# 7/10 tennis level
+- tapOn: "Orta, Düzenli.*"
+- tapOn: "Devam"
+# 8/10 dominant hand
+- tapOn: "Sağ"
+- tapOn: "Devam"
+# 9/10 availability (multi-select)
+- tapOn: "Hafta içi akşam"
+- tapOn: "Hafta sonu sabah"
+- tapOn: "Devam"
+# 10/10 profile photo (optional) → finish
+- tapOn: "Bitir"
+- waitForAnimationToEnd
+- assertVisible: "İlk maçını oluştur"
+- takeScreenshot: 02-home
