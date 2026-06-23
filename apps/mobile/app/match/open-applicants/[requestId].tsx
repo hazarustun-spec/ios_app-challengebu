@@ -250,7 +250,7 @@ export default function OpenApplicants() {
                       full
                       onPress={() =>
                         router.push(
-                          `/profile/${a.applicant_id}` as never,
+                          `/user/${a.applicant_id}` as never,
                         )
                       }
                     >

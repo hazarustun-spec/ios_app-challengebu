@@ -15,7 +15,7 @@
 //   • Wired to live data — no mock constants remain.
 
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
@@ -24,6 +24,8 @@ import { Icon } from '../../../components/ui/Icon';
 import { ScoreInput } from '../../../components/ui/ScoreInput';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
+import { useSubmitMatchScore } from '../../../hooks/use-submit-match-score';
+import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
 const PTS = ['0', '15', '30', '40', 'Ad'];
@@ -39,6 +41,8 @@ export default function ActiveMatch() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
+  const userId = useAuthStore((s) => s.user?.id);
+  const submitScore = useSubmitMatchScore();
   const [gA, setGA] = useState(0);
   const [gB, setGB] = useState(0);
   const [pA, setPA] = useState(0);
@@ -100,16 +104,30 @@ export default function ActiveMatch() {
     p === 4 && other < 3 ? 'Ad' : PTS[Math.min(p, 4)];
 
   const finish = () => {
-    const win = gA > gB;
-    router.replace({
-      pathname: `/match/${id}/result`,
-      params: {
-        win: String(win),
-        score: `${gA}-${gB}`,
-        voided: String(isVoid),
-        opp: oppName,
+    if (!id || submitScore.isPending) return;
+    // The UI tracks games as "Sen" (gA) vs opponent (gB), but the backend
+    // records scoreTeamA/scoreTeamB against the match's fixed team sides. Map my
+    // games onto the correct side so BOTH players submit identical team scores
+    // (otherwise the two submissions never match).
+    const iAmTeamA = userId ? (match?.team_a_player_ids.includes(userId) ?? true) : true;
+    const scoreTeamA = iAmTeamA ? gA : gB;
+    const scoreTeamB = iAmTeamA ? gB : gA;
+    const winnerTeam: 'a' | 'b' | 'void' = isVoid
+      ? 'void'
+      : scoreTeamA > scoreTeamB
+        ? 'a'
+        : 'b';
+    submitScore.mutate(
+      { matchId: id, scoreTeamA, scoreTeamB, winnerTeam },
+      {
+        onSuccess: () => router.replace(`/match/${id}/result` as never),
+        onError: (e) =>
+          Alert.alert(
+            'Skor gönderilemedi',
+            (e as Error)?.message ?? 'Lütfen tekrar dene.',
+          ),
       },
-    } as never);
+    );
   };
 
   const rows = [
@@ -270,7 +288,7 @@ export default function ActiveMatch() {
           full
           size="lg"
           variant={someoneWon || isVoid ? 'primary' : 'secondary'}
-          disabled={!someoneWon && !isVoid}
+          disabled={(!someoneWon && !isVoid) || submitScore.isPending}
           icon={
             <Icon
               name="flag"
@@ -280,7 +298,11 @@ export default function ActiveMatch() {
           }
           onPress={finish}
         >
-          {isVoid ? 'Berabere — Maçı kapat' : 'Maçı Bitir'}
+          {submitScore.isPending
+            ? 'Gönderiliyor…'
+            : isVoid
+              ? 'Berabere — Maçı kapat'
+              : 'Maçı Bitir'}
         </Button>
       </View>
     </View>

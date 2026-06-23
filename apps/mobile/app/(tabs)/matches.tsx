@@ -469,7 +469,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
                   icon={<Icon name="info" size={15} color={colors.text} />}
                   onPress={() =>
                     router.push(
-                      `/match/${m.id}/format-rules?format=${fmtKey}` as never,
+                      `/match/new/format-rules?format=${fmtKey}` as never,
                     )
                   }
                 >
@@ -484,10 +484,10 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
                   onPress={() =>
                     m.winner_team == null
                       ? router.push(`/match/${m.id}/start` as never)
-                      : router.push(`/match/${m.id}/score` as never)
+                      : router.push(`/match/${m.id}/result` as never)
                   }
                 >
-                  {m.winner_team == null ? 'Maçı Başlat' : 'Skor gir'}
+                  {m.winner_team == null ? 'Maçı Başlat' : 'Sonucu Onayla'}
                 </Button>
               </View>
             </View>

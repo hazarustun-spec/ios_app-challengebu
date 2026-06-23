@@ -220,10 +220,10 @@ export default function MatchDetail() {
           onPress={() =>
             m.winner_team == null
               ? router.push(`/match/${id}/start` as never)
-              : router.push(`/match/${id}/score` as never)
+              : router.push(`/match/${id}/result` as never)
           }
         >
-          {m.winner_team == null ? 'Maçı Başlat' : 'Skoru gir'}
+          {m.winner_team == null ? 'Maçı Başlat' : 'Sonucu Onayla'}
         </Button>
         {m.match_request_id != null && opponent.primaryId != null && (
           <Button

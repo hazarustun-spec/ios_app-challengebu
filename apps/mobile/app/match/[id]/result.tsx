@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -40,6 +41,9 @@ import { Icon, type IconName } from '../../../components/ui/Icon';
 import { colors } from '../../../theme/colors';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
+import { useConfirmMatch } from '../../../hooks/use-confirm-match';
+import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
+import { queryKeys } from '../../../lib/query-keys';
 import { myPerspective } from '../../../lib/match-opponent';
 import { useAuthStore } from '../../../stores/auth-store';
 import { ShareSheet } from '../../../components/share/ShareSheet';
@@ -66,8 +70,22 @@ export default function MatchResult() {
 
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
+  const confirmMutation = useConfirmMatch();
+
+  // Live-refresh when the opponent submits their score or confirms.
+  useRealtimeChannel({
+    channelName: id ? `match:result:${id}` : 'match:result:none',
+    enabled: !!id,
+    configs: [{ event: 'UPDATE', table: 'matches', filter: `id=eq.${id}` }],
+    invalidateKeys: [queryKeys.activeMatches.detail(id ?? '')],
+  });
 
   const match = matchQ.data ?? null;
+
+  // Confirmation handshake state.
+  const scoresSettled = match?.winner_team != null;
+  const myConfirmed = !!(userId && match?.confirmed_by?.includes(userId));
+  const isSettled = match?.status === 'confirmed' || match?.status === 'voided';
 
   // Derive perspective from live match data
   const perspective = match && userId ? myPerspective(match, userId) : null;
@@ -351,31 +369,77 @@ export default function MatchResult() {
         )}
       </ScrollView>
 
-      <View style={{ padding: 20, flexDirection: 'row', gap: 10 }}>
-        <View style={{ flex: 1 }}>
-          <Button
-            size="lg"
-            variant="secondary"
-            full
-            icon={<Icon name="flag" size={17} color={colors.text} />}
-            onPress={() => router.push(`/match/${id}/dispute` as never)}
+      <View style={{ padding: 20, gap: 12 }}>
+        {!isSettled && (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 12.5, textAlign: 'center', lineHeight: 18 }}
           >
-            İtiraz et
-          </Button>
-        </View>
-        <View style={{ flex: 1.5 }}>
-          <Button
-            size="lg"
-            full
-            icon={
-              <Icon name="check" size={17} color={colors.onLime} stroke={3} />
-            }
-            onPress={() => {
-              router.replace('/(tabs)' as never);
-            }}
-          >
-            Onayla
-          </Button>
+            {!scoresSettled
+              ? 'Skorun gönderildi — rakibinin de skoru girmesi bekleniyor.'
+              : myConfirmed
+                ? 'Onayın alındı — rakibinin onayı bekleniyor.'
+                : 'Skorlar eşleşti. Onaylayınca ELO güncellenir.'}
+          </Text>
+        )}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Button
+              size="lg"
+              variant="secondary"
+              full
+              icon={<Icon name="flag" size={17} color={colors.text} />}
+              onPress={() => router.push(`/match/${id}/dispute` as never)}
+            >
+              İtiraz et
+            </Button>
+          </View>
+          <View style={{ flex: 1.5 }}>
+            {isSettled ? (
+              <Button
+                size="lg"
+                full
+                icon={
+                  <Icon name="check" size={17} color={colors.onLime} stroke={3} />
+                }
+                onPress={() => router.replace('/(tabs)/matches' as never)}
+              >
+                Tamam
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                full
+                disabled={
+                  !scoresSettled || myConfirmed || confirmMutation.isPending
+                }
+                icon={
+                  <Icon name="check" size={17} color={colors.onLime} stroke={3} />
+                }
+                onPress={() =>
+                  id &&
+                  confirmMutation.mutate(
+                    { matchId: id },
+                    {
+                      onError: (e) =>
+                        Alert.alert(
+                          'Onaylanamadı',
+                          (e as Error)?.message ?? 'Lütfen tekrar dene.',
+                        ),
+                    },
+                  )
+                }
+              >
+                {confirmMutation.isPending
+                  ? 'Onaylanıyor…'
+                  : !scoresSettled
+                    ? 'Rakip bekleniyor'
+                    : myConfirmed
+                      ? 'Rakip onayı bekleniyor'
+                      : 'Onayla'}
+              </Button>
+            )}
+          </View>
         </View>
       </View>
 
