@@ -118,6 +118,10 @@ export const queryKeys = {
       [...queryKeys.conversations.all, 'messages', conversationId] as const,
     unreadCount: () => [...queryKeys.conversations.all, 'unread-count'] as const,
   },
+  matchSubmissions: {
+    all: ['match-submissions'] as const,
+    byMatch: (id: string) => ['match-submissions', 'match', id] as const,
+  },
   courts: ['courts'] as const,
   departments: ['departments'] as const,
   profile: (userId: string) => ['profile', userId] as const,

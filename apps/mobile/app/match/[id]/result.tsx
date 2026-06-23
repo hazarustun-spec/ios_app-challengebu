@@ -40,6 +40,7 @@ import { Button } from '../../../components/ui/Button';
 import { Icon, type IconName } from '../../../components/ui/Icon';
 import { colors } from '../../../theme/colors';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
+import { useMatchSubmissions } from '../../../hooks/use-match-submissions';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useConfirmMatch } from '../../../hooks/use-confirm-match';
 import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
@@ -79,6 +80,18 @@ export default function MatchResult() {
     configs: [{ event: 'UPDATE', table: 'matches', filter: `id=eq.${id}` }],
     invalidateKeys: [queryKeys.activeMatches.detail(id ?? '')],
   });
+
+  // Live-refresh submissions — INSERT events fire on conflict (matches row isn't
+  // updated when scores disagree, so the matches UPDATE channel won't fire).
+  useRealtimeChannel({
+    channelName: id ? `match:submissions:${id}` : 'match:submissions:none',
+    enabled: !!id,
+    configs: [{ event: 'INSERT', table: 'match_score_submissions', filter: `match_id=eq.${id}` }],
+    invalidateKeys: [queryKeys.matchSubmissions.byMatch(id ?? '')],
+  });
+
+  const submissionsQ = useMatchSubmissions(id);
+  const submissions = submissionsQ.data ?? [];
 
   const match = matchQ.data ?? null;
 
@@ -164,28 +177,75 @@ export default function MatchResult() {
   // When scores haven't both been submitted yet, show a neutral pending state
   // rather than defaulting to "Kaybettin" / "0-0" which is misleading.
   const isPending = !scoresSettled;
-  const tagColor = isPending
-    ? colors.text3
-    : isVoid
-      ? colors.warn
-      : isWin
-        ? colors.win
-        : colors.loss;
-  const tagBg = isPending
-    ? colors.surface
-    : isVoid
-      ? colors.warnSoft
-      : isWin
-        ? colors.limeSoft
-        : '#FCE6E4';
-  const tagText = isPending
-    ? 'Skor onayı bekleniyor'
-    : isVoid
-      ? 'Berabere (voided)'
-      : isWin
-        ? 'Kazandın!'
-        : 'Kaybettin';
-  const tagIcon: IconName = isPending ? 'info' : isVoid ? 'info' : isWin ? 'trophy' : 'x';
+
+  // --- Conflict detection ---
+  // hasConflict: match unsettled AND every participant has a submission but
+  // they differ (all submitted, none agree).
+  // "every participant has submitted" is determined by checking that both team
+  // player lists are covered by the set of submitters.
+  const submitters = new Set(submissions.map((s) => s.submitted_by));
+  const everyone = match
+    ? [...match.team_a_player_ids, ...match.team_b_player_ids]
+    : [];
+  const hasConflict =
+    !scoresSettled &&
+    everyone.length > 0 &&
+    everyone.every((p) => submitters.has(p));
+
+  // Oriented conflict scores: "my games – opp games" perspective.
+  // iAmTeamA was already derived above as myTeamSide === 'a'.
+  const iAmTeamA = myTeamSide === 'a';
+  const mySubmission = submissions.find((s) => s.submitted_by === userId);
+  const oppSubmission = submissions.find((s) => s.submitted_by !== userId);
+
+  const conflictMyMine = mySubmission
+    ? iAmTeamA
+      ? mySubmission.score_details.scoreTeamA
+      : mySubmission.score_details.scoreTeamB
+    : null;
+  const conflictMyOpp = mySubmission
+    ? iAmTeamA
+      ? mySubmission.score_details.scoreTeamB
+      : mySubmission.score_details.scoreTeamA
+    : null;
+  const conflictOppMine = oppSubmission
+    ? iAmTeamA
+      ? oppSubmission.score_details.scoreTeamA
+      : oppSubmission.score_details.scoreTeamB
+    : null;
+  const conflictOppOpp = oppSubmission
+    ? iAmTeamA
+      ? oppSubmission.score_details.scoreTeamB
+      : oppSubmission.score_details.scoreTeamA
+    : null;
+  const tagColor = hasConflict
+    ? colors.warn
+    : isPending
+      ? colors.text3
+      : isVoid
+        ? colors.warn
+        : isWin
+          ? colors.win
+          : colors.loss;
+  const tagBg = hasConflict
+    ? colors.warnSoft
+    : isPending
+      ? colors.surface
+      : isVoid
+        ? colors.warnSoft
+        : isWin
+          ? colors.limeSoft
+          : '#FCE6E4';
+  const tagText = hasConflict
+    ? 'Skorlar uyuşmuyor!'
+    : isPending
+      ? 'Skor onayı bekleniyor'
+      : isVoid
+        ? 'Berabere (voided)'
+        : isWin
+          ? 'Kazandın!'
+          : 'Kaybettin';
+  const tagIcon: IconName = hasConflict ? 'info' : isPending ? 'info' : isVoid ? 'info' : isWin ? 'trophy' : 'x';
   const eloColor = isWin ? colors.win : colors.loss;
 
   // My name for the share card — prefer profile but fall back to "Sen"
@@ -297,7 +357,7 @@ export default function MatchResult() {
           </Text>
         </View>
 
-        {!isVoid && delta !== null && !isPending && (
+        {!isVoid && delta !== null && !isPending && !hasConflict && (
           <View
             className="bg-surface rounded-lg"
             style={{ padding: 18, borderWidth: 1, borderColor: colors.borderStrong }}
@@ -385,10 +445,39 @@ export default function MatchResult() {
             </Text>
           </View>
         )}
+
+        {hasConflict && (
+          <View
+            className="bg-warn-soft rounded-lg"
+            style={{ padding: 16, gap: 10, borderWidth: 1, borderColor: colors.warn }}
+          >
+            <View className="flex-row items-center" style={{ gap: 8 }}>
+              <Icon name="info" size={16} color={colors.warn} />
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 13, color: colors.warn }}
+              >
+                Skorlar uyuşmuyor
+              </Text>
+            </View>
+            <Text
+              className="font-sans text-text-2"
+              style={{ fontSize: 13, lineHeight: 19 }}
+            >
+              {conflictMyMine !== null && conflictMyOpp !== null
+                ? `Sen ${conflictMyMine}-${conflictMyOpp} girdin`
+                : 'Senin skorun bilinmiyor'}
+              {conflictOppMine !== null && conflictOppOpp !== null
+                ? `, rakibin ${conflictOppMine}-${conflictOppOpp} girdi.`
+                : ', rakibin skoru bilinmiyor.'}
+              {' '}Skoru düzelterek tekrar gönderebilirsin.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       <View style={{ padding: 20, gap: 12 }}>
-        {!isSettled && (
+        {!isSettled && !hasConflict && (
           <Text
             className="font-sans text-text-3"
             style={{ fontSize: 12.5, textAlign: 'center', lineHeight: 18 }}
@@ -423,6 +512,14 @@ export default function MatchResult() {
                 onPress={() => router.replace('/(tabs)/matches' as never)}
               >
                 Tamam
+              </Button>
+            ) : hasConflict ? (
+              <Button
+                size="lg"
+                full
+                onPress={() => router.replace(`/match/${id}/score` as never)}
+              >
+                Skoru tekrar gir
               </Button>
             ) : (
               <Button

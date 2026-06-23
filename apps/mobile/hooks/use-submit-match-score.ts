@@ -19,6 +19,7 @@ export interface SubmitMatchScoreInput {
 
 export interface SubmitMatchScoreResponse {
   matched: boolean;
+  conflict?: boolean;
 }
 
 export function useSubmitMatchScore() {

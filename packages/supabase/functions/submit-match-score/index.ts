@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     const firstDetails = latestPerPlayer.get(firstKey) as Record<string, unknown>;
     const firstStr = JSON.stringify(firstDetails);
     const allMatch = allPlayers.every((p) => JSON.stringify(latestPerPlayer.get(p)) === firstStr);
-    if (!allMatch) return jsonResponse({ matched: false });
+    if (!allMatch) return jsonResponse({ matched: false, conflict: true });
 
     // Write the agreed score from the stored (deduped) submissions, NOT from
     // the current caller's live input. This prevents a flip-race where the
