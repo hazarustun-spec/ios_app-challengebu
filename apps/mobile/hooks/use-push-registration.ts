@@ -29,17 +29,19 @@ export function usePushRegistration() {
 
   // Handle notification taps — route by payload category.
   useEffect(() => {
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     const sub = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
 
         // Message deep-link: navigate to the specific conversation thread.
-        if (typeof data.conversationId === 'string') {
+        if (typeof data.conversationId === 'string' && UUID_RE.test(data.conversationId)) {
           router.push({
             pathname: '/messages/[conversationId]',
             params: {
               conversationId: data.conversationId,
-              otherUserId: typeof data.otherUserId === 'string' ? data.otherUserId : '',
+              otherUserId: typeof data.otherUserId === 'string' && UUID_RE.test(data.otherUserId) ? data.otherUserId : '',
               name: typeof data.name === 'string' ? data.name : '',
             },
           } as never);
@@ -47,11 +49,11 @@ export function usePushRegistration() {
         }
 
         // Match-related deep-links.
-        if (typeof data.matchId === 'string') {
+        if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
           router.push(`/match/${data.matchId}` as never);
           return;
         }
-        if (typeof data.tournamentId === 'string') {
+        if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
           router.push(`/tournament/${data.tournamentId}` as never);
           return;
         }

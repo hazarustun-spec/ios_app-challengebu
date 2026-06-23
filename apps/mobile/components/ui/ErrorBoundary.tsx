@@ -24,8 +24,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // eslint-disable-next-line no-console
-    console.error('[ErrorBoundary]', error, info.componentStack);
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('[ErrorBoundary]', error, info.componentStack);
+    }
   }
 
   reset = () => this.setState({ error: null });

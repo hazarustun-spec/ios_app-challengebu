@@ -41,15 +41,17 @@ Deno.serve(async (req) => {
       .eq('id', input.matchId)
       .single();
     if (!match) return errorResponse('Match not found', 404);
-    // Reject re-submission once the match has been settled (confirmed, voided, disputed, etc.)
-    if (match.status !== 'awaiting_confirmation') {
-      return conflict(`Match is already ${match.status} — score submission not allowed`);
-    }
 
+    // Participant check FIRST — non-participants must not learn match state.
     const isParticipant =
       match.team_a_player_ids.includes(auth.userId) ||
       match.team_b_player_ids.includes(auth.userId);
     if (!isParticipant) return forbidden('Only participants can submit scores');
+
+    // Reject re-submission once the match has been settled (confirmed, voided, disputed, etc.)
+    if (match.status !== 'awaiting_confirmation') {
+      return conflict(`Match is already ${match.status} — score submission not allowed`);
+    }
 
     const scoreDetails = {
       scoreTeamA: input.scoreTeamA,
@@ -62,11 +64,10 @@ Deno.serve(async (req) => {
       ...(input.points ? { points: input.points } : {}),
     };
 
-    await supa.from('match_score_submissions').insert({
-      match_id: match.id,
-      submitted_by: auth.userId,
-      score_details: scoreDetails,
-    });
+    await supa.from('match_score_submissions').upsert(
+      { match_id: match.id, submitted_by: auth.userId, score_details: scoreDetails },
+      { onConflict: 'match_id,submitted_by' },
+    );
 
     const { data: submissions } = await supa
       .from('match_score_submissions')

@@ -27,7 +27,9 @@ file_size_limit = "5MiB"
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["exp://", "tennischallenger://"]
+# "exp://127.0.0.1:8081" is scoped to local Expo dev server only.
+# Production redirect URLs must be set in the Supabase dashboard and must NOT include a bare "exp://".
+additional_redirect_urls = ["exp://127.0.0.1:8081", "tennischallenger://"]
 jwt_expiry = 3600
 enable_signup = true
 

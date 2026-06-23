@@ -28,6 +28,6 @@ export function conflict(message: string): Response {
 }
 
 export function internalError(err: unknown): Response {
-  const message = err instanceof Error ? err.message : String(err);
-  return errorResponse('Internal server error', 500, { message });
+  console.error('[internalError]', err);
+  return errorResponse('Internal server error', 500);
 }

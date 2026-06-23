@@ -38,14 +38,22 @@ Deno.serve(async (req) => {
       me === conv.participant_low ? conv.participant_high : conv.participant_low;
 
     // Block check (either direction blocks messaging).
-    const { data: blocks } = await supa
-      .from('user_blocks')
-      .select('blocker_id')
-      .or(
-        `and(blocker_id.eq.${conv.participant_low},blocked_id.eq.${conv.participant_high}),` +
-          `and(blocker_id.eq.${conv.participant_high},blocked_id.eq.${conv.participant_low})`,
-      );
-    if (blocks && blocks.length > 0) {
+    // Two separate parameterised queries avoid interpolating UUIDs into a filter string.
+    const [{ data: blockFwd }, { data: blockRev }] = await Promise.all([
+      supa
+        .from('user_blocks')
+        .select('blocker_id')
+        .eq('blocker_id', conv.participant_low)
+        .eq('blocked_id', conv.participant_high)
+        .limit(1),
+      supa
+        .from('user_blocks')
+        .select('blocker_id')
+        .eq('blocker_id', conv.participant_high)
+        .eq('blocked_id', conv.participant_low)
+        .limit(1),
+    ]);
+    if ((blockFwd && blockFwd.length > 0) || (blockRev && blockRev.length > 0)) {
       return errorResponse('Messaging is blocked between these users', 403);
     }
 
@@ -55,7 +63,7 @@ Deno.serve(async (req) => {
       .insert({ conversation_id: conversationId, sender_id: me, body })
       .select('id, created_at')
       .single();
-    if (msgErr) return errorResponse('Failed to send message', 500, msgErr);
+    if (msgErr) { console.error('[send-message]', msgErr); return errorResponse('Failed to send message', 500); }
 
     const preview = body.slice(0, 80);
     await supa

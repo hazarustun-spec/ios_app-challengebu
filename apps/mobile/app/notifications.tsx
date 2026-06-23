@@ -101,20 +101,22 @@ export default function NotificationsScreen() {
   const { data: unread = 0 } = useUnreadCount();
   const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
 
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   const handlePress = (n: Row) => {
     if (n.read_at === null) markOne.mutate(n.id);
     const data = n.data ?? {};
 
     // Payload-driven navigation takes priority over the category fallback.
-    if (typeof data.matchId === 'string') {
+    if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
       router.push(`/match/${data.matchId}`);
       return;
     }
-    if (typeof data.tournamentId === 'string') {
+    if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
       router.push(`/tournament/${data.tournamentId}`);
       return;
     }
-    if (isAdmin && typeof data.disputeId === 'string') {
+    if (isAdmin && typeof data.disputeId === 'string' && UUID_RE.test(data.disputeId)) {
       router.push({ pathname: '/(admin)/disputes/[id]', params: { id: data.disputeId } });
       return;
     }
