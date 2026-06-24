@@ -1,4 +1,4 @@
-// Boğaziçi Tennis Challenger — Achievement Badge Library (vector).
+// ChallengeBu! — Achievement Badge Library (vector).
 //
 // Ported verbatim from the Claude Design project (`app/badge-lib.js`): 35
 // cohesive flat-vector badges as pure SVG strings (no deps), so the same source

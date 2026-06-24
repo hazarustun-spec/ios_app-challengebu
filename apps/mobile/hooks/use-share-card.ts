@@ -36,7 +36,7 @@ export function useShareCard(): UseShareCardReturn {
 
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: 'Tennis Challenger'
+        dialogTitle: 'ChallengeBu!'
       });
     } catch {
       // Silently swallow errors (user cancel, capture failure, etc.)

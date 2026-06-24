@@ -442,7 +442,7 @@ export function CardMatchResult({
               color: INK,
             }}
           >
-            Tennis Challenger
+            ChallengeBu!
           </Text>
         </View>
       </View>
@@ -451,7 +451,7 @@ export function CardMatchResult({
 }
 
 // ---------------------------------------------------------------------------
-// Shared card footer (Tennis Challenger branding)
+// Shared card footer (ChallengeBu! branding)
 // ---------------------------------------------------------------------------
 
 function CardFooter({
@@ -494,7 +494,7 @@ function CardFooter({
             fontFamily: 'BricolageGrotesque-ExtraBold',
           }}
         >
-          Tennis Challenger
+          ChallengeBu!
         </Text>
         <Text
           style={{

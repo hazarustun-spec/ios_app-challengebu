@@ -69,7 +69,7 @@ export function ShareSheet({
 
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: 'Tennis Challenger',
+        dialogTitle: 'ChallengeBu!',
       });
     } catch {
       // Swallow: user cancel, simulator unavailability, etc.

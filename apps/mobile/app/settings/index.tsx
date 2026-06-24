@@ -105,7 +105,7 @@ export default function Settings() {
           <ListRow
             icon="info"
             title="Hakkında & kurallar"
-            subtitle={`Tennis Challenger · v${APP_VERSION}`}
+            subtitle={`ChallengeBu! · v${APP_VERSION}`}
             chevron
             onPress={() => Linking.openURL(RULES_URL)}
           />
@@ -152,7 +152,7 @@ export default function Settings() {
           className="font-num text-text-3"
           style={{ fontSize: 11.5, textAlign: 'center', marginTop: 8 }}
         >
-          Tennis Challenger · v{APP_VERSION}
+          ChallengeBu! · v{APP_VERSION}
         </Text>
       </ScrollView>
     </View>

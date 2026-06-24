@@ -1,6 +1,6 @@
-# Tennis Challenger Mobile
+# ChallengeBu! Mobile
 
-Expo iOS-first app for the Boğaziçi Tennis Challenger ranking system.
+Expo iOS-first app for the ChallengeBu! ranking system.
 
 ## Dev setup
 
