@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "ChallengeBu!",
-    "slug": "tennis-challenger",
+    "slug": "challengebu",
+    "owner": "shimalcoders",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -65,6 +66,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3cb84a03-8354-4944-adac-c719dfb4e9d3"
+      }
     }
   }
 }
