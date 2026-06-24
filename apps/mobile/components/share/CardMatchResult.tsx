@@ -500,13 +500,13 @@ function CardFooter({
           style={{
             fontSize: 24,
             fontWeight: '700',
-            letterSpacing: 3.4,
+            letterSpacing: 1.2,
             color: sub,
             marginTop: 8,
             fontFamily: 'PlusJakartaSans-Bold',
           }}
         >
-          BOĞAZİÇİ ÜNİVERSİTESİ
+          by ShimalCoders
         </Text>
       </View>
     </View>
