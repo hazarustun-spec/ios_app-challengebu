@@ -7,7 +7,7 @@
 
 import { Image, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import { pickAvatar } from '../../components/profile/AvatarPicker';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Icon } from '../../components/ui/Icon';
 import { useOnboardingStore } from '../../stores/onboarding-store';
@@ -18,15 +18,8 @@ export default function ObPhoto() {
   const setField = useOnboardingStore((s) => s.setField);
 
   const pick = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: true,
-      aspect: [1, 1],
-    });
-    if (!res.canceled && res.assets[0]) {
-      setField('photoUri', res.assets[0].uri);
-    }
+    const uri = await pickAvatar();
+    if (uri) setField('photoUri', uri);
   };
 
   return (
