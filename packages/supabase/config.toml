@@ -37,6 +37,17 @@ enable_signup = true
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
+otp_length = 6
+
+# Branded OTP emails: deliver the 6-digit {{ .Token }} code (not a magic link),
+# so the app's 6-box OTP screen works. Unlocked once custom SMTP (Brevo) is set.
+[auth.email.template.confirmation]
+subject = "Tennis Challenger giriş kodun"
+content_path = "./supabase/templates/otp-code.html"
+
+[auth.email.template.magic_link]
+subject = "Tennis Challenger giriş kodun"
+content_path = "./supabase/templates/otp-code.html"
 
 [auth.sms]
 enable_signup = false
