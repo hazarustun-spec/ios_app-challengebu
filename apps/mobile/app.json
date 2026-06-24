@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "tr.edu.boun.tennischallenger",
+      "bundleIdentifier": "app.challengebu.ios",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -22,7 +22,7 @@
       }
     },
     "android": {
-      "package": "tr.edu.boun.tennischallenger",
+      "package": "app.challengebu.ios",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#ffffff"
