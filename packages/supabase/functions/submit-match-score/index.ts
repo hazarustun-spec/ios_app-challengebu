@@ -85,7 +85,36 @@ Deno.serve(async (req) => {
 
     const allPlayers = [...match.team_a_player_ids, ...match.team_b_player_ids];
     const allSubmitted = allPlayers.every((p) => latestPerPlayer.has(p));
-    if (!allSubmitted) return jsonResponse({ matched: false });
+    if (!allSubmitted) {
+      // Nudge the players who haven't entered a score yet — match_score_pending.
+      try {
+        const pending = allPlayers.filter(
+          (p) => !latestPerPlayer.has(p) && p !== auth.userId,
+        );
+        if (pending.length > 0) {
+          const { data: submitter } = await supa
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('user_id', auth.userId)
+            .single();
+          const name =
+            [submitter?.first_name, submitter?.last_name].filter(Boolean).join(' ').trim() ||
+            'Rakibin';
+          await supa.from('notifications').insert(
+            pending.map((p) => ({
+              recipient_id: p,
+              category: 'match_score_pending',
+              title: 'Skor onayı bekliyor 🎾',
+              body: `${name} maçınızın skorunu girdi — sen de gir ve onayla! ✅`,
+              data: { matchId: match.id, action: 'score_pending' },
+            })),
+          );
+        }
+      } catch (_e) {
+        // A notification failure must never block score submission.
+      }
+      return jsonResponse({ matched: false });
+    }
 
     const firstKey = allPlayers[0];
     const firstDetails = latestPerPlayer.get(firstKey) as Record<string, unknown>;

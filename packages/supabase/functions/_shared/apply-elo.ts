@@ -47,6 +47,10 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
   const winnerScore = match.winner_team === 'a' ? match.score_team_a : match.score_team_b;
   const loserScore = match.winner_team === 'a' ? match.score_team_b : match.score_team_a;
 
+  // Per-player rating deltas, collected so we can notify ladder movement once
+  // the new ratings are written.
+  const deltas: { id: string; before: number; after: number }[] = [];
+
   if (winnerIds.length === 1 && loserIds.length === 1) {
     const w = ratingOf.get(winnerIds[0])!;
     const l = ratingOf.get(loserIds[0])!;
@@ -69,6 +73,8 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
 
     await upsertRating(supa, winnerIds[0], match.category, result.winnerNewRating, w.matchesPlayed + 1);
     await upsertRating(supa, loserIds[0], match.category, result.loserNewRating, l.matchesPlayed + 1);
+    deltas.push({ id: winnerIds[0], before: w.rating, after: result.winnerNewRating });
+    deltas.push({ id: loserIds[0], before: l.rating, after: result.loserNewRating });
   } else if (winnerIds.length === 2 && loserIds.length === 2) {
     const w1 = ratingOf.get(winnerIds[0])!;
     const w2 = ratingOf.get(winnerIds[1])!;
@@ -106,8 +112,35 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
     await upsertRating(supa, winnerIds[1], match.category, result.winnerNewRatings[1], w2.matchesPlayed + 1);
     await upsertRating(supa, loserIds[0], match.category, result.loserNewRatings[0], l1.matchesPlayed + 1);
     await upsertRating(supa, loserIds[1], match.category, result.loserNewRatings[1], l2.matchesPlayed + 1);
+    deltas.push({ id: winnerIds[0], before: w1.rating, after: result.winnerNewRatings[0] });
+    deltas.push({ id: winnerIds[1], before: w2.rating, after: result.winnerNewRatings[1] });
+    deltas.push({ id: loserIds[0], before: l1.rating, after: result.loserNewRatings[0] });
+    deltas.push({ id: loserIds[1], before: l2.rating, after: result.loserNewRatings[1] });
   } else {
     throw new Error(`Unsupported team sizes: ${winnerIds.length} vs ${loserIds.length}`);
+  }
+
+  // Ladder movement — tell each player their new ELO + ladder position.
+  try {
+    for (const d of deltas) {
+      const delta = d.after - d.before;
+      const { count } = await supa
+        .from('elo_ratings')
+        .select('*', { count: 'exact', head: true })
+        .eq('category', match.category)
+        .gt('rating', d.after);
+      const rank = (count ?? 0) + 1;
+      const up = delta >= 0;
+      await supa.from('notifications').insert({
+        recipient_id: d.id,
+        category: 'ladder_movement',
+        title: up ? 'Sıralaman yükseldi! 📈' : 'Sıralama güncellendi 📉',
+        body: `ELO ${up ? '+' : ''}${delta} → ${d.after} · Şu an ${rank}. sıradasın! 🎾`,
+        data: { matchId: match.id, action: 'ladder_movement', rating: d.after, rank },
+      });
+    }
+  } catch (_e) {
+    // A notification failure must never block ELO application.
   }
 
   const now = new Date().toISOString();

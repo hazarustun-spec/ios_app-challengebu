@@ -97,6 +97,35 @@ Deno.serve(async (req) => {
 
     if (insertErr) return errorResponse('Failed to create match request', 500, insertErr);
 
+    // Notify the challenged player(s) — match_invitations. Direct challenges
+    // only; open calls surface via the listings feed, not a 1:1 invite.
+    if (input.type === 'direct_challenge' && input.targetId) {
+      try {
+        const { data: creator } = await supa
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('user_id', auth.userId)
+          .single();
+        const name =
+          [creator?.first_name, creator?.last_name].filter(Boolean).join(' ').trim() ||
+          'Bir oyuncu';
+        const recipients = [input.targetId, input.targetPartnerId].filter(
+          (id): id is string => Boolean(id),
+        );
+        await supa.from('notifications').insert(
+          recipients.map((rid) => ({
+            recipient_id: rid,
+            category: 'match_invitations',
+            title: 'Yeni meydan okuma! ⚡',
+            body: `${name} seni maça davet etti — kabul et ve sahaya çık! 🎾`,
+            data: { request_id: row!.id, action: 'match_invitation' },
+          })),
+        );
+      } catch (_e) {
+        // A notification failure must never fail the request creation.
+      }
+    }
+
     return jsonResponse({
       id: row!.id,
       status: row!.status,
