@@ -3,5 +3,8 @@ module.exports = () => ({
   type: 'widget',
   name: 'LiveMatch',
   deploymentTarget: '16.2',
-  frameworks: ['SwiftUI', 'ActivityKit'],
+  frameworks: ['SwiftUI', 'ActivityKit', 'AppIntents'],
+  entitlements: {
+    'com.apple.security.application-groups': ['group.app.challengebu.ios'],
+  },
 });

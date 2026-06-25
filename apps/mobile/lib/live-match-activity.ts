@@ -7,6 +7,9 @@ export type LiveMatchAttrs = {
   nameA: string;
   nameB: string;
   categoryLabel?: string;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  accessToken?: string;
 };
 
 export type LiveMatchState = {

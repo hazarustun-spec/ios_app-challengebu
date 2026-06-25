@@ -17,6 +17,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.challengebu.ios",
       "appleTeamId": "4MBWF4RGV7",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.app.challengebu.ios"]
+      },
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"

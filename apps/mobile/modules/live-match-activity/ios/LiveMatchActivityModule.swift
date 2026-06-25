@@ -25,6 +25,12 @@ public class LiveMatchActivityModule: Module {
         throw NSError(domain: "LiveMatch", code: 2,
                       userInfo: [NSLocalizedDescriptionKey: "areActivitiesEnabled = false"])
       }
+      if let defaults = UserDefaults(suiteName: "group.app.challengebu.ios") {
+        defaults.set(a["supabaseUrl"] as? String ?? "", forKey: "supabaseUrl")
+        defaults.set(a["supabaseAnonKey"] as? String ?? "", forKey: "supabaseAnonKey")
+        defaults.set(a["accessToken"] as? String ?? "", forKey: "accessToken")
+        defaults.set(a["matchId"] as? String ?? "", forKey: "matchId")
+      }
       let attrs = LiveMatchAttributes(
         matchId: a["matchId"] as? String ?? "",
         youSide: a["youSide"] as? String ?? "a",

@@ -32,6 +32,7 @@ import {
   endMatchActivity,
 } from '../../../lib/live-match-activity';
 import { useAuthStore } from '../../../stores/auth-store';
+import { env } from '../../../lib/env';
 import { colors } from '../../../theme/colors';
 
 const PTS = ['0', '15', '30', '40', 'Ad'];
@@ -41,6 +42,7 @@ export default function ActiveMatch() {
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
   const userId = useAuthStore((s) => s.user?.id);
+  const accessToken = useAuthStore((s) => s.session?.access_token);
   const submitScore = useSubmitMatchScore();
   const { score, awardPoint } = useLiveScore(id);
   const gA = score?.gamesA ?? 0, gB = score?.gamesB ?? 0;
@@ -71,7 +73,15 @@ export default function ActiveMatch() {
 
   useEffect(() => {
     if (!match || !id) return;
-    startMatchActivity({ matchId: id, youSide, nameA, nameB });
+    startMatchActivity({
+      matchId: id,
+      youSide,
+      nameA,
+      nameB,
+      supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      accessToken,
+    });
     return () => {
       const s = scoreRef.current;
       endMatchActivity({
