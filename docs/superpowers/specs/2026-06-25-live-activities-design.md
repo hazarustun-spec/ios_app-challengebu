@@ -29,7 +29,7 @@ score.tsx "+" (app içi) ───────────┘    uygular, live_m
 5. **`register-activity-token` edge fn** + token tablosu (`live_activity_tokens`: match_id, user_id, update_token, push_to_start_token) — modül başlatınca kaydeder.
 6. **Doğrudan APNs** (edge fn) — `.p8` (vault), ES256 JWT, `apns-push-type: liveactivity`. Expo push DESTEKLEMEZ. Dev build → sandbox APNs.
 7. **push-to-start** (iOS 17.2+) — maç başlayınca rakibin push-to-start token'ına push → activity'si app kapalıyken bile otomatik başlar.
-8. **`score.tsx` (sunucu-driven)** — "+" butonları `award-point` çağırır; ekran `live_match_scores`'u Realtime dinler. Yerel `useState` skorlama yerini sunucuya bırakır (kilit ekranı + app + iki cihaz hep tutarlı).
+8. **`score.tsx` (sunucu-driven)** — "+" butonları `award-point` çağırır. Ekran **açılışta mevcut skoru `live_match_scores`'tan yükler** + Realtime ile canlı dinler. Böylece **kilit ekranında yapılan her değişiklik, app açıldığında orada da görünür** (ve maç sürerken canlı güncellenir). Yerel `useState` skorlama yerini sunucuya bırakır (kilit ekranı + app + iki cihaz hep tutarlı, tek doğru kaynak).
 9. **Native modül** — `start(pushEnabled)` + `getUpdateToken()` + `getPushToStartToken()` ekler (Plan 1 modülünün üstüne).
 
 ## 3. Veri Modeli
