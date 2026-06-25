@@ -9,6 +9,8 @@ public class LiveMatchActivityModule: Module {
   public func definition() -> ModuleDefinition {
     Name("LiveMatchActivity")
 
+    Events("onPushToken")
+
     Function("isSupported") { () -> Bool in
       if #available(iOS 16.2, *) {
         return ActivityAuthorizationInfo().areActivitiesEnabled
@@ -41,8 +43,21 @@ public class LiveMatchActivityModule: Module {
       let state = LiveMatchAttributes.ContentState(
         gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: "ongoing", winner: nil)
       // Throw (not try?) so the JS side surfaces the real ActivityKit error.
-      self.current = try Activity.request(
-        attributes: attrs, content: .init(state: state, staleDate: nil))
+      // pushType: .token so the activity gets an APNs push token we can use to
+      // update it from the server (cross-device sync).
+      let activity = try Activity.request(
+        attributes: attrs,
+        content: .init(state: state, staleDate: nil),
+        pushType: .token)
+      self.current = activity
+      // Observe push-token updates and forward each (hex-encoded) to JS so it can
+      // register the token with the backend.
+      Task {
+        for await tokenData in activity.pushTokenUpdates {
+          let hex = tokenData.map { String(format: "%02x", $0) }.joined()
+          self.sendEvent("onPushToken", ["token": hex])
+        }
+      }
     }
 
     AsyncFunction("update") { (s: [String: Any]) in

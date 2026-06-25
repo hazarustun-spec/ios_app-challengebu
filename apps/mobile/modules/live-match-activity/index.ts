@@ -1,10 +1,20 @@
 import { requireOptionalNativeModule } from 'expo';
 
+export type LiveMatchPushTokenEvent = { token: string };
+
+// Mirrors expo-modules-core's EventSubscription (not re-exported from `expo`,
+// and not directly resolvable here, so declared structurally).
+export type LiveMatchSubscription = { remove(): void };
+
 export type LiveMatchNative = {
   isSupported(): boolean;
   start(a: Record<string, unknown>): Promise<void>;
   update(s: Record<string, unknown>): Promise<void>;
   end(s: Record<string, unknown>): Promise<void>;
+  addListener(
+    eventName: 'onPushToken',
+    listener: (event: LiveMatchPushTokenEvent) => void,
+  ): LiveMatchSubscription;
 };
 
 // Optional: returns null (never throws) when the native module isn't linked, so

@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
-import Native from '../modules/live-match-activity';
+import Native, { type LiveMatchSubscription } from '../modules/live-match-activity';
+import { invokeFunction } from './invoke-function';
 
 export type LiveMatchAttrs = {
   matchId: string;
@@ -54,5 +55,27 @@ export async function endMatchActivity(s: LiveMatchState): Promise<void> {
     await Native.end(s);
   } catch {
     // never break scoring
+  }
+}
+
+// Subscribe to the activity's APNs push token and register it with the backend
+// so the server can push score updates to the Live Activity (cross-device sync).
+// Returns an EventSubscription whose `.remove()` should be called on cleanup, or
+// null when the native module isn't available. A registration failure must never
+// break the scoring flow.
+export function registerActivityPushToken(
+  matchId: string,
+  accessToken: string,
+): LiveMatchSubscription | null {
+  if (!Native || Platform.OS !== 'ios') return null;
+  try {
+    return Native.addListener('onPushToken', ({ token }) => {
+      invokeFunction('register-activity-token', { matchId, token }, accessToken).catch(() => {
+        // never break scoring
+      });
+    });
+  } catch {
+    // never break scoring
+    return null;
   }
 }

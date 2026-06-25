@@ -30,6 +30,7 @@ import {
   startMatchActivity,
   updateMatchActivity,
   endMatchActivity,
+  registerActivityPushToken,
 } from '../../../lib/live-match-activity';
 import { useAuthStore } from '../../../stores/auth-store';
 import { env } from '../../../lib/env';
@@ -82,7 +83,13 @@ export default function ActiveMatch() {
       supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       accessToken,
     });
+    // Capture the activity's APNs push token + register it so the server can
+    // push score updates cross-device. Never breaks scoring on failure.
+    const tokenSub = accessToken
+      ? registerActivityPushToken(id, accessToken)
+      : null;
     return () => {
+      tokenSub?.remove();
       const s = scoreRef.current;
       endMatchActivity({
         gamesA: s.gA,
