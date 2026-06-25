@@ -14,7 +14,9 @@
 //   - useUpdateNotificationPreference() upserts so we never lose a toggle
 //     when a row is missing.
 
-import { ScrollView, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import {
   NOTIFICATION_CATEGORIES,
@@ -29,11 +31,40 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreference,
 } from '../../hooks/use-notification-preferences';
+import { registerForPushAsync } from '../../hooks/use-push-registration';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 
 export default function NotificationPreferences() {
   const { data: prefs } = useNotificationPreferences();
   const update = useUpdateNotificationPreference();
+  const session = useAuthStore((s) => s.session);
+  const [pushGranted, setPushGranted] = useState<boolean | null>(null);
+  const [enabling, setEnabling] = useState(false);
+
+  useEffect(() => {
+    Notifications.getPermissionsAsync().then((s) => setPushGranted(s.granted));
+  }, []);
+
+  const enablePush = async () => {
+    if (!session?.access_token || enabling) return;
+    setEnabling(true);
+    try {
+      await registerForPushAsync(session.access_token);
+    } catch {
+      // status is re-read below regardless
+    } finally {
+      const s = await Notifications.getPermissionsAsync();
+      setPushGranted(s.granted);
+      setEnabling(false);
+      if (!s.granted) {
+        Alert.alert(
+          'Bildirim izni gerekli',
+          'Telefon bildirimlerini almak için izni Ayarlar > ChallengeBu! > Bildirimler bölümünden açabilirsin.',
+        );
+      }
+    }
+  };
 
   const enabledMap = new Map<NotificationCategory, boolean>(
     (prefs ?? []).map((p) => [p.category, p.enabled]),
@@ -43,6 +74,52 @@ export default function NotificationPreferences() {
     <View className="flex-1 bg-bg">
       <NavHeader title="Bildirim Tercihleri" onBack={() => router.back()} />
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {pushGranted === false && (
+          <Pressable
+            onPress={enablePush}
+            className="bg-surface rounded-lg flex-row items-center"
+            style={{
+              borderWidth: 1.5,
+              borderColor: colors.clay,
+              padding: 14,
+              gap: 12,
+              marginBottom: 14,
+            }}
+          >
+            <View
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 14,
+                backgroundColor: colors.claySofter,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="bell" size={18} color={colors.clay} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                className="font-sans font-bold text-text"
+                style={{ fontSize: 14.5 }}
+              >
+                Telefon bildirimleri kapalı
+              </Text>
+              <Text
+                className="font-sans text-text-3"
+                style={{ fontSize: 12, marginTop: 1 }}
+              >
+                Push bildirimleri almak için dokun ve izin ver.
+              </Text>
+            </View>
+            <Text
+              className="font-sans font-bold"
+              style={{ fontSize: 14, color: colors.clay }}
+            >
+              {enabling ? '…' : 'Aç'}
+            </Text>
+          </Pressable>
+        )}
         <View
           className="bg-surface rounded-lg overflow-hidden"
           style={{ borderWidth: 1, borderColor: colors.borderStrong }}

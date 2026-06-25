@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { invokeFunction } from '../lib/invoke-function';
 import { useAuthStore } from '../stores/auth-store';
@@ -23,8 +23,15 @@ export function usePushRegistration() {
   useEffect(() => {
     if (!profile?.userId || !session?.access_token) return;
     if (registered.current === profile.userId) return;
-    registered.current = profile.userId;
-    void registerForPushAsync(session.access_token);
+    const uid = profile.userId;
+    registerForPushAsync(session.access_token)
+      .then((ok) => {
+        // Latch only on success, so a transient failure (permission prompt
+        // dismissed, token error) retries on the next render instead of being
+        // skipped forever.
+        if (ok) registered.current = uid;
+      })
+      .catch((err) => console.warn('[push] registration failed', err));
   }, [profile?.userId, session?.access_token]);
 
   // Handle notification taps — route by payload category.
@@ -63,31 +70,42 @@ export function usePushRegistration() {
   }, []);
 }
 
-async function registerForPushAsync(accessToken: string): Promise<void> {
-  try {
-    if (!Device.isDevice) return;
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.DEFAULT,
-      });
-    }
-    const settings = await Notifications.getPermissionsAsync();
-    let granted = settings.granted;
-    if (!granted) {
-      const req = await Notifications.requestPermissionsAsync();
-      granted = req.granted;
-    }
-    if (!granted) return;
-    const tokenResponse = await Notifications.getExpoPushTokenAsync();
-    const token = tokenResponse.data;
-    if (!token) return;
-    await invokeFunction(
-      'register-push-token',
-      { token, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
-      accessToken,
-    );
-  } catch (err) {
-    console.warn('[push] registration failed', err);
+/**
+ * Requests notification permission (shows the OS prompt when undetermined),
+ * mints an Expo push token, and registers it for the signed-in user. Returns
+ * true only when a token was registered. Safe to call directly from a UI
+ * action (e.g. an "enable notifications" button), which is the most reliable
+ * way to surface the OS permission prompt.
+ */
+export async function registerForPushAsync(accessToken: string): Promise<boolean> {
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.DEFAULT,
+    });
   }
+  const settings = await Notifications.getPermissionsAsync();
+  let granted = settings.granted;
+  if (!granted) {
+    const req = await Notifications.requestPermissionsAsync();
+    granted = req.granted;
+  }
+  if (!granted) return false;
+
+  const projectId =
+    Constants.expoConfig?.extra?.eas?.projectId ??
+    (Constants as unknown as { easConfig?: { projectId?: string } }).easConfig
+      ?.projectId;
+  const tokenResponse = await Notifications.getExpoPushTokenAsync(
+    projectId ? { projectId } : undefined,
+  );
+  const token = tokenResponse.data;
+  if (!token) return false;
+
+  await invokeFunction(
+    'register-push-token',
+    { token, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
+    accessToken,
+  );
+  return true;
 }
