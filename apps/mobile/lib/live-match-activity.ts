@@ -19,7 +19,7 @@ export type LiveMatchState = {
 };
 
 export function isSupported(): boolean {
-  if (Platform.OS !== 'ios') return false;
+  if (Platform.OS !== 'ios' || !Native) return false;
   try {
     return Native.isSupported();
   } catch {
@@ -28,7 +28,7 @@ export function isSupported(): boolean {
 }
 
 export async function startMatchActivity(a: LiveMatchAttrs): Promise<void> {
-  if (!isSupported()) return;
+  if (!Native || !isSupported()) return;
   try {
     await Native.start(a);
   } catch {
@@ -37,6 +37,7 @@ export async function startMatchActivity(a: LiveMatchAttrs): Promise<void> {
 }
 
 export async function updateMatchActivity(s: LiveMatchState): Promise<void> {
+  if (!Native) return;
   try {
     await Native.update(s);
   } catch {
@@ -45,6 +46,7 @@ export async function updateMatchActivity(s: LiveMatchState): Promise<void> {
 }
 
 export async function endMatchActivity(s: LiveMatchState): Promise<void> {
+  if (!Native) return;
   try {
     await Native.end(s);
   } catch {

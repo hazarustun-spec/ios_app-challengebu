@@ -17,7 +17,14 @@ public class LiveMatchActivityModule: Module {
     }
 
     AsyncFunction("start") { (a: [String: Any]) in
-      guard #available(iOS 16.2, *) else { return }
+      guard #available(iOS 16.2, *) else {
+        throw NSError(domain: "LiveMatch", code: 1,
+                      userInfo: [NSLocalizedDescriptionKey: "iOS < 16.2"])
+      }
+      guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+        throw NSError(domain: "LiveMatch", code: 2,
+                      userInfo: [NSLocalizedDescriptionKey: "areActivitiesEnabled = false"])
+      }
       let attrs = LiveMatchAttributes(
         matchId: a["matchId"] as? String ?? "",
         youSide: a["youSide"] as? String ?? "a",
@@ -27,7 +34,8 @@ public class LiveMatchActivityModule: Module {
       )
       let state = LiveMatchAttributes.ContentState(
         gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: "ongoing", winner: nil)
-      self.current = try? Activity.request(
+      // Throw (not try?) so the JS side surfaces the real ActivityKit error.
+      self.current = try Activity.request(
         attributes: attrs, content: .init(state: state, staleDate: nil))
     }
 

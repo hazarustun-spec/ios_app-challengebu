@@ -20,8 +20,6 @@
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-import * as LA from '../../lib/live-match-activity';
-
 import { Avatar } from '../../components/ui/Avatar';
 import { Banner } from '../../components/ui/Banner';
 import { BellWithBadge } from '../../components/ui/BellWithBadge';
@@ -134,53 +132,6 @@ export default function Gallery() {
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       >
-        {/* ---------- Live Activity (dev test — Task 1) ---------- */}
-        <Section title="Live Activity (dev)">
-          <Row>
-            <Button
-              onPress={() =>
-                LA.startMatchActivity({
-                  matchId: 'test',
-                  youSide: 'a',
-                  nameA: 'Sen',
-                  nameB: 'Ahmet',
-                })
-              }
-            >
-              Başlat
-            </Button>
-            <Button
-              variant="secondary"
-              onPress={() =>
-                LA.updateMatchActivity({
-                  gamesA: 2,
-                  gamesB: 1,
-                  pointsA: 3,
-                  pointsB: 1,
-                  phase: 'ongoing',
-                })
-              }
-            >
-              Güncelle
-            </Button>
-            <Button
-              variant="danger"
-              onPress={() =>
-                LA.endMatchActivity({
-                  gamesA: 4,
-                  gamesB: 1,
-                  pointsA: 0,
-                  pointsB: 0,
-                  phase: 'finished',
-                  winner: 'a',
-                })
-              }
-            >
-              Bitir
-            </Button>
-          </Row>
-        </Section>
-
         {/* ---------- 1. Tab bar ---------- */}
         <Section title="1. Tab bar">
           <Text className="text-[12px] text-text-3">

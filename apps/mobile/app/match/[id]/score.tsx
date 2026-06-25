@@ -14,7 +14,7 @@
 //   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
 //   • Wired to live data — no mock constants remain.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -25,6 +25,11 @@ import { ScoreInput } from '../../../components/ui/ScoreInput';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useSubmitMatchScore } from '../../../hooks/use-submit-match-score';
+import {
+  startMatchActivity,
+  updateMatchActivity,
+  endMatchActivity,
+} from '../../../lib/live-match-activity';
 import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
@@ -59,6 +64,54 @@ export default function ActiveMatch() {
   const total = gA + gB;
   const isVoid = gA === 3 && gB === 3;
   const someoneWon = gA === 4 || gB === 4;
+
+  // Live Activity — mirror the live score to the Dynamic Island + Lock Screen.
+  const youSide: 'a' | 'b' = match?.team_a_player_ids?.includes(userId ?? '')
+    ? 'a'
+    : 'b';
+  const nameA = youSide === 'a' ? 'Sen' : oppFirstName;
+  const nameB = youSide === 'a' ? oppFirstName : 'Sen';
+
+  // Latest score in a ref so the unmount cleanup ends the activity with the
+  // final state (the start/end effect only runs once per match).
+  const scoreRef = useRef({ gA, gB, pA, pB, isVoid, someoneWon });
+  scoreRef.current = { gA, gB, pA, pB, isVoid, someoneWon };
+
+  useEffect(() => {
+    if (!match || !id) return;
+    startMatchActivity({ matchId: id, youSide, nameA, nameB });
+    return () => {
+      const s = scoreRef.current;
+      endMatchActivity({
+        gamesA: s.gA,
+        gamesB: s.gB,
+        pointsA: s.pA,
+        pointsB: s.pB,
+        phase: s.isVoid ? 'void' : 'finished',
+        winner: s.someoneWon ? (s.gA === 4 ? 'a' : 'b') : null,
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match?.id]);
+
+  useEffect(() => {
+    if (!match) return;
+    const phase: 'ongoing' | 'void' | 'finished' = isVoid
+      ? 'void'
+      : someoneWon
+        ? 'finished'
+        : 'ongoing';
+    const winner = someoneWon ? (gA === 4 ? 'a' : 'b') : null;
+    updateMatchActivity({
+      gamesA: gA,
+      gamesB: gB,
+      pointsA: pA,
+      pointsB: pB,
+      phase,
+      winner,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gA, gB, pA, pB, isVoid, someoneWon, match?.id]);
 
   const award = (who: 'A' | 'B') => {
     if (someoneWon || isVoid) return;
