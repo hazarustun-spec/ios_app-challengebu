@@ -18,9 +18,29 @@ struct LiveMatchLiveActivity: Widget {
                     color: ScoreFormat.court)
         }
         DynamicIslandExpandedRegion(.bottom) {
-          Text(statusText(context.state))
-            .font(.system(.caption2, design: .rounded))
-            .foregroundStyle(.secondary)
+          if context.state.phase == "ongoing" {
+            if #available(iOS 17.0, *) {
+              HStack(spacing: 8) {
+                Button(intent: AwardPointIntent(side: context.attributes.youSide)) {
+                  Text("Sen +1").font(.system(.caption, design: .rounded).bold())
+                    .frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.tint(ScoreFormat.lime)
+                Button(intent: AwardPointIntent(side: context.attributes.youSide == "a" ? "b" : "a")) {
+                  Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
+                    .frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.tint(ScoreFormat.court)
+              }
+              .buttonStyle(.borderedProminent)
+            } else {
+              Text(statusText(context.state))
+                .font(.system(.caption2, design: .rounded))
+                .foregroundStyle(.secondary)
+            }
+          } else {
+            Text(statusText(context.state))
+              .font(.system(.caption2, design: .rounded))
+              .foregroundStyle(.secondary)
+          }
         }
       } compactLeading: {
         Text("🎾")
@@ -86,6 +106,21 @@ struct LockScreenView: View {
       }
       scoreRow(s.youName, s.youGames, s.youPoints, ScoreFormat.lime)
       scoreRow(s.oppName, s.oppGames, s.oppPoints, ScoreFormat.court)
+      if state.phase == "ongoing" {
+        if #available(iOS 17.0, *) {
+          HStack(spacing: 8) {
+            Button(intent: AwardPointIntent(side: attributes.youSide)) {
+              Text("Sen +1").font(.system(.caption, design: .rounded).bold())
+                .frame(maxWidth: .infinity).padding(.vertical, 6)
+            }.tint(ScoreFormat.lime)
+            Button(intent: AwardPointIntent(side: attributes.youSide == "a" ? "b" : "a")) {
+              Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
+                .frame(maxWidth: .infinity).padding(.vertical, 6)
+            }.tint(ScoreFormat.court)
+          }
+          .buttonStyle(.borderedProminent)
+        }
+      }
     }
     .padding(14)
     .activityBackgroundTint(ScoreFormat.ink)
