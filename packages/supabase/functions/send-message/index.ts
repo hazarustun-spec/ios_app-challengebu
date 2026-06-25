@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       .single();
     const senderName = sender
       ? `${sender.first_name} ${sender.last_name}`.trim()
-      : 'Yeni mesaj';
+      : 'Yeni mesaj 💬';
 
     // Notification row + push, honouring the recipient's preference.
     const { data: notification } = await supa

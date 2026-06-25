@@ -62,14 +62,14 @@ Deno.serve(async (req) => {
         const badgeNames = newBadges.map((b) => b.name_tr);
         const body =
           badgeNames.length === 1
-            ? `${badgeNames[0]} rozetini kazandın.`
-            : `${badgeNames.join(', ')} rozetlerini kazandın.`;
+            ? `${badgeNames[0]} rozetini cebine attın! Koleksiyonun büyüyor. 🔥`
+            : `${badgeNames.join(', ')} rozetlerini cebine attın! Koleksiyonun büyüyor. 🔥`;
         await supa
           .from('notifications')
           .insert({
             recipient_id: userId,
             category: 'badges_earned',
-            title: 'Yeni rozet! 🏅',
+            title: 'Rozet kazandın! 🏅',
             body,
             data: {
               badge_ids: newBadges.map((b) => b.id),

@@ -25,8 +25,8 @@ begin
       values (
         admin_id,
         'season_and_tournament',
-        'Sezon finali zamanı',
-        format('%s %s sezonu finale dönemine girdi. Bracket''i başlat.', s.name, s.year),
+        'Final zamanı! 🏆',
+        format('%s %s sezonu finale girdi. Bracket''i başlat! 🎯', s.name, s.year),
         jsonb_build_object('season_id', s.id, 'action', 'start_finale')
       );
     end loop;

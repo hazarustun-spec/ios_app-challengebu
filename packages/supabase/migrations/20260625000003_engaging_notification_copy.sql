@@ -1,20 +1,51 @@
--- Extend season_lifecycle_check() with a "finale wrapped up, ready to close"
--- notification. Auto-invoking close-season from pg_cron requires either
--- pg_net + service-role JWT stored in vault (broader infra change) or a SQL
--- equivalent of the Edge Function — both bigger scope than what this commit
--- targets. The cron now:
---
--- 1. (existing) upcoming → active
--- 2. (existing) active → finale (notify admins)
--- 3. (new) status = 'finale' AND finale_ends_at <= now() AND every tournament
---    in the season is 'completed' (or no tournaments exist) → notify admins
---    that close-season is ready to be invoked from the admin panel.
---
--- The reason we don't flip the row to 'closed' here is that close-season
--- soft-resets ELO and awards seasonal badges — both side effects we want
--- the admin to acknowledge by clicking, not the cron to do silently. Plan 8
--- release can add the auto-invoke once we have pg_net + vault configured.
+-- Refresh notification copy to the engaging, emoji-rich ChallengeBu! voice.
+-- The original definitions (20260620000001 open-call, 20260610000003 season
+-- lifecycle) are already live on the cloud, and editing those files in place
+-- does not re-run them — so this new migration re-installs the two affected
+-- DB functions with the new copy. Bodies are otherwise unchanged.
 
+-- open_listings: someone applied to your open call.
+create or replace function public.notify_open_call_application()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_creator uuid;
+  v_name text;
+begin
+  select creator_id into v_creator
+    from public.match_requests
+    where id = new.request_id;
+
+  if v_creator is null or v_creator = new.applicant_id then
+    return new;
+  end if;
+
+  select nullif(trim(coalesce(first_name, '') || ' ' || coalesce(last_name, '')), '')
+    into v_name
+    from public.profiles
+    where user_id = new.applicant_id;
+
+  insert into public.notifications (recipient_id, category, title, body, data)
+  values (
+    v_creator,
+    'open_listings',
+    'Yeni başvuru geldi! ⚡️',
+    coalesce(v_name, 'Bir oyuncu') || ' açık ilanına başvurdu — rakibini seç! 🎾',
+    jsonb_build_object(
+      'request_id', new.request_id,
+      'applicant_id', new.applicant_id,
+      'action', 'open_call_application'
+    )
+  );
+
+  return new;
+end;
+$$;
+
+-- season_lifecycle: finale start + season-close admin notices.
 create or replace function public.season_lifecycle_check()
 returns void
 language plpgsql
@@ -25,12 +56,10 @@ declare
   admin_id uuid;
   pending_tournaments int;
 begin
-  -- Transition: upcoming → active
   update public.seasons
   set status = 'active'
   where status = 'upcoming' and starts_at <= now();
 
-  -- Transition: active → finale (when finale_starts_at reached)
   for s in
     select id, name, year from public.seasons
     where status = 'active' and finale_starts_at <= now()
@@ -41,7 +70,7 @@ begin
       insert into public.notifications (recipient_id, category, title, body, data)
       values (
         admin_id,
-        'season_and_tournament',
+        'season_lifecycle',
         'Final zamanı! 🏆',
         format('%s %s sezonu finale girdi. Bracket''i başlat! 🎯', s.name, s.year),
         jsonb_build_object('season_id', s.id, 'action', 'start_finale')
@@ -49,7 +78,6 @@ begin
     end loop;
   end loop;
 
-  -- Notify: finale done, ready to close
   for s in
     select id, name, year from public.seasons
     where status = 'finale' and finale_ends_at <= now()
@@ -59,7 +87,6 @@ begin
     where season_id = s.id and status <> 'completed';
 
     if pending_tournaments = 0 then
-      -- Skip if we already pinged admins about this season today.
       if not exists (
         select 1 from public.notifications
         where data->>'season_id' = s.id::text
@@ -70,7 +97,7 @@ begin
           insert into public.notifications (recipient_id, category, title, body, data)
           values (
             admin_id,
-            'season_and_tournament',
+            'season_lifecycle',
             'Sezonu kapatma vakti! 🥇',
             format('%s %s finali tamamlandı, tüm bracketler bitti. ELO''yu sıfırla ve rozetleri dağıt! 🏅', s.name, s.year),
             jsonb_build_object('season_id', s.id, 'action', 'close_season')

@@ -162,8 +162,8 @@ begin
       values (
         admin_id,
         'season_lifecycle',
-        'Sezon finali zamanı',
-        format('%s %s sezonu finale dönemine girdi. Bracket''i başlat.', s.name, s.year),
+        'Final zamanı! 🏆',
+        format('%s %s sezonu finale girdi. Bracket''i başlat! 🎯', s.name, s.year),
         jsonb_build_object('season_id', s.id, 'action', 'start_finale')
       );
     end loop;
@@ -190,8 +190,8 @@ begin
           values (
             admin_id,
             'season_lifecycle',
-            'Sezonu kapatabilirsin',
-            format('%s %s sezon finali bitti, tüm bracketler tamamlandı. close-season çağırarak ELO''yu sıfırla ve sezon rozetlerini dağıt.', s.name, s.year),
+            'Sezonu kapatma vakti! 🥇',
+            format('%s %s finali tamamlandı, tüm bracketler bitti. ELO''yu sıfırla ve rozetleri dağıt! 🏅', s.name, s.year),
             jsonb_build_object('season_id', s.id, 'action', 'close_season')
           );
         end loop;

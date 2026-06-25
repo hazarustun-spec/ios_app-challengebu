@@ -32,8 +32,8 @@ begin
   values (
     v_creator,
     'open_listings',
-    'Yeni başvuru',
-    coalesce(v_name, 'Bir oyuncu') || ' açık ilanına başvurdu.',
+    'Yeni başvuru geldi! ⚡️',
+    coalesce(v_name, 'Bir oyuncu') || ' açık ilanına başvurdu — rakibini seç! 🎾',
     jsonb_build_object(
       'request_id', new.request_id,
       'applicant_id', new.applicant_id,
