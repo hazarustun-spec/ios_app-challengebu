@@ -109,7 +109,7 @@ export default function Welcome() {
               className="font-display font-extrabold"
               style={{ color: '#EAF7D0', fontSize: 11, letterSpacing: 1.4 }}
             >
-              BÜ TENİS · LADDER
+              CHALLENGEBU! · LADDER
             </Text>
           </View>
           <FloatyLogo />
@@ -138,7 +138,7 @@ export default function Welcome() {
               maxWidth: 290,
             }}
           >
-            Kampüsteki tenis topluluğunun sıralama, maç ve sezon platformu.
+            Tenis sıralaması, maçlar ve sezonlar — hepsi tek platformda.
           </Text>
         </View>
       </View>
