@@ -1,96 +1,69 @@
-# Live Activities — İki-Cihaz Canlı Maç Skoru — Tasarım
+# Live Activities — İnteraktif Çift-Yön Canlı Maç Skoru — Tasarım
 
 **Tarih:** 2026-06-25
-**Özellik:** ChallengeBu! için Dynamic Island + Kilit Ekranı canlı maç skoru Live Activity'si — **iki cihaz canlı senkron** (bir oyuncu skorlar, rakibin Island'ında da anlık görünür).
-**Kapsam:** Premium UX yol haritasının 1/5'i. Bu spec tam iki-cihaz senkron sürümünü kapsar (kullanıcı kararı: tek seferde tam senkron).
+**Özellik:** Her iki oyuncunun **kilit ekranından** (Dynamic Island + Lock Screen) maç skorunu değiştirebildiği, anlık senkronlanan canlı maç Live Activity'si.
+**Platform:** iOS 26 (kullanıcı cihazı) — interaktif Live Activities, App Intents, push-to-start tam destekli.
 
-## 1. Amaç ve Konsept
+## 1. Konsept
 
-Bir oyuncu (A) maçı telefonunda canlı skorlarken (`app/match/[id]/score.tsx`, "+" ile puan), skor:
-1. **A'nın** Dynamic Island + kilit ekranında **yerel** olarak anında güncellenir, ve
-2. **Rakibin (B)** Dynamic Island + kilit ekranında — **B'nin uygulaması kapalı olsa bile** — backend üzerinden **doğrudan APNs ActivityKit push** ile canlı güncellenir.
+Maç başladığında iki oyuncuda da bir Live Activity başlar. Her oyuncunun kilit ekranındaki activity'de **butonlar** vardır (App Intents). Kim basarsa skor **sunucuda** güncellenir ve **her iki cihaza** anlık yansır — uygulama açılmadan. İkisi de kilit ekranından skorlayabilir.
 
-Skorlama modeli değişmez: A girer, B canlı **izler**, maç sonunda ikisi de skoru onaylar (mevcut consensus akışı). İki oyuncu da maç boyunca skoru cebinden/kilit ekranından takip eder.
+Tenis modeli (mevcut `score.tsx`): tek set, 4 oyuna ilk ulaşan (margin ≥ 1), 3-3 void; puanlar 0/15/30/40/Ad.
 
-Skor modeli (mevcut `score.tsx`): tek set, **4 oyuna ilk ulaşan kazanır** (margin ≥ 1), 3-3 → void. Puanlar `0/15/30/40/Ad`.
+## 2. Mimari (sunucu-otoriter)
 
-## 2. Mimari — Bileşenler
+İki oyuncu da skoru değiştirebildiği için **tek doğru kaynak sunucuda** olmalı. Tenis puanlama mantığı sunucuya taşınır.
 
 ```
-A (skorlayan)                    Backend (Supabase)              B (izleyen)
-─────────────                    ──────────────────              ───────────
-score.tsx "+" → yerel update ─┐
-                              ├─ POST relay-live-score ──→ APNs (liveactivity push) ──→ B Live Activity günceller
-LiveActivity (A) ◀── yerel ───┘   · B'nin update token'ını bulur     (uygulama kapalı olsa bile)
-                                   · .p8 ile ES256 JWT imzalar
-                                   · api.push.apple.com'a POST
-maç başında (handshake):
-A + B activity başlatır ──────→ register-activity-token (match_id, user_id, update/push-to-start token)
+A kilit ekranı [Sen +1][Rakip +1] ─┐
+                                   ├─→ award-point edge fn ──┬─→ APNs (liveactivity) → A & B Island
+B kilit ekranı [Sen +1][Rakip +1] ─┤   (tenis mantığını      └─→ Realtime broadcast → A & B app (score.tsx)
+score.tsx "+" (app içi) ───────────┘    uygular, live_match_scores'a yazar)
 ```
 
 **Bileşenler:**
-1. **Live Activity UI** (SwiftUI Widget Extension) — iki oyuncu da görür; `youSide`'a göre "Sen/Rakip" render.
-2. **Native modül** (Swift + ActivityKit) — `isSupported`, `start(attrs, pushEnabled)`, `update(state)` (yerel), `end(final)`, başlatınca **update push token**'ı + (iOS 17.2+) **push-to-start token**'ı verir.
-3. **Token kayıt tablosu** `live_activity_tokens` — (match_id, user_id, update_token, push_to_start_token, updated_at). RLS: kullanıcı kendi satırını yazar.
-4. **`relay-live-score` edge fn** — A'nın skor değişimini alır, B'nin update token'ını bulur, **doğrudan APNs**'e `apns-push-type: liveactivity` push gönderir (content-state = yeni skor).
-5. **`start-opponent-activity`** (iOS 17.2+ push-to-start) — maç aktif olunca rakibin push-to-start token'ına push → rakibin activity'si uygulama kapalıyken bile **otomatik başlar**. Fallback: rakip uygulamadayken kendi başlatır.
-6. **Doğrudan APNs entegrasyonu** — `.p8` APNs auth key (vault'ta), key ID + team ID; Deno'da ES256 JWT imzala; HTTP/2 POST `api.push.apple.com/3/device/{activityToken}`. (Expo push servisi Live Activity push'u DESTEKLEMEZ → doğrudan APNs şart.)
-7. **`score.tsx` entegrasyonu** — her `award()`'da: yerel `update()` + `POST relay-live-score`.
+1. **`live_match_scores` tablosu** — otoriter canlı skor: `match_id` (PK), `games_a`, `games_b`, `points_a`, `points_b`, `phase`, `winner`, `version` (optimistic), `updated_at`. RLS: maç katılımcıları okur; yazma yalnız `award-point` (service_role).
+2. **`award-point` edge fn** — `{ matchId, side: 'a'|'b' }` alır, katılımcı doğrular, **tenis mantığını** uygular (puan→oyun→set, deuce, 3-3 void — `score.tsx` kurallarıyla bire bir), `live_match_scores`'u günceller, sonra (a) iki activity token'ına APNs liveactivity push, (b) Realtime broadcast. Idempotent değil ama `version` ile sıralı.
+3. **`AwardPointIntent` (LiveActivityIntent, Swift)** — kilit ekranı butonu → app process'inde (arka planda) çalışır → `award-point`'e POST → yeni state ile yerel activity'yi günceller. Auth token'ı App Group/Keychain'den okur (JS bridge'siz).
+4. **İnteraktif Live Activity UI** — lock screen + Dynamic Island expanded'de iki buton (`Button(intent: AwardPointIntent(side:))`) + skor; compact/minimal salt-skor. Marka dili (Sen lime / Rakip court / ink).
+5. **`register-activity-token` edge fn** + token tablosu (`live_activity_tokens`: match_id, user_id, update_token, push_to_start_token) — modül başlatınca kaydeder.
+6. **Doğrudan APNs** (edge fn) — `.p8` (vault), ES256 JWT, `apns-push-type: liveactivity`. Expo push DESTEKLEMEZ. Dev build → sandbox APNs.
+7. **push-to-start** (iOS 17.2+) — maç başlayınca rakibin push-to-start token'ına push → activity'si app kapalıyken bile otomatik başlar.
+8. **`score.tsx` (sunucu-driven)** — "+" butonları `award-point` çağırır; ekran `live_match_scores`'u Realtime dinler. Yerel `useState` skorlama yerini sunucuya bırakır (kilit ekranı + app + iki cihaz hep tutarlı).
+9. **Native modül** — `start(pushEnabled)` + `getUpdateToken()` + `getPushToStartToken()` ekler (Plan 1 modülünün üstüne).
 
-## 3. Veri Modeli (ActivityKit)
+## 3. Veri Modeli
 
-**ActivityAttributes (statik):** `matchId: String`, `youSide: "a"|"b"`, `nameA: String`, `nameB: String`, `categoryLabel: String?`
-**ContentState (dinamik):** `gamesA: Int`, `gamesB: Int`, `pointsA: Int` (0–4), `pointsB: Int`, `phase: ongoing|void|finished`, `winner: "a"|"b"|null`
+`live_match_scores`: yukarıdaki kolonlar. Maç bitince (phase=finished/void) satır kalır, activity'ler `end` olur, sonuç mevcut `submit-match-score`/`confirm-match` consensus akışına gider (skor doğru kaynaktan gelir).
 
-SwiftUI, `youSide`'a göre a/b'yi "Sen/Rakip"e eşler — aynı ContentState iki cihazda doğru perspektifle render edilir.
+ActivityKit `ContentState`: `gamesA/gamesB/pointsA/pointsB`, `phase`, `winner`. `ActivityAttributes`: `matchId`, `youSide`, `nameA`, `nameB`. (Plan 1'deki yapı + push token desteği.)
 
-**`live_activity_tokens` tablosu:** `match_id uuid`, `user_id uuid`, `update_token text`, `push_to_start_token text null`, `updated_at timestamptz`, PK (match_id, user_id). RLS: owner yazar/okur; service_role hepsi.
+## 4. Yaşam Döngüsü
 
-## 4. Arayüz Tasarımı (marka dili)
+- **Maç başlangıcı (handshake):** iki oyuncu da activity başlatır + token kaydeder; push-to-start ile rakip app'te değilse de başlar. `live_match_scores` satırı 0-0 oluşur.
+- **Skorlama:** kilit ekranı butonu / app "+" → `award-point` → otoriter güncelle → APNs (iki activity) + Realtime (iki app). Çakışma `version`'la sıralanır.
+- **Bitiş:** phase finished/void → activity'ler final hâliyle `end`; skor consensus/onay akışına aktarılır; token'lar temizlenir.
+- Tüm çağrılar hatada akışı bozmaz; APNs/Realtime hatası skoru DB'de tutmayı engellemez.
 
-**Palet (theme/colors.ts):** Sen → lime `#8FD43B` (koyu `#5C8C1E`); Rakip → court mavi `#2270BC`; metin ink `#161618`/`#65656E`; kazanan vurgu win `#5C8C1E`; aksan `#F5B924`. Kilit ekranı kartı ink koyu zemin + lime/court şeritler. **Font:** skorlar SF Pro Rounded Bold (sportif, native); app display fontu bundle edilebilirse o.
+## 5. Kapsam ve Non-Goals
 
-```
-Dynamic Island compact:   leading 🎾      trailing 2–1   (lime–court)
-Minimal:                  🎾2–1
-Expanded (uzun bas):      ┌────────────────────────┐
-                          │ 🎾 Maç sürüyor          │
-                          │ Sen     2     40        │ lime
-                          │ Rakip   1     30        │ court
-                          └────────────────────────┘
-Kilit ekranı kartı:       ChallengeBu! · Maç sürüyor — iki oyuncu, oyun + puan, marka şeritleri
-```
-Önde olan satır vurgulu; void → "Berabere · void"; finished → "Bitti · 4–1" + kazanan vurgusu.
+**Dahil:** interaktif çift-yön kilit ekranı skorlama; sunucu-otoriter skor + tenis mantığı; APNs senkron + Realtime; push-to-start; marka UI; desteklenmeyen durumda app-içi skorlama fallback.
+**Hariç:** çok-set/turnuva; Android; offline skorlama (sunucu erişimi şart — kısa kesintide app-içi kuyruk düşünülebilir, v1 değil).
 
-## 5. Yaşam Döngüsü
+## 6. Riskler
 
-- **Maç başlangıcı (handshake, `start.tsx`):** her oyuncu uygulamadayken kendi Live Activity'sini başlatır (`youSide` kendine göre) + `register-activity-token` ile update token'ı (+ push-to-start token) kaydeder. iOS 17.2+ ise push-to-start ile rakip uygulamada değilken bile backend başlatabilir.
-- **Skorlama (`score.tsx`, sadece A):** her `award()` → A yerel `update()` + `POST relay-live-score {matchId, state}` → backend B'nin token'ına APNs liveactivity push → B'nin activity'si güncellenir.
-- **Bitiş ("Maçı Bitir"/sonuç):** A yerel `end(final)`; backend B'ye final push (phase finished). Kısa "Bitti 🎾" sonrası kaybolur. Token satırları temizlenir.
-- Tüm çağrılar try/catch — Live Activity / push hatası skor akışını ASLA bozmaz.
+- **App Intent auth** — `LiveActivityIntent` JS'siz Swift; backend'e auth için token'ı App Group/Keychain'den okumalı. Token paylaşımı + yenileme kurulmalı. **En kritik yeni risk.**
+- **Doğrudan APNs in Deno** — ES256 JWT, HTTP/2, sandbox vs production.
+- **Çakışma/sıra** — iki oyuncu aynı anda basarsa `version` + sunucu sıralaması; UI optimistic + sunucu düzeltir.
+- **Test:** cloud'da tek kullanıcı/cihaz → A tarafı + APNs yolu (kendine-push) tek cihazda; gerçek çift-cihaz görseli 2. cihaz ister.
+- **`score.tsx` yeniden yazımı** — yerel→sunucu-driven; mevcut akış korunmalı (Maçı Bitir, sonuç ekranı).
 
-## 6. Teknik Kurulum
+## 7. Uygulama Sırası (plan bunu fazlara böler)
 
-1. **`expo-apple-targets`** config plugin → SwiftUI Widget Extension target. **Risk:** manuel `ios/` projesi ↔ `expo prebuild` çakışması — planda cerrahi çözülecek (target'ı mevcut projeye manuel ekle veya prebuild reconcile). **En kritik entegrasyon riski.**
-2. **Native modül** (Expo Modules API, Swift) — ActivityKit kontrol + token export. Paylaşılan `LiveMatchAttributes` struct modül + widget target üyeliğinde.
-3. **Info.plist:** `NSSupportsLiveActivities = YES`.
-4. **APNs:** `.p8` auth key (kullanıcıda var — Expo'ya yüklenmişti), key ID + team ID + bundle id `app.challengebu.ios` → Supabase **vault**'a eklenecek (dashboard SQL, kullanıcı). Edge fn ES256 JWT imzalar.
-5. **Rebuild:** `npx expo run:ios --device "Hazar U." --configuration Release`. Telefonda **Dynamic Island var** → A tarafı tam test edilebilir.
+1. Backend skor motoru: `live_match_scores` + `award-point` (tenis mantığı) + Realtime. (Tek cihazda app-içi test edilebilir.)
+2. `score.tsx` sunucu-driven + Realtime. (Tek cihazda tam test.)
+3. Doğrudan APNs + token kayıt + activity push senkron. (Kendine-push ile test.)
+4. İnteraktif Live Activity (App Intent butonları) + auth token paylaşımı.
+5. push-to-start + iki-cihaz uçtan uca.
 
-## 7. Kapsam ve Non-Goals
-
-**Dahil:** iki-cihaz canlı senkron (yerel + APNs push); Dynamic Island (compact/minimal/expanded) + kilit ekranı; başlat/güncelle/bitir; push-to-start (iOS 17.2+) + foreground fallback; token kayıt; doğrudan APNs; marka dili; desteklenmeyen cihazda no-op.
-**Hariç:** çok-set/turnuva skoru; Live Activity aksiyon butonları (App Intents — yol haritası #5); Android; iki oyuncunun aynı anda skor girmesi (model tek-taraflı kalır).
-
-## 8. Riskler
-
-- **`expo-apple-targets` ↔ SDK 56 / RN 0.85 + manuel `ios/`** — en kritik; planda doğrulanıp cerrahi entegre edilecek.
-- **Doğrudan APNs in Deno** — ES256 JWT imzalama (Web Crypto/jose), HTTP/2, liveactivity push-type başlıkları; sandbox vs production APNs (dev build → sandbox `api.sandbox.push.apple.com`).
-- **Push-to-start iOS 17.2+** — kullanıcı iOS sürümü doğrulanacak; değilse foreground fallback.
-- **Test sınırı:** cloud'da tek kullanıcı/cihaz. Çözüm: (a) A tarafı + UI tek cihazda tam test; (b) APNs push yolu, kendi activity token'ına push göndererek tek cihazda doğrulanır (B'yi simüle); (c) gerçek iki-cihaz görseli ikinci cihaz/hesap gerektirir — bu netleştirilecek.
-
-## 9. Doğrulama
-
-- A: skor ekranına gir → A'nın Island'ında skor; "+" → canlı; kilitle → kilit ekranı kartı; "Maçı Bitir" → final + kapanış.
-- Push yolu: `relay-live-score` → APNs → activity güncellenir (tek cihazda kendine push ile doğrulanır).
-- Graceful: Live Activities kapalı/desteklenmeyen cihazda skor akışı normal.
+> Plan 1 (yerel canlı skor, BİTTİ) bunun native temeli. Bu spec onun üstüne kurar.
