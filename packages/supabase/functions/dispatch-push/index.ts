@@ -22,11 +22,10 @@ Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
   try {
-    const internalKey = Deno.env.get('INTERNAL_PUSH_KEY');
-    const token = (req.headers.get('authorization') ?? '').replace(
-      /^Bearer\s+/i,
-      '',
-    );
+    const internalKey = (Deno.env.get('INTERNAL_PUSH_KEY') ?? '').trim();
+    const token = (req.headers.get('authorization') ?? '')
+      .replace(/^Bearer\s+/i, '')
+      .trim();
     if (!internalKey || token !== internalKey) {
       return errorResponse('Forbidden', 401);
     }
