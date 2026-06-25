@@ -14,8 +14,8 @@
 //   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
 //   • Wired to live data — no mock constants remain.
 
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
@@ -25,6 +25,7 @@ import { ScoreInput } from '../../../components/ui/ScoreInput';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useSubmitMatchScore } from '../../../hooks/use-submit-match-score';
+import { useLiveScore } from '../../../hooks/use-live-score';
 import {
   startMatchActivity,
   updateMatchActivity,
@@ -35,24 +36,17 @@ import { colors } from '../../../theme/colors';
 
 const PTS = ['0', '15', '30', '40', 'Ad'];
 
-interface Snapshot {
-  gA: number;
-  gB: number;
-  pA: number;
-  pB: number;
-}
-
 export default function ActiveMatch() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
   const userId = useAuthStore((s) => s.user?.id);
   const submitScore = useSubmitMatchScore();
-  const [gA, setGA] = useState(0);
-  const [gB, setGB] = useState(0);
-  const [pA, setPA] = useState(0);
-  const [pB, setPB] = useState(0);
-  const [hist, setHist] = useState<Snapshot[]>([]);
+  const { score, awardPoint } = useLiveScore(id);
+  const gA = score?.gamesA ?? 0, gB = score?.gamesB ?? 0;
+  const pA = score?.pointsA ?? 0, pB = score?.pointsB ?? 0;
+  const isVoid = score?.phase === 'void';
+  const someoneWon = score?.phase === 'finished';
 
   // Resolve opponent name from live match data. Falls back to 'Rakip' while
   // loading or when the match row hasn't arrived yet.
@@ -62,8 +56,6 @@ export default function ActiveMatch() {
   const oppFirstName: string = opponent?.primaryName?.split(' ')[0] ?? 'Rakip';
 
   const total = gA + gB;
-  const isVoid = gA === 3 && gB === 3;
-  const someoneWon = gA === 4 || gB === 4;
 
   // Live Activity — mirror the live score to the Dynamic Island + Lock Screen.
   const youSide: 'a' | 'b' = match?.team_a_player_ids?.includes(userId ?? '')
@@ -113,43 +105,7 @@ export default function ActiveMatch() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gA, gB, pA, pB, isVoid, someoneWon, match?.id]);
 
-  const award = (who: 'A' | 'B') => {
-    if (someoneWon || isVoid) return;
-    setHist((h) => [...h, { gA, gB, pA, pB }]);
-    let a = pA;
-    let b = pB;
-    if (who === 'A') a += 1;
-    else b += 1;
-    const winsGame = (x: number, y: number) =>
-      x >= 4 && x - y >= 1 && !(x === 4 && y === 4);
-    if (winsGame(a, b)) {
-      if (who === 'A') setGA((g) => g + 1);
-      else setGB((g) => g + 1);
-      setPA(0);
-      setPB(0);
-    } else if (a === 4 && b === 4) {
-      // Deuce → reset both to 40
-      setPA(3);
-      setPB(3);
-    } else {
-      setPA(a);
-      setPB(b);
-    }
-  };
-
-  const undo = () => {
-    setHist((h) => {
-      if (!h.length) return h;
-      const s = h[h.length - 1];
-      if (s) {
-        setGA(s.gA);
-        setGB(s.gB);
-        setPA(s.pA);
-        setPB(s.pB);
-      }
-      return h.slice(0, -1);
-    });
-  };
+  // Undo is deferred — server is now authoritative; undo would need a server-side op.
 
   // Point label: when one side has Advantage (4) but the other is still ≤ 2,
   // render 'Ad'; otherwise look up the standard label table.
@@ -291,46 +247,12 @@ export default function ActiveMatch() {
               <ScoreInput
                 label="Sana sayı"
                 tint={colors.court}
-                onPress={() => award('A')}
+                onPress={() => awardPoint('a')}
               />
               <ScoreInput
                 label={`${oppFirstName} sayı`}
-                onPress={() => award('B')}
+                onPress={() => awardPoint('b')}
               />
-            </View>
-            <Pressable
-              onPress={undo}
-              disabled={!hist.length}
-              className="flex-row items-center justify-center rounded-md"
-              style={{
-                width: '100%',
-                height: 44,
-                marginTop: 4,
-                gap: 8,
-                borderWidth: 1.5,
-                borderColor: colors.borderStrong,
-                opacity: hist.length ? 1 : 0.4,
-              }}
-            >
-              <Icon name="refresh" size={16} color={colors.text} />
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 13.5 }}
-              >
-                Son sayıyı geri al
-              </Text>
-            </Pressable>
-            <View
-              className="flex-row items-center justify-center"
-              style={{ gap: 5, marginTop: 6 }}
-            >
-              <Icon name="refresh" size={12} color={colors.text3} />
-              <Text
-                className="font-sans font-semibold text-text-3"
-                style={{ fontSize: 11 }}
-              >
-                Çevrimdışıyken kaydedilir, bağlanınca eşitlenir
-              </Text>
             </View>
           </>
         )}
