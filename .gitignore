@@ -40,3 +40,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 .superpowers/
+
+# APNs auth keys — never commit
+*.p8

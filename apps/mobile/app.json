@@ -16,10 +16,12 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.challengebu.ios",
+      "appleTeamId": "4MBWF4RGV7",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
-        ]
+        ],
+        "NSSupportsLiveActivities": true
       }
     },
     "android": {
@@ -62,7 +64,8 @@
             "usePrecompiledModules": false
           }
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": true
