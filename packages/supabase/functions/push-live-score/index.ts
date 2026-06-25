@@ -39,19 +39,21 @@ Deno.serve(async (req) => {
     const supa = getServiceClient();
 
     // Load the current score row. No row → nothing to push.
-    const { data: score } = await supa
+    const { data: score, error: scoreErr } = await supa
       .from('live_match_scores')
       .select('games_a, games_b, points_a, points_b, phase, winner')
       .eq('match_id', matchId)
       .maybeSingle();
+    if (scoreErr) console.error('[push-live-score] score row read failed', scoreErr);
     if (!score) return jsonResponse({ pushed: 0, reason: 'no score row' });
 
     // Load the match's registered Live Activity tokens. Empty → return early
     // WITHOUT touching Vault or signing a JWT (testable locally without a .p8).
-    const { data: tokens } = await supa
+    const { data: tokens, error: tokensErr } = await supa
       .from('live_activity_tokens')
       .select('update_token')
       .eq('match_id', matchId);
+    if (tokensErr) console.error('[push-live-score] token list read failed', tokensErr);
     if (!tokens || tokens.length === 0) return jsonResponse({ pushed: 0 });
 
     // Read APNs creds from Vault via the get_secret() SECURITY DEFINER RPC
@@ -101,7 +103,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    return jsonResponse({ pushed: results.length, results });
+    // Count only successful deliveries; failures are recorded with status:0 in
+    // `results` but must not inflate `pushed`.
+    const delivered = results.filter((r) => r.status === 200).length;
+    return jsonResponse({ pushed: delivered, results });
   } catch (err) {
     return internalError(err);
   }

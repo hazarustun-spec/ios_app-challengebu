@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { handleCors } from '../_shared/cors.ts';
-import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 
@@ -22,6 +22,25 @@ Deno.serve(async (req) => {
 
     const { matchId, token } = parsed.data;
 
+    // Only match participants may register a Live Activity token for a match
+    // (mirrors the live_score_read RLS policy on live_match_scores).
+    const { data: match, error: matchErr } = await supa
+      .from('matches')
+      .select('team_a_player_ids, team_b_player_ids')
+      .eq('id', matchId)
+      .maybeSingle();
+    if (matchErr) {
+      console.error('[register-activity-token] match lookup failed', matchErr);
+      return internalError(matchErr);
+    }
+    const participants: string[] = [
+      ...(match?.team_a_player_ids ?? []),
+      ...(match?.team_b_player_ids ?? []),
+    ];
+    if (!match || !participants.includes(auth.userId)) {
+      return forbidden('Not a match participant');
+    }
+
     const { error } = await supa
       .from('live_activity_tokens')
       .upsert(
@@ -33,7 +52,10 @@ Deno.serve(async (req) => {
         },
         { onConflict: 'match_id,user_id' },
       );
-    if (error) return internalError(error);
+    if (error) {
+      console.error('[register-activity-token] upsert failed', error);
+      return internalError(error);
+    }
 
     return jsonResponse({ registered: true });
   } catch (err) {

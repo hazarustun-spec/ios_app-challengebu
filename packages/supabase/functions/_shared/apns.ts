@@ -15,16 +15,35 @@ function b64url(data: ArrayBuffer | string): string {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// Cache the signed provider JWT and reuse it within its validity window. APNs
+// rejects too-frequent token refreshes (429 TooManyProviderTokenUpdates), and
+// the plan mandates caching ≤ 50 min, so we re-sign at most every 45 min. The
+// cache is invalidated if the signing keyId/teamId changes.
+let cached: { jwt: string; iat: number; keyId: string; teamId: string } | null = null;
+const JWT_MAX_AGE_SECONDS = 45 * 60;
+
 export async function makeApnsJwt(p8Pem: string, keyId: string, teamId: string): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  if (
+    cached &&
+    cached.keyId === keyId &&
+    cached.teamId === teamId &&
+    now - cached.iat < JWT_MAX_AGE_SECONDS
+  ) {
+    return cached.jwt;
+  }
+
   const key = await crypto.subtle.importKey(
     'pkcs8', pemToArrayBuffer(p8Pem),
     { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
   const header = b64url(JSON.stringify({ alg: 'ES256', kid: keyId }));
-  const payload = b64url(JSON.stringify({ iss: teamId, iat: Math.floor(Date.now() / 1000) }));
+  const payload = b64url(JSON.stringify({ iss: teamId, iat: now }));
   const signing = `${header}.${payload}`;
   const sig = await crypto.subtle.sign(
     { name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(signing));
-  return `${signing}.${b64url(sig)}`;
+  const jwt = `${signing}.${b64url(sig)}`;
+  cached = { jwt, iat: now, keyId, teamId };
+  return jwt;
 }
 
 export async function sendLiveActivityPush(opts: {

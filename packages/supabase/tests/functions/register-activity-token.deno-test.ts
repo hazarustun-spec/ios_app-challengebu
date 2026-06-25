@@ -52,6 +52,30 @@ Deno.test('register-activity-token: valid call → 200 + row upserted', async ()
   assertEquals(rows![0].update_token, 'cafebabe02');
 });
 
+Deno.test('register-activity-token: authenticated non-participant → 403', async () => {
+  await cleanupTestData();
+  // alice & bob are the match participants (created inside pendingMatch).
+  const { matchId } = await pendingMatch();
+  // carol is a valid, authenticated user but NOT on either team.
+  const carol = await createTestUser({ email: 'carol@test.local', genderCategory: 'erkek' });
+
+  const r = await invokeFunction(
+    'register-activity-token',
+    { matchId, token: 'deadbeef03' },
+    carol.accessToken,
+  );
+  assertEquals(r.status, 403);
+
+  // And no token row was created for the non-participant.
+  const supa = adminClient();
+  const { data: rows } = await supa
+    .from('live_activity_tokens')
+    .select('user_id')
+    .eq('match_id', matchId)
+    .eq('user_id', carol.userId);
+  assertEquals(rows!.length, 0);
+});
+
 Deno.test('register-activity-token: invalid input → 400', async () => {
   await cleanupTestData();
   const { aliceToken } = await pendingMatch();
