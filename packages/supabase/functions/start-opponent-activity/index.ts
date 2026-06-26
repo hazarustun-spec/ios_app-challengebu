@@ -101,7 +101,11 @@ Deno.serve(async (req) => {
     };
 
     const results: { user_id: string; status: number }[] = [];
-    const deadUserIds: string[] = [];
+    // APNs 410 = the push-to-start token is permanently unregistered. Capture the
+    // EXACT {user_id, token} pair (not just user_id) so the post-loop cleanup can
+    // never delete a row whose token differs from the one that 410'd — e.g. if the
+    // user reinstalled and re-registered a fresh token between the read and now.
+    const deadPairs: { user_id: string; token: string }[] = [];
     for (const t of tokens) {
       const recipient = t.user_id as string;
       const deviceToken = t.token as string;
@@ -139,9 +143,13 @@ Deno.serve(async (req) => {
           attributesType: ATTRIBUTES_TYPE,
           attributes,
           contentState,
+          // Auto-stale after 3h: a push-started card whose recipient never opens
+          // the app gets no update token, so without a stale-date it would linger
+          // at 0-0 on the lock screen forever. iOS dims/stales it instead.
+          staleDate: Math.floor(Date.now() / 1000) + 3 * 60 * 60,
           alert: { title: 'Maç başladı', body: `${opponentFirstName} maçı başlattı` },
         });
-        if (r.status === 410) deadUserIds.push(recipient);
+        if (r.status === 410) deadPairs.push({ user_id: recipient, token: deviceToken });
         results.push({ user_id: recipient, status: r.status });
       } catch (err) {
         // One recipient's failure must not abort the rest.
@@ -150,14 +158,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Prune permanently-dead push-to-start tokens (APNs 410). A delete failure
-    // must never throw out of the handler.
-    if (deadUserIds.length > 0) {
+    // Prune permanently-dead push-to-start tokens (APNs 410). Scope each delete to
+    // the EXACT {user_id, token} pair that 410'd — deleting by user_id alone would
+    // wipe a good row if the user re-registered a new token in the meantime. A
+    // delete failure must never throw out of the handler.
+    for (const pair of deadPairs) {
       try {
         const { error: delErr } = await supa
           .from('push_to_start_tokens')
           .delete()
-          .in('user_id', deadUserIds);
+          .eq('user_id', pair.user_id)
+          .eq('token', pair.token);
         if (delErr) console.error('[start-opponent-activity] dead token cleanup failed', delErr);
       } catch (err) {
         console.error('[start-opponent-activity] dead token cleanup threw', err);
