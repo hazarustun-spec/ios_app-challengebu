@@ -46,6 +46,38 @@ export async function makeApnsJwt(p8Pem: string, keyId: string, teamId: string):
   return jwt;
 }
 
+// Push-to-start payload (iOS 17.2+): unlike update/end, the "start" event must
+// carry `attributes` + `attributes-type` so APNs can materialize a brand-new
+// Live Activity on the recipient's device without the app running.
+export async function sendLiveActivityStartPush(opts: {
+  host: string; jwt: string; topic: string; deviceToken: string;
+  attributesType: string;                  // "LiveMatchAttributes"
+  attributes: Record<string, unknown>;     // { matchId, youSide, nameA, nameB, categoryLabel }
+  contentState: Record<string, unknown>;   // initial { gamesA:0, ... }
+  staleDate?: number;                        // optional unix seconds
+}): Promise<{ status: number; body: string }> {
+  const aps: Record<string, unknown> = {
+    timestamp: Math.floor(Date.now() / 1000),
+    event: 'start',
+    'content-state': opts.contentState,
+    'attributes-type': opts.attributesType,
+    attributes: opts.attributes,
+  };
+  if (opts.staleDate) aps['stale-date'] = opts.staleDate;
+  const res = await fetch(`${opts.host}/3/device/${opts.deviceToken}`, {
+    method: 'POST',
+    headers: {
+      authorization: `bearer ${opts.jwt}`,
+      'apns-topic': opts.topic,
+      'apns-push-type': 'liveactivity',
+      'apns-priority': '10',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ aps }),
+  });
+  return { status: res.status, body: await res.text() };
+}
+
 export async function sendLiveActivityPush(opts: {
   host: string; jwt: string; topic: string; deviceToken: string;
   contentState: Record<string, unknown>; event?: 'update' | 'end'; dismissalDate?: number;
