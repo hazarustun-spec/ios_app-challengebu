@@ -67,11 +67,15 @@ export async function endMatchActivity(s: LiveMatchState): Promise<void> {
 // break the scoring flow.
 export function registerActivityPushToken(
   matchId: string,
-  accessToken: string,
 ): LiveMatchSubscription | null {
   if (!Native || Platform.OS !== 'ios') return null;
   try {
     return Native.addListener('onPushToken', ({ token }) => {
+      // Read the access token FRESH at event time — the subscription is
+      // attached before start() and outlives token refreshes, so a captured
+      // token could be stale or absent when the listener is first wired up.
+      const accessToken = useAuthStore.getState().session?.access_token;
+      if (!accessToken) return;
       invokeFunction('register-activity-token', { matchId, token }, accessToken).catch(() => {
         // never break scoring
       });

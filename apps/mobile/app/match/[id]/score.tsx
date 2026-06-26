@@ -8,7 +8,8 @@
 //   • The Plan 8 spec removes the live-sync pulse + mismatch UI the design
 //     bundle's `ActiveMatch` shipped with — we keep ONLY the simple
 //     home-device flow.
-//   • Undo replays a snapshot stack. Disabled when the stack is empty.
+//   • Undo is deferred — the server is authoritative; there is no client-side
+//     snapshot stack.
 //   • Navigates to `/match/[id]/result` with the final state via search
 //     params (no Zustand needed at this stage).
 //   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
@@ -32,6 +33,7 @@ import {
   endMatchActivity,
   registerActivityPushToken,
 } from '../../../lib/live-match-activity';
+import { useToast } from '../../../components/ui/ToastProvider';
 import { useAuthStore } from '../../../stores/auth-store';
 import { env } from '../../../lib/env';
 import { colors } from '../../../theme/colors';
@@ -45,7 +47,8 @@ export default function ActiveMatch() {
   const userId = useAuthStore((s) => s.user?.id);
   const accessToken = useAuthStore((s) => s.session?.access_token);
   const submitScore = useSubmitMatchScore();
-  const { score, awardPoint } = useLiveScore(id);
+  const toast = useToast();
+  const { score, error: liveScoreError, awardPoint } = useLiveScore(id);
   const gA = score?.gamesA ?? 0, gB = score?.gamesB ?? 0;
   const pA = score?.pointsA ?? 0, pB = score?.pointsB ?? 0;
   const isVoid = score?.phase === 'void';
@@ -74,6 +77,11 @@ export default function ActiveMatch() {
 
   useEffect(() => {
     if (!match || !id) return;
+    // Attach the APNs push-token listener BEFORE starting the activity so a
+    // token emitted during start() can't be missed. The listener reads a fresh
+    // access token at event time, so a late-arriving session still registers.
+    // Never breaks scoring on failure.
+    const tokenSub = registerActivityPushToken(id);
     startMatchActivity({
       matchId: id,
       youSide,
@@ -83,11 +91,6 @@ export default function ActiveMatch() {
       supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       accessToken,
     });
-    // Capture the activity's APNs push token + register it so the server can
-    // push score updates cross-device. Never breaks scoring on failure.
-    const tokenSub = accessToken
-      ? registerActivityPushToken(id, accessToken)
-      : null;
     return () => {
       tokenSub?.remove();
       const s = scoreRef.current;
@@ -121,6 +124,18 @@ export default function ActiveMatch() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gA, gB, pA, pB, isVoid, someoneWon, match?.id]);
+
+  // Surface a non-blocking error if the live score failed to load.
+  useEffect(() => {
+    if (liveScoreError) toast.show('Canlı skor yüklenemedi', 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveScoreError]);
+
+  // Award a point, surfacing RPC failures so a tap that didn't register is
+  // visible instead of silently lost.
+  const handleAward = (side: 'a' | 'b') => {
+    awardPoint(side).catch(() => toast.show('Sayı kaydedilemedi', 'error'));
+  };
 
   // Undo is deferred — server is now authoritative; undo would need a server-side op.
 
@@ -204,12 +219,20 @@ export default function ActiveMatch() {
           gap: 10,
         }}
       >
-        {/* Score panel */}
+        {/* Score panel — spinner while the live score is still loading so we
+            don't render 0-0 as if it were a real score. */}
         <View
           className="bg-surface rounded-lg overflow-hidden"
           style={{ borderWidth: 1, borderColor: colors.borderStrong }}
         >
-          {rows.map((r, i) => (
+          {score == null && !liveScoreError ? (
+            <View
+              className="items-center justify-center"
+              style={{ paddingVertical: 40 }}
+            >
+              <ActivityIndicator color={colors.clay} />
+            </View>
+          ) : rows.map((r, i) => (
             <View
               key={r.name}
               className="flex-row items-center"
@@ -264,11 +287,11 @@ export default function ActiveMatch() {
               <ScoreInput
                 label="Sana sayı"
                 tint={colors.court}
-                onPress={() => awardPoint('a')}
+                onPress={() => handleAward('a')}
               />
               <ScoreInput
                 label={`${oppFirstName} sayı`}
-                onPress={() => awardPoint('b')}
+                onPress={() => handleAward('b')}
               />
             </View>
           </>

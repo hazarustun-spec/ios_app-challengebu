@@ -17,13 +17,16 @@ function fromRow(r: Record<string, unknown>): LiveScore {
 
 export function useLiveScore(matchId: string | undefined) {
   const [score, setScore] = useState<LiveScore | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!matchId) return;
     let active = true;
     // Initial load — shows lock-screen changes made while the app was closed.
-    supabase.rpc('get_or_init_live_score', { p_match_id: matchId }).then(({ data }) => {
-      if (active && data) setScore(fromRow(data as Record<string, unknown>));
+    supabase.rpc('get_or_init_live_score', { p_match_id: matchId }).then(({ data, error: rpcError }) => {
+      if (!active) return;
+      if (rpcError) { setError(rpcError); return; }
+      if (data) setScore(fromRow(data as Record<string, unknown>));
     });
     const channel = supabase
       .channel(`live_score_${matchId}`)
@@ -36,9 +39,10 @@ export function useLiveScore(matchId: string | undefined) {
 
   const awardPoint = useCallback(async (side: 'a' | 'b') => {
     if (!matchId) return;
-    const { data } = await supabase.rpc('award_point', { p_match_id: matchId, p_side: side });
+    const { data, error: rpcError } = await supabase.rpc('award_point', { p_match_id: matchId, p_side: side });
+    if (rpcError) throw rpcError; // surfaced at the call site
     if (data) setScore(fromRow(data as Record<string, unknown>)); // optimistic; Realtime confirms
   }, [matchId]);
 
-  return { score, awardPoint };
+  return { score, error, awardPoint };
 }
