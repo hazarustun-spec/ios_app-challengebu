@@ -80,26 +80,37 @@ Deno.serve(async (req) => {
 
     const jwt = await makeApnsJwt(apnsKey, apnsKeyId, apnsTeamId);
 
+    // Resolve first_names for every participant once. For doubles the opposite
+    // team has 2 players, so we join their names with ' & ' (e.g. "Ali & Veli");
+    // a single opponent stays just their name.
+    const firstNameByUid = new Map<string, string>();
+    if (participants.length > 0) {
+      const { data: profs } = await supa
+        .from('profiles')
+        .select('user_id, first_name')
+        .in('user_id', participants);
+      for (const p of profs ?? []) {
+        if (p.first_name) firstNameByUid.set(p.user_id as string, p.first_name as string);
+      }
+    }
+    const opponentName = (oppUids: string[]): string => {
+      const names = oppUids
+        .map((uid) => firstNameByUid.get(uid))
+        .filter((n): n is string => !!n);
+      return names.length > 0 ? names.join(' & ') : 'Rakip';
+    };
+
     const results: { user_id: string; status: number }[] = [];
+    const deadUserIds: string[] = [];
     for (const t of tokens) {
       const recipient = t.user_id as string;
       const deviceToken = t.token as string;
 
       // Perspective-correct names: from THIS recipient's point of view they are
-      // "Sen" (You) and the first player on the other team is the opponent
+      // "Sen" (You) and the OPPOSITE team's players are the opponents
       // (mirrors score.tsx's nameA/nameB derivation).
       const youSide: 'a' | 'b' = teamA.includes(recipient) ? 'a' : 'b';
-      const opponentUid = youSide === 'a' ? teamB[0] : teamA[0];
-
-      let opponentFirstName = 'Rakip';
-      if (opponentUid) {
-        const { data: prof } = await supa
-          .from('profiles')
-          .select('first_name')
-          .eq('user_id', opponentUid)
-          .maybeSingle();
-        if (prof?.first_name) opponentFirstName = prof.first_name as string;
-      }
+      const opponentFirstName = opponentName(youSide === 'a' ? teamB : teamA);
       const nameA = youSide === 'a' ? 'Sen' : opponentFirstName;
       const nameB = youSide === 'a' ? opponentFirstName : 'Sen';
 
@@ -130,11 +141,26 @@ Deno.serve(async (req) => {
           contentState,
           alert: { title: 'Maç başladı', body: `${opponentFirstName} maçı başlattı` },
         });
+        if (r.status === 410) deadUserIds.push(recipient);
         results.push({ user_id: recipient, status: r.status });
       } catch (err) {
         // One recipient's failure must not abort the rest.
         console.error('[start-opponent-activity] start push failed', err);
         results.push({ user_id: recipient, status: 0 });
+      }
+    }
+
+    // Prune permanently-dead push-to-start tokens (APNs 410). A delete failure
+    // must never throw out of the handler.
+    if (deadUserIds.length > 0) {
+      try {
+        const { error: delErr } = await supa
+          .from('push_to_start_tokens')
+          .delete()
+          .in('user_id', deadUserIds);
+        if (delErr) console.error('[start-opponent-activity] dead token cleanup failed', delErr);
+      } catch (err) {
+        console.error('[start-opponent-activity] dead token cleanup threw', err);
       }
     }
 

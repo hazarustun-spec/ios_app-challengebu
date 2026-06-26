@@ -84,6 +84,10 @@ Deno.serve(async (req) => {
     const dismissalDate = event === 'end' ? Math.floor(Date.now() / 1000) + 5 : undefined;
 
     const results: { token: string; status: number }[] = [];
+    // APNs 410 = the token is permanently unregistered (activity ended / app
+    // uninstalled). Collect those tokens and delete their rows after the loop so
+    // we stop wasting requests on them.
+    const deadTokens: string[] = [];
     for (const t of tokens) {
       const deviceToken = t.update_token as string;
       try {
@@ -96,10 +100,26 @@ Deno.serve(async (req) => {
           event,
           dismissalDate,
         });
+        if (r.status === 410) deadTokens.push(deviceToken);
         results.push({ token: deviceToken.slice(0, 8), status: r.status });
       } catch (err) {
         console.error('[push-live-score] token push failed', err);
         results.push({ token: deviceToken.slice(0, 8), status: 0 });
+      }
+    }
+
+    // Prune permanently-dead tokens. A delete failure must never throw out of
+    // the handler — the push itself already succeeded for the live recipients.
+    if (deadTokens.length > 0) {
+      try {
+        const { error: delErr } = await supa
+          .from('live_activity_tokens')
+          .delete()
+          .eq('match_id', matchId)
+          .in('update_token', deadTokens);
+        if (delErr) console.error('[push-live-score] dead token cleanup failed', delErr);
+      } catch (err) {
+        console.error('[push-live-score] dead token cleanup threw', err);
       }
     }
 
