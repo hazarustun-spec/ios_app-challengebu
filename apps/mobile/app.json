@@ -24,7 +24,8 @@
         "UIBackgroundModes": [
           "remote-notification"
         ],
-        "NSSupportsLiveActivities": true
+        "NSSupportsLiveActivities": true,
+        "NSSupportsLiveActivitiesFrequentUpdates": true
       }
     },
     "android": {

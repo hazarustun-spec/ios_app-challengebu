@@ -46,6 +46,7 @@ export default function ActiveMatch() {
   const opponentNames = useOpponentNames();
   const userId = useAuthStore((s) => s.user?.id);
   const accessToken = useAuthStore((s) => s.session?.access_token);
+  const refreshToken = useAuthStore((s) => s.session?.refresh_token);
   const submitScore = useSubmitMatchScore();
   const toast = useToast();
   const { score, error: liveScoreError, awardPoint } = useLiveScore(id);
@@ -76,7 +77,12 @@ export default function ActiveMatch() {
   scoreRef.current = { gA, gB, pA, pB, isVoid, someoneWon };
 
   useEffect(() => {
-    if (!match || !id) return;
+    // Wait for userId before starting: youSide (perspective) and the App-Group
+    // accessToken both derive from it. Starting before userId arrives would lock
+    // in the wrong perspective ('b' fallback) + empty token and never correct.
+    // userId is in the deps so this (re)runs once it lands; match.id is stable so
+    // the activity still starts exactly once per match.
+    if (!match || !id || !userId) return;
     // Attach the APNs push-token listener BEFORE starting the activity so a
     // token emitted during start() can't be missed. The listener reads a fresh
     // access token at event time, so a late-arriving session still registers.
@@ -90,6 +96,7 @@ export default function ActiveMatch() {
       supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       accessToken,
+      refreshToken,
     });
     return () => {
       tokenSub?.remove();
@@ -104,7 +111,7 @@ export default function ActiveMatch() {
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match?.id]);
+  }, [match?.id, userId]);
 
   useEffect(() => {
     if (!match) return;

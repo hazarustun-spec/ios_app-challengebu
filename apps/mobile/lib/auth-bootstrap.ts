@@ -7,7 +7,7 @@ export async function bootstrapAuth() {
   useAuthStore.getState().setSession(session);
   // Keep the App Group user-level auth context fresh so the lock-screen
   // AwardPointIntent can authenticate (iOS-guarded inside the helper).
-  writeLiveActivityAuthContext(session?.access_token);
+  writeLiveActivityAuthContext(session?.access_token, session?.refresh_token);
 
   if (session?.user) {
     await loadProfile(session.user.id);
@@ -18,7 +18,7 @@ export async function bootstrapAuth() {
   supabase.auth.onAuthStateChange(async (_event, newSession) => {
     useAuthStore.getState().setSession(newSession);
     // Refresh on every auth change (covers TOKEN_REFRESHED + SIGNED_IN).
-    writeLiveActivityAuthContext(newSession?.access_token);
+    writeLiveActivityAuthContext(newSession?.access_token, newSession?.refresh_token);
     if (newSession?.user) await loadProfile(newSession.user.id);
     else useAuthStore.getState().setProfile(null);
   });

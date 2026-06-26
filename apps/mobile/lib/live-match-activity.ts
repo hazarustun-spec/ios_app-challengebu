@@ -13,6 +13,7 @@ export type LiveMatchAttrs = {
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   accessToken?: string;
+  refreshToken?: string;
 };
 
 export type LiveMatchState = {
@@ -143,13 +144,19 @@ export function registerActivityTokensOnStartup(): LiveMatchSubscription | null 
 
 // Push user-level auth context (no matchId) to the App Group so the lock-screen
 // AwardPointIntent can authenticate even if start() never ran this session.
+// Also writes the refresh token so the intent can self-refresh an expired
+// access token (the app only refreshes the JWT while running).
 // Called on auth changes; iOS-guarded internally. Never throws.
-export function writeLiveActivityAuthContext(accessToken: string | undefined): void {
+export function writeLiveActivityAuthContext(
+  accessToken: string | undefined,
+  refreshToken: string | undefined,
+): void {
   if (!Native || Platform.OS !== 'ios' || !accessToken) return;
   Native.writeAuthContext({
     supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     accessToken,
+    refreshToken: refreshToken ?? '',
   }).catch(() => {
     // never crash the app
   });

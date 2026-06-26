@@ -6,6 +6,10 @@ import ActivityKit
 public class LiveMatchActivityModule: Module {
   private var current: Any?
   private var pushToStartTask: Task<Void, Never>?
+  // The current start()/adopt push-token observer. Cancelled+replaced on each
+  // start() so navigating into the score screen repeatedly doesn't leak a
+  // strong-self observer per visit.
+  private var startTokenTask: Task<Void, Never>?
   // Per-activity push-token enumeration tasks (one per observed activity + one
   // activityUpdates watcher). Cancelled+cleared on each registerExistingActivityTokens
   // call so repeated calls stay idempotent (no leaked/duplicate observers).
@@ -36,6 +40,7 @@ public class LiveMatchActivityModule: Module {
         defaults.set(a["supabaseUrl"] as? String ?? "", forKey: "supabaseUrl")
         defaults.set(a["supabaseAnonKey"] as? String ?? "", forKey: "supabaseAnonKey")
         defaults.set(a["accessToken"] as? String ?? "", forKey: "accessToken")
+        defaults.set(a["refreshToken"] as? String ?? "", forKey: "refreshToken")
         defaults.set(a["matchId"] as? String ?? "", forKey: "matchId")
       }
       let attrs = LiveMatchAttributes(
@@ -54,13 +59,17 @@ public class LiveMatchActivityModule: Module {
       let mid = a["matchId"] as? String ?? ""
       if let existing = Activity<LiveMatchAttributes>.activities.first(where: { $0.attributes.matchId == mid }) {
         self.current = existing
-        Task {
+        // Adopt only — do NOT push the hardcoded 0-0 state, which would flicker
+        // an already-running (possibly mid-score) card back to 0-0 until the JS
+        // updateMatchActivity effect re-pushes. Let that effect drive the score.
+        self.startTokenTask?.cancel()
+        self.startTokenTask = Task { [weak self] in
           for await tokenData in existing.pushTokenUpdates {
+            guard let self else { return }
             let hex = tokenData.map { String(format: "%02x", $0) }.joined()
             self.sendEvent("onPushToken", ["token": hex])
           }
         }
-        await existing.update(.init(state: state, staleDate: nil))
         return
       }
       // Throw (not try?) so the JS side surfaces the real ActivityKit error.
@@ -72,9 +81,13 @@ public class LiveMatchActivityModule: Module {
         pushType: .token)
       self.current = activity
       // Observe push-token updates and forward each (hex-encoded) to JS so it can
-      // register the token with the backend.
-      Task {
+      // register the token with the backend. Tracked in startTokenTask (cancelled
+      // + replaced on each start) and captures [weak self] so repeated starts
+      // don't leak an observer.
+      self.startTokenTask?.cancel()
+      self.startTokenTask = Task { [weak self] in
         for await tokenData in activity.pushTokenUpdates {
+          guard let self else { return }
           let hex = tokenData.map { String(format: "%02x", $0) }.joined()
           self.sendEvent("onPushToken", ["token": hex])
         }
@@ -129,6 +142,7 @@ public class LiveMatchActivityModule: Module {
         d.set(a["supabaseUrl"] as? String ?? "", forKey: "supabaseUrl")
         d.set(a["supabaseAnonKey"] as? String ?? "", forKey: "supabaseAnonKey")
         d.set(a["accessToken"] as? String ?? "", forKey: "accessToken")
+        d.set(a["refreshToken"] as? String ?? "", forKey: "refreshToken")
       }
     }
 
