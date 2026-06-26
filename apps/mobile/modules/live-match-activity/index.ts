@@ -11,8 +11,10 @@ export type LiveMatchNative = {
   start(a: Record<string, unknown>): Promise<void>;
   update(s: Record<string, unknown>): Promise<void>;
   end(s: Record<string, unknown>): Promise<void>;
+  // Device/user-level push-to-start token observer (iOS 17.2+; no-op otherwise).
+  observePushToStartToken(): Promise<void>;
   addListener(
-    eventName: 'onPushToken',
+    eventName: 'onPushToken' | 'onPushToStartToken',
     listener: (event: LiveMatchPushTokenEvent) => void,
   ): LiveMatchSubscription;
 };

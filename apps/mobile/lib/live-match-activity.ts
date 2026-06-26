@@ -79,3 +79,26 @@ export function registerActivityPushToken(
     return null;
   }
 }
+
+// Subscribe to the DEVICE/USER-level push-to-start token and register it with
+// the backend so the server can auto-start this user's Live Activity when an
+// opponent begins a match (iOS 17.2+ push-to-start). Captured once at app
+// startup after auth — independent of any match. Returns an EventSubscription
+// whose `.remove()` should be called on cleanup, or null when unavailable.
+// A registration failure must never crash the app.
+export function registerPushToStartToken(accessToken: string): LiveMatchSubscription | null {
+  if (!Native || Platform.OS !== 'ios') return null;
+  try {
+    // Fire-and-forget: starts the native async observer (no-op on iOS < 17.2).
+    Native.observePushToStartToken().catch(() => {
+      // never crash the app
+    });
+    return Native.addListener('onPushToStartToken', ({ token }) => {
+      invokeFunction('register-push-to-start-token', { token }, accessToken).catch(() => {
+        // never crash the app
+      });
+    });
+  } catch {
+    return null;
+  }
+}

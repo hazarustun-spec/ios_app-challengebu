@@ -11,6 +11,7 @@ import { CelebrationMount } from '../components/profile/CelebrationMount';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { ToastProvider } from '../components/ui/ToastProvider';
 import { usePushRegistration } from '../hooks/use-push-registration';
+import { usePushToStartRegistration } from '../hooks/use-push-to-start-registration';
 import { bootstrapAuth } from '../lib/auth-bootstrap';
 import { FONTS_MAP } from '../lib/fonts';
 import { queryClient } from '../lib/query-client';
@@ -33,6 +34,7 @@ export default function RootLayout() {
   }, []);
 
   usePushRegistration();
+  usePushToStartRegistration();
 
   // Block render until fonts are ready so NativeWind font-display / font-sans
   // / font-num utilities resolve correctly on first paint.

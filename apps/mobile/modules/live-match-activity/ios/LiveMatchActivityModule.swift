@@ -9,7 +9,7 @@ public class LiveMatchActivityModule: Module {
   public func definition() -> ModuleDefinition {
     Name("LiveMatchActivity")
 
-    Events("onPushToken")
+    Events("onPushToken", "onPushToStartToken")
 
     Function("isSupported") { () -> Bool in
       if #available(iOS 16.2, *) {
@@ -56,6 +56,22 @@ public class LiveMatchActivityModule: Module {
         for await tokenData in activity.pushTokenUpdates {
           let hex = tokenData.map { String(format: "%02x", $0) }.joined()
           self.sendEvent("onPushToken", ["token": hex])
+        }
+      }
+    }
+
+    // Observe the DEVICE/USER-level push-to-start token (iOS 17.2+). This token
+    // is NOT tied to any running activity — it lets the server materialize a
+    // brand-new Live Activity of this attributes type on the device without the
+    // app running. Captured once at app startup after auth. On iOS < 17.2 this is
+    // a no-op (the static pushToStartTokenUpdates API doesn't exist there).
+    AsyncFunction("observePushToStartToken") {
+      if #available(iOS 17.2, *) {
+        Task {
+          for await data in Activity<LiveMatchAttributes>.pushToStartTokenUpdates {
+            let hex = data.map { String(format: "%02x", $0) }.joined()
+            self.sendEvent("onPushToStartToken", ["token": hex])
+          }
         }
       }
     }
