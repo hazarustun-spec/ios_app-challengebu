@@ -5,6 +5,7 @@ import ActivityKit
 // handle to the running activity so update/end target the right one.
 public class LiveMatchActivityModule: Module {
   private var current: Any?
+  private var pushToStartTask: Task<Void, Never>?
 
   public func definition() -> ModuleDefinition {
     Name("LiveMatchActivity")
@@ -67,8 +68,12 @@ public class LiveMatchActivityModule: Module {
     // a no-op (the static pushToStartTokenUpdates API doesn't exist there).
     AsyncFunction("observePushToStartToken") {
       if #available(iOS 17.2, *) {
-        Task {
+        // Cancel any prior observer so repeated calls stay idempotent (one live
+        // observer) instead of leaking a Task per call.
+        self.pushToStartTask?.cancel()
+        self.pushToStartTask = Task { [weak self] in
           for await data in Activity<LiveMatchAttributes>.pushToStartTokenUpdates {
+            guard let self else { return }
             let hex = data.map { String(format: "%02x", $0) }.joined()
             self.sendEvent("onPushToStartToken", ["token": hex])
           }

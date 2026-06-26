@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import Native, { type LiveMatchSubscription } from '../modules/live-match-activity';
+import { useAuthStore } from '../stores/auth-store';
 import { invokeFunction } from './invoke-function';
 
 export type LiveMatchAttrs = {
@@ -86,18 +87,25 @@ export function registerActivityPushToken(
 // startup after auth — independent of any match. Returns an EventSubscription
 // whose `.remove()` should be called on cleanup, or null when unavailable.
 // A registration failure must never crash the app.
-export function registerPushToStartToken(accessToken: string): LiveMatchSubscription | null {
+export function registerPushToStartToken(): LiveMatchSubscription | null {
   if (!Native || Platform.OS !== 'ios') return null;
   try {
-    // Fire-and-forget: starts the native async observer (no-op on iOS < 17.2).
-    Native.observePushToStartToken().catch(() => {
-      // never crash the app
-    });
-    return Native.addListener('onPushToStartToken', ({ token }) => {
+    // Attach the listener BEFORE starting the observer so we can't miss an
+    // emission that fires between observe() and addListener().
+    const sub = Native.addListener('onPushToStartToken', ({ token }) => {
+      // Read the access token FRESH at event time — the subscription outlives
+      // token refreshes, so a captured token could be stale.
+      const accessToken = useAuthStore.getState().session?.access_token;
+      if (!accessToken) return;
       invokeFunction('register-push-to-start-token', { token }, accessToken).catch(() => {
         // never crash the app
       });
     });
+    // Fire-and-forget: starts the native async observer (no-op on iOS < 17.2).
+    Native.observePushToStartToken().catch(() => {
+      // never crash the app
+    });
+    return sub;
   } catch {
     return null;
   }

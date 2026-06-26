@@ -94,6 +94,7 @@ Deno.test('sendLiveActivityStartPush: builds a start payload with attributes + c
   try {
     const attributes = { matchId: 'm1', youSide: 'b', nameA: 'Sen', nameB: 'Ali', categoryLabel: null };
     const contentState = { gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: 'ongoing', winner: null };
+    const alert = { title: 'Maç başladı', body: 'Ali maçı başlattı' };
     const r = await sendLiveActivityStartPush({
       host: 'https://api.sandbox.push.apple.com',
       jwt: 'fake.jwt.sig',
@@ -102,6 +103,7 @@ Deno.test('sendLiveActivityStartPush: builds a start payload with attributes + c
       attributesType: 'LiveMatchAttributes',
       attributes,
       contentState,
+      alert,
     });
     assertEquals(r.status, 200);
 
@@ -120,6 +122,8 @@ Deno.test('sendLiveActivityStartPush: builds a start payload with attributes + c
     assertEquals(aps.attributes, attributes);
     assertEquals(aps['content-state'], contentState);
     assert(typeof aps.timestamp === 'number');
+    // Apple requires `alert` for event:"start" — present with title+body when passed.
+    assertEquals(aps.alert, alert);
     // No stale-date unless requested.
     assertEquals(aps['stale-date'], undefined);
   } finally {
@@ -147,6 +151,8 @@ Deno.test('sendLiveActivityStartPush: includes stale-date when provided', async 
       staleDate: 1234567890,
     });
     assertEquals(capturedBody.aps['stale-date'], 1234567890);
+    // No alert unless requested.
+    assertEquals(capturedBody.aps.alert, undefined);
   } finally {
     globalThis.fetch = origFetch;
   }

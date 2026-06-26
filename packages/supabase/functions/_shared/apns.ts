@@ -55,6 +55,7 @@ export async function sendLiveActivityStartPush(opts: {
   attributes: Record<string, unknown>;     // { matchId, youSide, nameA, nameB, categoryLabel }
   contentState: Record<string, unknown>;   // initial { gamesA:0, ... }
   staleDate?: number;                        // optional unix seconds
+  alert?: { title: string; body: string };  // Apple requires `alert` for event:"start"
 }): Promise<{ status: number; body: string }> {
   const aps: Record<string, unknown> = {
     timestamp: Math.floor(Date.now() / 1000),
@@ -63,6 +64,7 @@ export async function sendLiveActivityStartPush(opts: {
     'attributes-type': opts.attributesType,
     attributes: opts.attributes,
   };
+  if (opts.alert) aps.alert = opts.alert;
   if (opts.staleDate) aps['stale-date'] = opts.staleDate;
   const res = await fetch(`${opts.host}/3/device/${opts.deviceToken}`, {
     method: 'POST',

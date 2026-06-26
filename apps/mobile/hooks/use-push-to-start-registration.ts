@@ -10,18 +10,19 @@ import { useAuthStore } from '../stores/auth-store';
 // session-gating + run-once-per-user latch.
 export function usePushToStartRegistration() {
   const profile = useAuthStore((s) => s.profile);
-  const session = useAuthStore((s) => s.session);
   const registered = useRef<string | null>(null);
 
+  // Gate on the stable user identity ONLY — never on the access token. A token
+  // refresh must not tear down the live native subscription (the listener reads
+  // a fresh token at event time). Re-run only when the user actually changes.
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
-    const accessToken = session?.access_token;
     const uid = profile?.userId;
-    if (!uid || !accessToken) return;
+    if (!uid) return;
     if (registered.current === uid) return;
     registered.current = uid;
 
-    const sub = registerPushToStartToken(accessToken);
+    const sub = registerPushToStartToken();
     return () => sub?.remove();
-  }, [profile?.userId, session?.access_token]);
+  }, [profile?.userId]);
 }

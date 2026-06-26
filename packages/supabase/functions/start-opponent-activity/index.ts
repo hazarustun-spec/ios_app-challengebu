@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Load the match. No row → nothing to start.
     const { data: match, error: matchErr } = await supa
       .from('matches')
-      .select('team_a_player_ids, team_b_player_ids, started_by, category')
+      .select('team_a_player_ids, team_b_player_ids, started_by')
       .eq('id', matchId)
       .maybeSingle();
     if (matchErr) console.error('[start-opponent-activity] match read failed', matchErr);
@@ -128,6 +128,7 @@ Deno.serve(async (req) => {
           attributesType: ATTRIBUTES_TYPE,
           attributes,
           contentState,
+          alert: { title: 'Maç başladı', body: `${opponentFirstName} maçı başlattı` },
         });
         results.push({ user_id: recipient, status: r.status });
       } catch (err) {
