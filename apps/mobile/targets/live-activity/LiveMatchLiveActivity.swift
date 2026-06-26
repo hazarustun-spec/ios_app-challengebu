@@ -21,11 +21,11 @@ struct LiveMatchLiveActivity: Widget {
           if context.state.phase == "ongoing" {
             if #available(iOS 17.0, *) {
               HStack(spacing: 8) {
-                Button(intent: AwardPointIntent(side: context.attributes.youSide)) {
+                Button(intent: AwardPointIntent(side: context.attributes.youSide, matchId: context.attributes.matchId)) {
                   Text("Sen +1").font(.system(.caption, design: .rounded).bold())
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
                 }.tint(ScoreFormat.lime)
-                Button(intent: AwardPointIntent(side: context.attributes.youSide == "a" ? "b" : "a")) {
+                Button(intent: AwardPointIntent(side: context.attributes.youSide == "a" ? "b" : "a", matchId: context.attributes.matchId)) {
                   Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
                 }.tint(ScoreFormat.court)
@@ -109,11 +109,11 @@ struct LockScreenView: View {
       if state.phase == "ongoing" {
         if #available(iOS 17.0, *) {
           HStack(spacing: 8) {
-            Button(intent: AwardPointIntent(side: attributes.youSide)) {
+            Button(intent: AwardPointIntent(side: attributes.youSide, matchId: attributes.matchId)) {
               Text("Sen +1").font(.system(.caption, design: .rounded).bold())
                 .frame(maxWidth: .infinity).padding(.vertical, 6)
             }.tint(ScoreFormat.lime)
-            Button(intent: AwardPointIntent(side: attributes.youSide == "a" ? "b" : "a")) {
+            Button(intent: AwardPointIntent(side: attributes.youSide == "a" ? "b" : "a", matchId: attributes.matchId)) {
               Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
                 .frame(maxWidth: .infinity).padding(.vertical, 6)
             }.tint(ScoreFormat.court)

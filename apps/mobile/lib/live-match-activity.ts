@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import Native, { type LiveMatchSubscription } from '../modules/live-match-activity';
 import { useAuthStore } from '../stores/auth-store';
+import { env } from './env';
 import { invokeFunction } from './invoke-function';
 
 export type LiveMatchAttrs = {
@@ -109,4 +110,43 @@ export function registerPushToStartToken(): LiveMatchSubscription | null {
   } catch {
     return null;
   }
+}
+
+// Register the APNs push token of EVERY existing + future Live Activity (incl.
+// server push-started ones that never went through start()), so the server can
+// push score updates to them. Attaches the listener BEFORE kicking off native
+// enumeration (race-safe) and reads a FRESH access token per event. Returns an
+// EventSubscription whose `.remove()` should be called on cleanup, or null when
+// unavailable. A registration failure must never crash the app.
+export function registerActivityTokensOnStartup(): LiveMatchSubscription | null {
+  if (!Native || Platform.OS !== 'ios') return null;
+  try {
+    const sub = Native.addListener('onActivityPushToken', ({ matchId, token }) => {
+      const accessToken = useAuthStore.getState().session?.access_token;
+      if (!accessToken) return;
+      invokeFunction('register-activity-token', { matchId, token }, accessToken).catch(() => {
+        // never crash the app
+      });
+    });
+    Native.registerExistingActivityTokens().catch(() => {
+      // never crash the app
+    });
+    return sub;
+  } catch {
+    return null;
+  }
+}
+
+// Push user-level auth context (no matchId) to the App Group so the lock-screen
+// AwardPointIntent can authenticate even if start() never ran this session.
+// Called on auth changes; iOS-guarded internally. Never throws.
+export function writeLiveActivityAuthContext(accessToken: string | undefined): void {
+  if (!Native || Platform.OS !== 'ios' || !accessToken) return;
+  Native.writeAuthContext({
+    supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL,
+    supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+    accessToken,
+  }).catch(() => {
+    // never crash the app
+  });
 }

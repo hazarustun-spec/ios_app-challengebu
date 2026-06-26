@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import { registerPushToStartToken } from '../lib/live-match-activity';
+import {
+  registerActivityTokensOnStartup,
+  registerPushToStartToken,
+} from '../lib/live-match-activity';
 import { useAuthStore } from '../stores/auth-store';
 
 // Captures the device/user-level Live Activity push-to-start token once per
@@ -23,6 +26,12 @@ export function usePushToStartRegistration() {
     registered.current = uid;
 
     const sub = registerPushToStartToken();
-    return () => sub?.remove();
+    // Also register tokens for any already-running activities (incl. server
+    // push-started ones) plus any that appear later this session.
+    const activitySub = registerActivityTokensOnStartup();
+    return () => {
+      sub?.remove();
+      activitySub?.remove();
+    };
   }, [profile?.userId]);
 }

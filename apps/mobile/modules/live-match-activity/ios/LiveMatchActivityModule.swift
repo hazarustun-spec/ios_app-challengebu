@@ -6,11 +6,15 @@ import ActivityKit
 public class LiveMatchActivityModule: Module {
   private var current: Any?
   private var pushToStartTask: Task<Void, Never>?
+  // Per-activity push-token enumeration tasks (one per observed activity + one
+  // activityUpdates watcher). Cancelled+cleared on each registerExistingActivityTokens
+  // call so repeated calls stay idempotent (no leaked/duplicate observers).
+  private var activityTokenTasks: [Task<Void, Never>] = []
 
   public func definition() -> ModuleDefinition {
     Name("LiveMatchActivity")
 
-    Events("onPushToken", "onPushToStartToken")
+    Events("onPushToken", "onPushToStartToken", "onActivityPushToken")
 
     Function("isSupported") { () -> Bool in
       if #available(iOS 16.2, *) {
@@ -43,6 +47,22 @@ public class LiveMatchActivityModule: Module {
       )
       let state = LiveMatchAttributes.ContentState(
         gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: "ongoing", winner: nil)
+      // Dedup: if an activity for this matchId already exists (e.g. it was
+      // push-started by the server while the app was backgrounded), adopt it
+      // instead of requesting a second card. Keep the onPushToken observer path
+      // working for the adopted activity, then refresh it to the requested state.
+      let mid = a["matchId"] as? String ?? ""
+      if let existing = Activity<LiveMatchAttributes>.activities.first(where: { $0.attributes.matchId == mid }) {
+        self.current = existing
+        Task {
+          for await tokenData in existing.pushTokenUpdates {
+            let hex = tokenData.map { String(format: "%02x", $0) }.joined()
+            self.sendEvent("onPushToken", ["token": hex])
+          }
+        }
+        await existing.update(.init(state: state, staleDate: nil))
+        return
+      }
       // Throw (not try?) so the JS side surfaces the real ActivityKit error.
       // pushType: .token so the activity gets an APNs push token we can use to
       // update it from the server (cross-device sync).
@@ -81,6 +101,37 @@ public class LiveMatchActivityModule: Module {
       }
     }
 
+    // Observe the push token of EVERY current activity (incl. ones the server
+    // push-started while the app wasn't running) AND any that appear later, then
+    // forward each token tagged with its own matchId. Idempotent: cancels any
+    // prior enumeration tasks first so repeated calls don't leak observers.
+    AsyncFunction("registerExistingActivityTokens") {
+      guard #available(iOS 16.2, *) else { return }
+      self.activityTokenTasks.forEach { $0.cancel() }
+      self.activityTokenTasks.removeAll()
+      for activity in Activity<LiveMatchAttributes>.activities {
+        self.observeActivityToken(activity)
+      }
+      // Catch activities that appear later (e.g. push-started while foregrounded).
+      let updatesTask = Task { [weak self] in
+        for await activity in Activity<LiveMatchAttributes>.activityUpdates {
+          self?.observeActivityToken(activity)
+        }
+      }
+      self.activityTokenTasks.append(updatesTask)
+    }
+
+    // Write USER-LEVEL App Group context (no matchId) so the AwardPointIntent can
+    // authenticate even when start() never ran this session (e.g. a push-started
+    // activity). The matchId key stays match-level — written only by start().
+    AsyncFunction("writeAuthContext") { (a: [String: Any]) in
+      if let d = UserDefaults(suiteName: "group.app.challengebu.ios") {
+        d.set(a["supabaseUrl"] as? String ?? "", forKey: "supabaseUrl")
+        d.set(a["supabaseAnonKey"] as? String ?? "", forKey: "supabaseAnonKey")
+        d.set(a["accessToken"] as? String ?? "", forKey: "accessToken")
+      }
+    }
+
     AsyncFunction("update") { (s: [String: Any]) in
       guard #available(iOS 16.2, *),
             let act = self.current as? Activity<LiveMatchAttributes> else { return }
@@ -96,6 +147,21 @@ public class LiveMatchActivityModule: Module {
       }
       self.current = nil
     }
+  }
+
+  // Observe one activity's push-token updates and forward each (hex) tagged with
+  // its own matchId so JS can register the token for the right match. The task is
+  // tracked in activityTokenTasks so it can be cancelled on re-enumeration.
+  @available(iOS 16.2, *)
+  private func observeActivityToken(_ activity: Activity<LiveMatchAttributes>) {
+    let task = Task { [weak self] in
+      for await tokenData in activity.pushTokenUpdates {
+        let hex = tokenData.map { String(format: "%02x", $0) }.joined()
+        self?.sendEvent("onActivityPushToken",
+          ["matchId": activity.attributes.matchId, "token": hex])
+      }
+    }
+    activityTokenTasks.append(task)
   }
 
   @available(iOS 16.2, *)

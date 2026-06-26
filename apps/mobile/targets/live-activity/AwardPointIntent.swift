@@ -5,15 +5,18 @@ import ActivityKit
 struct AwardPointIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Sayı ekle"
   @Parameter(title: "side") var side: String
+  @Parameter(title: "matchId") var matchId: String
   init() {}
-  init(side: String) { self.side = side }
+  init(side: String, matchId: String) { self.side = side; self.matchId = matchId }
 
   func perform() async throws -> some IntentResult {
+    // matchId comes from THIS activity's intent parameter (not a shared App Group
+    // key) so each card's buttons award to its own match.
     guard let d = UserDefaults(suiteName: "group.app.challengebu.ios"),
           let url = d.string(forKey: "supabaseUrl"), !url.isEmpty,
           let anon = d.string(forKey: "supabaseAnonKey"),
-          let token = d.string(forKey: "accessToken"),
-          let matchId = d.string(forKey: "matchId"), !matchId.isEmpty
+          let token = d.string(forKey: "accessToken"), !token.isEmpty,
+          !self.matchId.isEmpty
     else { return .result() }
 
     var req = URLRequest(url: URL(string: "\(url)/rest/v1/rpc/award_point")!)
@@ -22,7 +25,7 @@ struct AwardPointIntent: LiveActivityIntent {
     req.setValue(anon, forHTTPHeaderField: "apikey")
     req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     req.httpBody = try JSONSerialization.data(
-      withJSONObject: ["p_match_id": matchId, "p_side": side])
+      withJSONObject: ["p_match_id": self.matchId, "p_side": side])
 
     let (data, _) = try await URLSession.shared.data(for: req)
 
@@ -45,7 +48,7 @@ struct AwardPointIntent: LiveActivityIntent {
         pointsA: row["points_a"] as? Int ?? 0, pointsB: row["points_b"] as? Int ?? 0,
         phase: row["phase"] as? String ?? "ongoing", winner: row["winner"] as? String)
       for activity in Activity<LiveMatchAttributes>.activities
-      where activity.attributes.matchId == matchId {
+      where activity.attributes.matchId == self.matchId {
         await activity.update(.init(state: state, staleDate: nil))
       }
     }
