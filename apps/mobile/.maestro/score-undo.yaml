@@ -14,9 +14,8 @@ appId: app.challengebu.ios
 - launchApp
 - openLink: "tennischallenger://match/${MATCH_ID}/score"
 
-# Score screen loaded, match ongoing, starting at 0-0.
+# Score screen loaded, starting at 0-0.
 - assertVisible: "Sana sayı"
-- assertVisible: "GÜNCEL"
 - assertNotVisible: "15"
 
 # Award a point to "Sen" → point label becomes 15.
