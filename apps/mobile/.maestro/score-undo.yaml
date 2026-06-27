@@ -1,0 +1,30 @@
+# Live scoring → Undo journey (the event-sourced scoring feature).
+#
+# Prereqs:
+#   • App installed + LOGGED IN on the target (Maestro can't automate the
+#     magic-link OTP — use a device/simulator with a persisted session, or a
+#     test account; see .maestro/README.md).
+#   • MATCH_ID = a match the signed-in user participates in, currently at 0-0
+#     (fresh `point_events` log). Pass it: `maestro test -e MATCH_ID=<uuid> ...`
+#
+# What it proves: tapping "Sana sayı" awards a point (0 → 15) and "Geri Al"
+# reverses it (15 → 0) — the in-app award + server-authoritative undo.
+appId: app.challengebu.ios
+---
+- launchApp
+- openLink: "tennischallenger://match/${MATCH_ID}/score"
+
+# Score screen loaded, match ongoing, starting at 0-0.
+- assertVisible: "Sana sayı"
+- assertVisible: "GÜNCEL"
+- assertNotVisible: "15"
+
+# Award a point to "Sen" → point label becomes 15.
+- tapOn: "Sana sayı"
+- assertVisible: "15"
+- takeScreenshot: after-award
+
+# Undo → reverts to 0-0.
+- tapOn: "Geri Al"
+- assertNotVisible: "15"
+- takeScreenshot: after-undo

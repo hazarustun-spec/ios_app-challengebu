@@ -1,0 +1,5 @@
+# Smoke test — just launch the app. Verifies Maestro can drive the target.
+appId: app.challengebu.ios
+---
+- launchApp
+- takeScreenshot: smoke-launch
