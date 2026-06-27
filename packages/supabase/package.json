@@ -10,7 +10,8 @@
     "functions:serve": "supabase functions serve --no-verify-jwt",
     "test:schema": "psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -v ON_ERROR_STOP=1 -f tests/schema-verification.sql",
     "test:functions": "deno test --config functions/deno.json --allow-net --allow-env --allow-read 'tests/functions/*.deno-test.ts'",
-    "test:integration": "bun run test:schema && bun run test:functions",
+    "test:db": "supabase test db tests/database",
+    "test:integration": "bun run test:schema && bun run test:db && bun run test:functions",
     "test": "bun run test:schema"
   }
 }
