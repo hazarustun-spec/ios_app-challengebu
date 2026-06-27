@@ -8,8 +8,9 @@
 //   • The Plan 8 spec removes the live-sync pulse + mismatch UI the design
 //     bundle's `ActiveMatch` shipped with — we keep ONLY the simple
 //     home-device flow.
-//   • Undo is deferred — the server is authoritative; there is no client-side
-//     snapshot stack.
+//   • Undo exists — server-authoritative + event-sourced. The "Geri Al" button
+//     calls the undo_point RPC, which reverses the most recent point; there is
+//     no client-side snapshot stack.
 //   • Navigates to `/match/[id]/result` with the final state via search
 //     params (no Zustand needed at this stage).
 //   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
@@ -49,7 +50,7 @@ export default function ActiveMatch() {
   const refreshToken = useAuthStore((s) => s.session?.refresh_token);
   const submitScore = useSubmitMatchScore();
   const toast = useToast();
-  const { score, error: liveScoreError, awardPoint } = useLiveScore(id);
+  const { score, error: liveScoreError, awardPoint, undoPoint } = useLiveScore(id);
   const gA = score?.gamesA ?? 0, gB = score?.gamesB ?? 0;
   const pA = score?.pointsA ?? 0, pB = score?.pointsB ?? 0;
   const isVoid = score?.phase === 'void';
@@ -144,7 +145,11 @@ export default function ActiveMatch() {
     awardPoint(side).catch(() => toast.show('Sayı kaydedilemedi', 'error'));
   };
 
-  // Undo is deferred — server is now authoritative; undo would need a server-side op.
+  // Undo the last point — server-authoritative (event-sourced) via undo_point.
+  // Surfaces RPC failures the same way handleAward does.
+  const handleUndo = () => {
+    undoPoint().catch(() => toast.show('Geri alınamadı', 'error'));
+  };
 
   // Point label: when one side has Advantage (4) but the other is still ≤ 2,
   // render 'Ad'; otherwise look up the standard label table.
@@ -302,6 +307,23 @@ export default function ActiveMatch() {
               />
             </View>
           </>
+        )}
+
+        {/* Geri Al — reverses the most recent point (server-authoritative,
+            event-sourced). Secondary/ghost so it stays reachable without
+            competing with the +1 buttons. Reachable even after a void/finish
+            so a mistaken match-ending point can be corrected. */}
+        {score != null && (
+          <View className="flex-row" style={{ justifyContent: 'center', marginTop: 2 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<Icon name="refresh" size={15} color={colors.text2} />}
+              onPress={handleUndo}
+            >
+              Geri Al
+            </Button>
+          </View>
         )}
       </ScrollView>
 

@@ -44,5 +44,14 @@ export function useLiveScore(matchId: string | undefined) {
     if (data) setScore(fromRow(data as Record<string, unknown>)); // optimistic; Realtime confirms
   }, [matchId]);
 
-  return { score, error, awardPoint };
+  // Undo the most recent point — server-authoritative (event-sourced), mirrors
+  // awardPoint. Applies the returned row optimistically; Realtime confirms.
+  const undoPoint = useCallback(async () => {
+    if (!matchId) return;
+    const { data, error: rpcError } = await supabase.rpc('undo_point', { p_match_id: matchId });
+    if (rpcError) throw rpcError; // surfaced at the call site
+    if (data) setScore(fromRow(data as Record<string, unknown>)); // optimistic; Realtime confirms
+  }, [matchId]);
+
+  return { score, error, awardPoint, undoPoint };
 }

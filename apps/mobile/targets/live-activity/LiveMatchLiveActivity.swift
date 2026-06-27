@@ -29,6 +29,11 @@ struct LiveMatchLiveActivity: Widget {
                   Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
                 }.tint(ScoreFormat.court)
+                Button(intent: UndoPointIntent(matchId: context.attributes.matchId)) {
+                  Image(systemName: "arrow.uturn.backward")
+                    .font(.system(.caption, design: .rounded).bold())
+                    .padding(.vertical, 6).padding(.horizontal, 4)
+                }.tint(ScoreFormat.ink)
               }
               .buttonStyle(.borderedProminent)
             } else {
@@ -117,6 +122,11 @@ struct LockScreenView: View {
               Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
                 .frame(maxWidth: .infinity).padding(.vertical, 6)
             }.tint(ScoreFormat.court)
+            Button(intent: UndoPointIntent(matchId: attributes.matchId)) {
+              Image(systemName: "arrow.uturn.backward")
+                .font(.system(.caption, design: .rounded).bold())
+                .padding(.vertical, 6).padding(.horizontal, 4)
+            }.tint(ScoreFormat.ink)
           }
           .buttonStyle(.borderedProminent)
         }
