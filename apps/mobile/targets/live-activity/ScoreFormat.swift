@@ -7,7 +7,6 @@ enum ScoreFormat {
   static func point(_ i: Int) -> String { pts[max(0, min(4, i))] }
 
   static let lime = Color(red: 0x8F / 255, green: 0xD4 / 255, blue: 0x3B / 255)
-  static let limeDeep = Color(red: 0x5C / 255, green: 0x8C / 255, blue: 0x1E / 255)
   static let court = Color(red: 0x22 / 255, green: 0x70 / 255, blue: 0xBC / 255)
   static let ink = Color(red: 0x16 / 255, green: 0x16 / 255, blue: 0x18 / 255)
 }
