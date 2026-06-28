@@ -1,0 +1,101 @@
+# match-lifecycle.yaml — full match journey end-to-end on a SINGLE device.
+#
+# A device can only be signed in as ONE user, so the signed-in user (Alice)
+# drives THEIR half in-UI, and the OPPONENT's half (accept → start → confirm)
+# is SEEDED against the LOCAL Supabase stack between steps via runScript. The
+# seed scripts (seed-*.js) use the local service-role REST/admin API because
+# Maestro's JS sandbox has no shell to run psql — each script documents its
+# SQL equivalent, also mirrored under .maestro/seed/*.sql.
+#
+# Lifecycle covered:
+#   login + onboarding (Alice, 'kadin')         ── in-UI (runFlow)
+#   seed opponent ('kadin', active)             ── seed-opponent.js
+#   create direct ranking challenge             ── in-UI (match/new/*)
+#   opponent ACCEPTS → match created            ── seed-accept.js (→ matchId)
+#   start handshake (Alice taps, opp seeded)    ── in-UI + seed-start.js
+#   live scoring → Alice wins 4-0               ── in-UI (Sana sayı ×16)
+#   submit score → result "Kazandın!"           ── in-UI
+#   opponent CONFIRMS → match settled           ── seed-confirm.js
+#
+# Prereqs: local Supabase + Mailpit running; app installed + on a simulator.
+# Run: maestro test -e EMAIL=alice@std.bogazici.edu.tr .maestro/match-lifecycle.yaml
+appId: app.challengebu.ios
+env:
+  EMAIL: "alice@std.bogazici.edu.tr"
+  OPPONENT_EMAIL: "rakip.test@std.bogazici.edu.tr"
+  SUPABASE_URL: "http://127.0.0.1:54321"
+  # Local-only demo service-role key (safe to commit — never used in prod).
+  SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+---
+# 1. Sign in + finish onboarding as Alice ('kadin'). Leaves us on the home tab.
+- runFlow: login.yaml
+- runFlow: onboarding.yaml
+- assertVisible: "Yeni Maç"
+
+# 2. Seed the opponent so the "Rakip seç" list has a valid 'kadin' rival.
+- runScript: seed-opponent.js
+
+# 3. Create a direct RANKING challenge in-UI (match/new wizard).
+- tapOn: "Yeni Maç"
+- assertVisible: "Yeni Maç"            # type step header
+- tapOn: "Sıralama Maçı"               # ranking → affects ELO
+- assertVisible: "Nasıl rakip bulalım?"
+- tapOn: "Direkt Meydan Okuma"
+# Detail step — category defaults to kadin_tek (Alice's gender), date/time/court
+# auto-seeded. Go straight to opponent selection.
+- assertVisible: "Maç detayları"
+- tapOn: "Rakip seç"
+# Opponent step — search + pick the seeded rival.
+- assertVisible: "Rakip seç"
+- tapOn: "Oyuncu ara…"
+- inputText: "Rakip"
+- hideKeyboard
+- tapOn: "Rakip Test"
+- tapOn: "Önizlemeye geç"
+# Preview step — send the offer (format-rules link is optional for submit).
+- assertVisible: "Teklif önizleme"
+- tapOn: "Teklifi gönder"
+# Lands on the matches tab after creation.
+- assertVisible: "Maçlar"
+- takeScreenshot: lifecycle-offer-sent
+
+# 4. Opponent ACCEPTS (seeded) → a match row is created; capture its id.
+- runScript: seed-accept.js
+
+# 5. Start handshake. Deep-link to the lobby, Alice taps "Maçı Başlat", then
+#    seed the opponent into started_by to complete the handshake → /score.
+- openLink: "tennischallenger://match/${output.matchId}/start"
+- assertVisible: "Maçı Başlat"
+- tapOn: "Maçı Başlat"
+- runScript: seed-start.js
+- extendedWaitUntil:
+    visible: "Sana sayı"
+    timeout: 15000
+- takeScreenshot: lifecycle-score-start
+
+# 6. Live scoring — award Alice 4 games (4 points each, margin >= 2) → win 4-0.
+#    "Sana sayı" awards team A (Alice = creator = team A). 16 taps total.
+- repeat:
+    times: 16
+    commands:
+      - tapOn: "Sana sayı"
+# Match finished — the +1 buttons disappear and "Maçı Bitir" enables.
+- assertVisible: "MAÇ BİTTİ"
+- assertNotVisible: "Sana sayı"
+- tapOn: "Maçı Bitir"
+
+# 7. Result screen — Alice won.
+- extendedWaitUntil:
+    visible: "Kazandın!"
+    timeout: 15000
+- takeScreenshot: lifecycle-result-win
+
+# 8. Opponent CONFIRMS (seeded) → match settled (status 'confirmed'). Re-open
+#    the match detail; the status banner flips to the confirmed copy.
+- runScript: seed-confirm.js
+- openLink: "tennischallenger://match/${output.matchId}"
+- extendedWaitUntil:
+    visible: "Maç onaylı, sahaya hazırsın"
+    timeout: 15000
+- assertNotVisible: "Karşı taraf henüz onaylamadı"
+- takeScreenshot: lifecycle-confirmed

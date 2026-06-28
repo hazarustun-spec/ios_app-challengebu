@@ -1,0 +1,48 @@
+# Settings journey — open Settings, go to Notification preferences, toggle a
+# category, and confirm the preference is persisted across a re-entry.
+#
+# Prereqs:
+#   • App installed + LOGGED IN + onboarded (persisted session).
+#   • The notification_preferences rows are seeded by the
+#     create_default_notification_preferences trigger on sign-up (the screen
+#     also falls back to DEFAULT_ON), so the 8 category rows always render.
+#
+# Selectors from real source:
+#   • Settings header "Ayarlar"; ListRow title "Bildirim tercihleri"
+#     (app/settings/index.tsx). Reached via deep-link because the profile-tab
+#     settings icon has no accessibilityLabel.
+#   • Notification prefs header "Bildirim Tercihleri"; first category title
+#     "Maç teklifleri" (packages/shared notifications CATEGORY_LABELS,
+#     app/settings/notification-preferences.tsx).
+#
+# Persistence note: the Toggle (components/ui/Toggle.tsx) has no text/label —
+# its state is only the thumb position — so it can't be asserted by text in
+# Maestro. We toggle it, leave + re-enter the screen (which refetches the
+# persisted rows from the DB), and capture before/after screenshots as the
+# visual proof of persistence. The re-render of "Maç teklifleri" is asserted.
+appId: app.challengebu.ios
+---
+- launchApp
+
+# Open Settings → Notification preferences.
+- openLink: "tennischallenger://settings"
+- assertVisible: "Ayarlar"
+- tapOn: "Bildirim tercihleri"
+- assertVisible: "Bildirim Tercihleri"
+- assertVisible: "Maç teklifleri"
+- takeScreenshot: notif-prefs-before
+
+# Toggle the first category. The switch is the element to the right of the
+# category title (the row is [icon][title+subtitle][Toggle]).
+- tapOn:
+    rightOf:
+      text: "Maç teklifleri"
+- takeScreenshot: notif-prefs-toggled
+
+# Leave and re-enter — the screen refetches the persisted preference rows.
+- back
+- assertVisible: "Ayarlar"
+- tapOn: "Bildirim tercihleri"
+- assertVisible: "Bildirim Tercihleri"
+- assertVisible: "Maç teklifleri"
+- takeScreenshot: notif-prefs-after

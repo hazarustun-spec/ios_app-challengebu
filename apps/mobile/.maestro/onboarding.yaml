@@ -1,0 +1,91 @@
+# onboarding.yaml — completes the 10-step Plan-8 onboarding wizard for the
+# CURRENT app (app.challengebu.ios). Runs right after login.yaml lands on
+# step 1/10 (root index.tsx routes a freshly-verified new user to
+# /(onboarding)/name).
+#
+# Account A = Alice — she/her, "Kadın" competition category (gender_category
+# 'kadin'). The category choice matters for match-lifecycle.yaml: it seeds a
+# 'kadin' opponent so Alice's default kadin_tek match finds a valid rival.
+#
+# Step order (see app/(onboarding)/* + components/onboarding/OBFrame.tsx):
+#   1 name · 2 phone · 3 pronoun · 4 category · 5 year · 6 department ·
+#   7 level · 8 hand · 9 availability · 10 photo → done.
+# OBFrame footer buttons: primary "Devam" (or "Bitir" on photo) + optional
+# "Atla" (phone, photo).
+#
+# Run (standalone, after a login that left you on onboarding):
+#   maestro test .maestro/onboarding.yaml
+appId: app.challengebu.ios
+---
+# 1/10 — name. Tap the two stacked input fields by point (the "Ad"/"Soyad"
+# labels are not the inputs, and placeholder text duplicates the labels).
+# Tune the points if the redesigned layout shifts.
+- assertVisible: "Adın ve soyadın"
+- tapOn:
+    point: "50%,33%"
+- inputText: "Alice"
+- tapOn:
+    point: "50%,45%"
+- inputText: "Aksoy"
+- hideKeyboard
+- tapOn: "Devam"
+
+# 2/10 — phone (optional) → skip.
+- assertVisible: "Telefon (opsiyonel)"
+- tapOn: "Atla"
+
+# 3/10 — pronoun.
+- assertVisible: "Zamirin"
+- tapOn: "she/her"
+- tapOn: "Devam"
+
+# 4/10 — competition category. Pick "Kadın" (gender_category = 'kadin').
+- assertVisible: "Yarışma kategorin"
+- tapOn: "Kadın"
+- tapOn: "Devam"
+
+# 5/10 — class year pill grid.
+- assertVisible: "Sınıfın"
+- tapOn: "3"
+- tapOn: "Devam"
+
+# 6/10 — department: open the picker sheet, search, select.
+- assertVisible: "Bölümün"
+- tapOn: "Bölüm seç"
+- tapOn: "Bölüm ara…"
+- inputText: "Fizik"
+- tapOn: "Fizik"
+- tapOn: "Devam"
+
+# 7/10 — tennis level.
+- assertVisible: "Tenis seviyen"
+- tapOn: "Orta"
+- tapOn: "Devam"
+
+# 8/10 — dominant hand.
+- assertVisible: "Dominant elin"
+- tapOn: "Sağ"
+- tapOn: "Devam"
+
+# 9/10 — availability (multi-select checkbox grid).
+- assertVisible: "Müsaitliğin"
+- tapOn: "Hafta içi akşam"
+- tapOn: "Hafta sonu sabah"
+- tapOn: "Devam"
+
+# 10/10 — profile photo (optional) → finish (the primary button is "Bitir").
+- assertVisible: "Profil fotoğrafı"
+- tapOn: "Bitir"
+
+# Done screen — submits the draft to Supabase (profile row + 1200 ELO seeds),
+# then enables the CTA. Wait for the post-submit primary action, then enter
+# the app.
+- extendedWaitUntil:
+    visible: "Sıralamayı keşfet"
+    timeout: 15000
+- takeScreenshot: onboarding-done
+- tapOn: "Sıralamayı keşfet"
+
+# Home tabs.
+- assertVisible: "Yeni Maç"
+- takeScreenshot: onboarding-home

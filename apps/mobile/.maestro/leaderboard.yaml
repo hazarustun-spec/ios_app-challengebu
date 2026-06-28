@@ -1,0 +1,49 @@
+# Leaderboard journey — open the Sıralama tab, assert the standings render,
+# switch category (a filter), then apply a real ladder filter via the panel.
+#
+# Prereqs:
+#   • App installed + LOGGED IN + onboarded (persisted session). The session
+#     lands on the (tabs) shell at launch.
+#   • Live local data: at least one season + ladder so the tab shows content.
+#     With an empty ladder the chips + countdown still render (the assertions
+#     below avoid asserting any specific player), but "SEN" only appears when
+#     the user has a standing — see the scrollUntilVisible note.
+#
+# Selectors from real source (app/(tabs)/leaderboard.tsx):
+#   • Tab bar slot accessibilityLabel "leaderboard" (components/ui/TabBar.tsx).
+#   • Large header title "Sıralama"; category chips "Erkek Tek" / "Open Tek";
+#     countdown banner label "FİNALE GERİ SAYIM"; my-standing card label "SEN".
+#   • Filter panel (app/leaderboard/filter.tsx): header "Filtrele", section
+#     "ELO aralığı", status row "Donmuş oyuncular", CTA "<n> oyuncu göster".
+#     The header filter icon has no accessibilityLabel, so we reach the panel
+#     via the same deep-link its button pushes.
+appId: app.challengebu.ios
+---
+- launchApp
+
+# Open the Sıralama tab and confirm the ladder chrome rendered.
+- tapOn: "leaderboard"
+- assertVisible: "Sıralama"
+- assertVisible: "Erkek Tek"
+- assertVisible: "FİNALE GERİ SAYIM"
+
+# Standings list renders — scroll the "SEN" standing card into view.
+- scrollUntilVisible:
+    element:
+      text: "SEN"
+    direction: DOWN
+- takeScreenshot: leaderboard-standings
+
+# Apply a filter (1): switch category via the chip strip.
+- tapOn: "Open Tek"
+- assertVisible: "Open Tek"
+
+# Apply a filter (2): open the filter panel and toggle a real ladder filter.
+- openLink: "tennischallenger://leaderboard/filter?cat=open_tek"
+- assertVisible: "Filtrele"
+- assertVisible: "ELO aralığı"
+- tapOn: "Donmuş oyuncular"
+- takeScreenshot: leaderboard-filter
+# CTA shows the live filtered count, e.g. "12 oyuncu göster" — match by regex.
+- tapOn: ".*oyuncu göster"
+- assertVisible: "Sıralama"

@@ -1,0 +1,52 @@
+# login.yaml — email-OTP sign-in for the CURRENT app (app.challengebu.ios).
+#
+# Adapts the proven auto-login technique from qa/maestro/01-login.yaml to the
+# Plan-8 redesign. The redesigned auth stack adds a Splash → Welcome screen in
+# front of the email screen, so the flow first dismisses Welcome, then drives
+# the email → KVKK → "Kod gönder" → 6-digit OTP path.
+#
+# Prereqs (local dev): Supabase stack + Mailpit running at 127.0.0.1:54324.
+# A brand-new EMAIL lands on onboarding step 1 after verifying (root index.tsx
+# routes new users to /(onboarding)/name). Pair with onboarding.yaml to finish
+# account setup.
+#
+# Run:  maestro test -e EMAIL=alice@std.bogazici.edu.tr .maestro/login.yaml
+appId: app.challengebu.ios
+env:
+  EMAIL: "alice@std.bogazici.edu.tr"
+---
+- launchApp:
+    clearState: true
+
+# Splash auto-replaces to Welcome after ~1.5s — wait for the Welcome CTA.
+- extendedWaitUntil:
+    visible: "Üniversite e-postanla başla"
+    timeout: 10000
+- tapOn: "Üniversite e-postanla başla"
+
+# Email screen.
+- assertVisible: "E-postanı gir"
+- tapOn: "ad.soyad@std.bogazici.edu.tr"
+- inputText: ${EMAIL}
+- hideKeyboard
+
+# KVKK + privacy consent. The checkbox sits at the far LEFT of the consent row
+# (tapping the row's link text opens the legal page instead), so tap the
+# checkbox glyph by point. Adjust the point if the layout shifts.
+- tapOn:
+    point: "9%,62%"
+
+- tapOn: "Kod gönder"
+
+# OTP screen.
+- assertVisible: "Gelen kutunu kontrol et"
+- runScript: get-otp.js
+# Enter the 6 digits one at a time (the boxes auto-advance focus).
+- inputText: ${output.d0}
+- inputText: ${output.d1}
+- inputText: ${output.d2}
+- inputText: ${output.d3}
+- inputText: ${output.d4}
+- inputText: ${output.d5}
+- waitForAnimationToEnd
+- takeScreenshot: login-after-otp

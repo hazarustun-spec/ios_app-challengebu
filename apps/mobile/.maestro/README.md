@@ -2,11 +2,58 @@
 
 Mobile UI flow tests for the live-scoring journey (Maestro 2.6+, JDK 17+).
 
+## App id reconciliation
+These flows target the CURRENT app id **`app.challengebu.ios`** (deep-link
+scheme `tennischallenger://`). The legacy `qa/maestro/*` flows targeted the old
+`tr.edu.boun.tennischallenger` id; the auto-login technique was carried over and
+adapted here (Splash → Welcome was added in front of the email screen).
+
 ## Flows
 - `smoke.yaml` — launches the app (target sanity check).
+- `login.yaml` — full email-OTP sign-in: Welcome → email → KVKK → "Kod gönder"
+  → `get-otp.js` (reads the code from local Mailpit) → 6-digit entry. Lands a
+  NEW account on onboarding step 1. Pass `-e EMAIL=…`.
+- `onboarding.yaml` — completes the 10-step onboarding wizard (name, phone,
+  pronoun, category=**Kadın**, year, department, level, hand, availability,
+  photo → done) and enters the home tabs. Runs right after `login.yaml`.
+- `match-lifecycle.yaml` — **full match journey on one device** (see below).
 - `score-undo.yaml` — deep-links to a match's score screen, awards a point
   ("Sana sayı": 0 → 15), then undoes it ("Geri Al": 15 → 0). Proves the
   in-app award + server-authoritative event-sourced undo.
+
+## Two-user match lifecycle (`match-lifecycle.yaml`)
+A single device can only be signed in as ONE user, but a complete match needs a
+second player to accept, start, and confirm. So the signed-in user (Alice)
+drives THEIR half **in-UI**, and the OPPONENT's half is **seeded** against the
+local Supabase stack between Maestro steps:
+
+| Stage | Driver | File |
+|-------|--------|------|
+| login + onboarding (Alice, `kadin`) | in-UI | `login.yaml` + `onboarding.yaml` |
+| create opponent (`kadin`, active)   | seed  | `seed-opponent.js` |
+| send direct ranking challenge       | in-UI | `match/new/*` |
+| opponent **accepts** → match row    | seed  | `seed-accept.js` (→ `output.matchId`) |
+| start handshake (Alice taps + opp)  | in-UI + seed | `seed-start.js` |
+| live scoring → Alice wins 4-0       | in-UI | "Sana sayı" ×16 |
+| submit score → "Kazandın!"          | in-UI | — |
+| opponent **confirms** → settled     | seed  | `seed-confirm.js` |
+
+### Why REST and not `psql` inside the flow
+Maestro's `runScript` JS sandbox only exposes `http` (same as `get-otp.js`) —
+there is **no shell**, so it cannot run
+`psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'` from within a
+flow. The `seed-*.js` scripts therefore perform the identical writes via the
+LOCAL service-role REST + GoTrue admin API. Each script documents its SQL
+equivalent, and `.maestro/seed/*.sql` mirrors them 1:1 for anyone driving
+seeding EXTERNALLY (e.g. a wrapper that interleaves `maestro test` segments with
+`psql -f`, or for manual debugging). The local demo service-role key is embedded
+(safe — it is never valid against a real project) and overridable via the flow
+`env` block / `-e`.
+
+```sh
+# Run the whole lifecycle on a booted simulator with the app installed:
+maestro test -e EMAIL=alice@std.bogazici.edu.tr .maestro/match-lifecycle.yaml
+```
 
 ## Prerequisites
 1. **JDK 17+** and the Maestro CLI on PATH:

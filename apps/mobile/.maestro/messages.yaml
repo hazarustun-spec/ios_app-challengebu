@@ -1,0 +1,56 @@
+# Messages journey — open the inbox, open a conversation thread, compose and
+# send a message, then assert the sent bubble appears.
+#
+# Prereqs:
+#   • App installed + LOGGED IN + onboarded (persisted session).
+#   • A SEEDED conversation the signed-in user participates in. Conversations
+#     can't be created through the UI in a single-user flow (they spawn from
+#     match offers), and `conversations.request_id` is NOT NULL + participants
+#     are uuid-ordered (participant_low < participant_high) — see
+#     packages/supabase/migrations/20260617000001_messaging.sql. Seed via local
+#     psql, then pass the conversation id:  -e CONV_ID=<uuid>
+#
+#     Example seed (replace the two uuids; run against the local DB):
+#       with me as (select '<MY_AUTH_UID>'::uuid uid),
+#            other as (select user_id uid from public.profiles
+#                      where user_id <> (select uid from me) limit 1),
+#            req as (select id from public.match_requests limit 1)
+#       insert into public.conversations
+#         (request_id, participant_low, participant_high,
+#          last_message_at, last_message_preview)
+#       select (select id from req),
+#              least((select uid from me),(select uid from other)),
+#              greatest((select uid from me),(select uid from other)),
+#              now(), 'Selam!'
+#       returning id;   -- use this id as CONV_ID
+#       -- optional inbound message (so the inbox row has a preview):
+#       -- insert into public.messages (conversation_id, sender_id, body)
+#       --   values ('<CONV_ID>', '<OTHER_AUTH_UID>', 'Selam!');
+#
+# Selectors from real source:
+#   • Inbox header "Mesajlar" (app/messages/index.tsx).
+#   • Thread header = the `name` param (we pass "Rakip"); composer placeholder
+#     "Mesaj yaz…"; send button accessibilityLabel "Gönder"; sent text renders
+#     as a bubble (app/messages/[conversationId].tsx).
+appId: app.challengebu.ios
+---
+- launchApp
+
+# Inbox renders.
+- openLink: "tennischallenger://messages"
+- assertVisible: "Mesajlar"
+- takeScreenshot: messages-inbox
+
+# Open the seeded thread. Deep-link straight in (passing a deterministic header
+# name) to avoid a fragile inbox-row tap on a dynamic display name.
+- openLink: "tennischallenger://messages/${CONV_ID}?name=Rakip"
+- assertVisible: "Rakip"
+
+# Compose + send.
+- tapOn: "Mesaj yaz…"
+- inputText: "Maestro test mesaji"
+- tapOn: "Gönder"
+
+# The sent message appears as a bubble in the thread.
+- assertVisible: "Maestro test mesaji"
+- takeScreenshot: messages-sent

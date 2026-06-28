@@ -1,0 +1,51 @@
+# Profile journey — open the Profil tab, assert the profile + stats render,
+# then visit the three profile sub-screens (Stats / ELO history / Badges).
+#
+# Prereqs:
+#   • App installed + LOGGED IN + onboarded on the target (a persisted
+#     Supabase session). Maestro can't drive the magic-link login — use the
+#     other agent's login subflow or a device with a saved session.
+#   • The session lands on the (tabs) shell (home tab) at launch.
+#
+# Selectors come from real source:
+#   • Tab bar slots set accessibilityLabel = the route name → the Profil tab
+#     is "profile"  (components/ui/TabBar.tsx, SLOTS).
+#   • Profile tab header title "Profil", the in-screen tab pills
+#     "Sıralamalar" / "İstatistikler", and "VİTRİN ROZETLERİ" are static
+#     (app/(tabs)/profile.tsx).
+#   • Stats header "İstatistikler" + the "Kazanma oranı" stat label
+#     (app/profile/stats.tsx). ELO header "ELO Geçmişi"
+#     (app/profile/elo-history.tsx). Badges header "Rozetler"
+#     (app/profile/badges.tsx).
+#
+# Note: the profile tab-strip is a horizontal ScrollView; "ELO Geçmişi" and
+# "Rozetler" pills can sit off-screen, so we exercise the strip navigation via
+# "İstatistikler" (always visible) and reach the other two sub-screens with the
+# same deep-links the strip pushes — robust and still proves the screens render.
+appId: app.challengebu.ios
+---
+- launchApp
+
+# Open the Profil tab and confirm the profile hero + sections render.
+- tapOn: "profile"
+- assertVisible: "Profil"
+- assertVisible: "Sıralamalar"
+- assertVisible: "VİTRİN ROZETLERİ"
+
+# Tab-strip navigation: İstatistikler → Stats sub-screen, then back.
+- tapOn: "İstatistikler"
+- assertVisible: "Kazanma oranı"
+- takeScreenshot: profile-stats
+- back
+- assertVisible: "Sıralamalar"
+
+# ELO history sub-screen (same route the "ELO Geçmişi" pill pushes).
+- openLink: "tennischallenger://profile/elo-history"
+- assertVisible: "ELO Geçmişi"
+- takeScreenshot: profile-elo-history
+- back
+
+# Badges sub-screen (same route the "Rozetler" pill pushes).
+- openLink: "tennischallenger://profile/badges"
+- assertVisible: "Rozetler"
+- takeScreenshot: profile-badges
