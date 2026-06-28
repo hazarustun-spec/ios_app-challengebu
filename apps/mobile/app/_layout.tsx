@@ -1,5 +1,12 @@
 import '../global.css';
+import { LogBox } from 'react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
+
+// The on-screen LogBox warning banner (dev only) overlays the UI and occludes
+// tap targets, which breaks Maestro E2E flows (and is generally noise during
+// manual QA). Warnings still print to the Metro console. Dev-only; release
+// builds have no LogBox.
+if (__DEV__) LogBox.ignoreAllLogs();
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';

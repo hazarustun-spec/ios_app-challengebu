@@ -105,6 +105,10 @@ export function Button({
       onPress={isDisabled ? undefined : onPress}
       disabled={isDisabled}
       accessibilityRole="button"
+      // Expose the text label as the accessible name so screen readers (and
+      // Maestro E2E selectors) match the label exactly, not the label + the
+      // decorative arrow/icon glyphs composed by default.
+      accessibilityLabel={typeof children === 'string' ? children : undefined}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       className={className}
     >

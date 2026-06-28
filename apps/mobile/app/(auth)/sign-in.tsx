@@ -149,22 +149,25 @@ export default function SignIn() {
           ))}
         </View>
 
-        {/* KVKK + privacy consent */}
-        <Pressable
-          onPress={() => setKvkkAccepted((v) => !v)}
+        {/* KVKK + privacy consent — the checkbox is its own control so tapping
+            it toggles, while the inline links open their legal pages. */}
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'flex-start',
             gap: 10,
             marginTop: 32,
-            paddingVertical: 4,
           }}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: kvkkAccepted }}
         >
-          <View style={{ marginTop: 1 }}>
+          <Pressable
+            onPress={() => setKvkkAccepted((v) => !v)}
+            style={{ marginTop: 1, paddingVertical: 4, paddingRight: 4 }}
+            accessibilityRole="checkbox"
+            accessibilityLabel="KVKK onayı"
+            accessibilityState={{ checked: kvkkAccepted }}
+          >
             <CheckBox checked={kvkkAccepted} onChange={setKvkkAccepted} />
-          </View>
+          </Pressable>
           <Text
             className="font-sans flex-1 text-text-2"
             style={{ fontSize: 13, lineHeight: 19 }}
@@ -188,7 +191,7 @@ export default function SignIn() {
             </Text>
             {"'nı"} okudum, kabul ediyorum.
           </Text>
-        </Pressable>
+        </View>
 
         {/* Dev-only component gallery link — preserved from previous sign-in. */}
         {__DEV__ && (

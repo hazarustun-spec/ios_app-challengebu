@@ -30,11 +30,9 @@ env:
 - inputText: ${EMAIL}
 - hideKeyboard
 
-# KVKK + privacy consent. The checkbox sits at the far LEFT of the consent row
-# (tapping the row's link text opens the legal page instead), so tap the
-# checkbox glyph by point. Adjust the point if the layout shifts.
-- tapOn:
-    point: "9%,62%"
+# KVKK + privacy consent — tap the checkbox glyph by its accessibility label
+# (tapping the consent row's link text would open the legal page instead).
+- tapOn: "KVKK onayı"
 
 - tapOn: "Kod gönder"
 
