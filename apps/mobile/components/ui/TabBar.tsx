@@ -18,8 +18,9 @@
 // `navigation` props the navigator passes and read only the slice we need
 // (see the structural shims below).
 
+import { BlurView } from 'expo-blur';
 import { useEffect, useRef } from 'react';
-import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
@@ -187,7 +188,8 @@ export function TabBar({ state, navigation }: TabBarProps) {
   }));
 
   return (
-    <View style={{ paddingBottom: insets.bottom + 8 }} className="bg-bg px-4 pt-2">
+    <View style={{ paddingBottom: insets.bottom + 8, overflow: 'hidden' }} className="px-4 pt-2">
+      <BlurView intensity={22} tint="light" style={StyleSheet.absoluteFill} />
       <View className="h-16 flex-row items-center rounded-pill border-base border-border-strong bg-lime px-2">
         {/* Inner padding-free row: shared origin for the indicator + slots. */}
         <View

@@ -15,7 +15,8 @@
 // to the same optical edge as other 18px-padded headers in the design
 // bundle.
 
-import { Pressable, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import { BellWithBadge } from './BellWithBadge';
@@ -45,8 +46,12 @@ export function GreetHeader({
         paddingHorizontal: 18,
         paddingTop: insets.top + 14,
         paddingBottom: 8,
+        overflow: 'hidden',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: 'rgba(0,0,0,0.08)',
       }}
     >
+      <BlurView intensity={35} tint="light" style={StyleSheet.absoluteFill} />
       <View style={{ flex: 1 }}>
         <Text
           className="font-sans"
