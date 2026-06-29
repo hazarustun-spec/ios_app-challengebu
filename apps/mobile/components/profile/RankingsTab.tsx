@@ -46,7 +46,7 @@ export function RankingsTab({ userId }: Props) {
         ))
       )}
       <Pressable
-        onPress={() => router.push(`/yearly-championship/${currentYear}`)}
+        onPress={() => router.push('/season/annual-champion' as never)}
         className="mt-3 flex-row items-center justify-between rounded-lg border border-amber-300 bg-amber-50 p-3"
       >
         <Text className="text-sm font-medium text-amber-900">🏆 Yıllık Şampiyonluk {currentYear}</Text>

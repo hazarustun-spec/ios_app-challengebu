@@ -37,8 +37,9 @@ function StandingRow({ item, rank }: { item: YearlyStanding; rank: number }) {
   const isFirst = rank === 1;
   const name = `${item.first_name} ${item.last_name}`.trim();
   return (
-    <View
-      className="flex-row items-center rounded-md"
+    <Pressable
+      onPress={() => router.push(`/user/${item.profile_id}` as never)}
+      className="flex-row items-center rounded-md active:opacity-80"
       style={{
         padding: 13,
         paddingHorizontal: 14,
@@ -74,7 +75,7 @@ function StandingRow({ item, rank }: { item: YearlyStanding; rank: number }) {
       >
         {item.total_finale_points}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
