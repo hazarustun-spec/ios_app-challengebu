@@ -19,6 +19,14 @@
 
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
+import { haptics } from '../../lib/haptics';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'dark' | 'ghost' | 'tonal';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -34,6 +42,8 @@ export interface ButtonProps {
   disabled?: boolean;
   onPress?: () => void;
   children?: ReactNode;
+  /** Light tap haptic on press. Default true; set false for low-stakes buttons. */
+  haptic?: boolean;
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
@@ -88,6 +98,7 @@ export function Button({
   disabled,
   onPress,
   children,
+  haptic = true,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const className = [
@@ -95,14 +106,26 @@ export function Button({
     VARIANT_CLASSES[variant],
     SIZE_CLASSES[size],
     full ? 'w-full' : '',
-    isDisabled ? 'opacity-50' : 'active:opacity-80',
+    isDisabled ? 'opacity-50' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
+  // Spring "squash" on press — premium tactile feel. Paired with a light haptic.
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={isDisabled ? undefined : onPress}
+      onPressIn={() => {
+        if (isDisabled) return;
+        scale.value = withSpring(0.955, { damping: 16, stiffness: 420 });
+        if (haptic) haptics.tap();
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+      }}
       disabled={isDisabled}
       accessibilityRole="button"
       // Expose the text label as the accessible name so screen readers (and
@@ -111,6 +134,7 @@ export function Button({
       accessibilityLabel={typeof children === 'string' ? children : undefined}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       className={className}
+      style={animatedStyle}
     >
       {loading ? (
         <ActivityIndicator size="small" color={SPINNER_COLOR[variant]} />
@@ -138,6 +162,6 @@ export function Button({
           {'›'}
         </Text>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
