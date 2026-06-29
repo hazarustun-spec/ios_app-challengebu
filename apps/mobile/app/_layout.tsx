@@ -60,7 +60,7 @@ export default function RootLayout() {
             <Stack.Screen name="match/[id]" />
             <Stack.Screen name="profile" />
             <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
-            <Stack.Screen name="tournament/[id]" options={{ headerShown: true, title: 'Sezon Finali' }} />
+            <Stack.Screen name="tournament/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="notifications" />
             <Stack.Screen name="messages" />
             <Stack.Screen name="settings" />
