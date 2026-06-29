@@ -76,3 +76,22 @@ follow-up, not needed for launch.)
 - App Privacy (data-collection disclosure) + export compliance
   (`ITSAppUsesNonExemptEncryption`) + age rating.
 - `eas build --profile production` → TestFlight → `eas submit`.
+
+---
+
+## Local native rebuild gotcha (this machine)
+
+Adding a native module (e.g. `expo-blur`) needs `pod install`, which can fail on
+this machine because Homebrew bumped Ruby to 4.0 (breaking the gem CocoaPods) and
+the project's Xcode-16 `objectVersion = 70` isn't understood by the available
+`xcodeproj`. What worked:
+
+1. Run pod install under the still-installed Ruby 3.4.1 (which has `xcodeproj 1.27`):
+   `/opt/homebrew/Cellar/ruby/3.4.1/bin/ruby /opt/homebrew/lib/ruby/gems/3.4.0/bin/pod install`
+2. If it still errors on `object version 70`, lower it in
+   `ios/ChallengeBu.xcodeproj/project.pbxproj` (`objectVersion = 70;` → `60;`).
+   Xcode 16 opens/builds a v60 project fine; this is local-only (ios/ is gitignored).
+3. `npx expo run:ios` then builds (it installs its own CocoaPods if PATH's is broken).
+
+**EAS cloud builds (`eas build`) need NONE of this** — they have a clean toolchain.
+The simplest path for native features is a production EAS build.
