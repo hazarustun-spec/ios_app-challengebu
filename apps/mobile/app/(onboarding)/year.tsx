@@ -7,6 +7,7 @@ import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Toggle } from '../../components/ui/Toggle';
 import { useOnboardingStore, type ClassYear } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
+import { haptics } from '../../lib/haptics';
 
 const YEARS: { value: ClassYear; label: string }[] = [
   { value: 'hazirlik', label: 'Hazırlık' },
@@ -36,7 +37,10 @@ export default function ObYear() {
           return (
             <Pressable
               key={y.value}
-              onPress={() => setField('classYear', y.value)}
+              onPress={() => {
+                haptics.select();
+                setField('classYear', y.value);
+              }}
               accessibilityRole="radio"
               accessibilityState={{ selected: on }}
               style={{

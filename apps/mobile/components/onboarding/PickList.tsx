@@ -9,6 +9,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { Icon, type IconName } from '../ui/Icon';
 import { colors } from '../../theme/colors';
+import { haptics } from '../../lib/haptics';
 
 export interface PickOption<T extends string> {
   value: T;
@@ -45,7 +46,10 @@ export function PickList<T extends string>({
         return (
           <Pressable
             key={o.value}
-            onPress={() => onPick(o.value)}
+            onPress={() => {
+              haptics.select();
+              onPick(o.value);
+            }}
             accessibilityRole="radio"
             accessibilityState={{ selected: on }}
             style={{

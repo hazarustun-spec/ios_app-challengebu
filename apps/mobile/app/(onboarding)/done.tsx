@@ -24,6 +24,7 @@ import Animated, {
 import { Button } from '../../components/ui/Button';
 import { LevelIcon } from '../../components/ui/LevelIcon';
 import { Icon } from '../../components/ui/Icon';
+import { haptics } from '../../lib/haptics';
 import { BallMark } from '../../components/ui/doodles/BallMark';
 import { Cloud } from '../../components/ui/doodles/Cloud';
 import { Dots } from '../../components/ui/doodles/Dots';
@@ -127,6 +128,7 @@ export default function ObDone() {
         }
         reset();
         setSubmitted(true);
+        haptics.success();
       })
       .catch((e: unknown) => {
         setError(e instanceof Error ? e.message : 'Profil oluşturulamadı.');

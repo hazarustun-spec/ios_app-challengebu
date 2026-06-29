@@ -7,6 +7,7 @@ import { OBFrame } from '../../components/onboarding/OBFrame';
 import { CheckBox } from '../../components/ui/CheckBox';
 import { useOnboardingStore, type AvailabilitySlot } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
+import { haptics } from '../../lib/haptics';
 
 const SLOTS: { key: AvailabilitySlot; label: string }[] = [
   { key: 'wd_am', label: 'Hafta içi sabah' },
@@ -44,7 +45,10 @@ export default function ObAvailability() {
           return (
             <Pressable
               key={s.key}
-              onPress={() => toggle(s.key)}
+              onPress={() => {
+                haptics.select();
+                toggle(s.key);
+              }}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
               style={{
