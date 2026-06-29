@@ -43,6 +43,9 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useMyProfile } from '../../hooks/use-profile';
 import { defaultCategoryForGender } from '../../lib/primary-category';
 import { colors } from '../../theme/colors';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
 // Category label map — mirrors the convention used across the codebase.
@@ -207,8 +210,23 @@ export default function HomeScreen() {
         {/* ELO HERO */}
         <View
           className="bg-court border-base border-border-strong"
-          style={{ borderRadius: 26, padding: 18, overflow: 'hidden' }}
+          style={{ borderRadius: 26, padding: 18, overflow: 'hidden', ...shadows.hero }}
         >
+          {/* Subtle diagonal gradient: lighter court tint (top-left) → base court (bottom-right) */}
+          <View
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            pointerEvents="none"
+          >
+            <Svg width="100%" height="100%">
+              <Defs>
+                <LinearGradient id="eloHeroGrad" x1="0" y1="0" x2="1" y2="1">
+                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.09} />
+                  <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+                </LinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#eloHeroGrad)" />
+            </Svg>
+          </View>
           <View className="flex-row items-start justify-between">
             <View>
               <Text
@@ -408,13 +426,14 @@ export default function HomeScreen() {
           <SectionEmpty icon="calendar" text="Henüz aktif maçın yok." />
         ) : (
           <View style={{ gap: 10 }}>
-            {ACTIVE_MATCHES.map((m) => (
-              <ActiveMatchCard
-                key={m.id}
-                match={m}
-                myUserId={userId ?? ''}
-                resolveOpponent={opponentNames.resolve}
-              />
+            {ACTIVE_MATCHES.map((m, i) => (
+              <FadeSlideIn key={m.id} index={i}>
+                <ActiveMatchCard
+                  match={m}
+                  myUserId={userId ?? ''}
+                  resolveOpponent={opponentNames.resolve}
+                />
+              </FadeSlideIn>
             ))}
           </View>
         )}
@@ -430,13 +449,14 @@ export default function HomeScreen() {
           <SectionEmpty icon="trophy" text="Henüz tamamlanmış maçın yok." />
         ) : (
           <View style={{ gap: 10 }}>
-            {RECENT_MATCHES.map((m) => (
-              <RecentMatchCard
-                key={m.id}
-                match={m}
-                myUserId={userId ?? ''}
-                resolveOpponent={opponentNames.resolve}
-              />
+            {RECENT_MATCHES.map((m, i) => (
+              <FadeSlideIn key={m.id} index={i}>
+                <RecentMatchCard
+                  match={m}
+                  myUserId={userId ?? ''}
+                  resolveOpponent={opponentNames.resolve}
+                />
+              </FadeSlideIn>
             ))}
           </View>
         )}
@@ -600,6 +620,7 @@ function ActiveMatchCard({ match, myUserId: _myUserId, resolveOpponent }: Active
         paddingHorizontal: 14,
         gap: 12,
         borderRadius: 18,
+        ...shadows.md,
       }}
     >
       <Avatar name={opponent.primaryName} size={44} />
@@ -676,6 +697,7 @@ function RecentMatchCard({ match, myUserId, resolveOpponent }: RecentMatchCardPr
         paddingHorizontal: 14,
         gap: 12,
         borderRadius: 18,
+        ...shadows.md,
       }}
     >
       <View

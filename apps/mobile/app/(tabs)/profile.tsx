@@ -37,6 +37,7 @@ import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 import { useMyProfile } from '../../hooks/use-profile';
 import { ListRow } from '../../components/ui/ListRow';
+import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
 // Category label map
@@ -442,6 +443,7 @@ export default function ProfileTab() {
                     borderColor: colors.borderStrong,
                     padding: 20,
                     overflow: 'hidden',
+                    ...shadows.md,
                   }}
                 >
                   <View

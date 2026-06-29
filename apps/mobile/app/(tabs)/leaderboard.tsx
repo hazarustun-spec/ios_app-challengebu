@@ -44,6 +44,9 @@ import {
   isFilterActive,
   type LadderFilter,
 } from '../../stores/leaderboard-filter-store';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import { shadows } from '../../theme/shadows';
 
 type Cat =
   | 'erkek_tek'
@@ -338,8 +341,24 @@ export default function Leaderboard() {
           padding: 14,
           borderWidth: 1.5,
           borderColor: colors.borderStrong,
+          ...shadows.hero,
         }}
       >
+        {/* Subtle diagonal gradient: lighter court tint (top-left) → base court (bottom-right) */}
+        <View
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          pointerEvents="none"
+        >
+          <Svg width="100%" height="100%">
+            <Defs>
+              <LinearGradient id="finaleHeroGrad" x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.09} />
+                <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#finaleHeroGrad)" />
+          </Svg>
+        </View>
         <View
           style={{
             position: 'absolute',
@@ -713,13 +732,13 @@ export default function Leaderboard() {
             {/* Rest of ranks (4+) */}
             {restRows.length > 0 && (
               <View style={{ gap: 8 }}>
-                {restRows.map((p) => {
+                {restRows.map((p, i) => {
                   const lv = levelForElo(p.rating);
                   const isMe = p.profileId === userId;
                   const name = `${p.firstName} ${p.lastName}`.trim();
                   return (
+                    <FadeSlideIn key={p.profileId} index={i}>
                     <Pressable
-                      key={p.profileId}
                       onPress={() => router.push(`/user/${p.profileId}` as never)}
                       className="flex-row items-center rounded-md"
                       style={{
@@ -782,6 +801,7 @@ export default function Leaderboard() {
                         {p.rating}
                       </Text>
                     </Pressable>
+                    </FadeSlideIn>
                   );
                 })}
               </View>
