@@ -10,6 +10,7 @@
 
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { GradientBg, glowStyle } from '../../../components/ui/GradientCard';
 import { router } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Icon, type IconName } from '../../../components/ui/Icon';
@@ -88,8 +89,12 @@ export default function NewMatchType() {
               minHeight: 214,
               overflow: 'hidden',
               justifyContent: 'space-between',
+              ...glowStyle(c.bg),
             }}
           >
+            {/* Signature gradient + sheen (behind everything). */}
+            <GradientBg color={c.bg} />
+
             {/* Watermark glyph — faded, anchored bottom-right. */}
             <View
               style={{
