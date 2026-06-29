@@ -12,10 +12,11 @@ describe('onboarding-store', () => {
     expect(s.showDepartment).toBe(true);
     expect(s.showClassYear).toBe(true);
     expect(s.availability).toEqual([]);
-    expect(s.pronoun).toBe('they/them');
-    expect(s.category).toBe('erkek');
-    expect(s.level).toBe('orta');
-    expect(s.hand).toBe('sag');
+    // These four start unset so the user must make an explicit choice.
+    expect(s.pronoun).toBeNull();
+    expect(s.category).toBeNull();
+    expect(s.level).toBeNull();
+    expect(s.hand).toBeNull();
   });
 
   test('setField patches a single field', () => {
