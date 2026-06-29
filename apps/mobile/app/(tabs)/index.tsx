@@ -210,9 +210,19 @@ export default function HomeScreen() {
         {/* ELO HERO */}
         <View
           className="bg-court border-base border-border-strong"
-          style={{ borderRadius: 26, padding: 18, overflow: 'hidden', ...shadows.hero }}
+          style={{
+            borderRadius: 26,
+            padding: 18,
+            overflow: 'hidden',
+            // Court-blue tinted glow — the card visibly lifts + glows.
+            shadowColor: '#1E63A8',
+            shadowOffset: { width: 0, height: 12 },
+            shadowOpacity: 0.4,
+            shadowRadius: 22,
+            elevation: 10,
+          }}
         >
-          {/* Subtle diagonal gradient: lighter court tint (top-left) → base court (bottom-right) */}
+          {/* Rich diagonal court gradient: bright top-left → deep bottom-right. */}
           <View
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             pointerEvents="none"
@@ -220,11 +230,17 @@ export default function HomeScreen() {
             <Svg width="100%" height="100%">
               <Defs>
                 <LinearGradient id="eloHeroGrad" x1="0" y1="0" x2="1" y2="1">
-                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.09} />
-                  <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+                  <Stop offset="0" stopColor="#3C97E6" stopOpacity={1} />
+                  <Stop offset="0.5" stopColor="#2575C2" stopOpacity={1} />
+                  <Stop offset="1" stopColor="#174E8C" stopOpacity={1} />
+                </LinearGradient>
+                <LinearGradient id="eloHeroSheen" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.22} />
+                  <Stop offset="0.45" stopColor="#FFFFFF" stopOpacity={0} />
                 </LinearGradient>
               </Defs>
               <Rect x="0" y="0" width="100%" height="100%" fill="url(#eloHeroGrad)" />
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#eloHeroSheen)" />
             </Svg>
           </View>
           <View className="flex-row items-start justify-between">
