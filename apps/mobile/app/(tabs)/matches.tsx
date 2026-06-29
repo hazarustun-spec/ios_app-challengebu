@@ -26,7 +26,7 @@
 //   - usePlayerRatings         → per-player ELO badge on Teklifler + İlanlar cards
 
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -61,6 +61,8 @@ import { DB_TO_UI_FORMAT } from '../../lib/formats';
 import type { FormatKey } from '../../lib/formats';
 import { levelForElo } from '../../lib/levels';
 import { colors } from '../../theme/colors';
+import { Sheet } from '../../components/ui/Sheet';
+import { haptics } from '../../lib/haptics';
 
 type HubView = 'upcoming' | 'offers' | 'feed';
 
@@ -322,6 +324,36 @@ interface UpcomingListProps {
 
 function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
   const matches: ActiveMatchRow[] = matchesQ.data ?? [];
+  const [menuMatchId, setMenuMatchId] = useState<string | null>(null);
+  const menuMatch = menuMatchId ? (matches.find((m) => m.id === menuMatchId) ?? null) : null;
+
+  function handleLongPress(m: ActiveMatchRow) {
+    haptics.select();
+    if (Platform.OS === 'ios') {
+      const fmtKey = toFormatKey(m.format as string);
+      const canDispute = m.status !== 'disputed';
+      const options: string[] = ['Detay', 'Mesaj', 'Kurallar'];
+      if (canDispute) options.push('İtiraz et');
+      options.push('Vazgeç');
+      const cancelIndex = options.length - 1;
+      const destructiveIndex = canDispute ? options.indexOf('İtiraz et') : -1;
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: cancelIndex,
+          ...(destructiveIndex >= 0 && { destructiveButtonIndex: destructiveIndex }),
+        },
+        (buttonIndex) => {
+          if (options[buttonIndex] === 'Detay') router.push(`/match/${m.id}` as never);
+          else if (options[buttonIndex] === 'Mesaj') router.push('/messages' as never);
+          else if (options[buttonIndex] === 'Kurallar') router.push(`/match/new/format-rules?format=${fmtKey}` as never);
+          else if (options[buttonIndex] === 'İtiraz et') router.push(`/match/${m.id}/dispute` as never);
+        },
+      );
+    } else {
+      setMenuMatchId(m.id);
+    }
+  }
 
   if (matchesQ.isLoading) {
     return (
@@ -358,8 +390,12 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
         const opponent = opponentNames.resolve(m);
 
         return (
-          <View
+          <Pressable
             key={m.id}
+            onLongPress={() => handleLongPress(m)}
+            delayLongPress={400}
+          >
+          <View
             className="rounded-lg border-base border-border-strong bg-surface overflow-hidden"
           >
             <View
@@ -492,8 +528,63 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
               </View>
             </View>
           </View>
+          </Pressable>
         );
       })}
+      {/* Long-press context menu — Sheet fallback for non-iOS.
+          On iOS the same actions are delivered via ActionSheetIOS (see handleLongPress). */}
+      <Sheet
+        visible={menuMatch !== null}
+        onClose={() => setMenuMatchId(null)}
+        title={menuMatch ? opponentNames.resolve(menuMatch).name : undefined}
+      >
+        {menuMatch && (
+          <View style={{ gap: 2, paddingBottom: 4 }}>
+            <Pressable
+              onPress={() => {
+                setMenuMatchId(null);
+                router.push(`/match/${menuMatch.id}` as never);
+              }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+            >
+              <Icon name="list" size={20} color={colors.text} />
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Detay</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setMenuMatchId(null);
+                router.push('/messages' as never);
+              }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+            >
+              <Icon name="mail" size={20} color={colors.text} />
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Mesaj</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setMenuMatchId(null);
+                router.push(`/match/new/format-rules?format=${toFormatKey(menuMatch.format as string)}` as never);
+              }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+            >
+              <Icon name="info" size={20} color={colors.text} />
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Kurallar</Text>
+            </Pressable>
+            {menuMatch.status !== 'disputed' && (
+              <Pressable
+                onPress={() => {
+                  setMenuMatchId(null);
+                  router.push(`/match/${menuMatch.id}/dispute` as never);
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+              >
+                <Icon name="flag" size={20} color={colors.loss} />
+                <Text className="font-sans font-semibold" style={{ fontSize: 16, color: colors.loss }}>İtiraz et</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+      </Sheet>
     </>
   );
 }
