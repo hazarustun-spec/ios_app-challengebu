@@ -11,18 +11,172 @@
 
 import { useState, useEffect } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, {
+  FadeInDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { BadgeArt } from '../../components/ui/BadgeArt';
 import { useAllBadges } from '../../hooks/use-all-badges';
+import type { BadgeCatalogRow } from '../../hooks/use-all-badges';
 import { useMyBadges } from '../../hooks/use-my-badges';
 import { usePinBadges } from '../../hooks/use-pin-badges';
 import { colors } from '../../theme/colors';
 import { ShareSheet } from '../../components/share/ShareSheet';
 import { CardBadgeWon } from '../../components/share/CardBadgeWon';
 import type { MyBadgeRow } from '../../hooks/use-my-badges';
+
+// ---------------------------------------------------------------------------
+// Per-item animated card — staggered FadeInDown entrance; earned badges get
+// a one-shot scale pop (0.9 → overshoot spring → 1) so they feel rewarding.
+// ---------------------------------------------------------------------------
+
+interface BadgeGridItemProps {
+  b: BadgeCatalogRow;
+  index: number;
+  has: boolean;
+  isPin: boolean;
+  earned: MyBadgeRow[];
+  togglePin: (id: string) => void;
+  onShare: (row: MyBadgeRow) => void;
+}
+
+function BadgeGridItem({ b, index, has, isPin, earned, togglePin, onShare }: BadgeGridItemProps) {
+  // Pop spring: earned start at 0.9 and spring to 1 (slight overshoot feels rewarding);
+  // locked badges stay at 1 and never animate.
+  const popScale = useSharedValue(has ? 0.9 : 1);
+
+  useEffect(() => {
+    if (has) {
+      popScale.value = withSpring(1, { damping: 6, stiffness: 220 });
+    }
+  }, []);
+
+  const popStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: popScale.value }],
+  }));
+
+  return (
+    // Outer Animated.View carries the staggered FadeInDown entrance.
+    // Stagger capped at index 10 so long catalogs don't drag.
+    <Animated.View
+      entering={FadeInDown.duration(350)
+        .delay(Math.min(index, 10) * 35)
+        .springify()
+        .damping(17)
+        .stiffness(130)}
+      style={{ width: '48%' }}
+    >
+      {/* Inner Animated.View applies the earned-badge pop scale. */}
+      <Animated.View style={popStyle}>
+        <Pressable
+          onPress={() => has && togglePin(b.id)}
+          onLongPress={() => {
+            if (has) {
+              const earnedRow = earned.find((e) => e.badge_id === b.id);
+              if (earnedRow) onShare(earnedRow);
+            }
+          }}
+          delayLongPress={500}
+          style={{
+            padding: 16,
+            paddingHorizontal: 12,
+            alignItems: 'center',
+            borderRadius: 18,
+            borderWidth: 1.5,
+            borderColor: isPin ? colors.clay : colors.borderStrong,
+            backgroundColor: colors.surface,
+            opacity: has ? 1 : 0.55,
+            position: 'relative',
+          }}
+        >
+          {/* Pin indicator */}
+          {isPin && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: colors.clay,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="check" size={11} color="#FFFFFF" stroke={3} />
+            </View>
+          )}
+          {/* Share affordance on earned badges */}
+          {has && !isPin && (
+            <Pressable
+              onPress={() => {
+                const earnedRow = earned.find((e) => e.badge_id === b.id);
+                if (earnedRow) onShare(earnedRow);
+              }}
+              hitSlop={8}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                width: 22,
+                height: 22,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="share" size={14} color={colors.text3} stroke={1.8} />
+            </Pressable>
+          )}
+          <View
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 23,
+              backgroundColor: has ? `${colors.acGold}24` : colors.surface2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 10,
+            }}
+          >
+            {has ? (
+              <BadgeArt code={b.code} size={46} fallback={b.icon} />
+            ) : (
+              <Icon name="lock" size={22} color={colors.text3} />
+            )}
+          </View>
+          <Text
+            className="font-sans font-extrabold text-text"
+            style={{ fontSize: 13.5, textAlign: 'center' }}
+          >
+            {b.name_tr}
+          </Text>
+          <Text
+            className="font-sans text-text-3"
+            style={{
+              fontSize: 11,
+              marginTop: 4,
+              lineHeight: 15,
+              textAlign: 'center',
+            }}
+          >
+            {b.description_tr}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
 
 export default function Badges() {
   const allBadgesQ = useAllBadges();
@@ -146,109 +300,18 @@ export default function Badges() {
           </Text>
         ) : (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            {catalog.map((b) => {
-              const has = earnedIds.has(b.id);
-              const isPin = pinned.includes(b.id);
-              return (
-                <Pressable
-                  key={b.id}
-                  onPress={() => has && togglePin(b.id)}
-                  onLongPress={() => {
-                    if (has) {
-                      const earnedRow = earned.find((e) => e.badge_id === b.id);
-                      if (earnedRow) setShareBadge(earnedRow);
-                    }
-                  }}
-                  delayLongPress={500}
-                  style={{
-                    width: '48%',
-                    padding: 16,
-                    paddingHorizontal: 12,
-                    alignItems: 'center',
-                    borderRadius: 18,
-                    borderWidth: 1.5,
-                    borderColor: isPin ? colors.clay : colors.borderStrong,
-                    backgroundColor: colors.surface,
-                    opacity: has ? 1 : 0.55,
-                    position: 'relative',
-                  }}
-                >
-                  {/* Pin indicator */}
-                  {isPin && (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        width: 18,
-                        height: 18,
-                        borderRadius: 9,
-                        backgroundColor: colors.clay,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Icon name="check" size={11} color="#FFFFFF" stroke={3} />
-                    </View>
-                  )}
-                  {/* Share affordance on earned badges */}
-                  {has && !isPin && (
-                    <Pressable
-                      onPress={() => {
-                        const earnedRow = earned.find((e) => e.badge_id === b.id);
-                        if (earnedRow) setShareBadge(earnedRow);
-                      }}
-                      hitSlop={8}
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        width: 22,
-                        height: 22,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Icon name="share" size={14} color={colors.text3} stroke={1.8} />
-                    </Pressable>
-                  )}
-                  <View
-                    style={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: 23,
-                      backgroundColor: has ? `${colors.acGold}24` : colors.surface2,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: 10,
-                    }}
-                  >
-                    {has ? (
-                      <BadgeArt code={b.code} size={46} fallback={b.icon} />
-                    ) : (
-                      <Icon name="lock" size={22} color={colors.text3} />
-                    )}
-                  </View>
-                  <Text
-                    className="font-sans font-extrabold text-text"
-                    style={{ fontSize: 13.5, textAlign: 'center' }}
-                  >
-                    {b.name_tr}
-                  </Text>
-                  <Text
-                    className="font-sans text-text-3"
-                    style={{
-                      fontSize: 11,
-                      marginTop: 4,
-                      lineHeight: 15,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {b.description_tr}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {catalog.map((b, index) => (
+              <BadgeGridItem
+                key={b.id}
+                b={b}
+                index={index}
+                has={earnedIds.has(b.id)}
+                isPin={pinned.includes(b.id)}
+                earned={earned}
+                togglePin={togglePin}
+                onShare={setShareBadge}
+              />
+            ))}
           </View>
         )}
       </ScrollView>
