@@ -18,7 +18,8 @@ export interface PickOption<T extends string> {
 }
 
 export interface PickListProps<T extends string> {
-  value: T;
+  /** Currently selected value. Pass `null` to show no pre-selected option. */
+  value: T | null;
   onPick: (v: T) => void;
   options: PickOption<T>[];
   /** Render as a multi-column grid. Default 1 (full-width rows). */

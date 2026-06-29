@@ -37,15 +37,15 @@ export interface OnboardingState {
   firstName: string;
   lastName: string;
   phone: string | null;
-  pronoun: Pronoun;
-  category: GenderCategory;
+  pronoun: Pronoun | null;
+  category: GenderCategory | null;
   departmentId: string | null;
   departmentName: string;
   showDepartment: boolean;
   classYear: ClassYear | null;
   showClassYear: boolean;
-  level: SkillLevel;
-  hand: DominantHand;
+  level: SkillLevel | null;
+  hand: DominantHand | null;
   availability: AvailabilitySlot[];
   photoUri: string | null;
 
@@ -59,15 +59,15 @@ const INITIAL: OnboardingFields = {
   firstName: '',
   lastName: '',
   phone: null,
-  pronoun: 'they/them',
-  category: 'erkek',
+  pronoun: null,
+  category: null,
   departmentId: null,
   departmentName: '',
   showDepartment: true,
   classYear: null,
   showClassYear: true,
-  level: 'orta',
-  hand: 'sag',
+  level: null,
+  hand: null,
   availability: [],
   photoUri: null,
 };
@@ -108,3 +108,43 @@ export const useOnboardingStore = create<OnboardingState>()(
     },
   ),
 );
+
+// ---------------------------------------------------------------------------
+// Resume helper
+// ---------------------------------------------------------------------------
+
+/** Onboarding route paths (a subset of valid Expo Router hrefs). */
+export type OBRoute =
+  | '/(onboarding)/name'
+  | '/(onboarding)/phone'
+  | '/(onboarding)/pronoun'
+  | '/(onboarding)/category'
+  | '/(onboarding)/year'
+  | '/(onboarding)/department'
+  | '/(onboarding)/level'
+  | '/(onboarding)/hand'
+  | '/(onboarding)/availability'
+  | '/(onboarding)/photo'
+  | '/(onboarding)/done';
+
+/**
+ * Given a persisted draft, returns the Expo Router href for the FIRST step
+ * whose required field is still unset. phone and photo are optional (skippable)
+ * so they are always considered complete. If every required field is filled,
+ * returns `/(onboarding)/done` so the user can confirm and submit.
+ */
+export function firstIncompleteStep(
+  draft: Omit<OnboardingState, 'setField' | 'reset'>,
+): OBRoute {
+  if (!draft.firstName.trim() || !draft.lastName.trim()) return '/(onboarding)/name';
+  // phone is optional — always treated as complete
+  if (!draft.pronoun) return '/(onboarding)/pronoun';
+  if (!draft.category) return '/(onboarding)/category';
+  if (!draft.classYear) return '/(onboarding)/year';
+  if (!draft.departmentId) return '/(onboarding)/department';
+  if (!draft.level) return '/(onboarding)/level';
+  if (!draft.hand) return '/(onboarding)/hand';
+  if (draft.availability.length === 0) return '/(onboarding)/availability';
+  // photo is optional — always treated as complete
+  return '/(onboarding)/done';
+}

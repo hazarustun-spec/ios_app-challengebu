@@ -15,6 +15,7 @@ export default function ObLevel() {
       step="level"
       title="Tenis seviyen"
       subtitle="Başlangıç ELO'nu belirlemeye yardımcı olur. İlk 10 maçta hızla kalibre olur."
+      canNext={!!level}
       onNext={() => router.push('/(onboarding)/hand')}
     >
       <PickList<SkillLevel>

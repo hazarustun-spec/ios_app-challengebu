@@ -15,6 +15,7 @@ export default function ObPronoun() {
       step="pronoun"
       title="Zamirin"
       subtitle="Profilinde 'Ali (he/him)' biçiminde küçük bir çip olarak görünür."
+      canNext={!!pronoun}
       onNext={() => router.push('/(onboarding)/category')}
     >
       <PickList<Pronoun>

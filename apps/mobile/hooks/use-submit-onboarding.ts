@@ -64,7 +64,9 @@ export function useSubmitOnboarding() {
       if (profileErr) throw profileErr;
 
       // 3. Seed ELO ratings (1200) for relevant categories
-      const categories = pickCategories(draft.category);
+      // category is guaranteed non-null by onboarding gating, but TypeScript
+      // sees it as nullable after the store type change — fall back to open-only.
+      const categories = pickCategories(draft.category ?? 'open_only');
       const rows = categories.map((c) => ({
         profile_id: user.id,
         category: c,

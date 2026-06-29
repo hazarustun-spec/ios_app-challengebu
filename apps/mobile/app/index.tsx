@@ -1,6 +1,7 @@
 import { Redirect, type Href } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '../stores/auth-store';
+import { useOnboardingStore, firstIncompleteStep } from '../stores/onboarding-store';
 
 export default function Index() {
   const { session, profile, loading } = useAuthStore();
@@ -20,7 +21,10 @@ export default function Index() {
   }
 
   if (!profile?.onboardingComplete) {
-    return <Redirect href="/(onboarding)/name" />;
+    // Resume at the first step whose required field is still unset instead of
+    // always restarting at step 1. `getState()` is a static read — no hook.
+    const step = firstIncompleteStep(useOnboardingStore.getState());
+    return <Redirect href={step as Href} />;
   }
 
   // Cast: Expo Router's typed-routes generator (`.expo/types/router.d.ts`)

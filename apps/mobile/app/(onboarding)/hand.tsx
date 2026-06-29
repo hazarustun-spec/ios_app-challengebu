@@ -14,6 +14,7 @@ export default function ObHand() {
     <OBFrame
       step="hand"
       title="Dominant elin"
+      canNext={!!hand}
       onNext={() => router.push('/(onboarding)/availability')}
     >
       <PickList<DominantHand>
