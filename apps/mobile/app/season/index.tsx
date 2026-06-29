@@ -17,6 +17,7 @@ import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { useMyRankings } from '../../hooks/use-my-rankings';
 import { colors } from '../../theme/colors';
+import { GradientBg, glowStyle } from '../../components/ui/GradientCard';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -203,8 +204,9 @@ export default function Season() {
         {/* Countdown hero */}
         <View
           className="bg-court rounded-xl overflow-hidden"
-          style={{ padding: 20, borderWidth: 1.5, borderColor: colors.borderStrong }}
+          style={{ padding: 20, borderWidth: 1.5, borderColor: colors.borderStrong, ...glowStyle(colors.court) }}
         >
+          <GradientBg color={colors.court} />
           <View className="flex-row items-start justify-between">
             <View>
               <Text className="text-white/85 font-bold" style={{ fontSize: 12.5 }}>
