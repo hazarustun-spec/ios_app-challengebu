@@ -18,10 +18,22 @@ import { NavHeader } from '../../components/ui/NavHeader';
 import { Segmented } from '../../components/ui/Segmented';
 import { useEloHistory, type EloPoint, type SeasonBoundary } from '../../hooks/use-elo-history';
 import { useAuthStore } from '../../stores/auth-store';
+import { useMyProfile } from '../../hooks/use-profile';
+import { primaryCategoryOf, defaultCategoryForGender } from '../../lib/primary-category';
 import { colors } from '../../theme/colors';
 import { ShareSheet } from '../../components/share/ShareSheet';
 import { CardEloProgress } from '../../components/share/CardEloProgress';
 import { levelForElo } from '../../lib/levels';
+
+/** Priority order for sorting categories in the segmented control. */
+const CAT_ORDER = ['erkek_tek', 'kadin_tek', 'open_tek', 'erkek_cift'];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+};
 
 const W = 320;
 const H = 150;
@@ -74,17 +86,35 @@ function countSeasonsForCategory(
   return within + 1;
 }
 
-type Category = 'erkek_tek' | 'open_tek' | 'erkek_cift';
-
 export default function EloHistory() {
   const userId = useAuthStore((s) => s.user?.id);
   const profile = useAuthStore((s) => s.profile);
-  const [cat, setCat] = useState<Category>('erkek_tek');
+  // null = user hasn't made a manual selection yet; fall back to derived primaryCat.
+  const [cat, setCat] = useState<string | null>(null);
   const [shareVisible, setShareVisible] = useState(false);
 
   const { data, isLoading, isError } = useEloHistory(userId);
+  const myProfileQ = useMyProfile();
+  const genderCategory = myProfileQ.data?.gender_category ?? null;
 
-  const catPoints: EloPoint[] = (data?.byCategory ?? {})[cat] ?? [];
+  // Derive available categories from ELO history data, sorted by priority.
+  const availableCats = Object.keys(data?.byCategory ?? {}).sort(
+    (a, b) =>
+      (CAT_ORDER.indexOf(a) === -1 ? 999 : CAT_ORDER.indexOf(a)) -
+      (CAT_ORDER.indexOf(b) === -1 ? 999 : CAT_ORDER.indexOf(b)),
+  );
+
+  // Primary category: prefer the highest-priority category the user has ELO
+  // history in; fall back to gender-based default when no history yet.
+  const primaryCat = primaryCategoryOf(
+    availableCats.map((c) => ({ category: c })),
+    defaultCategoryForGender(genderCategory),
+  );
+
+  // Effective selected category: user's explicit choice or the derived primary.
+  const effectiveCat = cat ?? primaryCat;
+
+  const catPoints: EloPoint[] = (data?.byCategory ?? {})[effectiveCat] ?? [];
   const eloValues: number[] = catPoints.map((p) => p.elo);
   const seasonBoundaries: SeasonBoundary[] = data?.seasonBoundaries ?? [];
 
@@ -118,20 +148,23 @@ export default function EloHistory() {
     />
   );
 
+  // Build segmented options from actual ELO-history categories; fall back to a
+  // single gender-default option while data is still loading.
+  const catOptions =
+    availableCats.length > 0
+      ? availableCats.map((c) => ({ value: c, label: CATEGORY_LABELS[c] ?? c }))
+      : [{ value: effectiveCat, label: CATEGORY_LABELS[effectiveCat] ?? effectiveCat }];
+
   const segmented = (
     <View style={{ paddingHorizontal: 18, paddingTop: 4 }}>
       <Segmented
         size="sm"
-        value={cat}
+        value={effectiveCat}
         onChange={(v) => {
-          setCat(v as Category);
+          setCat(v);
           setSel(0);
         }}
-        options={[
-          { value: 'erkek_tek', label: 'Erkek Tek' },
-          { value: 'open_tek', label: 'Open Tek' },
-          { value: 'erkek_cift', label: 'Erkek Çift' },
-        ]}
+        options={catOptions}
       />
     </View>
   );
@@ -182,12 +215,7 @@ export default function EloHistory() {
     );
   }
 
-  const catLabel =
-    cat === 'erkek_tek'
-      ? 'Erkek Tek'
-      : cat === 'open_tek'
-        ? 'Open Tek'
-        : 'Erkek Çift';
+  const catLabel = CATEGORY_LABELS[effectiveCat] ?? effectiveCat;
 
   return (
     <View className="flex-1 bg-bg">
