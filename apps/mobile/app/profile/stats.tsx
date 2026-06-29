@@ -15,10 +15,14 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Icon, type IconName } from '../../components/ui/Icon';
+import { FormGuide } from '../../components/ui/FormGuide';
+import type { FormResult } from '../../components/ui/FormGuide';
 import { useUserStats } from '../../hooks/use-my-stats';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyMatchHistory } from '../../hooks/use-match-history';
 import { useAuthStore } from '../../stores/auth-store';
+import { myPerspective } from '../../lib/match-opponent';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -57,6 +61,7 @@ export default function Stats() {
   const statsQ = useUserStats(userId, /* includePrivate */ true);
   const rankingsQ = useMyRankings();
   const eloHistoryQ = useEloHistory(userId);
+  const matchHistoryQ = useMyMatchHistory();
 
   const isLoading = statsQ.isLoading || rankingsQ.isLoading || eloHistoryQ.isLoading;
   const isError = statsQ.isError || rankingsQ.isError || eloHistoryQ.isError;
@@ -104,13 +109,24 @@ export default function Stats() {
     facts.push(['flame', 'Mevcut seri', `${stats.currentStreak} galibiyet`, 'devam ediyor']);
   }
 
+  // Form guide — last 5 matches (oldest→newest for left→right display).
+  // matchHistoryQ data is newest-first so we take first 5 then reverse.
+  const last5Form: FormResult[] = (matchHistoryQ.data ?? [])
+    .slice(0, 5)
+    .reverse()
+    .map((m): FormResult => {
+      if (m.winner_team === 'void' || m.winner_team === null) return 'V';
+      return myPerspective(m, userId ?? '').won === true ? 'W' : 'L';
+    });
+
   const handleRefetch = () => {
     statsQ.refetch();
     rankingsQ.refetch();
     eloHistoryQ.refetch();
+    matchHistoryQ.refetch();
   };
 
-  const isRefetching = statsQ.isRefetching || rankingsQ.isRefetching || eloHistoryQ.isRefetching;
+  const isRefetching = statsQ.isRefetching || rankingsQ.isRefetching || eloHistoryQ.isRefetching || matchHistoryQ.isRefetching;
 
   const header = <NavHeader title="İstatistikler" onBack={() => router.back()} />;
 
@@ -238,6 +254,28 @@ export default function Stats() {
             </View>
           )}
         </View>
+
+        {/* Form guide */}
+        {last5Form.length > 0 && (
+          <View
+            className="flex-row items-center bg-surface rounded-lg"
+            style={{
+              padding: 14,
+              paddingHorizontal: 16,
+              borderWidth: 1,
+              borderColor: colors.borderStrong,
+              gap: 12,
+            }}
+          >
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, flex: 1 }}
+            >
+              SON 5 MAÇ
+            </Text>
+            <FormGuide results={last5Form} size={24} />
+          </View>
+        )}
 
         {/* Section label */}
         <Text

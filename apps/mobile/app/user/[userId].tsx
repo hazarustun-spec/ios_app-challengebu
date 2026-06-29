@@ -23,6 +23,8 @@ import { LevelIcon } from '../../components/ui/LevelIcon';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { FormGuide } from '../../components/ui/FormGuide';
+import type { FormResult } from '../../components/ui/FormGuide';
 import { levelForElo } from '../../lib/levels';
 import { myPerspective } from '../../lib/match-opponent';
 import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
@@ -131,6 +133,16 @@ export default function PlayerPreview() {
     const persp = myPerspective(m, userId ?? '');
     return persp.won === false;
   }).length;
+
+  // Form guide — last 5 completed matches, oldest→newest for left→right display.
+  // matches is sorted descending (newest first) so we take the first 5 then reverse.
+  const last5Form: FormResult[] = matches
+    .slice(0, 5)
+    .reverse()
+    .map((m): FormResult => {
+      if (m.winner_team === 'void' || m.winner_team === null) return 'V';
+      return myPerspective(m, userId ?? '').won === true ? 'W' : 'L';
+    });
 
   // H2H label: "X-Y" where X = their wins vs me, Y = my wins vs them
   const h2hLabel = h2hQ.isLoading
@@ -303,6 +315,28 @@ export default function PlayerPreview() {
             </View>
           ))}
         </View>
+
+        {/* Form guide */}
+        {last5Form.length > 0 && (
+          <View
+            className="flex-row items-center bg-surface rounded-lg"
+            style={{
+              padding: 14,
+              paddingHorizontal: 16,
+              borderWidth: 1,
+              borderColor: colors.borderStrong,
+              gap: 12,
+            }}
+          >
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, flex: 1 }}
+            >
+              FORM
+            </Text>
+            <FormGuide results={last5Form} size={24} />
+          </View>
+        )}
 
         {/* ELO card */}
         {primaryRanking && (
