@@ -12,6 +12,8 @@
 //   - useAdminSeasons → all seasons; filtered to status === 'closed'
 //   - Inline useQuery → user_badges join profiles + seasons for season_champion
 //     and yearly_champion badges (one query for all closed seasons)
+//   - Inline useQuery → tournaments table for erkek_tek tournament id per
+//     closed season (used to navigate to /tournament/[id] on card tap)
 
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -51,6 +53,36 @@ interface RawBadgeRow {
   badge: { code: string } | null;
   profile: { first_name: string; last_name: string } | null;
   season: { year: number } | null;
+}
+
+// ---------------------------------------------------------------------------
+// Inline query — erkek_tek tournament id per season
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a map of seasonId → erkek_tek tournament id for the given seasons.
+ * Used to wire archive cards to /tournament/[id].
+ */
+function useSeasonTournamentIds(seasonIds: string[]) {
+  return useQuery<Record<string, string>>({
+    queryKey: ['season-archive-tournament-ids', ...seasonIds],
+    enabled: seasonIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('id, season_id')
+        .in('season_id', seasonIds)
+        .eq('category', 'erkek_tek');
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const t of (data ?? []) as { id: string; season_id: string }[]) {
+        // keep the first erkek_tek tournament encountered per season
+        if (!map[t.season_id]) map[t.season_id] = t.id;
+      }
+      return map;
+    },
+    staleTime: 1000 * 60 * 60,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -104,14 +136,17 @@ export default function SeasonArchive() {
   const seasonsQ = useAdminSeasons();
   const championsQ = useSeasonChampions();
 
+  const closedSeasons = (seasonsQ.data ?? [])
+    .filter((s) => s.status === 'closed')
+    .sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at));
+
+  const closedSeasonIds = closedSeasons.map((s) => s.id);
+  const tournamentsQ = useSeasonTournamentIds(closedSeasonIds);
+
   const isLoading = seasonsQ.isLoading || championsQ.isLoading;
   const isError = seasonsQ.isError || championsQ.isError;
   const isRefetching =
     (seasonsQ.isRefetching ?? false) || (championsQ.isRefetching ?? false);
-
-  const closedSeasons = (seasonsQ.data ?? [])
-    .filter((s) => s.status === 'closed')
-    .sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at));
 
   // Build a lookup: seasonId → champion badge rows
   const champMap = new Map<string, SeasonChampion[]>();
@@ -120,6 +155,9 @@ export default function SeasonArchive() {
     arr.push(c);
     champMap.set(c.seasonId, arr);
   }
+
+  // Lookup: seasonId → erkek_tek tournament id (may be undefined for old seasons)
+  const tournamentIdMap = tournamentsQ.data ?? {};
 
   const header = (
     <NavHeader title="Geçmiş Sezonlar" onBack={() => router.back()} />
@@ -146,8 +184,9 @@ export default function SeasonArchive() {
           </Text>
           <Pressable
             onPress={() => {
-              seasonsQ.refetch();
-              championsQ.refetch();
+              void seasonsQ.refetch();
+              void championsQ.refetch();
+              void tournamentsQ.refetch();
             }}
           >
             <Text
@@ -184,8 +223,9 @@ export default function SeasonArchive() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={() => {
-              seasonsQ.refetch();
-              championsQ.refetch();
+              void seasonsQ.refetch();
+              void championsQ.refetch();
+              void tournamentsQ.refetch();
             }}
             tintColor={colors.clay}
           />
@@ -199,17 +239,10 @@ export default function SeasonArchive() {
           const isAnnual = yearlyBadge !== undefined;
           const dateRange = formatDateRange(season.starts_at, season.ends_at);
           const seasonTitle = `${seasonDisplayName(season.name)} ${season.year}`;
+          const tournamentId = tournamentIdMap[season.id];
 
-          return (
-            <View
-              key={season.id}
-              className="bg-surface rounded-lg"
-              style={{
-                padding: 16,
-                borderWidth: 1,
-                borderColor: colors.borderStrong,
-              }}
-            >
+          const cardContent = (
+            <>
               <View
                 className="flex-row items-center justify-between"
                 style={{ marginBottom: 12 }}
@@ -220,12 +253,17 @@ export default function SeasonArchive() {
                 >
                   {seasonTitle}
                 </Text>
-                <Text
-                  className="font-num font-semibold text-text-3"
-                  style={{ fontSize: 12 }}
-                >
-                  {dateRange}
-                </Text>
+                <View className="flex-row items-center" style={{ gap: 6 }}>
+                  <Text
+                    className="font-num font-semibold text-text-3"
+                    style={{ fontSize: 12 }}
+                  >
+                    {dateRange}
+                  </Text>
+                  {tournamentId !== undefined && (
+                    <Icon name="arrowRight" size={14} color={colors.text3} />
+                  )}
+                </View>
               </View>
               <View
                 className="flex-row items-center bg-surface-2 rounded-md"
@@ -266,6 +304,38 @@ export default function SeasonArchive() {
                   </View>
                 )}
               </View>
+            </>
+          );
+
+          if (tournamentId !== undefined) {
+            return (
+              <Pressable
+                key={season.id}
+                className="bg-surface rounded-lg"
+                style={({ pressed }) => ({
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: colors.borderStrong,
+                  opacity: pressed ? 0.75 : 1,
+                })}
+                onPress={() => router.push(`/tournament/${tournamentId}`)}
+              >
+                {cardContent}
+              </Pressable>
+            );
+          }
+
+          return (
+            <View
+              key={season.id}
+              className="bg-surface rounded-lg"
+              style={{
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.borderStrong,
+              }}
+            >
+              {cardContent}
             </View>
           );
         })}
