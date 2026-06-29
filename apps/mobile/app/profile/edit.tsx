@@ -1,18 +1,23 @@
 // Profile edit — Plan 8 Phase F2, wired to live data.
 //
-// Fields: avatar w/ camera badge → Ad Soyad · Zamir (seg) · Bölüm · Sınıf +
-// Dominant el (seg) · Tenis seviyesi (seg) · Müsaitlik (6 slot grid).
+// Fields: avatar w/ camera badge → Ad Soyad · Zamir (seg) ·
+// Yarışma kategorisi (PickList) · Bölüm (sheet picker) + show toggle ·
+// Sınıf (pill grid) + show toggle · Dominant el (seg) ·
+// Tenis seviyesi (seg) · Müsaitlik (6 slot grid).
 //
 // Live data: useMyProfile() for prefill; useUpdateProfile() to save;
 // useUploadAvatar() + pickAvatar() for avatar replacement.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
+  SectionList,
   Text,
   View,
 } from 'react-native';
@@ -23,15 +28,25 @@ import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
 import { Segmented } from '../../components/ui/Segmented';
+import { Sheet } from '../../components/ui/Sheet';
+import { Toggle } from '../../components/ui/Toggle';
 import { Icon } from '../../components/ui/Icon';
+import { PickList } from '../../components/onboarding/PickList';
 import { pickAvatar } from '../../components/profile/AvatarPicker';
 import { useMyProfile } from '../../hooks/use-profile';
 import { useUpdateProfile, type UpdateProfileInput } from '../../hooks/use-update-profile';
 import { useUploadAvatar } from '../../hooks/use-upload-avatar';
+import {
+  useDepartments,
+  type Department,
+  type ProgramLevel,
+} from '../../hooks/use-departments';
 import { colors } from '../../theme/colors';
 
 const PRONOUNS = ['he/him', 'she/her', 'they/them'] as const;
 type Pronoun = (typeof PRONOUNS)[number];
+
+type GenderCategory = NonNullable<UpdateProfileInput['gender_category']>;
 
 const SLOTS: { key: string; label: string }[] = [
   { key: 'wd_am', label: 'Hafta içi sabah' },
@@ -42,20 +57,15 @@ const SLOTS: { key: string; label: string }[] = [
   { key: 'we_eve', label: 'Hafta sonu akşam' },
 ];
 
-/** Map DB class_year enum to a display string. */
-function classYearLabel(year: UpdateProfileInput['class_year'] | null | undefined): string {
-  if (!year) return '';
-  const map: Record<UpdateProfileInput['class_year'], string> = {
-    hazirlik: 'Hazırlık',
-    '1': '1. sınıf',
-    '2': '2. sınıf',
-    '3': '3. sınıf',
-    '4': '4. sınıf',
-    yl: 'Yüksek Lisans',
-    doktora: 'Doktora',
-  };
-  return map[year] ?? year;
-}
+const YEARS: { value: UpdateProfileInput['class_year']; label: string }[] = [
+  { value: 'hazirlik', label: 'Hazırlık' },
+  { value: '1', label: '1' },
+  { value: '2', label: '2' },
+  { value: '3', label: '3' },
+  { value: '4', label: '4' },
+  { value: 'yl', label: 'Yüksek Lisans' },
+  { value: 'doktora', label: 'Doktora' },
+];
 
 export default function ProfileEdit() {
   const { data: profile, isLoading, isError } = useMyProfile();
@@ -74,6 +84,18 @@ export default function ProfileEdit() {
   const [level, setLevel] = useState<'baslangic' | 'orta' | 'ileri'>('orta');
   const [avail, setAvail] = useState<string[]>([]);
 
+  // New editable fields
+  const [category, setCategory] = useState<GenderCategory>('open_only');
+  const [classYear, setClassYear] = useState<UpdateProfileInput['class_year']>('1');
+  const [departmentId, setDepartmentId] = useState<string | null>(null);
+  const [departmentName, setDepartmentName] = useState('');
+  const [showDepartment, setShowDepartment] = useState(true);
+  const [showClassYear, setShowClassYear] = useState(true);
+
+  // Department sheet state
+  const [deptSheetOpen, setDeptSheetOpen] = useState(false);
+  const [deptQ, setDeptQ] = useState('');
+
   // Seed form fields when profile loads.
   useEffect(() => {
     if (!profile) return;
@@ -86,7 +108,41 @@ export default function ProfileEdit() {
     setHand(profile.dominant_hand ?? 'sag');
     setLevel(profile.skill_self_assessment ?? 'orta');
     setAvail(profile.availability_windows ?? []);
+    setCategory(profile.gender_category ?? 'open_only');
+    setClassYear(profile.class_year ?? '1');
+    setDepartmentId(profile.department_id ?? null);
+    setDepartmentName(profile.departments?.name ?? '');
+    setShowDepartment(profile.show_department ?? true);
+    setShowClassYear(profile.show_class_year ?? true);
   }, [profile]);
+
+  // programLevel: lisansustu for yl/doktora, lisans for everything else.
+  // Matches the exact derivation used in app/(onboarding)/department.tsx.
+  const programLevel: ProgramLevel | undefined =
+    classYear == null
+      ? undefined
+      : classYear === 'yl' || classYear === 'doktora'
+        ? 'lisansustu'
+        : 'lisans';
+
+  const { data: deps } = useDepartments(programLevel);
+
+  // Group + filter departments for the SectionList.
+  const deptSections = useMemo(() => {
+    const filtered = (deps ?? []).filter((d) =>
+      d.name.toLowerCase().includes(deptQ.toLowerCase()),
+    );
+    const byFaculty = new Map<string, Department[]>();
+    for (const d of filtered) {
+      const key = d.faculty ?? 'Diğer';
+      if (!byFaculty.has(key)) byFaculty.set(key, []);
+      byFaculty.get(key)!.push(d);
+    }
+    return Array.from(byFaculty.entries()).map(([title, data]) => ({
+      title,
+      data,
+    }));
+  }, [deps, deptQ]);
 
   const toggle = (k: string) =>
     setAvail((a) => (a.includes(k) ? a.filter((x) => x !== k) : [...a, k]));
@@ -114,14 +170,14 @@ export default function ProfileEdit() {
       last_name: lastName.trim() || profile.last_name,
       pronoun,
       pronoun_custom: pronoun === 'they/them' ? profile.pronoun_custom : null,
-      department_id: profile.department_id,
-      show_department: profile.show_department,
-      class_year: profile.class_year,
-      show_class_year: profile.show_class_year,
+      department_id: departmentId,
+      show_department: showDepartment,
+      class_year: classYear,
+      show_class_year: showClassYear,
       skill_self_assessment: level,
       dominant_hand: hand,
       availability_windows: avail,
-      gender_category: profile.gender_category,
+      gender_category: category,
     };
     updateProfile.mutate(input, {
       onSuccess: () => router.back(),
@@ -137,9 +193,6 @@ export default function ProfileEdit() {
       : profile
         ? `${profile.first_name} ${profile.last_name}`.trim()
         : 'Oyuncu';
-
-  const deptName = profile?.departments?.name ?? '';
-  const yearLabel = classYearLabel(profile?.class_year);
 
   // The resolved avatar URI: uploaded-in-session > profile avatar_url > initials.
   const avatarUri = localAvatarUri ?? profile?.avatar_url ?? undefined;
@@ -276,43 +329,199 @@ export default function ProfileEdit() {
             />
           </View>
 
-          {deptName ? (
-            <Field
-              label="Bölüm"
-              value={deptName}
-              icon="search"
-              suffix="değiştir"
+          {/* Yarışma kategorisi */}
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              YARIŞMA KATEGORİSİ
+            </Text>
+            <PickList<GenderCategory>
+              value={category}
+              onPick={setCategory}
+              options={[
+                {
+                  value: 'erkek',
+                  label: 'Erkek',
+                  icon: 'user',
+                  desc: 'Erkek Tek + Open Tek sıralamalarında yer alırsın.',
+                },
+                {
+                  value: 'kadin',
+                  label: 'Kadın',
+                  icon: 'user',
+                  desc: 'Kadın Tek + Open Tek sıralamalarında yer alırsın.',
+                },
+                {
+                  value: 'open_only',
+                  label: 'Sadece Open',
+                  icon: 'ranking',
+                  desc: 'Yalnızca Open Tek sıralamasında yer alırsın.',
+                },
+              ]}
             />
-          ) : null}
+            <View
+              style={{
+                marginTop: 12,
+                flexDirection: 'row',
+                gap: 10,
+                padding: 14,
+                backgroundColor: colors.surface2,
+                borderRadius: 18,
+              }}
+            >
+              <Icon name="info" size={18} color={colors.info} />
+              <Text
+                className="font-sans text-text-2"
+                style={{ fontSize: 13, lineHeight: 19, flex: 1 }}
+              >
+                Bu seçim sıralama uygunluğunu etkiler.
+              </Text>
+            </View>
+          </View>
 
-          <View className="flex-row" style={{ gap: 14 }}>
-            {yearLabel ? (
+          {/* Bölüm picker */}
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              BÖLÜM
+            </Text>
+            <Pressable
+              onPress={() => setDeptSheetOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Bölüm seç"
+              style={{
+                width: '100%',
+                height: 58,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingHorizontal: 16,
+                borderRadius: 18,
+                borderWidth: 1.5,
+                borderColor: colors.borderStrong,
+                backgroundColor: colors.surface,
+              }}
+            >
+              <Icon name="list" size={20} color={colors.text3} />
+              <Text
+                className="font-sans"
+                style={{
+                  flex: 1,
+                  fontSize: 16,
+                  fontWeight: departmentName ? '600' : '500',
+                  color: departmentName ? colors.text : colors.text3,
+                }}
+                numberOfLines={1}
+              >
+                {departmentName || 'Bölüm seç'}
+              </Text>
+              <Icon name="chevD" size={20} color={colors.text3} />
+            </Pressable>
+            <Pressable
+              onPress={() => setShowDepartment(!showDepartment)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                marginTop: 14,
+                paddingVertical: 6,
+              }}
+            >
               <View style={{ flex: 1 }}>
                 <Text
-                  className="font-sans font-extrabold text-text-3"
-                  style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+                  className="font-sans font-bold text-text"
+                  style={{ fontSize: 14.5 }}
                 >
-                  SINIF
+                  Bölümü profilimde göster
                 </Text>
-                <Field value={yearLabel} />
+                <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
+                  Diğer oyuncular bölümünü görebilir
+                </Text>
               </View>
-            ) : null}
-            <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-extrabold text-text-3"
-                style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
-              >
-                DOMİNANT EL
-              </Text>
-              <Segmented
-                value={hand}
-                onChange={(v) => setHand(v)}
-                options={[
-                  { value: 'sag', label: 'Sağ' },
-                  { value: 'sol', label: 'Sol' },
-                ]}
-              />
+              <Toggle value={showDepartment} onChange={setShowDepartment} />
+            </Pressable>
+          </View>
+
+          {/* Sınıf picker */}
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              SINIF
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9 }}>
+              {YEARS.map((y) => {
+                const on = classYear === y.value;
+                return (
+                  <Pressable
+                    key={y.value}
+                    onPress={() => setClassYear(y.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: on }}
+                    style={{
+                      paddingHorizontal: 18,
+                      paddingVertical: 12,
+                      borderRadius: 9999,
+                      borderWidth: 1.5,
+                      borderColor: on ? colors.clay : colors.borderStrong,
+                      backgroundColor: on ? colors.clay : colors.surface,
+                    }}
+                  >
+                    <Text
+                      className="font-sans font-bold"
+                      style={{
+                        fontSize: 15,
+                        color: on ? '#FFFFFF' : colors.text,
+                      }}
+                    >
+                      {y.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
+            <Pressable
+              onPress={() => setShowClassYear(!showClassYear)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                marginTop: 14,
+                paddingVertical: 6,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text
+                  className="font-sans font-bold text-text"
+                  style={{ fontSize: 14.5 }}
+                >
+                  Sınıfı profilimde göster
+                </Text>
+              </View>
+              <Toggle value={showClassYear} onChange={setShowClassYear} />
+            </Pressable>
+          </View>
+
+          <View>
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66, marginBottom: 9 }}
+            >
+              DOMİNANT EL
+            </Text>
+            <Segmented
+              value={hand}
+              onChange={(v) => setHand(v)}
+              options={[
+                { value: 'sag', label: 'Sağ' },
+                { value: 'sol', label: 'Sol' },
+              ]}
+            />
           </View>
 
           <View>
@@ -386,6 +595,93 @@ export default function ProfileEdit() {
           {updateProfile.isPending ? 'Kaydediliyor…' : 'Kaydet'}
         </Button>
       </View>
+
+      {/* Department picker sheet */}
+      <Sheet
+        visible={deptSheetOpen}
+        onClose={() => {
+          setDeptSheetOpen(false);
+          setDeptQ('');
+        }}
+        title="Bölüm seç"
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ height: 520 }}
+        >
+          <Field
+            icon="search"
+            placeholder="Bölüm ara…"
+            value={deptQ}
+            onChange={setDeptQ}
+          />
+          <SectionList
+            style={{ marginTop: 12, flex: 1 }}
+            sections={deptSections}
+            keyExtractor={(d) => d.id}
+            keyboardShouldPersistTaps="handled"
+            initialNumToRender={25}
+            stickySectionHeadersEnabled={false}
+            renderSectionHeader={({ section }) => (
+              <Text
+                className="font-sans font-extrabold text-text-3"
+                style={{
+                  fontSize: 11,
+                  letterSpacing: 1.1,
+                  textTransform: 'uppercase',
+                  paddingTop: 16,
+                  paddingBottom: 6,
+                  paddingHorizontal: 6,
+                  backgroundColor: colors.surface,
+                }}
+              >
+                {section.title}
+              </Text>
+            )}
+            renderItem={({ item: d }) => (
+              <Pressable
+                onPress={() => {
+                  setDepartmentId(d.id);
+                  setDepartmentName(d.name);
+                  setDeptSheetOpen(false);
+                  setDeptQ('');
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 14,
+                  paddingHorizontal: 6,
+                  borderBottomWidth: 1,
+                  borderColor: colors.surface3,
+                }}
+              >
+                <Text
+                  className="font-sans font-semibold text-text"
+                  style={{ fontSize: 15, flex: 1 }}
+                >
+                  {d.name}
+                </Text>
+                {departmentId === d.id && (
+                  <Icon name="check" size={18} color={colors.clay} stroke={3} />
+                )}
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <Text
+                className="font-sans text-text-3"
+                style={{
+                  fontSize: 13,
+                  textAlign: 'center',
+                  paddingVertical: 24,
+                }}
+              >
+                {deps === undefined ? 'Yükleniyor…' : 'Eşleşen bölüm yok'}
+              </Text>
+            }
+          />
+        </KeyboardAvoidingView>
+      </Sheet>
     </View>
   );
 }

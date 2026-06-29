@@ -25,6 +25,7 @@ import { NavHeader } from '../../components/ui/NavHeader';
 import { ListRow } from '../../components/ui/ListRow';
 import { Toggle } from '../../components/ui/Toggle';
 import { useSignOut } from '../../hooks/use-sign-out';
+import { useMyProfile } from '../../hooks/use-profile';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 import { LEGAL_URLS } from '../../lib/legal';
@@ -37,6 +38,15 @@ const RULES_URL = LEGAL_URLS.terms;
 export default function Settings() {
   const signOut = useSignOut();
   const isAdmin = useAuthStore((s) => s.profile?.role === 'admin');
+  const genderCategory = useMyProfile().data?.gender_category;
+  const categoryLabel =
+    genderCategory === 'erkek'
+      ? 'Erkek'
+      : genderCategory === 'kadin'
+        ? 'Kadın'
+        : genderCategory === 'open_only'
+          ? 'Open'
+          : '';
   const [pushGranted, setPushGranted] = useState(false);
 
   // Reflect the real OS permission whenever the screen regains focus (e.g.
@@ -87,7 +97,7 @@ export default function Settings() {
           <ListRow
             icon="ranking"
             title="Yarışma kategorisi"
-            subtitle="Erkek · değiştir"
+            subtitle={categoryLabel ? `${categoryLabel} · değiştir` : 'değiştir'}
             chevron
             onPress={() => router.push('/profile/edit' as never)}
           />
