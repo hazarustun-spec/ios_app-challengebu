@@ -18,8 +18,7 @@
 //   ink stroke — matches the source. Text actions are bare clay-colored
 //   labels with no chip background.
 
-import { BlurView } from 'expo-blur';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './Icon';
 import { colors } from '../../theme/colors';
@@ -57,14 +56,8 @@ export function NavHeader({
   return (
     <View
       className={large ? 'pb-1 px-4.5' : 'pb-1 px-3.5'}
-      style={{
-        paddingTop: insets.top + (large ? 6 : 8),
-        overflow: 'hidden',
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: 'rgba(0,0,0,0.08)',
-      }}
+      style={{ paddingTop: insets.top + (large ? 6 : 8) }}
     >
-      <BlurView intensity={35} tint="light" style={StyleSheet.absoluteFill} />
       <View className="flex-row items-center gap-2.5 min-h-[48px]">
         {onBack && (
           <Pressable
