@@ -54,7 +54,14 @@ export default function MessagesScreen() {
   const conv = useConversations();
   const items = conv.data ?? [];
 
-  const header = <NavHeader large title="Mesajlar" />;
+  const header = (
+    <NavHeader
+      large
+      title="Mesajlar"
+      actionIcon="edit"
+      onAction={() => router.push('/messages/new' as never)}
+    />
+  );
 
   if (conv.isLoading) {
     return (
