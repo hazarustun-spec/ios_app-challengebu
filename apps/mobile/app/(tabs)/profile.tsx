@@ -21,7 +21,8 @@
 //   - Badges (vitrin): useMyBadges (first 3 pinned, then most recent)
 //   - Display name / profile extras: useAuthStore.profile
 
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -148,9 +149,41 @@ export default function ProfileTab() {
           actionIcon="settings"
           onAction={() => router.push('/settings' as never)}
         />
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.clay} />
-        </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24 }} scrollEnabled={false}>
+          {/* Hero row — avatar ring + name/level/meta lines */}
+          <View
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 4,
+              paddingBottom: 16,
+              flexDirection: 'row',
+              gap: 16,
+              alignItems: 'center',
+            }}
+          >
+            <Skeleton width={82} height={82} radius={41} />
+            <View style={{ flex: 1, gap: 9 }}>
+              <Skeleton height={22} width={'70%'} radius={8} />
+              <Skeleton height={15} width={'50%'} radius={6} />
+              <Skeleton height={13} width={'60%'} radius={6} />
+              <Skeleton height={5} radius={9999} />
+            </View>
+          </View>
+          {/* Vitrin rozetleri skeleton */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 14, gap: 10 }}>
+            <Skeleton height={13} width={'35%'} radius={6} />
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
+            </View>
+          </View>
+          {/* Ranking cards */}
+          <View style={{ padding: 18, paddingTop: 0, gap: 12 }}>
+            <Skeleton height={130} radius={26} />
+            <Skeleton height={130} radius={26} />
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -276,8 +309,10 @@ export default function ProfileTab() {
             </Pressable>
           </View>
           {badgesQ.isLoading ? (
-            <View style={{ height: 72, alignItems: 'center', justifyContent: 'center' }}>
-              <ActivityIndicator size="small" color={colors.clay} />
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
+              <Skeleton height={90} radius={18} style={{ flex: 1 }} />
             </View>
           ) : vitrinBadges.length === 0 ? (
             <Text

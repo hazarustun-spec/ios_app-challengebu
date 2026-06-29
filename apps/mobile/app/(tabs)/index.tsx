@@ -24,6 +24,7 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
 import { Icon, type IconName } from '../../components/ui/Icon';
@@ -153,6 +154,39 @@ export default function HomeScreen() {
   const opponentNames = useOpponentNames();
 
   const categoryHeroLabel = CATEGORY_LABELS[primaryCat] ?? primaryCat.toUpperCase();
+
+  // --- Loading skeleton (shown on first data fetch) ---
+  if (rankingsQ.isLoading) {
+    return (
+      <View className="flex-1 bg-bg">
+        <GreetHeader
+          name={displayName}
+          sub="Bugün maç günü mü?"
+          unreadCount={unreadCount}
+          onBellPress={() => router.push('/notifications')}
+        />
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 24, gap: 14 }}
+          scrollEnabled={false}
+        >
+          {/* ELO hero card */}
+          <Skeleton height={150} radius={26} />
+          {/* CTA row — pill button + circle icon button */}
+          <View style={{ flexDirection: 'row', gap: 11, marginTop: -1 }}>
+            <Skeleton height={56} radius={9999} style={{ flex: 1 }} />
+            <Skeleton width={56} height={56} radius={28} />
+          </View>
+          {/* Opponent strip section title + strip */}
+          <Skeleton height={16} width={'45%'} radius={6} style={{ marginTop: 16 }} />
+          <Skeleton height={56} radius={18} />
+          {/* Active matches section */}
+          <Skeleton height={16} width={'55%'} radius={6} style={{ marginTop: 16 }} />
+          <Skeleton height={72} radius={18} />
+          <Skeleton height={72} radius={18} />
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <ScreenEnter className="flex-1 bg-bg">

@@ -19,13 +19,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -201,9 +201,43 @@ export default function Leaderboard() {
     return (
       <View className="flex-1 bg-bg">
         {header}
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.clay} />
+        {/* Category chip strip skeleton */}
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: 18,
+            paddingTop: 6,
+            paddingBottom: 14,
+            gap: 8,
+          }}
+        >
+          {([80, 96, 72, 88] as const).map((w, i) => (
+            <Skeleton key={i} width={w} height={38} radius={9999} />
+          ))}
         </View>
+        {/* Countdown hero block */}
+        <Skeleton
+          height={128}
+          radius={12}
+          style={{ marginHorizontal: 14, marginTop: 8 }}
+        />
+        <ScrollView
+          contentContainerStyle={{ padding: 14, paddingTop: 14, gap: 14 }}
+          scrollEnabled={false}
+        >
+          {/* My standing card */}
+          <Skeleton height={80} radius={12} />
+          {/* Podium — 3-column strip */}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Skeleton height={140} radius={18} style={{ flex: 1 }} />
+            <Skeleton height={140} radius={18} style={{ flex: 1 }} />
+            <Skeleton height={140} radius={18} style={{ flex: 1, marginTop: 10 }} />
+          </View>
+          {/* Rank rows */}
+          {([0, 1, 2, 3] as const).map((i) => (
+            <Skeleton key={i} height={66} radius={12} />
+          ))}
+        </ScrollView>
       </View>
     );
   }
