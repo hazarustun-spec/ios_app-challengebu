@@ -79,6 +79,7 @@ export default function MatchPreview() {
   // Open calls have no specific target — anyone applies later. Direct
   // challenges carry the chosen opponent.
   const isOpen = nm.path === 'open';
+  const isDoubles = nm.category.endsWith('_cift');
   const opp = isOpen ? null : nm.opponent;
 
   // ELO prediction deltas (only when both ELOs are known and match is ranked)
@@ -112,6 +113,7 @@ export default function MatchPreview() {
         proposedTime: nm.time,
         courtId: nm.court,
         creatorPartnerId: nm.partner?.userId,
+        targetPartnerId: isDoubles && !isOpen ? nm.opponentPartner?.userId : undefined,
       });
       nm.reset();
       router.dismissAll();
@@ -129,48 +131,123 @@ export default function MatchPreview() {
     <View className="flex-1 bg-bg">
       <NavHeader title="Teklif önizleme" onBack={() => router.back()} />
       <ScrollView contentContainerStyle={{ padding: 18, gap: 14 }}>
-        {/* VS hero. */}
-        <View
-          className="flex-row items-center justify-center"
-          style={{ gap: 18, paddingVertical: 14 }}
-        >
-          <View style={{ alignItems: 'center' }}>
-            <Avatar name={meName} size={64} />
-            <Text
-              className="font-sans font-bold text-text"
-              style={{ fontSize: 13.5, marginTop: 8 }}
-            >
-              Sen
-            </Text>
-            <Text
-              className="font-num font-bold text-text-3"
-              style={{ fontSize: 12 }}
-            >
-              {rankingsQ.isLoading ? '—' : (ME_ELO ?? '—')}
-            </Text>
-          </View>
-          <Text
-            className="font-num font-extrabold text-text-3"
-            style={{ fontSize: 16 }}
+        {/* VS hero — 1v1 for singles, 2v2 for doubles. */}
+        {isDoubles ? (
+          <View
+            className="flex-row items-center justify-center"
+            style={{ gap: 16, paddingVertical: 14 }}
           >
-            VS
-          </Text>
-          <View style={{ alignItems: 'center' }}>
-            <Avatar name={isOpen ? 'İlan' : (opp?.name ?? '?')} size={64} />
+            {/* Team A: creator + partner */}
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                <Avatar name={meName} size={44} />
+                <Avatar name={nm.partner?.name ?? '?'} size={44} />
+              </View>
+              <Text
+                className="font-sans font-bold text-text"
+                style={{ fontSize: 12, marginTop: 8, textAlign: 'center' }}
+              >
+                Sen
+              </Text>
+              <Text
+                className="font-sans text-text-3"
+                style={{ fontSize: 11.5, textAlign: 'center' }}
+              >
+                + {nm.partner?.name.split(' ')[0] ?? '—'}
+              </Text>
+            </View>
             <Text
-              className="font-sans font-bold text-text"
-              style={{ fontSize: 13.5, marginTop: 8 }}
+              className="font-num font-extrabold text-text-3"
+              style={{ fontSize: 16 }}
             >
-              {isOpen ? 'Açık İlan' : opp ? opp.name.split(' ')[0] : '—'}
+              VS
             </Text>
-            <Text
-              className="font-num font-bold text-text-3"
-              style={{ fontSize: 12 }}
-            >
-              {isOpen ? 'rakip bekleniyor' : (opp?.elo ?? '—')}
-            </Text>
+            {/* Team B: opponent + opponent partner */}
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              {isOpen ? (
+                <>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    <Avatar name="?" size={44} />
+                    <Avatar name="?" size={44} />
+                  </View>
+                  <Text
+                    className="font-sans font-bold text-text"
+                    style={{ fontSize: 12, marginTop: 8, textAlign: 'center' }}
+                  >
+                    Açık İlan
+                  </Text>
+                  <Text
+                    className="font-sans text-text-3"
+                    style={{ fontSize: 11.5, textAlign: 'center' }}
+                  >
+                    rakip bekleniyor
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    <Avatar name={opp?.name ?? '?'} size={44} />
+                    <Avatar name={nm.opponentPartner?.name ?? '?'} size={44} />
+                  </View>
+                  <Text
+                    className="font-sans font-bold text-text"
+                    style={{ fontSize: 12, marginTop: 8, textAlign: 'center' }}
+                  >
+                    {opp ? opp.name.split(' ')[0] : '—'}
+                  </Text>
+                  <Text
+                    className="font-sans text-text-3"
+                    style={{ fontSize: 11.5, textAlign: 'center' }}
+                  >
+                    + {nm.opponentPartner?.name.split(' ')[0] ?? '—'}
+                  </Text>
+                </>
+              )}
+            </View>
           </View>
-        </View>
+        ) : (
+          <View
+            className="flex-row items-center justify-center"
+            style={{ gap: 18, paddingVertical: 14 }}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <Avatar name={meName} size={64} />
+              <Text
+                className="font-sans font-bold text-text"
+                style={{ fontSize: 13.5, marginTop: 8 }}
+              >
+                Sen
+              </Text>
+              <Text
+                className="font-num font-bold text-text-3"
+                style={{ fontSize: 12 }}
+              >
+                {rankingsQ.isLoading ? '—' : (ME_ELO ?? '—')}
+              </Text>
+            </View>
+            <Text
+              className="font-num font-extrabold text-text-3"
+              style={{ fontSize: 16 }}
+            >
+              VS
+            </Text>
+            <View style={{ alignItems: 'center' }}>
+              <Avatar name={isOpen ? 'İlan' : (opp?.name ?? '?')} size={64} />
+              <Text
+                className="font-sans font-bold text-text"
+                style={{ fontSize: 13.5, marginTop: 8 }}
+              >
+                {isOpen ? 'Açık İlan' : opp ? opp.name.split(' ')[0] : '—'}
+              </Text>
+              <Text
+                className="font-num font-bold text-text-3"
+                style={{ fontSize: 12 }}
+              >
+                {isOpen ? 'rakip bekleniyor' : (opp?.elo ?? '—')}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* ELO prediction (ranking only). */}
         {nm.kind === 'ranking' && (

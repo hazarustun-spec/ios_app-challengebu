@@ -53,6 +53,8 @@ export interface NewMatchState {
   opponent: OpponentChoice | null;
   /** Only set on doubles categories — partner for the player creating the match. */
   partner: OpponentChoice | null;
+  /** Only set on direct-challenge doubles — the TARGET team's partner. */
+  opponentPartner: OpponentChoice | null;
   /**
    * Set to the chosen format key once the user presses "Onayla ve devam et"
    * in format-rules.tsx (E15). Null until confirmed, or if the format has
@@ -78,6 +80,7 @@ const baseInitial: Omit<NewMatchState, 'setField' | 'reset' | 'date'> = {
   court: '',
   opponent: null,
   partner: null,
+  opponentPartner: null,
   rulesAcknowledgedFormat: null,
 };
 

@@ -188,7 +188,9 @@ export default function NewMatchDetail() {
             style={{ flex: 1, fontSize: 12.5, lineHeight: 19 }}
           >
             {isDoubles
-              ? 'Çift maçı — sıradaki adımda partner ve rakip çifti seçeceksin.'
+              ? path === 'open'
+                ? 'Çift maçı — açık ilan. Sıradaki adımda partnerini seçeceksin.'
+                : 'Çift maçı — sıradaki adımda partner ve rakip çiftini seçeceksin.'
               : 'Tek maçı — sıradaki adımda rakibini seçeceksin.'}
           </Text>
         </View>
@@ -199,16 +201,27 @@ export default function NewMatchDetail() {
           size="lg"
           onPress={() => {
             if (path === 'open') {
-              // Open calls have no specific target — clear any stale opponent
-              // and skip straight to preview (no opponent selection step).
+              // Open calls have no specific target — clear any stale opponent/
+              // opponentPartner and either skip to preview (singles) or go to
+              // the partner-picker step (doubles).
               setField('opponent', null);
-              router.push('/match/new/preview' as never);
+              setField('opponentPartner', null);
+              if (isDoubles) {
+                // Doubles open call: creator must still pick their partner.
+                router.push('/match/new/opponent' as never);
+              } else {
+                router.push('/match/new/preview' as never);
+              }
             } else {
               router.push('/match/new/opponent' as never);
             }
           }}
         >
-          {path === 'open' ? 'İlanı önizle' : 'Rakip seç'}
+          {path === 'open' && isDoubles
+            ? 'Partner seç'
+            : path === 'open'
+              ? 'İlanı önizle'
+              : 'Rakip seç'}
         </Button>
       </View>
 
