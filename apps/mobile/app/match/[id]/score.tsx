@@ -295,6 +295,18 @@ export default function ActiveMatch() {
 
         {!someoneWon && !isVoid && (
           <>
+            {/* Shared-scoring model: either player can award points; the
+                event-sourced score dedupes + syncs live, so make that explicit
+                instead of leaving users to wonder who "keeps score". */}
+            <View
+              className="flex-row items-center"
+              style={{ justifyContent: 'center', gap: 5, marginTop: 6 }}
+            >
+              <Icon name="refresh" size={12} color={colors.text3} />
+              <Text className="font-sans text-text-3" style={{ fontSize: 11.5 }}>
+                İkiniz de sayı girebilir · anlık eşitlenir
+              </Text>
+            </View>
             <View className="flex-row" style={{ gap: 12, marginTop: 6 }}>
               <ScoreInput
                 label="Sana sayı"
