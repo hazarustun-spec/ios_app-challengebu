@@ -58,6 +58,9 @@ export default function MessagesScreen() {
     <NavHeader
       large
       title="Mesajlar"
+      onBack={() =>
+        router.canGoBack() ? router.back() : router.replace('/(tabs)/matches')
+      }
       actionIcon="edit"
       onAction={() => router.push('/messages/new' as never)}
     />

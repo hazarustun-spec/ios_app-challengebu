@@ -23,6 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Button } from '../../components/ui/Button';
 import { LevelIcon } from '../../components/ui/LevelIcon';
+import { Icon } from '../../components/ui/Icon';
 import { BallMark } from '../../components/ui/doodles/BallMark';
 import { Cloud } from '../../components/ui/doodles/Cloud';
 import { Dots } from '../../components/ui/doodles/Dots';
@@ -354,6 +355,26 @@ export default function ObDone() {
         contentContainerStyle={{ paddingBottom: 8, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Back chip — return to the last step to edit before confirming. */}
+        {router.canGoBack() && (
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 14,
+              backgroundColor: colors.surface2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 14,
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Geri"
+          >
+            <Icon name="back" size={20} color={colors.text} />
+          </Pressable>
+        )}
+
         {/* Header */}
         <Text
           className="font-display font-extrabold text-text"
