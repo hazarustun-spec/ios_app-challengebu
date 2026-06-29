@@ -30,24 +30,25 @@ function Slot({
   score,
   win,
   top,
+  playerId,
 }: {
   name: string | null;
   score: number | null;
   win: boolean;
   top?: boolean;
+  playerId?: string | null;
 }) {
-  return (
-    <View
-      className="flex-row items-center"
-      style={{
-        padding: 7,
-        paddingHorizontal: 9,
-        gap: 7,
-        backgroundColor: win ? colors.claySofter : colors.surface,
-        borderTopWidth: top ? 0 : 1,
-        borderColor: colors.surface3,
-      }}
-    >
+  const slotStyle = {
+    padding: 7,
+    paddingHorizontal: 9,
+    gap: 7,
+    backgroundColor: win ? colors.claySofter : colors.surface,
+    borderTopWidth: top ? 0 : 1,
+    borderColor: colors.surface3,
+  } as const;
+
+  const content = (
+    <>
       {name ? (
         <Avatar name={name} size={22} />
       ) : (
@@ -80,6 +81,24 @@ function Slot({
         </Text>
       )}
       {win && <Icon name="check" size={12} color={colors.clay} stroke={3} />}
+    </>
+  );
+
+  if (playerId && name) {
+    return (
+      <Pressable
+        className="flex-row items-center active:opacity-70"
+        style={slotStyle}
+        onPress={() => router.push(`/user/${playerId}` as never)}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View className="flex-row items-center" style={slotStyle}>
+      {content}
     </View>
   );
 }
@@ -103,8 +122,8 @@ function MatchCard({ slot }: { slot: BracketSlot }) {
         borderColor: colors.borderStrong,
       }}
     >
-      <Slot name={slot.player_a_name} score={slot.score_team_a} win={aWon} top />
-      <Slot name={slot.player_b_name} score={slot.score_team_b} win={bWon} />
+      <Slot name={slot.player_a_name} score={slot.score_team_a} win={aWon} top playerId={slot.player_a_id} />
+      <Slot name={slot.player_b_name} score={slot.score_team_b} win={bWon} playerId={slot.player_b_id} />
     </View>
   );
 

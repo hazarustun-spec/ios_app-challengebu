@@ -25,25 +25,24 @@ import { queryKeys } from '../../lib/query-keys';
 // Local types
 // ---------------------------------------------------------------------------
 
-type SlotData = { name?: string; win?: boolean };
+type SlotData = { name?: string; win?: boolean; id?: string };
 
 // ---------------------------------------------------------------------------
 // Sub-components (design-preserved)
 // ---------------------------------------------------------------------------
 
-function Slot({ name, win, top }: { name?: string; win?: boolean; top?: boolean }) {
-  return (
-    <View
-      className="flex-row items-center"
-      style={{
-        padding: 7,
-        paddingHorizontal: 9,
-        gap: 7,
-        backgroundColor: win ? colors.claySofter : colors.surface,
-        borderTopWidth: top ? 0 : 1,
-        borderColor: colors.surface3,
-      }}
-    >
+function Slot({ name, win, top, id }: { name?: string; win?: boolean; top?: boolean; id?: string }) {
+  const slotStyle = {
+    padding: 7,
+    paddingHorizontal: 9,
+    gap: 7,
+    backgroundColor: win ? colors.claySofter : colors.surface,
+    borderTopWidth: top ? 0 : 1,
+    borderColor: colors.surface3,
+  } as const;
+
+  const content = (
+    <>
       {name ? (
         <Avatar name={name} size={22} />
       ) : (
@@ -64,6 +63,24 @@ function Slot({ name, win, top }: { name?: string; win?: boolean; top?: boolean 
         {name ? name.split(' ')[0] : '—'}
       </Text>
       {win && <Icon name="check" size={12} color={colors.clay} stroke={3} />}
+    </>
+  );
+
+  if (id && name) {
+    return (
+      <Pressable
+        className="flex-row items-center active:opacity-70"
+        style={slotStyle}
+        onPress={() => router.push(`/user/${id}` as never)}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View className="flex-row items-center" style={slotStyle}>
+      {content}
     </View>
   );
 }
@@ -79,8 +96,8 @@ function Match({ a, b }: { a: SlotData; b: SlotData }) {
         borderColor: colors.borderStrong,
       }}
     >
-      <Slot name={a.name} win={a.win} top />
-      <Slot name={b.name} win={b.win} />
+      <Slot name={a.name} win={a.win} top id={a.id} />
+      <Slot name={b.name} win={b.win} id={b.id} />
     </View>
   );
 }
@@ -94,8 +111,8 @@ function slotToMatchPair(slot: BracketSlot): [SlotData, SlotData] {
   const aWon = slot.winner_team === 'a';
   const bWon = slot.winner_team === 'b';
   return [
-    { name: slot.player_a_name ?? undefined, win: aWon || undefined },
-    { name: slot.player_b_name ?? undefined, win: bWon || undefined },
+    { name: slot.player_a_name ?? undefined, win: aWon || undefined, id: slot.player_a_id ?? undefined },
+    { name: slot.player_b_name ?? undefined, win: bWon || undefined, id: slot.player_b_id ?? undefined },
   ];
 }
 

@@ -17,6 +17,8 @@ export interface BracketSlot {
   score_team_b: number | null;
   player_a_name: string | null;
   player_b_name: string | null;
+  player_a_id: string | null;
+  player_b_id: string | null;
 }
 
 export interface TournamentBracket {
@@ -46,6 +48,7 @@ interface RawBracketSlot {
 
 interface SinglesStandingRow {
   rank: number;
+  profile_id: string | null;
   profile: { first_name: string; last_name: string } | null;
 }
 
@@ -81,9 +84,16 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         .order('bracket_position', { ascending: true });
       if (sErr) throw sErr;
 
-      const seedToLabel = DOUBLES_CATEGORIES.includes(tournament.category)
-        ? await fetchDoublesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size)
-        : await fetchSinglesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
+      let seedToLabel: Record<number, string>;
+      let seedToId: Record<number, string> = {};
+
+      if (DOUBLES_CATEGORIES.includes(tournament.category)) {
+        seedToLabel = await fetchDoublesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
+      } else {
+        const result = await fetchSinglesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
+        seedToLabel = result.seedToLabel;
+        seedToId = result.seedToId;
+      }
 
       const slots: BracketSlot[] = ((rawSlots ?? []) as unknown as RawBracketSlot[]).map((r) => ({
         id: r.id,
@@ -98,6 +108,8 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         score_team_b: r.match?.score_team_b ?? null,
         player_a_name: r.seed_a !== null ? seedToLabel[r.seed_a] ?? null : null,
         player_b_name: r.seed_b !== null ? seedToLabel[r.seed_b] ?? null : null,
+        player_a_id: r.seed_a !== null ? seedToId[r.seed_a] ?? null : null,
+        player_b_id: r.seed_b !== null ? seedToId[r.seed_b] ?? null : null,
       }));
 
       return {
@@ -118,22 +130,25 @@ async function fetchSinglesSeedLabels(
   seasonId: string,
   category: string,
   bracketSize: number,
-): Promise<Record<number, string>> {
+): Promise<{ seedToLabel: Record<number, string>; seedToId: Record<number, string> }> {
   const { data } = await supabase
     .from('season_standings')
     .select(`
       rank,
+      profile_id,
       profile:public_profiles!season_standings_profile_id_fkey(first_name, last_name)
     `)
     .eq('season_id', seasonId)
     .eq('category', category)
     .lte('rank', bracketSize);
 
-  const labels: Record<number, string> = {};
+  const seedToLabel: Record<number, string> = {};
+  const seedToId: Record<number, string> = {};
   for (const s of ((data ?? []) as unknown as SinglesStandingRow[])) {
-    labels[s.rank] = s.profile ? `${s.profile.first_name} ${s.profile.last_name}` : '—';
+    seedToLabel[s.rank] = s.profile ? `${s.profile.first_name} ${s.profile.last_name}` : '—';
+    if (s.profile_id) seedToId[s.rank] = s.profile_id;
   }
-  return labels;
+  return { seedToLabel, seedToId };
 }
 
 async function fetchDoublesSeedLabels(
