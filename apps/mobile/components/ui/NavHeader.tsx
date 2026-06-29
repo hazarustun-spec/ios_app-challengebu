@@ -37,6 +37,8 @@ export interface NavHeaderProps {
   onAction?: () => void;
   /** Switch to the large display title layout. */
   large?: boolean;
+  /** When provided, the title text becomes a pressable that calls this. */
+  onPressTitle?: () => void;
 }
 
 export function NavHeader({
@@ -48,6 +50,7 @@ export function NavHeader({
   actionIcon,
   onAction,
   large,
+  onPressTitle,
 }: NavHeaderProps) {
   const insets = useSafeAreaInsets();
   return (
@@ -74,14 +77,27 @@ export function NavHeader({
               onBack ? 'items-start' : 'items-center',
             ].join(' ')}
           >
-            {title && (
+            {title && onPressTitle ? (
+              <Pressable
+                onPress={onPressTitle}
+                accessibilityRole="button"
+                className="active:opacity-70"
+              >
+                <Text
+                  className="font-display font-extrabold text-[16px] text-text"
+                  numberOfLines={1}
+                >
+                  {title}
+                </Text>
+              </Pressable>
+            ) : title ? (
               <Text
                 className="font-display font-extrabold text-[16px] text-text"
                 numberOfLines={1}
               >
                 {title}
               </Text>
-            )}
+            ) : null}
             {subtitle && (
               <Text
                 className="text-text-3 text-[12px] font-semibold"

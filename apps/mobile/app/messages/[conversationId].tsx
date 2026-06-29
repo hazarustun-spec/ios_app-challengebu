@@ -90,17 +90,42 @@ function Bubble({ item, isMine }: BubbleProps) {
           {item.body}
         </Text>
       </View>
-      <Text
-        style={{
-          fontSize: 11,
-          color: colors.text3,
-          marginTop: 3,
-          alignSelf: isMine ? 'flex-end' : 'flex-start',
-          paddingHorizontal: 4,
-        }}
-      >
-        {formatBubbleTime(item.created_at)}
-      </Text>
+      {isMine ? (
+        // Sent bubble footer: time + read/delivery status
+        <View
+          style={{
+            flexDirection: 'row',
+            alignSelf: 'flex-end',
+            gap: 5,
+            marginTop: 3,
+            paddingHorizontal: 4,
+          }}
+        >
+          <Text style={{ fontSize: 11, color: colors.text3 }}>
+            {formatBubbleTime(item.created_at)}
+          </Text>
+          <Text
+            style={{
+              fontSize: 11,
+              color: item.read_at ? colors.win : colors.text3,
+            }}
+          >
+            {item.read_at ? 'Okundu' : 'İletildi'}
+          </Text>
+        </View>
+      ) : (
+        <Text
+          style={{
+            fontSize: 11,
+            color: colors.text3,
+            marginTop: 3,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 4,
+          }}
+        >
+          {formatBubbleTime(item.created_at)}
+        </Text>
+      )}
     </View>
   );
 }
@@ -235,6 +260,11 @@ export default function ConversationScreen() {
         onBack={() => router.back()}
         actionIcon="dots"
         onAction={() => setMenuOpen(true)}
+        onPressTitle={
+          otherUserId
+            ? () => router.push(`/user/${otherUserId}` as const)
+            : undefined
+        }
       />
 
       {/* Message list */}
