@@ -201,9 +201,8 @@ export default function SeasonArchive() {
           const seasonTitle = `${seasonDisplayName(season.name)} ${season.year}`;
 
           return (
-            <Pressable
+            <View
               key={season.id}
-              onPress={() => router.push('/season/bracket' as never)}
               className="bg-surface rounded-lg"
               style={{
                 padding: 16,
@@ -267,7 +266,7 @@ export default function SeasonArchive() {
                   </View>
                 )}
               </View>
-            </Pressable>
+            </View>
           );
         })}
       </ScrollView>

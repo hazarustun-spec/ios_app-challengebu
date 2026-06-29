@@ -4,7 +4,7 @@
 //
 // Screen layout:
 //
-//   1. NavHeader with back + "filter" trailing action (filter sheet TBD)
+//   1. NavHeader with back
 //   2. Stat strip — 3 surface-2 chips: Galibiyet / Mağlubiyet / Oran
 //   3. History list — one row per finalized match with:
 //        · left color strip (win=green, loss=red, void=warn)
@@ -78,8 +78,6 @@ export default function MatchHistory() {
     <NavHeader
       title="Geçmiş Maçlar"
       onBack={() => router.back()}
-      actionIcon="filter"
-      onAction={() => {}}
     />
   );
 

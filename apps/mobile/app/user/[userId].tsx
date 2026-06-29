@@ -493,32 +493,15 @@ export default function PlayerPreview() {
         ) : null}
       </ScrollView>
 
-      <View
-        style={{ padding: 20, flexDirection: 'row', gap: 10 }}
-      >
-        <View style={{ flex: 1 }}>
-          <Button
-            size="lg"
-            variant="secondary"
-            full
-            icon={<Icon name="user" size={17} color={colors.text} />}
-            onPress={() => {
-              router.push(`/(tabs)/profile` as never);
-            }}
-          >
-            Profil
-          </Button>
-        </View>
-        <View style={{ flex: 2 }}>
-          <Button
-            size="lg"
-            full
-            icon={<Icon name="bolt" size={17} color={colors.onLime} />}
-            onPress={meydanOku}
-          >
-            Meydan oku
-          </Button>
-        </View>
+      <View style={{ padding: 20 }}>
+        <Button
+          size="lg"
+          full
+          icon={<Icon name="bolt" size={17} color={colors.onLime} />}
+          onPress={meydanOku}
+        >
+          Meydan oku
+        </Button>
       </View>
     </View>
   );
