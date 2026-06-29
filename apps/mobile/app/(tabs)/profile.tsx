@@ -359,6 +359,14 @@ export default function ProfileTab() {
               chevron
               onPress={() => router.push('/match/history' as never)}
             />
+            <View style={{ height: 1, backgroundColor: colors.surface3 }} />
+            <ListRow
+              icon="eye"
+              title="Profilimi önizle"
+              subtitle="Başkalarına nasıl görünüyorsun"
+              chevron
+              onPress={() => userId && router.push(`/user/${userId}` as never)}
+            />
           </View>
         </View>
 

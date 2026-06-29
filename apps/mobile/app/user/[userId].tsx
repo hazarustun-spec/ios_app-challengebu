@@ -27,6 +27,7 @@ import { levelForElo } from '../../lib/levels';
 import { myPerspective } from '../../lib/match-opponent';
 import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
 import { useNewMatchStore } from '../../stores/new-match-store';
+import { useAuthStore } from '../../stores/auth-store';
 import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
 import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useUserMatchHistory } from '../../hooks/use-match-history';
@@ -80,6 +81,10 @@ function getDeptName(
 export default function PlayerPreview() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const setField = useNewMatchStore((s) => s.setField);
+  // When viewing your OWN profile this screen is a "preview" of how others see
+  // you — hide the challenge CTA and show a hint banner.
+  const myId = useAuthStore((s) => s.user?.id);
+  const isSelf = !!myId && myId === userId;
 
   const profileQ = useOtherPlayerProfile(userId);
   const rankingsQ = useUserRankings(userId);
@@ -186,6 +191,23 @@ export default function PlayerPreview() {
           />
         }
       >
+        {isSelf && (
+          <View
+            className="flex-row items-center rounded-lg"
+            style={{
+              gap: 9,
+              padding: 12,
+              backgroundColor: colors.surface2,
+              borderWidth: 1,
+              borderColor: colors.borderStrong,
+            }}
+          >
+            <Icon name="eye" size={16} color={colors.text2} />
+            <Text className="font-sans text-text-2" style={{ fontSize: 13, flex: 1 }}>
+              Profilin diğer oyunculara böyle görünüyor.
+            </Text>
+          </View>
+        )}
         {/* Hero */}
         <View style={{ alignItems: 'center', gap: 8, paddingTop: 6 }}>
           <Avatar name={name} size={92} ring={lv.color} />
@@ -493,16 +515,18 @@ export default function PlayerPreview() {
         ) : null}
       </ScrollView>
 
-      <View style={{ padding: 20 }}>
-        <Button
-          size="lg"
-          full
-          icon={<Icon name="bolt" size={17} color={colors.onLime} />}
-          onPress={meydanOku}
-        >
-          Meydan oku
-        </Button>
-      </View>
+      {!isSelf && (
+        <View style={{ padding: 20 }}>
+          <Button
+            size="lg"
+            full
+            icon={<Icon name="bolt" size={17} color={colors.onLime} />}
+            onPress={meydanOku}
+          >
+            Meydan oku
+          </Button>
+        </View>
+      )}
     </View>
   );
 }
