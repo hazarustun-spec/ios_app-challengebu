@@ -25,7 +25,8 @@
           "remote-notification"
         ],
         "NSSupportsLiveActivities": true,
-        "NSSupportsLiveActivitiesFrequentUpdates": true
+        "NSSupportsLiveActivitiesFrequentUpdates": true,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
