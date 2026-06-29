@@ -44,7 +44,7 @@ import {
   isFilterActive,
   type LadderFilter,
 } from '../../stores/leaderboard-filter-store';
-import { GradientBg, glowStyle } from '../../components/ui/GradientCard';
+import { shadows } from '../../theme/shadows';
 import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
 
 type Cat =
@@ -340,10 +340,9 @@ export default function Leaderboard() {
           padding: 14,
           borderWidth: 1.5,
           borderColor: colors.borderStrong,
-          ...glowStyle(colors.court),
+          ...shadows.hero,
         }}
       >
-        <GradientBg color={colors.court} />
         <View
           style={{
             position: 'absolute',
@@ -665,6 +664,7 @@ export default function Leaderboard() {
                         borderColor: colors.borderStrong,
                         marginTop: order === 0 ? 0 : 10,
                         position: 'relative',
+                        ...shadows.md,
                       }}
                     >
                       <View

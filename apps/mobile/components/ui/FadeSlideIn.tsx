@@ -32,7 +32,13 @@ export function FadeSlideIn({
 }: Props) {
   return (
     <Animated.View
-      entering={FadeInDown.duration(duration).delay(delay + index * stagger)}
+      entering={FadeInDown.duration(duration)
+        .delay(delay + index * stagger)
+        // A gentle spring gives the arrival a livelier, more crafted feel
+        // (vs a flat linear fade) while staying calm enough for long lists.
+        .springify()
+        .damping(17)
+        .stiffness(130)}
     >
       {children}
     </Animated.View>

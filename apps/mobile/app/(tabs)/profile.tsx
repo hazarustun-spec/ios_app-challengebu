@@ -37,7 +37,7 @@ import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 import { useMyProfile } from '../../hooks/use-profile';
 import { ListRow } from '../../components/ui/ListRow';
-import { GradientBg, glowStyle, shade } from '../../components/ui/GradientCard';
+import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
 // Category label map
@@ -443,14 +443,9 @@ export default function ProfileTab() {
                     borderColor: colors.borderStrong,
                     padding: 20,
                     overflow: 'hidden',
-                    ...glowStyle(theme.bg),
+                    ...shadows.md,
                   }}
                 >
-                  <GradientBg
-                    color={theme.bg}
-                    light={theme.bg === colors.lime ? shade(colors.lime, 0.15) : undefined}
-                    deep={theme.bg === colors.lime ? shade(colors.lime, -0.15) : undefined}
-                  />
                   <View
                     className="flex-row items-center justify-between"
                     style={{ marginBottom: 18 }}

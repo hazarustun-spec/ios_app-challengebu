@@ -21,8 +21,15 @@
 //   - Unread bell: useUnreadCount
 //   - Display name: useAuthStore.profile
 
+import { useEffect } from 'react';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Avatar } from '../../components/ui/Avatar';
@@ -43,9 +50,14 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useMyProfile } from '../../hooks/use-profile';
 import { defaultCategoryForGender } from '../../lib/primary-category';
 import { colors } from '../../theme/colors';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
 import { shadows } from '../../theme/shadows';
+
+// AnimatedTextInput drives the ELO hero count-up via reanimated (same pattern
+// as result.tsx). Must be defined OUTSIDE the component so
+// createAnimatedComponent only runs once per app session.
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+const ELO_NUM_FONT_FAMILY = 'SpaceGrotesk-ExtraBold';
 
 // ---------------------------------------------------------------------------
 // Category label map — mirrors the convention used across the codebase.
@@ -139,6 +151,22 @@ export default function HomeScreen() {
   const lv = levelForElo(ME_ELO);
   const lp = levelProgress(ME_ELO);
 
+  // ELO hero count-up: start 120 below ME_ELO, ease-out to exact value.
+  // Hooks are always called (before the isLoading early return) per React rules.
+  const eloCounter = useSharedValue(Math.max(1000, ME_ELO - 120));
+  useEffect(() => {
+    eloCounter.value = Math.max(1000, ME_ELO - 120);
+    eloCounter.value = withTiming(ME_ELO, {
+      duration: 750,
+      easing: Easing.out(Easing.cubic),
+    });
+    // eloCounter is a stable SharedValue ref — safe to omit from deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ME_ELO]);
+  const animatedEloProps = useAnimatedProps(
+    () => ({ text: String(Math.round(eloCounter.value)) } as any),
+  );
+
   // --- Season banner ---
   const seasonQ = useCurrentSeason();
   const season = seasonQ.data;
@@ -210,39 +238,8 @@ export default function HomeScreen() {
         {/* ELO HERO */}
         <View
           className="bg-court border-base border-border-strong"
-          style={{
-            borderRadius: 26,
-            padding: 18,
-            overflow: 'hidden',
-            // Court-blue tinted glow — the card visibly lifts + glows.
-            shadowColor: '#1E63A8',
-            shadowOffset: { width: 0, height: 12 },
-            shadowOpacity: 0.4,
-            shadowRadius: 22,
-            elevation: 10,
-          }}
+          style={{ borderRadius: 26, padding: 18, overflow: 'hidden', ...shadows.hero }}
         >
-          {/* Rich diagonal court gradient: bright top-left → deep bottom-right. */}
-          <View
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-            pointerEvents="none"
-          >
-            <Svg width="100%" height="100%">
-              <Defs>
-                <LinearGradient id="eloHeroGrad" x1="0" y1="0" x2="1" y2="1">
-                  <Stop offset="0" stopColor="#3C97E6" stopOpacity={1} />
-                  <Stop offset="0.5" stopColor="#2575C2" stopOpacity={1} />
-                  <Stop offset="1" stopColor="#174E8C" stopOpacity={1} />
-                </LinearGradient>
-                <LinearGradient id="eloHeroSheen" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.22} />
-                  <Stop offset="0.45" stopColor="#FFFFFF" stopOpacity={0} />
-                </LinearGradient>
-              </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#eloHeroGrad)" />
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#eloHeroSheen)" />
-            </Svg>
-          </View>
           <View className="flex-row items-start justify-between">
             <View>
               <Text
@@ -259,16 +256,24 @@ export default function HomeScreen() {
                 className="flex-row items-end"
                 style={{ gap: 9, marginTop: 4 }}
               >
-                <Text
-                  className="font-num font-extrabold text-white"
+                <AnimatedTextInput
+                  editable={false}
+                  underlineColorAndroid="transparent"
+                  value={String(ME_ELO)}
+                  animatedProps={animatedEloProps}
                   style={{
                     fontSize: 42,
                     lineHeight: 50,
                     letterSpacing: -0.84,
+                    color: '#FFFFFF',
+                    fontFamily: ELO_NUM_FONT_FAMILY,
+                    fontWeight: '800',
+                    padding: 0,
+                    margin: 0,
+                    includeFontPadding: false,
+                    backgroundColor: 'transparent',
                   }}
-                >
-                  {ME_ELO}
-                </Text>
+                />
                 <View
                   className="flex-row items-center"
                   style={{ gap: 1, marginBottom: 5 }}
