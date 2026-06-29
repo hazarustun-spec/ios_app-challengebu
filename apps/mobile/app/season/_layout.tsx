@@ -3,9 +3,9 @@
 // Sub-screens reached from the dashboard / season callouts:
 //   - index (F8 active season)
 //   - bracket (F9 singles Top 8)
-//   - bracket-doubles (F10 doubles Top 4)
 //   - annual-champion (F11)
 //   - archive (F12 past seasons)
+// (doubles bracket deferred until the doubles match flow exists.)
 
 import { Stack } from 'expo-router';
 

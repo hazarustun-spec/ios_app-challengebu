@@ -14,7 +14,9 @@ export default function Index() {
   }
 
   if (!session) {
-    return <Redirect href="/(auth)/welcome" />;
+    // Enter the auth stack at the branded splash, which auto-advances to
+    // welcome — otherwise splash is never shown on a normal cold start.
+    return <Redirect href="/(auth)/splash" />;
   }
 
   if (!profile?.onboardingComplete) {

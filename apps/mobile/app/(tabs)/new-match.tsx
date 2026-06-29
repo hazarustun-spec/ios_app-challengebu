@@ -1,16 +1,15 @@
 // `new-match` tab slot — Plan 8 Phase E1.
 //
-// This file exists ONLY so Expo Router includes the central "+" slot in
-// the Tabs configuration that the custom `TabBar` paints. The screen is
-// never actually rendered: a `tabPress` listener in
-// `(tabs)/_layout.tsx` calls `e.preventDefault()` and redirects to the
-// modal "Yeni Maç" wizard before navigation settles.
+// This file exists so Expo Router includes the central "+" slot in the Tabs
+// configuration that the custom `TabBar` paints. Normally a `tabPress`
+// listener in `(tabs)/_layout.tsx` calls `e.preventDefault()` and pushes the
+// "Yeni Maç" wizard before this renders.
 //
-// The empty `<View />` keeps the bundle cost ~0 and the TS surface
-// boring — no props, no state, no hooks.
+// Fallback: if the slot is ever reached directly (listener miss / deep link),
+// redirect into the wizard instead of showing a blank screen.
 
-import { View } from 'react-native';
+import { Redirect } from 'expo-router';
 
-export default function NewMatchPlaceholder() {
-  return <View />;
+export default function NewMatchSlot() {
+  return <Redirect href="/match/new/type" />;
 }
