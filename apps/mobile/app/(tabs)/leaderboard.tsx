@@ -341,7 +341,7 @@ export default function Leaderboard() {
               FİNALE GERİ SAYIM
             </Text>
           </View>
-          {meRow && (
+          {meRow && meRow.rank <= 8 && (
             <View
               style={{
                 borderWidth: 1.5,

@@ -46,6 +46,8 @@ import { useConfirmMatch } from '../../../hooks/use-confirm-match';
 import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
 import { queryKeys } from '../../../lib/query-keys';
 import { myPerspective } from '../../../lib/match-opponent';
+import { formatByKey, DB_TO_UI_FORMAT } from '../../../lib/formats';
+import { formatDateLabel } from '../../../lib/match-dates';
 import { useAuthStore } from '../../../stores/auth-store';
 import { ShareSheet } from '../../../components/share/ShareSheet';
 import { CardMatchResult } from '../../../components/share/CardMatchResult';
@@ -94,6 +96,11 @@ export default function MatchResult() {
   const submissions = submissionsQ.data ?? [];
 
   const match = matchQ.data ?? null;
+
+  // Real format · date line (replaces the old hardcoded "BÜ Klasik · Bugün").
+  const metaLine = match
+    ? `${formatByKey(DB_TO_UI_FORMAT[match.format] ?? 'klasik').name} · ${formatDateLabel(match.played_at)}`
+    : '';
 
   // Confirmation handshake state.
   const scoresSettled = match?.winner_team != null;
@@ -353,7 +360,7 @@ export default function MatchResult() {
             className="font-sans font-semibold text-text-3"
             style={{ fontSize: 13 }}
           >
-            BÜ Klasik · Bugün
+            {metaLine}
           </Text>
         </View>
 

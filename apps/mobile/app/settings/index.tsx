@@ -18,7 +18,7 @@
 // per-category control lives at /settings/notification-preferences.
 
 import { useCallback, useState } from 'react';
-import { Linking, ScrollView, Text, View } from 'react-native';
+import { Alert, Linking, ScrollView, Text, View } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { router, useFocusEffect } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -148,7 +148,16 @@ export default function Settings() {
         </Section>
 
         <Section>
-          <ListRow icon="swap" title="Çıkış yap" onPress={() => signOut.mutate()} />
+          <ListRow
+            icon="swap"
+            title="Çıkış yap"
+            onPress={() =>
+              Alert.alert('Çıkış yap', 'Hesabından çıkmak istediğine emin misin?', [
+                { text: 'Vazgeç', style: 'cancel' },
+                { text: 'Çıkış yap', style: 'destructive', onPress: () => signOut.mutate() },
+              ])
+            }
+          />
           <Divider />
           <ListRow
             icon="trash"

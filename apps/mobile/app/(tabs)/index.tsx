@@ -26,7 +26,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
-import { Icon } from '../../components/ui/Icon';
+import { Icon, type IconName } from '../../components/ui/Icon';
 import { Sparkline } from '../../components/ui/Sparkline';
 import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
 import { useActiveMatches, type ActiveMatchRow } from '../../hooks/use-active-matches';
@@ -284,7 +284,7 @@ export default function HomeScreen() {
                 className="font-sans font-bold text-white"
                 style={{ fontSize: 12.5, marginTop: 1 }}
               >
-                Yükselişte · {lv.name}
+                {ELO_DELTA > 0 ? 'Yükselişte' : ELO_DELTA < 0 ? 'Düşüşte' : 'Sabit'} · {lv.name}
               </Text>
             </View>
             <Sparkline data={ELO_TREND} color={colors.lime} w={104} h={30} stroke={2.5} />
@@ -371,12 +371,7 @@ export default function HomeScreen() {
           Aktif maçlar
         </SectionTitle>
         {ACTIVE_MATCHES.length === 0 ? (
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 13, paddingHorizontal: 4 }}
-          >
-            Henüz aktif maçın yok.
-          </Text>
+          <SectionEmpty icon="calendar" text="Henüz aktif maçın yok." />
         ) : (
           <View style={{ gap: 10 }}>
             {ACTIVE_MATCHES.map((m) => (
@@ -398,12 +393,7 @@ export default function HomeScreen() {
           Son sonuçlar
         </SectionTitle>
         {RECENT_MATCHES.length === 0 ? (
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 13, paddingHorizontal: 4 }}
-          >
-            Henüz tamamlanmış maçın yok.
-          </Text>
+          <SectionEmpty icon="trophy" text="Henüz tamamlanmış maçın yok." />
         ) : (
           <View style={{ gap: 10 }}>
             {RECENT_MATCHES.map((m) => (
@@ -504,6 +494,39 @@ function SectionTitle({ children, action, onActionPress }: SectionTitleProps) {
           </Text>
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+// Compact inline empty for a home section (the full-screen EmptyState uses
+// flex-1 and doesn't lay out inside a scroll section).
+function SectionEmpty({ icon, text }: { icon: IconName; text: string }) {
+  return (
+    <View
+      className="flex-row items-center rounded-lg"
+      style={{
+        gap: 11,
+        padding: 14,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.borderStrong,
+      }}
+    >
+      <View
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 17,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surface2,
+        }}
+      >
+        <Icon name={icon} size={16} color={colors.text3} />
+      </View>
+      <Text className="font-sans text-text-2" style={{ fontSize: 13, flex: 1 }}>
+        {text}
+      </Text>
     </View>
   );
 }
