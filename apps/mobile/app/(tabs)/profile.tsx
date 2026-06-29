@@ -35,6 +35,7 @@ import { useMyRankings, type RankingRow } from '../../hooks/use-my-rankings';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 import { useMyProfile } from '../../hooks/use-profile';
+import { ListRow } from '../../components/ui/ListRow';
 
 // ---------------------------------------------------------------------------
 // Category label map
@@ -68,20 +69,6 @@ function pickPrimaryCategory(rows: RankingRow[]): RankingRow | null {
 // ---------------------------------------------------------------------------
 // Static data
 // ---------------------------------------------------------------------------
-
-interface TabDef {
-  key: 'rank' | 'stats' | 'badges' | 'elo' | 'matches';
-  label: string;
-  go?: string;
-}
-
-const TABS: TabDef[] = [
-  { key: 'rank', label: 'Sıralamalar' },
-  { key: 'stats', label: 'İstatistikler', go: '/profile/stats' },
-  { key: 'badges', label: 'Rozetler', go: '/profile/badges' },
-  { key: 'elo', label: 'ELO Geçmişi', go: '/profile/elo-history' },
-  { key: 'matches', label: 'Maçlar', go: '/match/history' },
-];
 
 interface RankTheme {
   bg: string;
@@ -333,49 +320,58 @@ export default function ProfileTab() {
           )}
         </View>
 
-        {/* Tab strip */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 18,
-            paddingBottom: 12,
-            gap: 6,
-          }}
-          style={{ borderBottomWidth: 1, borderColor: colors.surface3 }}
-        >
-          {TABS.map((t) => {
-            const active = t.key === 'rank';
-            return (
-              <Pressable
-                key={t.key}
-                onPress={() => {
-                  if (t.key === 'rank') return;
-                  if (t.go) router.push(t.go as never);
-                }}
-                className="rounded-pill"
-                style={{
-                  paddingHorizontal: 13,
-                  paddingVertical: 7,
-                  backgroundColor: active ? colors.text : 'transparent',
-                }}
-              >
-                <Text
-                  className="font-sans font-bold"
-                  style={{
-                    fontSize: 13,
-                    color: active ? colors.bg : colors.text2,
-                  }}
-                >
-                  {t.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        {/* Navigation section — clearly-navigational rows to the four sub-screens */}
+        <View style={{ paddingHorizontal: 16, paddingBottom: 14, gap: 8 }}>
+          <Text
+            className="font-sans font-extrabold text-text-3"
+            style={{ fontSize: 11, letterSpacing: 0.66, paddingLeft: 4 }}
+          >
+            BÖLÜMLER
+          </Text>
+          <View
+            className="bg-surface rounded-lg overflow-hidden"
+            style={{ borderWidth: 1, borderColor: colors.borderStrong }}
+          >
+            <ListRow
+              icon="ranking"
+              title="İstatistikler"
+              chevron
+              onPress={() => router.push('/profile/stats' as never)}
+            />
+            <View style={{ height: 1, backgroundColor: colors.surface3 }} />
+            <ListRow
+              icon="clock"
+              title="ELO Geçmişi"
+              chevron
+              onPress={() => router.push('/profile/elo-history' as never)}
+            />
+            <View style={{ height: 1, backgroundColor: colors.surface3 }} />
+            <ListRow
+              icon="medal"
+              title="Rozetler"
+              chevron
+              onPress={() => router.push('/profile/badges' as never)}
+            />
+            <View style={{ height: 1, backgroundColor: colors.surface3 }} />
+            <ListRow
+              icon="matches"
+              title="Maçlar"
+              chevron
+              onPress={() => router.push('/match/history' as never)}
+            />
+          </View>
+        </View>
 
-        {/* Rankings list */}
-        <View style={{ padding: 18, gap: 12 }}>
+        {/* Rankings section */}
+        <View style={{ paddingHorizontal: 20, paddingBottom: 6 }}>
+          <Text
+            className="font-sans font-extrabold text-text-3"
+            style={{ fontSize: 11, letterSpacing: 0.66 }}
+          >
+            SIRALAMALAR
+          </Text>
+        </View>
+        <View style={{ padding: 18, paddingTop: 0, gap: 12 }}>
           {rankings.length === 0 ? (
             <Text
               className="font-sans text-text-3"
