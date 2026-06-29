@@ -27,7 +27,11 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedProps,
+  useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withRepeat,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
@@ -167,6 +171,26 @@ export default function HomeScreen() {
     () => ({ text: String(Math.round(eloCounter.value)) } as any),
   );
 
+  // ELO delta chip entrance: fades + slides in from right ~820 ms after the
+  // count-up starts so the eye reads "ELO → then the change".
+  const deltaOpacity = useSharedValue(0);
+  const deltaTranslateX = useSharedValue(10);
+  useEffect(() => {
+    deltaOpacity.value = 0;
+    deltaTranslateX.value = 10;
+    deltaOpacity.value = withDelay(820, withTiming(1, { duration: 380 }));
+    deltaTranslateX.value = withDelay(
+      820,
+      withSpring(0, { damping: 18, stiffness: 200 }),
+    );
+    // deltaOpacity/deltaTranslateX are stable SharedValue refs — safe to omit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ME_ELO]);
+  const animatedDeltaStyle = useAnimatedStyle(() => ({
+    opacity: deltaOpacity.value,
+    transform: [{ translateX: deltaTranslateX.value }],
+  }));
+
   // --- Season banner ---
   const seasonQ = useCurrentSeason();
   const season = seasonQ.data;
@@ -180,6 +204,40 @@ export default function HomeScreen() {
   // --- Recent matches (last 2 confirmed/voided) ---
   const matchHistoryQ = useMyMatchHistory();
   const RECENT_MATCHES: ActiveMatchRow[] = (matchHistoryQ.data ?? []).slice(0, 2);
+
+  // --- Win streak: consecutive most-recent confirmed wins (full history) ---
+  const ALL_MATCHES = matchHistoryQ.data ?? [];
+  const WIN_STREAK = (() => {
+    if (!userId) return 0;
+    let streak = 0;
+    for (const m of ALL_MATCHES) {
+      if (m.status === 'confirmed' && myPerspective(m, userId).won === true) {
+        streak++;
+      } else {
+        break; // loss or voided match ends the streak
+      }
+    }
+    return streak;
+  })();
+
+  // Flame icon looping pulse — active only when streak >= 3.
+  const flameScale = useSharedValue(1);
+  useEffect(() => {
+    if (WIN_STREAK >= 3) {
+      flameScale.value = withRepeat(
+        withTiming(1.22, { duration: 700, easing: Easing.inOut(Easing.sin) }),
+        -1,
+        true, // reverse (ping-pong)
+      );
+    } else {
+      flameScale.value = withTiming(1, { duration: 300 });
+    }
+    // flameScale is a stable SharedValue ref — safe to omit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [WIN_STREAK]);
+  const animatedFlameStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: flameScale.value }],
+  }));
 
   // --- Opponent name resolver (single roster fetch, shared across all cards) ---
   const opponentNames = useOpponentNames();
@@ -274,9 +332,9 @@ export default function HomeScreen() {
                     backgroundColor: 'transparent',
                   }}
                 />
-                <View
+                <Animated.View
                   className="flex-row items-center"
-                  style={{ gap: 1, marginBottom: 5 }}
+                  style={[{ gap: 1, marginBottom: 5 }, animatedDeltaStyle]}
                 >
                   <Icon
                     name={deltaPositiveHero ? 'chevU' : 'chevD'}
@@ -290,7 +348,7 @@ export default function HomeScreen() {
                   >
                     {Math.abs(ELO_DELTA)}
                   </Text>
-                </View>
+                </Animated.View>
               </View>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
@@ -395,6 +453,33 @@ export default function HomeScreen() {
               {lp.next ? `${lp.next.name}'e ${lp.toNext}` : 'Maks seviye'}
             </Text>
           </View>
+
+          {/* Win streak flame badge — only when >= 3 consecutive confirmed wins */}
+          {WIN_STREAK >= 3 && (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                alignSelf: 'flex-start',
+                gap: 5,
+                marginTop: 10,
+                backgroundColor: 'rgba(224, 153, 43, 0.18)',
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 9999,
+              }}
+            >
+              <Animated.View style={animatedFlameStyle}>
+                <Icon name="flame" size={13} color={colors.warn} />
+              </Animated.View>
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 12, color: colors.warn }}
+              >
+                {WIN_STREAK} galibiyet serisi
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Yeni Maç + Sıralama CTA row */}
