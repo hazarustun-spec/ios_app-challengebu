@@ -12,7 +12,7 @@
 // Route params: only `id` is consumed; the legacy win/score/voided/opp
 // search params are no longer used — all values come from the match row.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -29,9 +29,11 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
+  withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { haptics } from '../../../lib/haptics';
 import { ScreenEnter } from '../../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -159,26 +161,46 @@ export default function MatchResult() {
     text: String(Math.round(counter.value)),
   } as any /* RN TextInput `text` prop driven by reanimated */));
 
-  // (1) Success haptic on mount — win only
-  useEffect(() => {
-    if (isWin && !isVoid) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-        () => {},
-      );
-    }
-  }, []);
-
-  // (3) Green glow halo — pulses 3× (~6 half-cycles) then rests
+  // Win celebration — ref-guarded so realtime refetches never retrigger it.
+  // Fires once as soon as isWin first becomes true. Drives: haptic crescendo,
+  // trophy spring pop, tag bounce, and glow pulse — all in one coherent moment.
+  const celebrationFiredRef = useRef(false);
+  const trophyScale = useSharedValue(0);
+  const tagScale = useSharedValue(1);
   const glow = useSharedValue(0);
+
   useEffect(() => {
-    if (isWin && !isVoid) {
+    if (isWin && !isVoid && !celebrationFiredRef.current) {
+      celebrationFiredRef.current = true;
+      // Trophy: spring in from 0 → natural overshoot → settle at 1
+      trophyScale.value = withSpring(1, { damping: 7, stiffness: 200 });
+      // Tag: quick compress then spring back (pop-in feel)
+      tagScale.value = withSequence(
+        withTiming(0.88, { duration: 80 }),
+        withSpring(1, { damping: 6, stiffness: 280 }),
+      );
+      // Glow: pulses 3× (6 half-cycles) then rests
       glow.value = withRepeat(withTiming(1, { duration: 700 }), 6, true);
+      // Haptic crescendo: medium → heavy → notification success
+      haptics.medium();
+      setTimeout(() => haptics.heavy(), 120);
+      setTimeout(() => haptics.success(), 260);
     }
-  }, []);
+  }, [isWin, isVoid]);
 
   const glowStyle = useAnimatedStyle(() => ({
     opacity: interpolate(glow.value, [0, 1], [0, 0.45]),
     transform: [{ scale: interpolate(glow.value, [0, 1], [1, 1.22]) }],
+  }));
+
+  const trophyStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: trophyScale.value }],
+    // opacity tracks scale so the icon is invisible at rest-zero
+    opacity: trophyScale.value,
+  }));
+
+  const tagStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: tagScale.value }],
   }));
 
   // When scores haven't both been submitted yet, show a neutral pending state
@@ -306,14 +328,17 @@ export default function MatchResult() {
       />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
         <View style={{ alignItems: 'center', gap: 16, paddingVertical: 12 }}>
-          <View
+          <Animated.View
             className="flex-row items-center rounded-pill"
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 7,
-              gap: 6,
-              backgroundColor: tagBg,
-            }}
+            style={[
+              {
+                paddingHorizontal: 16,
+                paddingVertical: 7,
+                gap: 6,
+                backgroundColor: tagBg,
+              },
+              isWin && !isVoid ? tagStyle : null,
+            ]}
           >
             <Icon name={tagIcon} size={16} color={tagColor} stroke={2.5} />
             <Text
@@ -322,7 +347,14 @@ export default function MatchResult() {
             >
               {tagText}
             </Text>
-          </View>
+          </Animated.View>
+
+          {/* Trophy pop — springs in on win, layered with confetti/glow/count-up */}
+          {isWin && !isVoid && (
+            <Animated.View style={trophyStyle}>
+              <Icon name="trophy" size={38} color={colors.win} stroke={1.5} />
+            </Animated.View>
+          )}
 
           <View
             className="flex-row items-center justify-center"
