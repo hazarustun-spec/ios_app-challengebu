@@ -53,6 +53,13 @@ export interface NewMatchState {
   opponent: OpponentChoice | null;
   /** Only set on doubles categories — partner for the player creating the match. */
   partner: OpponentChoice | null;
+  /**
+   * Set to the chosen format key once the user presses "Onayla ve devam et"
+   * in format-rules.tsx (E15). Null until confirmed, or if the format has
+   * changed since the last confirmation. preview.tsx gates the ranking-match
+   * submit button on this matching `format`.
+   */
+  rulesAcknowledgedFormat: FormatKey | null;
   setField: <K extends keyof Omit<NewMatchState, 'setField' | 'reset'>>(
     k: K,
     v: NewMatchState[K],
@@ -71,6 +78,7 @@ const baseInitial: Omit<NewMatchState, 'setField' | 'reset' | 'date'> = {
   court: '',
   opponent: null,
   partner: null,
+  rulesAcknowledgedFormat: null,
 };
 
 const freshInitial = (): Omit<NewMatchState, 'setField' | 'reset'> => ({

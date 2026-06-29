@@ -19,7 +19,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
-import { FORMATS, type FormatKey } from '../../../lib/formats';
+import {
+  FORMATS,
+  K_ESTABLISHED,
+  K_NEW_PLAYER,
+  NEW_PLAYER_THRESHOLD,
+  type FormatKey,
+} from '../../../lib/formats';
+import { useNewMatchStore } from '../../../stores/new-match-store';
 import { colors } from '../../../theme/colors';
 
 // Rule copy kept verbatim from the design bundle. When the rule set
@@ -56,7 +63,10 @@ export default function FormatRules() {
   const fmtKey: FormatKey = (format as FormatKey) ?? 'klasik';
   const f = FORMATS.find((x) => x.key === fmtKey)!;
   const rules = RULES[fmtKey];
-  const [read, setRead] = useState(false);
+  const nm = useNewMatchStore();
+  // Initialise checkbox from persisted store so returning to this screen
+  // after a prior confirmation shows the box pre-checked.
+  const [read, setRead] = useState(nm.rulesAcknowledgedFormat === fmtKey);
 
   return (
     <View className="flex-1 bg-bg">
@@ -166,8 +176,7 @@ export default function FormatRules() {
             className="font-sans text-text-3"
             style={{ fontSize: 12, marginTop: 10, lineHeight: 18 }}
           >
-            Net galibiyetler daha çok puan kazandırır. K-faktör: ilk 10 maç
-            K=40, sonrası K=20.
+            {`Net galibiyetler daha çok puan kazandırır. K-faktör: ilk ${NEW_PLAYER_THRESHOLD} maç K=${K_NEW_PLAYER}, sonrası K=${K_ESTABLISHED}.`}
           </Text>
         </View>
       </ScrollView>
@@ -204,7 +213,15 @@ export default function FormatRules() {
             Kuralları okudum ve anladım
           </Text>
         </Pressable>
-        <Button full size="lg" disabled={!read} onPress={() => router.back()}>
+        <Button
+          full
+          size="lg"
+          disabled={!read}
+          onPress={() => {
+            nm.setField('rulesAcknowledgedFormat', fmtKey);
+            router.back();
+          }}
+        >
           Onayla ve devam et
         </Button>
       </View>

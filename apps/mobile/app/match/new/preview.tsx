@@ -27,7 +27,7 @@ import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
-import { FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
+import { clientKFactor, FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
 import { formatDateLabel } from '../../../lib/match-dates';
 import { useNewMatchStore } from '../../../stores/new-match-store';
 import { useAuthStore } from '../../../stores/auth-store';
@@ -36,8 +36,6 @@ import { useCourts } from '../../../hooks/use-courts';
 import { useCreateMatchRequest } from '../../../hooks/use-create-match-request';
 import { colors } from '../../../theme/colors';
 
-const K_FACTOR = 32;
-
 /** Standard ELO expectation for player A vs player B. */
 function expected(myElo: number, oppElo: number): number {
   return 1 / (1 + Math.pow(10, (oppElo - myElo) / 400));
@@ -45,14 +43,13 @@ function expected(myElo: number, oppElo: number): number {
 
 /** Pick the ranking row that best matches the chosen category.
  *  Falls back to the first row available, or null if none loaded yet. */
-function pickRatingForCategory(
-  rows: { category: string; rating: number }[],
+function pickRankingRow(
+  rows: { category: string; rating: number; matches_played: number }[],
   category: string,
-): number | null {
+): { rating: number; matches_played: number } | null {
   const exact = rows.find((r) => r.category === category);
-  if (exact) return exact.rating;
-  const fallback = rows[0];
-  return fallback?.rating ?? null;
+  if (exact) return exact;
+  return rows[0] ?? null;
 }
 
 export default function MatchPreview() {
@@ -64,7 +61,11 @@ export default function MatchPreview() {
   // --- Live ELO (my own) ---
   const rankingsQ = useMyRankings();
   const rankings = rankingsQ.data ?? [];
-  const ME_ELO = pickRatingForCategory(rankings, nm.category);
+  const myRow = pickRankingRow(rankings, nm.category);
+  const ME_ELO = myRow?.rating ?? null;
+  // K-factor depends on how many ranked matches the user has played —
+  // use the server's thresholds exported from lib/formats.ts.
+  const K_FACTOR = clientKFactor(myRow?.matches_played ?? 0);
 
   // --- Courts (to resolve the stored court UUID → display name) ---
   const courtsQ = useCourts();
@@ -285,36 +286,47 @@ export default function MatchPreview() {
         </View>
 
         {/* Format rules link — ranking only. */}
-        {nm.kind === 'ranking' && (
-          <Pressable
-            onPress={() =>
-              router.push(
-                `/match/new/format-rules?format=${nm.format}` as never,
-              )
-            }
-            className="flex-row items-center bg-clay-softer rounded-md"
-            style={{
-              padding: 14,
-              gap: 10,
-              borderWidth: 1,
-              borderColor: colors.claySoft,
-            }}
-          >
-            <Icon name="info" size={18} color={colors.clay} />
-            <Text
-              className="font-sans font-bold"
-              style={{ flex: 1, fontSize: 13.5, color: colors.clayText }}
+        {nm.kind === 'ranking' && (() => {
+          const rulesRead = nm.rulesAcknowledgedFormat === nm.format;
+          return (
+            <Pressable
+              onPress={() =>
+                router.push(
+                  `/match/new/format-rules?format=${nm.format}` as never,
+                )
+              }
+              className="flex-row items-center rounded-md"
+              style={{
+                padding: 14,
+                gap: 10,
+                borderWidth: 1,
+                borderColor: rulesRead ? colors.win : colors.claySoft,
+                backgroundColor: rulesRead ? colors.limeSoft : colors.claySofter,
+              }}
             >
-              Format kurallarını oku (zorunlu)
-            </Text>
-            <Icon name="chevR" size={18} color={colors.clay} />
-          </Pressable>
-        )}
+              <Icon
+                name={rulesRead ? 'check' : 'info'}
+                size={18}
+                color={rulesRead ? colors.win : colors.clay}
+              />
+              <Text
+                className="font-sans font-bold"
+                style={{ flex: 1, fontSize: 13.5, color: colors.clayText }}
+              >
+                {rulesRead
+                  ? 'Format kuralları okundu'
+                  : 'Format kurallarını oku (zorunlu)'}
+              </Text>
+              <Icon name="chevR" size={18} color={rulesRead ? colors.win : colors.clay} />
+            </Pressable>
+          );
+        })()}
       </ScrollView>
       <View style={{ padding: 18 }}>
         <Button
           full
           size="lg"
+          disabled={nm.kind === 'ranking' && nm.rulesAcknowledgedFormat !== nm.format}
           icon={
             submitting ? (
               <ActivityIndicator size="small" color={colors.onLime} />

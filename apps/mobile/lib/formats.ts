@@ -97,3 +97,22 @@ export const DB_TO_UI_FORMAT: Record<MatchFormatDb, FormatKey> = {
   pro_set_8: 'proset',
   '3set_klasik': 'set3',
 };
+
+// ---------------------------------------------------------------------------
+// ELO K-factor constants (mirrors packages/supabase/functions/_shared/elo.ts)
+// ---------------------------------------------------------------------------
+// Kept here so preview.tsx and format-rules.tsx always read from the same
+// place and cannot diverge from server logic.
+//
+// Server source: packages/supabase/functions/_shared/elo.ts
+//   K_NEW_PLAYER = 40  (matchesPlayed < 10)
+//   K_ESTABLISHED = 20 (matchesPlayed >= 10)
+
+export const K_NEW_PLAYER = 40;
+export const K_ESTABLISHED = 20;
+export const NEW_PLAYER_THRESHOLD = 10;
+
+/** Returns the K-factor the server will apply for a player's next rated match. */
+export function clientKFactor(matchesPlayed: number): number {
+  return matchesPlayed < NEW_PLAYER_THRESHOLD ? K_NEW_PLAYER : K_ESTABLISHED;
+}
