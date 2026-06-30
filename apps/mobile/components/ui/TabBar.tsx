@@ -97,7 +97,6 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
   const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const isCenter = !!slot.isCenter;
-  const inkBg = isActive || isCenter;
   const size = isCenter ? 52 : SLOT_SIZE;
 
   const handlePress = () => {
@@ -126,6 +125,18 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
         // discrepancy). Center keeps a white ring; non-center slots stay
         // transparent and get their highlight from the sliding indicator.
         backgroundColor: isCenter ? colors.court : 'transparent',
+        // Raise the center "+" so its white ring clears the bar's white border
+        // (they used to collide). A soft shadow sells the raised-button look.
+        ...(isCenter
+          ? {
+              transform: [{ translateY: -10 }],
+              shadowColor: '#000',
+              shadowOpacity: 0.18,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 5,
+            }
+          : null),
       }}
       className={[
         'items-center justify-center rounded-full',
@@ -136,7 +147,7 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
         <Icon
           name={slot.icon}
           size={isCenter ? 25 : 23}
-          color={inkBg ? '#FFFFFF' : colors.onLime}
+          color="#FFFFFF"
           stroke={isCenter ? 2.7 : isActive ? 2.4 : 2.1}
         />
       </Animated.View>
@@ -188,7 +199,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
 
   return (
     <View style={{ paddingBottom: insets.bottom + 8 }} className="bg-bg px-4 pt-2">
-      <View className="h-16 flex-row items-center rounded-pill border-base border-border-strong bg-lime px-2">
+      <View className="h-16 flex-row items-center rounded-pill border-base border-white bg-lime px-2">
         {/* Inner padding-free row: shared origin for the indicator + slots. */}
         <View
           style={{ flex: 1, position: 'relative' }}
