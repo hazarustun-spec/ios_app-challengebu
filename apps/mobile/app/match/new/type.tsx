@@ -38,11 +38,11 @@ const CARDS: KindCardConfig[] = [
     desc: "ELO'nu etkiler, sıralamada yükselirsin. Format kuralları zorunlu.",
     bg: colors.court,        // #2270BC
     motifColor: '#1B5EA0',
-    accentColor: '#161618',  // ink
+    accentColor: colors.court,  // court blue (arrow circle, icon, pill text)
   },
   {
     kind: 'friendly',
-    iconName: 'handshake',
+    iconName: 'people',
     title: 'Dostluk Maçı',
     tag: 'EĞLENCE',
     desc: "ELO'ya etki etmez — eğlence ve antrenman için. İstatistiklere sayılmaz.",

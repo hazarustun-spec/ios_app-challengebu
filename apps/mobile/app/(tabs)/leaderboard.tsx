@@ -357,95 +357,6 @@ export default function Leaderboard() {
         })}
       </ScrollView>
 
-      {/* Finale countdown hero */}
-      <Pressable
-        onPress={() => router.push('/season' as never)}
-        style={{
-          marginHorizontal: 14,
-          marginTop: 8,
-          borderRadius: 24,
-          paddingVertical: 22,
-          paddingHorizontal: 24,
-          backgroundColor: '#2270BC',
-        }}
-      >
-        {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-            <PulsingDot />
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
-            >
-              FİNALE GERİ SAYIM
-            </Text>
-          </View>
-          <View style={{ alignItems: 'flex-end', gap: 5 }}>
-            {daysLeft !== null && (
-              <Text
-                className="font-num font-bold"
-                style={{ fontSize: 13, color: '#FFFFFF' }}
-              >
-                {daysLeft} gün
-              </Text>
-            )}
-            {meRow && meRow.rank <= 8 && (
-              <View
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: 'rgba(255,255,255,0.55)',
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderRadius: 9999,
-                }}
-              >
-                <Text
-                  className="text-white font-extrabold"
-                  style={{ fontSize: 10, letterSpacing: 0.6 }}
-                >
-                  İLK 8&apos;DESİN
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Progress bar: track #13497F, white fill */}
-        <View
-          style={{
-            marginTop: 16,
-            height: 9,
-            borderRadius: 5,
-            backgroundColor: '#13497F',
-            overflow: 'hidden',
-          }}
-        >
-          <View
-            style={{
-              width: `${Math.round(progressPct * 100)}%`,
-              height: '100%',
-              backgroundColor: '#FFFFFF',
-            }}
-          />
-        </View>
-
-        {/* Bottom row */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
-          <Text
-            className="font-sans font-semibold"
-            style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
-          >
-            {sezonLabel} · ladder
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
-              Sezona git
-            </Text>
-            <Icon name="chevR" size={13} color="#FFFFFF" />
-          </View>
-        </View>
-      </Pressable>
-
       {/* Sticky "Sen" bar — shown when scrolled past 210px */}
       {stuck && meRow && (
         <Pressable
@@ -503,6 +414,95 @@ export default function Leaderboard() {
           />
         }
       >
+        {/* Finale countdown hero — scrolls with content so the sticky "Sen" bar
+            has clear space to appear over (it used to be fixed above the scroll,
+            which the sticky bar overlapped). */}
+        <Pressable
+          onPress={() => router.push('/season' as never)}
+          style={{
+            borderRadius: 24,
+            paddingVertical: 22,
+            paddingHorizontal: 24,
+            backgroundColor: '#2270BC',
+          }}
+        >
+          {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+              <PulsingDot />
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
+              >
+                FİNALE GERİ SAYIM
+              </Text>
+            </View>
+            <View style={{ alignItems: 'flex-end', gap: 5 }}>
+              {daysLeft !== null && (
+                <Text
+                  className="font-num font-bold"
+                  style={{ fontSize: 13, color: '#FFFFFF' }}
+                >
+                  {daysLeft} gün
+                </Text>
+              )}
+              {meRow && meRow.rank <= 8 && (
+                <View
+                  style={{
+                    borderWidth: 1.5,
+                    borderColor: 'rgba(255,255,255,0.55)',
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                  }}
+                >
+                  <Text
+                    className="text-white font-extrabold"
+                    style={{ fontSize: 10, letterSpacing: 0.6 }}
+                  >
+                    İLK 8&apos;DESİN
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Progress bar: track #13497F, white fill */}
+          <View
+            style={{
+              marginTop: 16,
+              height: 9,
+              borderRadius: 5,
+              backgroundColor: '#13497F',
+              overflow: 'hidden',
+            }}
+          >
+            <View
+              style={{
+                width: `${Math.round(progressPct * 100)}%`,
+                height: '100%',
+                backgroundColor: '#FFFFFF',
+              }}
+            />
+          </View>
+
+          {/* Bottom row */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
+            <Text
+              className="font-sans font-semibold"
+              style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
+            >
+              {sezonLabel} · ladder
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
+                Sezona git
+              </Text>
+              <Icon name="chevR" size={13} color="#FFFFFF" />
+            </View>
+          </View>
+        </Pressable>
+
         {/* My standing card — only rendered if current user is in the ladder */}
         {meRow ? (
           <Pressable

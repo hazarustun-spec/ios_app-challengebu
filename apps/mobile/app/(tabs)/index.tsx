@@ -340,7 +340,7 @@ export default function HomeScreen() {
               animatedProps={animatedEloProps}
               style={{
                 fontSize: 58,
-                lineHeight: 48,
+                lineHeight: 62,
                 letterSpacing: -2.3,
                 color: '#FFFFFF',
                 fontFamily: ELO_NUM_FONT_FAMILY,
@@ -403,7 +403,9 @@ export default function HomeScreen() {
                 className="font-sans font-bold text-white"
                 style={{ fontSize: 17, marginTop: 3 }}
               >
-                {ELO_DELTA > 0 ? 'Yükseliş' : ELO_DELTA < 0 ? 'Düşüş' : 'Sabit'} form
+                {FORM_DOTS.length === 0
+                  ? 'Henüz maç yok'
+                  : `${ELO_DELTA > 0 ? 'Yükselişte' : ELO_DELTA < 0 ? 'Düşüşte' : 'İstikrarlı'}`}
               </Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 6 }}>
