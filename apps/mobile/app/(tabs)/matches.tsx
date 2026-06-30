@@ -27,6 +27,8 @@
 
 import { useMemo, useState } from 'react';
 import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import type { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
@@ -314,6 +316,64 @@ function KindDot({ kind }: { kind: 'ranking' | 'friendly' }) {
 }
 
 // ---------------------------------------------------------------------------
+// UpcomingCardActions — right-side swipe actions for upcoming match cards
+// ---------------------------------------------------------------------------
+
+interface UpcomingCardActionsProps {
+  fmtKey: FormatKey;
+  swipeableMethods: SwipeableMethods;
+}
+
+function UpcomingCardActions({ fmtKey, swipeableMethods }: UpcomingCardActionsProps) {
+  function handleMesaj() {
+    haptics.tap();
+    swipeableMethods.close();
+    router.push('/messages' as never);
+  }
+
+  function handleKurallar() {
+    haptics.tap();
+    swipeableMethods.close();
+    router.push(`/match/new/format-rules?format=${fmtKey}` as never);
+  }
+
+  return (
+    <View style={{ flexDirection: 'row', alignSelf: 'stretch' }}>
+      <Pressable
+        onPress={handleMesaj}
+        accessibilityRole="button"
+        accessibilityLabel="Mesaj"
+        style={{
+          width: 80,
+          backgroundColor: colors.court,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 4,
+        }}
+      >
+        <Icon name="mail" size={20} color="#FFFFFF" />
+        <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Mesaj</Text>
+      </Pressable>
+      <Pressable
+        onPress={handleKurallar}
+        accessibilityRole="button"
+        accessibilityLabel="Kurallar"
+        style={{
+          width: 80,
+          backgroundColor: colors.lime,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 4,
+        }}
+      >
+        <Icon name="info" size={20} color={colors.onLime} />
+        <Text style={{ color: colors.onLime, fontSize: 12, fontWeight: '700' }}>Kurallar</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // UpcomingList — feeds from useActiveMatches
 // ---------------------------------------------------------------------------
 
@@ -390,8 +450,17 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
         const opponent = opponentNames.resolve(m);
 
         return (
-          <Pressable
+          <ReanimatedSwipeable
             key={m.id}
+            overshootRight={false}
+            renderRightActions={(_progress, _translation, swipeableMethods) => (
+              <UpcomingCardActions
+                fmtKey={fmtKey}
+                swipeableMethods={swipeableMethods}
+              />
+            )}
+          >
+          <Pressable
             onLongPress={() => handleLongPress(m)}
             delayLongPress={400}
           >
@@ -529,6 +598,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
             </View>
           </View>
           </Pressable>
+          </ReanimatedSwipeable>
         );
       })}
       {/* Long-press context menu — Sheet fallback for non-iOS.

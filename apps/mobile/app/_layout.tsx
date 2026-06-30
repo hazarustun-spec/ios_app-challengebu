@@ -1,5 +1,6 @@
 import '../global.css';
 import { LogBox } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 // The on-screen LogBox warning banner (dev only) overlays the UI and occludes
@@ -48,31 +49,33 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-          <ToastProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="index" />
-            <Stack.Screen name="match/[id]" />
-            <Stack.Screen name="profile" />
-            <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
-            <Stack.Screen name="tournament/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="notifications" />
-            <Stack.Screen name="messages" />
-            <Stack.Screen name="settings" />
-            <Stack.Screen name="(admin)" />
-            <Stack.Screen name="(dev)" />
-          </Stack>
-          <AppGuards />
-          <CelebrationMount />
-          <StatusBar style="dark" />
-          </ToastProvider>
-        </ErrorBoundary>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <ErrorBoundary>
+            <ToastProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="index" />
+              <Stack.Screen name="match/[id]" />
+              <Stack.Screen name="profile" />
+              <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
+              <Stack.Screen name="tournament/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" />
+              <Stack.Screen name="messages" />
+              <Stack.Screen name="settings" />
+              <Stack.Screen name="(admin)" />
+              <Stack.Screen name="(dev)" />
+            </Stack>
+            <AppGuards />
+            <CelebrationMount />
+            <StatusBar style="dark" />
+            </ToastProvider>
+          </ErrorBoundary>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
