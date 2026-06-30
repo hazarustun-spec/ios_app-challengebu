@@ -35,6 +35,7 @@ async function makeIsolatedMatch(): Promise<{
   aliceId: string;
   bobId: string;
 }> {
+  // Direct DB inserts — avoids edge-function chain failures under concurrent load.
   const suffix = crypto.randomUUID().slice(0, 8);
   const alice = await createTestUser({
     email: `alice-pls-${suffix}@test.local`,
@@ -46,22 +47,25 @@ async function makeIsolatedMatch(): Promise<{
   });
   const supa = adminClient();
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
-  const { body: req } = await invokeFunction(
-    'create-match-request',
-    {
-      type: 'direct_challenge', targetId: bob.userId, category: 'erkek_tek',
-      format: 'bu_klasik', isRated: true, proposedDate: '2026-07-01',
-      proposedTime: '19:00', courtId: court!.id,
-    },
-    alice.accessToken,
-  );
-  const { body: acc } = await invokeFunction(
-    'accept-match-request',
-    { requestId: (req as { id: string }).id },
-    bob.accessToken,
-  );
+  if (!court) throw new Error('No court found');
+
+  const { data: req } = await supa.from('match_requests').insert({
+    creator_id: alice.userId, target_id: bob.userId, type: 'direct_challenge',
+    category: 'erkek_tek', format: 'bu_klasik', proposed_date: '2026-07-01',
+    proposed_time: '19:00', court_id: court.id, status: 'accepted',
+    expires_at: '2026-08-01T00:00:00Z',
+  }).select('id').single();
+  if (!req) throw new Error(`match_request insert failed (suffix ${suffix})`);
+
+  const { data: m, error: matchErr } = await supa.from('matches').insert({
+    match_request_id: req.id, category: 'erkek_tek', format: 'bu_klasik',
+    court_id: court.id, played_at: '2026-07-01T19:00:00Z', is_rated: true,
+    team_a_player_ids: [alice.userId], team_b_player_ids: [bob.userId],
+  }).select('id').single();
+  if (!m || matchErr) throw new Error(`match insert failed (suffix ${suffix}): ${matchErr?.message}`);
+
   return {
-    matchId: (acc as { matchId: string }).matchId,
+    matchId: m.id,
     aliceId: alice.userId,
     bobId: bob.userId,
   };

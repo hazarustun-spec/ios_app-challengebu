@@ -1,11 +1,8 @@
 import { assertEquals } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
-import { adminClient, ANON_KEY, cleanupTestData, createTestUser, invokeFunction, SUPABASE_URL } from './helpers.ts';
+import { adminClient, ANON_KEY, createTestUser, teardownUsers, SUPABASE_URL } from './helpers.ts';
 
-// Event-sourced scoring (20260627000001): award_point appends to point_events
-// and recompute_live_score replays the awarded log; undo_point flips the latest
-// awarded event and recomputes. These tests exercise undo + the same-rally
-// dedupe window, alongside the participant guard and finished-match no-op.
+// Event-sourced scoring: award_point appends to point_events; undo_point flips the latest.
 
 interface Score {
   games_a: number; games_b: number;
@@ -13,24 +10,36 @@ interface Score {
   phase: string; winner: string | null;
 }
 
-/** Create an accepted match between alice & bob; return ids + both tokens. */
-async function makeMatch(): Promise<{ matchId: string; aliceToken: string; bobToken: string; bobId: string }> {
-  const alice = await createTestUser({ email: 'alice@test.local', genderCategory: 'erkek' });
-  const bob = await createTestUser({ email: 'bob@test.local', genderCategory: 'erkek' });
+async function makeMatch(suffix: string): Promise<{
+  matchId: string; aliceToken: string; bobToken: string; aliceId: string; bobId: string;
+}> {
+  // Direct DB inserts — avoids edge-function chain failures under concurrent load.
+  const alice = await createTestUser({ email: `alice-peu-${suffix}@test.local`, genderCategory: 'erkek' });
+  const bob = await createTestUser({ email: `bob-peu-${suffix}@test.local`, genderCategory: 'erkek' });
   const supa = adminClient();
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
-  const { body: req } = await invokeFunction('create-match-request', {
-    type: 'direct_challenge', targetId: bob.userId, category: 'erkek_tek',
-    format: 'bu_klasik', isRated: true, proposedDate: '2026-07-01',
-    proposedTime: '19:00', courtId: court!.id,
-  }, alice.accessToken);
-  const { body: acc } = await invokeFunction(
-    'accept-match-request', { requestId: (req as { id: string }).id }, bob.accessToken,
-  );
+  if (!court) throw new Error('No court found');
+
+  const { data: req } = await supa.from('match_requests').insert({
+    creator_id: alice.userId, target_id: bob.userId, type: 'direct_challenge',
+    category: 'erkek_tek', format: 'bu_klasik', proposed_date: '2026-07-01',
+    proposed_time: '19:00', court_id: court.id, status: 'accepted',
+    expires_at: '2026-08-01T00:00:00Z',
+  }).select('id').single();
+  if (!req) throw new Error(`match_request insert failed (suffix ${suffix})`);
+
+  const { data: m, error: matchErr } = await supa.from('matches').insert({
+    match_request_id: req.id, category: 'erkek_tek', format: 'bu_klasik',
+    court_id: court.id, played_at: '2026-07-01T19:00:00Z', is_rated: true,
+    team_a_player_ids: [alice.userId], team_b_player_ids: [bob.userId],
+  }).select('id').single();
+  if (!m || matchErr) throw new Error(`match insert failed (suffix ${suffix}): ${matchErr?.message}`);
+
   return {
-    matchId: (acc as { matchId: string }).matchId,
+    matchId: m.id,
     aliceToken: alice.accessToken,
     bobToken: bob.accessToken,
+    aliceId: alice.userId,
     bobId: bob.userId,
   };
 }
@@ -61,124 +70,139 @@ function undoer(token: string, matchId: string) {
 }
 
 Deno.test('(a) award then undo returns to the prior score', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
   const undo = undoer(aliceToken, matchId);
+  try {
+    await award('a'); await award('b');
+    let score = await award('a'); // 2-1
+    assertEquals([score.points_a, score.points_b], [2, 1]);
 
-  await award('a'); // 1-0
-  await award('b'); // 1-1
-  let s = await award('a'); // 2-1
-  assertEquals([s.points_a, s.points_b], [2, 1]);
-
-  s = await undo(); // back to 1-1
-  assertEquals([s.points_a, s.points_b], [1, 1]);
-  assertEquals([s.games_a, s.games_b], [0, 0]);
-  assertEquals(s.phase, 'ongoing');
+    score = await undo(); // back to 1-1
+    assertEquals([score.points_a, score.points_b], [1, 1]);
+    assertEquals([score.games_a, score.games_b], [0, 0]);
+    assertEquals(score.phase, 'ongoing');
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('(b) undo a game-winning point reverts games + phase', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
   const undo = undoer(aliceToken, matchId);
+  try {
+    await award('a'); await award('a'); await award('a');
+    let score = await award('a'); // game won
+    assertEquals([score.games_a, score.games_b], [1, 0]);
+    assertEquals([score.points_a, score.points_b], [0, 0]);
 
-  // Win one game for A: 4 straight points → games_a=1, points reset.
-  await award('a'); await award('a'); await award('a');
-  let s = await award('a'); // game won
-  assertEquals([s.games_a, s.games_b], [1, 0]);
-  assertEquals([s.points_a, s.points_b], [0, 0]);
-
-  // Undo the game-winning point: back to 40-0 (3-0), games_a=0.
-  s = await undo();
-  assertEquals([s.games_a, s.games_b], [0, 0]);
-  assertEquals([s.points_a, s.points_b], [3, 0]);
-  assertEquals(s.phase, 'ongoing');
+    score = await undo(); // back to 40-0
+    assertEquals([score.games_a, score.games_b], [0, 0]);
+    assertEquals([score.points_a, score.points_b], [3, 0]);
+    assertEquals(score.phase, 'ongoing');
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('(b2) undo a match-ending point reverts finished → ongoing', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
   const undo = undoer(aliceToken, matchId);
+  try {
+    for (let g = 0; g < 4; g++) {
+      for (let p = 0; p < 4; p++) await award('a');
+    }
+    const supa = userClient(aliceToken);
+    const { data } = await supa.from('live_match_scores').select('*').eq('match_id', matchId).single();
+    assertEquals((data as Score).phase, 'finished');
+    assertEquals((data as Score).winner, 'a');
+    assertEquals([(data as Score).games_a, (data as Score).games_b], [4, 0]);
 
-  // Win 4 games (4 points each) for A → phase finished, winner a.
-  for (let g = 0; g < 4; g++) {
-    for (let p = 0; p < 4; p++) await award('a');
+    const score = await undo();
+    assertEquals(score.phase, 'ongoing');
+    assertEquals(score.winner, null);
+    assertEquals([score.games_a, score.games_b], [3, 0]);
+    assertEquals([score.points_a, score.points_b], [3, 0]);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
-  const supa = userClient(aliceToken);
-  let { data } = await supa.from('live_match_scores').select('*').eq('match_id', matchId).single();
-  assertEquals((data as Score).phase, 'finished');
-  assertEquals((data as Score).winner, 'a');
-  assertEquals([(data as Score).games_a, (data as Score).games_b], [4, 0]);
-
-  // Undo the match-point: finished → ongoing, games_a back to 3, 40-0.
-  const s = await undo();
-  assertEquals(s.phase, 'ongoing');
-  assertEquals(s.winner, null);
-  assertEquals([s.games_a, s.games_b], [3, 0]);
-  assertEquals([s.points_a, s.points_b], [3, 0]);
 });
 
 Deno.test('(c) dedupe: two award(a) from DIFFERENT users within 5s → ONE point', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken, bobToken } = await makeMatch();
-  const aliceAward = awarder(aliceToken, matchId);
-  const bobAward = awarder(bobToken, matchId);
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, bobToken, aliceId, bobId } = await makeMatch(s);
+  try {
+    const aliceAward = awarder(aliceToken, matchId);
+    const bobAward = awarder(bobToken, matchId);
 
-  await aliceAward('a'); // 1-0
-  const s = await bobAward('a'); // same rally, other user, within 5s → collapsed
-  assertEquals([s.points_a, s.points_b], [1, 0]);
+    await aliceAward('a'); // 1-0
+    const score = await bobAward('a'); // same rally, within 5s → collapsed
+    assertEquals([score.points_a, score.points_b], [1, 0]);
 
-  // Confirm exactly one awarded event exists.
-  const supa = adminClient();
-  const { data } = await supa.from('point_events')
-    .select('id').eq('match_id', matchId).eq('awarded', true);
-  assertEquals((data ?? []).length, 1);
+    const supa = adminClient();
+    const { data } = await supa.from('point_events')
+      .select('id').eq('match_id', matchId).eq('awarded', true);
+    assertEquals((data ?? []).length, 1);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('(d) two award(a) from the SAME user → BOTH count (no dedupe)', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
+  try {
+    await award('a'); // 1-0
+    const score = await award('a'); // same user → not deduped → 2-0
+    assertEquals([score.points_a, score.points_b], [2, 0]);
 
-  await award('a'); // 1-0
-  const s = await award('a'); // same user → not deduped → 2-0
-  assertEquals([s.points_a, s.points_b], [2, 0]);
-
-  const supa = adminClient();
-  const { data } = await supa.from('point_events')
-    .select('id').eq('match_id', matchId).eq('awarded', true);
-  assertEquals((data ?? []).length, 2);
+    const supa = adminClient();
+    const { data } = await supa.from('point_events')
+      .select('id').eq('match_id', matchId).eq('awarded', true);
+    assertEquals((data ?? []).length, 2);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('(e) award on a finished match → no-op', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
+  try {
+    for (let g = 0; g < 4; g++) {
+      for (let p = 0; p < 4; p++) await award('a');
+    }
+    const score = await award('b'); // no-op
+    assertEquals(score.phase, 'finished');
+    assertEquals(score.winner, 'a');
+    assertEquals([score.games_a, score.games_b], [4, 0]);
 
-  for (let g = 0; g < 4; g++) {
-    for (let p = 0; p < 4; p++) await award('a');
+    const supa = adminClient();
+    const { data } = await supa.from('point_events')
+      .select('id').eq('match_id', matchId).eq('awarded', true);
+    assertEquals((data ?? []).length, 16); // no 17th event
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
-  // Match finished; another award is a no-op (returns finished row unchanged).
-  const s = await award('b');
-  assertEquals(s.phase, 'finished');
-  assertEquals(s.winner, 'a');
-  assertEquals([s.games_a, s.games_b], [4, 0]);
-
-  const supa = adminClient();
-  const { data } = await supa.from('point_events')
-    .select('id').eq('match_id', matchId).eq('awarded', true);
-  assertEquals((data ?? []).length, 16); // no 17th event inserted
 });
 
 Deno.test('(f) undo by a non-participant is rejected (42501)', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
-  await awarder(aliceToken, matchId)('a');
-
-  const stranger = await createTestUser({ email: 'carol@test.local', genderCategory: 'erkek' });
-  const supa = userClient(stranger.accessToken);
-  const { error } = await supa.rpc('undo_point', { p_match_id: matchId });
-  assertEquals(error?.code, '42501');
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
+  const carol = await createTestUser({ email: `carol-peu-${s}@test.local`, genderCategory: 'erkek' });
+  try {
+    await awarder(aliceToken, matchId)('a');
+    const supa = userClient(carol.accessToken);
+    const { error } = await supa.rpc('undo_point', { p_match_id: matchId });
+    assertEquals(error?.code, '42501');
+  } finally {
+    await teardownUsers([aliceId, bobId, carol.userId], { matchIds: [matchId] });
+  }
 });

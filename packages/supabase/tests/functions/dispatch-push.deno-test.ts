@@ -2,31 +2,17 @@ import { assertEquals } from 'jsr:@std/assert';
 import {
   adminClient,
   ANON_KEY,
-  cleanupTestData,
   createTestUser,
   FUNCTIONS_URL,
   invokeFunction,
+  teardownUsers,
 } from './helpers.ts';
 
-// dispatch-push delivers a push for an ALREADY-CREATED notification row. It is
-// invoked internally by the `trg_dispatch_push` AFTER-INSERT trigger, which
-// passes INTERNAL_PUSH_KEY as the Bearer token. The function compares the Bearer
-// against INTERNAL_PUSH_KEY directly (no service-role fallback), so a wrong/empty
-// key is rejected with 401 before anything else runs.
-//
-// Serve the function with the matching env, e.g.:
-//   supabase functions serve --no-verify-jwt --env-file <(echo INTERNAL_PUSH_KEY=test-internal-key)
-// and run the test with INTERNAL_PUSH_KEY exported to the same value.
+// dispatch-push compares the Bearer against INTERNAL_PUSH_KEY directly.
+// Probe once: if a valid-key call for a random non-existent notification id
+// is NOT rejected with 401, the key is honored.
 const INTERNAL_PUSH_KEY = Deno.env.get('INTERNAL_PUSH_KEY') ?? 'test-internal-key';
 
-/**
- * The local stack may be running without INTERNAL_PUSH_KEY configured in the edge
- * runtime, in which case EVERY call returns 401 (the key check is first) and the
- * input-validation / no-token branches are unreachable. Probe once: if a valid-key
- * call for a random (non-existent) notification id is NOT rejected, the key is
- * honored and we can exercise the reachable post-auth behavior. The auth-rejection
- * tests below always run regardless.
- */
 async function probeKeyHonored(): Promise<boolean> {
   const { status } = await invokeFunction(
     'dispatch-push',
@@ -37,7 +23,6 @@ async function probeKeyHonored(): Promise<boolean> {
 }
 const KEY_HONORED = await probeKeyHonored();
 
-/** Insert a notification row directly (service role bypasses RLS); return its id. */
 async function insertNotification(recipientId: string): Promise<string> {
   const supa = adminClient();
   const { data, error } = await supa
@@ -49,14 +34,12 @@ async function insertNotification(recipientId: string): Promise<string> {
       body: 'İlk maç rozetini cebine attın!',
       data: { action: 'badges_earned' },
     })
-    .select('id')
-    .single();
+    .select('id').single();
   if (error || !data) throw new Error(`insert notification: ${error?.message}`);
   return data.id;
 }
 
 Deno.test('dispatch-push: missing Authorization → 401', async () => {
-  // Hit the endpoint directly with no Authorization header at all (apikey only).
   const res = await fetch(`${FUNCTIONS_URL}/dispatch-push`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: ANON_KEY },
@@ -80,9 +63,7 @@ Deno.test({
   ignore: !KEY_HONORED,
   async fn() {
     const { status } = await invokeFunction(
-      'dispatch-push',
-      { notificationId: 'not-a-uuid' },
-      INTERNAL_PUSH_KEY,
+      'dispatch-push', { notificationId: 'not-a-uuid' }, INTERNAL_PUSH_KEY,
     );
     assertEquals(status, 400);
   },
@@ -106,19 +87,20 @@ Deno.test({
   name: 'dispatch-push: recipient has no push tokens → pushed:false no_tokens',
   ignore: !KEY_HONORED,
   async fn() {
-    await cleanupTestData();
-    const alice = await createTestUser({ email: 'alice@test.local', genderCategory: 'erkek' });
-    const notificationId = await insertNotification(alice.userId);
-
-    const { status, body } = await invokeFunction(
-      'dispatch-push',
-      { notificationId },
-      INTERNAL_PUSH_KEY,
-    );
-    assertEquals(status, 200);
-    const result = body as { pushed: boolean; reason: string };
-    assertEquals(result.pushed, false);
-    assertEquals(result.reason, 'no_tokens');
+    const s = crypto.randomUUID().slice(0, 8);
+    const alice = await createTestUser({ email: `alice-dp-${s}@test.local`, genderCategory: 'erkek' });
+    try {
+      const notificationId = await insertNotification(alice.userId);
+      const { status, body } = await invokeFunction(
+        'dispatch-push', { notificationId }, INTERNAL_PUSH_KEY,
+      );
+      assertEquals(status, 200);
+      const result = body as { pushed: boolean; reason: string };
+      assertEquals(result.pushed, false);
+      assertEquals(result.reason, 'no_tokens');
+    } finally {
+      await teardownUsers([alice.userId]);
+    }
   },
 });
 
@@ -126,27 +108,26 @@ Deno.test({
   name: 'dispatch-push: recipient preference OFF → pushed:false preference_off',
   ignore: !KEY_HONORED,
   async fn() {
-    await cleanupTestData();
-    const alice = await createTestUser({ email: 'alice@test.local', genderCategory: 'erkek' });
+    const s = crypto.randomUUID().slice(0, 8);
+    const alice = await createTestUser({ email: `alice-dp-${s}@test.local`, genderCategory: 'erkek' });
+    try {
+      const supa = adminClient();
+      await supa
+        .from('notification_preferences')
+        .update({ enabled: false })
+        .eq('profile_id', alice.userId)
+        .eq('category', 'badges_earned');
 
-    // Disable the badges_earned category for alice (default rows are created per user).
-    const supa = adminClient();
-    await supa
-      .from('notification_preferences')
-      .update({ enabled: false })
-      .eq('profile_id', alice.userId)
-      .eq('category', 'badges_earned');
-
-    const notificationId = await insertNotification(alice.userId);
-
-    const { status, body } = await invokeFunction(
-      'dispatch-push',
-      { notificationId },
-      INTERNAL_PUSH_KEY,
-    );
-    assertEquals(status, 200);
-    const result = body as { pushed: boolean; reason: string };
-    assertEquals(result.pushed, false);
-    assertEquals(result.reason, 'preference_off');
+      const notificationId = await insertNotification(alice.userId);
+      const { status, body } = await invokeFunction(
+        'dispatch-push', { notificationId }, INTERNAL_PUSH_KEY,
+      );
+      assertEquals(status, 200);
+      const result = body as { pushed: boolean; reason: string };
+      assertEquals(result.pushed, false);
+      assertEquals(result.reason, 'preference_off');
+    } finally {
+      await teardownUsers([alice.userId]);
+    }
   },
 });

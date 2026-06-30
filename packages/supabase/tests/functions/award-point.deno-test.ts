@@ -1,11 +1,10 @@
 import { assertEquals } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
-import { adminClient, ANON_KEY, cleanupTestData, createTestUser, invokeFunction, SUPABASE_URL } from './helpers.ts';
+import { adminClient, ANON_KEY, createTestUser, teardownUsers, SUPABASE_URL } from './helpers.ts';
 
 // award_point() is a SECURITY DEFINER RPC gated on auth.uid() being a match
 // participant, so it must be called with a participant's access token (not the
-// service role). These tests pin the tennis deuce / advantage flow restored by
-// 20260626000009_award_point_advantage.sql (win margin >= 2).
+// service role). These tests pin the tennis deuce / advantage flow.
 
 interface Score {
   games_a: number; games_b: number;
@@ -13,23 +12,35 @@ interface Score {
   phase: string; winner: string | null;
 }
 
-/** Create an accepted match between alice & bob; return ids + alice's token. */
-async function makeMatch(): Promise<{ matchId: string; aliceToken: string; bobId: string }> {
-  const alice = await createTestUser({ email: 'alice@test.local', genderCategory: 'erkek' });
-  const bob = await createTestUser({ email: 'bob@test.local', genderCategory: 'erkek' });
+async function makeMatch(suffix: string): Promise<{
+  matchId: string; aliceToken: string; aliceId: string; bobId: string;
+}> {
+  // Direct DB inserts — avoids edge-function chain failures under concurrent load.
+  const alice = await createTestUser({ email: `alice-ap-${suffix}@test.local`, genderCategory: 'erkek' });
+  const bob = await createTestUser({ email: `bob-ap-${suffix}@test.local`, genderCategory: 'erkek' });
   const supa = adminClient();
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
-  const { body: req } = await invokeFunction('create-match-request', {
-    type: 'direct_challenge', targetId: bob.userId, category: 'erkek_tek',
-    format: 'bu_klasik', isRated: true, proposedDate: '2026-07-01',
-    proposedTime: '19:00', courtId: court!.id,
-  }, alice.accessToken);
-  const { body: acc } = await invokeFunction(
-    'accept-match-request', { requestId: (req as { id: string }).id }, bob.accessToken,
-  );
+  if (!court) throw new Error('No court found');
+
+  const { data: req } = await supa.from('match_requests').insert({
+    creator_id: alice.userId, target_id: bob.userId, type: 'direct_challenge',
+    category: 'erkek_tek', format: 'bu_klasik', proposed_date: '2026-07-01',
+    proposed_time: '19:00', court_id: court.id, status: 'accepted',
+    expires_at: '2026-08-01T00:00:00Z',
+  }).select('id').single();
+  if (!req) throw new Error(`match_request insert failed (suffix ${suffix})`);
+
+  const { data: m, error: matchErr } = await supa.from('matches').insert({
+    match_request_id: req.id, category: 'erkek_tek', format: 'bu_klasik',
+    court_id: court.id, played_at: '2026-07-01T19:00:00Z', is_rated: true,
+    team_a_player_ids: [alice.userId], team_b_player_ids: [bob.userId],
+  }).select('id').single();
+  if (!m || matchErr) throw new Error(`match insert failed (suffix ${suffix}): ${matchErr?.message}`);
+
   return {
-    matchId: (acc as { matchId: string }).matchId,
+    matchId: m.id,
     aliceToken: alice.accessToken,
+    aliceId: alice.userId,
     bobId: bob.userId,
   };
 }
@@ -42,77 +53,72 @@ function userClient(accessToken: string) {
 }
 
 Deno.test('award_point: deuce → advantage → game progression (margin 2)', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const supa = userClient(aliceToken);
+  try {
+    const award = async (side: 'a' | 'b'): Promise<Score> => {
+      const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
+      if (error) throw new Error(`award_point(${side}): ${error.message}`);
+      return data as Score;
+    };
 
-  const award = async (side: 'a' | 'b'): Promise<Score> => {
-    const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
-    if (error) throw new Error(`award_point(${side}): ${error.message}`);
-    return data as Score;
-  };
+    await award('a'); await award('b'); await award('a'); await award('b'); await award('a');
+    let s2 = await award('b'); // 3-3 deuce
+    assertEquals([s2.points_a, s2.points_b], [3, 3]);
+    assertEquals([s2.games_a, s2.games_b], [0, 0]);
 
-  // Drive points to 3-3 (40-40 / deuce): a,b,a,b,a,b.
-  await award('a'); // 1-0
-  await award('b'); // 1-1
-  await award('a'); // 2-1
-  await award('b'); // 2-2
-  await award('a'); // 3-2
-  let s = await award('b'); // 3-3 (deuce)
-  assertEquals([s.points_a, s.points_b], [3, 3]);
-  assertEquals([s.games_a, s.games_b], [0, 0]);
+    s2 = await award('a'); // 4-3 advantage A
+    assertEquals([s2.points_a, s2.points_b], [4, 3]);
+    assertEquals([s2.games_a, s2.games_b], [0, 0]);
 
-  // 3-3 +A → 4-3 (Advantage A), NOT a game win.
-  s = await award('a');
-  assertEquals([s.points_a, s.points_b], [4, 3]);
-  assertEquals([s.games_a, s.games_b], [0, 0]);
+    s2 = await award('b'); // back to deuce (3-3)
+    assertEquals([s2.points_a, s2.points_b], [3, 3]);
+    assertEquals([s2.games_a, s2.games_b], [0, 0]);
 
-  // 4-3 +B → aw=4,ot=4 → deuce branch → reset 3-3 (advantage lost).
-  s = await award('b');
-  assertEquals([s.points_a, s.points_b], [3, 3]);
-  assertEquals([s.games_a, s.games_b], [0, 0]);
+    s2 = await award('a'); // 4-3 again
+    assertEquals([s2.points_a, s2.points_b], [4, 3]);
 
-  // 3-3 +A → 4-3 again (Advantage A).
-  s = await award('a');
-  assertEquals([s.points_a, s.points_b], [4, 3]);
-
-  // 4-3 +A → margin 2 → game won, points reset to 0-0, games_a +1.
-  s = await award('a');
-  assertEquals([s.points_a, s.points_b], [0, 0]);
-  assertEquals([s.games_a, s.games_b], [1, 0]);
+    s2 = await award('a'); // game won, margin 2
+    assertEquals([s2.points_a, s2.points_b], [0, 0]);
+    assertEquals([s2.games_a, s2.games_b], [1, 0]);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('award_point: 40-30 (3-2) +A wins the game (margin 2)', async () => {
-  await cleanupTestData();
-  const { matchId, aliceToken } = await makeMatch();
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const supa = userClient(aliceToken);
+  try {
+    const award = async (side: 'a' | 'b'): Promise<Score> => {
+      const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
+      if (error) throw new Error(`award_point(${side}): ${error.message}`);
+      return data as Score;
+    };
 
-  const award = async (side: 'a' | 'b'): Promise<Score> => {
-    const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
-    if (error) throw new Error(`award_point(${side}): ${error.message}`);
-    return data as Score;
-  };
+    await award('a'); await award('a'); await award('a'); await award('b');
+    let s2 = await award('b'); // 3-2
+    assertEquals([s2.points_a, s2.points_b], [3, 2]);
 
-  // 40-30 = points 3-2.
-  await award('a'); // 1-0
-  await award('a'); // 2-0
-  await award('a'); // 3-0
-  await award('b'); // 3-1
-  let s = await award('b'); // 3-2
-  assertEquals([s.points_a, s.points_b], [3, 2]);
-
-  // +A → aw=4,ot=2 → margin 2 → game won.
-  s = await award('a');
-  assertEquals([s.points_a, s.points_b], [0, 0]);
-  assertEquals([s.games_a, s.games_b], [1, 0]);
+    s2 = await award('a'); // margin 2 → game won
+    assertEquals([s2.points_a, s2.points_b], [0, 0]);
+    assertEquals([s2.games_a, s2.games_b], [1, 0]);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
 });
 
 Deno.test('award_point: non-participant is rejected', async () => {
-  await cleanupTestData();
-  const { matchId } = await makeMatch();
-  const stranger = await createTestUser({ email: 'carol@test.local', genderCategory: 'erkek' });
-  const supa = userClient(stranger.accessToken);
-
-  const { error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: 'a' });
-  assertEquals(error?.code, '42501');
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceId, bobId } = await makeMatch(s);
+  const carol = await createTestUser({ email: `carol-ap-${s}@test.local`, genderCategory: 'erkek' });
+  try {
+    const supa = userClient(carol.accessToken);
+    const { error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: 'a' });
+    assertEquals(error?.code, '42501');
+  } finally {
+    await teardownUsers([aliceId, bobId, carol.userId], { matchIds: [matchId] });
+  }
 });
