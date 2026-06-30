@@ -92,7 +92,7 @@ export default function MatchPreview() {
     : null;
 
   const rows: Array<[string, string]> = [
-    ['Tip', nm.kind === 'ranking' ? '🏆 Sıralama Maçı' : '🤝 Dostluk Maçı'],
+    ['Tip', nm.kind === 'ranking' ? 'Sıralama Maçı' : 'Dostluk Maçı'],
     ['Format', `${fmt.name} · ${fmt.tag}`],
     ['Tarih', `${formatDateLabel(nm.date)} · ${nm.time}`],
     ['Kort', courtName],

@@ -210,7 +210,7 @@ export function MatchStartBurst({ onDone }: MatchStartBurstProps) {
             fontWeight: '600',
           }}
         >
-          İyi oyunlar 🎾
+          İyi oyunlar
         </Text>
       </Animated.View>
     </Animated.View>
