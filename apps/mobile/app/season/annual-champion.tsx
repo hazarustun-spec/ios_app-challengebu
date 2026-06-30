@@ -173,7 +173,7 @@ export default function AnnualChamp() {
             style={{ flex: 1, fontSize: 12.5, lineHeight: 19 }}
           >
             Her sezon finalinden puan: Şampiyon 100 · Finalist 70 · Yarı F. 50 · Çeyrek F. 25.
-            Yıl sonu en yüksek <Text className="font-bold">🏆 Yıllık Şampiyon</Text> olur (kalıcı
+            Yıl sonu en yüksek <Text className="font-bold">Yıllık Şampiyon</Text> olur (kalıcı
             rozet).
           </Text>
         </View>
