@@ -84,7 +84,7 @@ export default function NewMatchType() {
             style={{
               flex: 1,
               backgroundColor: c.bg,
-              borderRadius: 30,
+              borderRadius: 34,
               padding: 24,
               minHeight: 300,
               overflow: 'hidden',

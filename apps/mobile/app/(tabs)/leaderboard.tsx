@@ -420,7 +420,7 @@ export default function Leaderboard() {
         <Pressable
           onPress={() => router.push('/season' as never)}
           style={{
-            borderRadius: 24,
+            borderRadius: 34,
             paddingVertical: 22,
             paddingHorizontal: 24,
             backgroundColor: '#2270BC',

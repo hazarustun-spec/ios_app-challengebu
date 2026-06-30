@@ -304,7 +304,7 @@ export default function HomeScreen() {
         }}
       >
         {/* ELO HERO — flat, solid #2270BC, no gradient/shadow */}
-        <View style={{ borderRadius: 28, padding: 26, backgroundColor: '#2270BC' }}>
+        <View style={{ borderRadius: 34, padding: 26, backgroundColor: '#2270BC' }}>
 
           {/* Row 1: category label (left) + white level pill (right) */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -332,7 +332,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Row 2: big ELO number + white delta chip */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 14, marginTop: 14 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginTop: 14 }}>
             <AnimatedTextInput
               editable={false}
               underlineColorAndroid="transparent"
@@ -351,7 +351,7 @@ export default function HomeScreen() {
                 backgroundColor: 'transparent',
               }}
             />
-            <Animated.View style={[{ marginBottom: 6 }, animatedDeltaStyle]}>
+            <Animated.View style={[{ marginBottom: 14 }, animatedDeltaStyle]}>
               <View
                 style={{
                   flexDirection: 'row',
