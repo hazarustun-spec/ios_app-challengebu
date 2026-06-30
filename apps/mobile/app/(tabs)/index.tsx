@@ -39,7 +39,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
 import { Icon, type IconName } from '../../components/ui/Icon';
-import { Sparkline } from '../../components/ui/Sparkline';
+// Sparkline removed — ELO hero now uses form-dots instead of a trend line.
 import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
 import { useActiveMatches, type ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useEloHistory } from '../../hooks/use-elo-history';
@@ -220,6 +220,16 @@ export default function HomeScreen() {
     return streak;
   })();
 
+  // Form dots: last-5 match results for the hero panel (W/L/V).
+  const FORM_DOTS: Array<'win' | 'loss' | 'void'> = userId
+    ? ALL_MATCHES.slice(0, 5).map((m) => {
+        const p = myPerspective(m, userId);
+        if (p.won === true) return 'win';
+        if (p.won === false) return 'loss';
+        return 'void';
+      })
+    : [];
+
   // Flame icon looping pulse — active only when streak >= 3.
   const flameScale = useSharedValue(1);
   useEffect(() => {
@@ -293,193 +303,156 @@ export default function HomeScreen() {
           gap: 14,
         }}
       >
-        {/* ELO HERO */}
-        <View
-          className="bg-court border-base border-border-strong"
-          style={{ borderRadius: 26, padding: 18, overflow: 'hidden', ...shadows.hero }}
-        >
-          <View className="flex-row items-start justify-between">
-            <View>
+        {/* ELO HERO — flat, solid #2270BC, no gradient/shadow */}
+        <View style={{ borderRadius: 28, padding: 26, backgroundColor: '#2270BC' }}>
+
+          {/* Row 1: category label (left) + white level pill (right) */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text
+              className="font-sans font-bold"
+              style={{ fontSize: 12, letterSpacing: 2, color: 'rgba(255,255,255,0.7)' }}
+            >
+              GÜNCEL ELO · {categoryHeroLabel}
+            </Text>
+            <View
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 9999,
+                backgroundColor: '#fff',
+              }}
+            >
               <Text
                 className="font-sans font-extrabold"
-                style={{
-                  fontSize: 10.5,
-                  letterSpacing: 1.05,
-                  color: 'rgba(255,255,255,0.72)',
-                }}
+                style={{ fontSize: 11, color: '#161618' }}
               >
-                GÜNCEL ELO · {categoryHeroLabel}
+                {lv.name.toUpperCase()}
               </Text>
-              <View
-                className="flex-row items-end"
-                style={{ gap: 9, marginTop: 4 }}
-              >
-                <AnimatedTextInput
-                  editable={false}
-                  underlineColorAndroid="transparent"
-                  value={String(ME_ELO)}
-                  animatedProps={animatedEloProps}
-                  style={{
-                    fontSize: 42,
-                    lineHeight: 50,
-                    letterSpacing: -0.84,
-                    color: '#FFFFFF',
-                    fontFamily: ELO_NUM_FONT_FAMILY,
-                    fontWeight: '800',
-                    padding: 0,
-                    margin: 0,
-                    includeFontPadding: false,
-                    backgroundColor: 'transparent',
-                  }}
-                />
-                <Animated.View
-                  className="flex-row items-center"
-                  style={[{ gap: 1, marginBottom: 5 }, animatedDeltaStyle]}
-                >
-                  <Icon
-                    name={deltaPositiveHero ? 'chevU' : 'chevD'}
-                    size={14}
-                    color={deltaPositiveHero ? colors.lime : '#FF8A80'}
-                    stroke={3}
-                  />
-                  <Text
-                    className="font-num font-extrabold"
-                    style={{ fontSize: 14, color: deltaPositiveHero ? colors.lime : '#FF8A80' }}
-                  >
-                    {Math.abs(ELO_DELTA)}
-                  </Text>
-                </Animated.View>
-              </View>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              {ME_RANK > 0 ? (
-                <>
-                  <Text
-                    className="font-num font-extrabold text-white"
-                    style={{ fontSize: 26, lineHeight: 26 }}
-                  >
-                    #{ME_RANK}
-                  </Text>
-                  <Text
-                    className="font-sans font-bold"
-                    style={{
-                      fontSize: 10.5,
-                      letterSpacing: 0.63,
-                      color: 'rgba(255,255,255,0.7)',
-                      marginTop: 3,
-                    }}
-                  >
-                    SIRA
-                  </Text>
-                </>
-              ) : (
-                <Text
-                  className="font-sans font-bold"
-                  style={{
-                    fontSize: 10.5,
-                    letterSpacing: 0.63,
-                    color: 'rgba(255,255,255,0.7)',
-                    marginTop: 3,
-                  }}
-                >
-                  —
-                </Text>
-              )}
             </View>
           </View>
 
-          {/* Mini trend */}
-          <View
-            className="flex-row items-center"
-            style={{
-              marginTop: 14,
-              padding: 12,
-              gap: 12,
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: 18,
-              borderWidth: 1.5,
-              borderColor: 'rgba(255,255,255,0.28)',
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-bold"
+          {/* Row 2: big ELO number + white delta chip */}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 14, marginTop: 14 }}>
+            <AnimatedTextInput
+              editable={false}
+              underlineColorAndroid="transparent"
+              value={String(ME_ELO)}
+              animatedProps={animatedEloProps}
+              style={{
+                fontSize: 58,
+                lineHeight: 48,
+                letterSpacing: -2.3,
+                color: '#FFFFFF',
+                fontFamily: ELO_NUM_FONT_FAMILY,
+                fontWeight: '800',
+                padding: 0,
+                margin: 0,
+                includeFontPadding: false,
+                backgroundColor: 'transparent',
+              }}
+            />
+            <Animated.View style={[{ marginBottom: 6 }, animatedDeltaStyle]}>
+              <View
                 style={{
-                  fontSize: 10.5,
-                  color: 'rgba(255,255,255,0.7)',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 3,
+                  paddingHorizontal: 11,
+                  paddingVertical: 5,
+                  borderRadius: 9,
+                  backgroundColor: '#fff',
                 }}
               >
-                Son 10 maç
+                <Icon
+                  name={deltaPositiveHero ? 'chevU' : 'chevD'}
+                  size={13}
+                  color="#161618"
+                  stroke={3}
+                />
+                <Text
+                  className="font-num font-bold"
+                  style={{ fontSize: 14, color: '#161618' }}
+                >
+                  {Math.abs(ELO_DELTA)}
+                </Text>
+              </View>
+            </Animated.View>
+          </View>
+
+          {/* SON 10 MAÇ — darker blue inner panel with form dots */}
+          <View
+            style={{
+              marginTop: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 16,
+              paddingHorizontal: 18,
+              borderRadius: 18,
+              backgroundColor: '#1B5EA0',
+            }}
+          >
+            <View>
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 11, letterSpacing: 0.9, color: 'rgba(255,255,255,0.6)' }}
+              >
+                SON 10 MAÇ
               </Text>
               <Text
                 className="font-sans font-bold text-white"
-                style={{ fontSize: 12.5, marginTop: 1 }}
+                style={{ fontSize: 17, marginTop: 3 }}
               >
-                {ELO_DELTA > 0 ? 'Yükselişte' : ELO_DELTA < 0 ? 'Düşüşte' : 'Sabit'} · {lv.name}
+                {ELO_DELTA > 0 ? 'Yükseliş' : ELO_DELTA < 0 ? 'Düşüş' : 'Sabit'} form
               </Text>
             </View>
-            <Sparkline data={ELO_TREND} color={colors.lime} w={104} h={30} stroke={2.5} />
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {FORM_DOTS.map((result, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor:
+                      result === 'win' ? '#8FD43B' : result === 'loss' ? '#E5484D' : '#F5B924',
+                  }}
+                />
+              ))}
+            </View>
           </View>
 
-          {/* Level progress */}
-          <View
-            className="flex-row items-center"
-            style={{ marginTop: 11, gap: 8 }}
-          >
+          {/* Progress to next level */}
+          <View style={{ marginTop: 20 }}>
             <View
-              style={{
-                flex: 1,
-                height: 5,
-                borderRadius: 9999,
-                overflow: 'hidden',
-                backgroundColor: 'rgba(255,255,255,0.22)',
-              }}
+              style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}
             >
+              <Text
+                className="font-sans font-semibold"
+                style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}
+              >
+                {lp.next ? `${lp.next.name}'e ilerleme` : 'Maks seviye'}
+              </Text>
+              {lp.next ? (
+                <Text
+                  className="font-sans font-extrabold text-white"
+                  style={{ fontSize: 12 }}
+                >
+                  {lp.toNext} PUAN KALDI
+                </Text>
+              ) : null}
+            </View>
+            <View style={{ height: 10, borderRadius: 5, backgroundColor: '#13497F' }}>
               <View
                 style={{
                   width: `${Math.round(lp.pct * 100)}%`,
                   height: '100%',
-                  backgroundColor: colors.lime,
+                  borderRadius: 5,
+                  backgroundColor: '#fff',
                 }}
               />
             </View>
-            <Text
-              className="font-num font-bold"
-              style={{
-                fontSize: 11,
-                color: 'rgba(255,255,255,0.85)',
-              }}
-            >
-              {lp.next ? `${lp.next.name}'e ${lp.toNext}` : 'Maks seviye'}
-            </Text>
           </View>
-
-          {/* Win streak flame badge — only when >= 3 consecutive confirmed wins */}
-          {WIN_STREAK >= 3 && (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                alignSelf: 'flex-start',
-                gap: 5,
-                marginTop: 10,
-                backgroundColor: 'rgba(224, 153, 43, 0.18)',
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 9999,
-              }}
-            >
-              <Animated.View style={animatedFlameStyle}>
-                <Icon name="flame" size={13} color={colors.warn} />
-              </Animated.View>
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 12, color: colors.warn }}
-              >
-                {WIN_STREAK} galibiyet serisi
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Yeni Maç + Sıralama CTA row */}

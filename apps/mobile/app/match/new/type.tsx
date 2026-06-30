@@ -25,7 +25,8 @@ interface KindCardConfig {
   tag: string;
   desc: string;
   bg: string;
-  arrowFg: string;
+  motifColor: string;   // darker-tinted watermark color
+  accentColor: string;  // icon tile icon, pill text, arrow circle bg, "Seç" text
 }
 
 const CARDS: KindCardConfig[] = [
@@ -35,8 +36,9 @@ const CARDS: KindCardConfig[] = [
     title: 'Sıralama Maçı',
     tag: 'ELO ETKİLER',
     desc: "ELO'nu etkiler, sıralamada yükselirsin. Format kuralları zorunlu.",
-    bg: colors.court,
-    arrowFg: colors.court,
+    bg: colors.court,        // #2270BC
+    motifColor: '#1B5EA0',
+    accentColor: '#161618',  // ink
   },
   {
     kind: 'friendly',
@@ -44,8 +46,9 @@ const CARDS: KindCardConfig[] = [
     title: 'Dostluk Maçı',
     tag: 'EĞLENCE',
     desc: "ELO'ya etki etmez — eğlence ve antrenman için. İstatistiklere sayılmaz.",
-    bg: colors.pinkDeep,
-    arrowFg: colors.pinkDeep,
+    bg: '#C81C82',
+    motifColor: '#A8156C',
+    accentColor: '#C81C82',  // pink
   },
 ];
 
@@ -81,16 +84,14 @@ export default function NewMatchType() {
             style={{
               flex: 1,
               backgroundColor: c.bg,
-              borderRadius: 34,
-              borderWidth: 1.5,
-              borderColor: colors.borderStrong,
-              padding: 22,
-              minHeight: 214,
+              borderRadius: 30,
+              padding: 24,
+              minHeight: 300,
               overflow: 'hidden',
               justifyContent: 'space-between',
             }}
           >
-            {/* Watermark glyph — faded, anchored bottom-right. */}
+            {/* Watermark glyph — faded, anchored bottom-right, darker-tinted. */}
             <View
               style={{
                 position: 'absolute',
@@ -100,86 +101,91 @@ export default function NewMatchType() {
               }}
               pointerEvents="none"
             >
-              <Icon name={c.iconName} size={170} color="#FFFFFF" stroke={1.6} />
+              <Icon name={c.iconName} size={170} color={c.motifColor} stroke={1.6} />
             </View>
 
-            {/* Top row: icon tile + tag pill. */}
-            <View className="flex-row items-center justify-between">
+            {/* Top row: white icon tile + white pill badge. */}
+            <View className="flex-row items-start justify-between">
               <View
                 style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 18,
-                  backgroundColor: 'rgba(255,255,255,0.16)',
-                  borderWidth: 1.5,
-                  borderColor: '#FFFFFF',
+                  width: 54,
+                  height: 54,
+                  borderRadius: 16,
+                  backgroundColor: '#FFFFFF',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Icon name={c.iconName} size={28} color="#FFFFFF" />
+                <Icon name={c.iconName} size={28} color={c.accentColor} />
               </View>
               <View
                 style={{
-                  borderWidth: 1.5,
-                  borderColor: '#FFFFFF',
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
+                  backgroundColor: '#FFFFFF',
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
                   borderRadius: 9999,
                 }}
               >
                 <Text
-                  className="font-sans font-extrabold text-white"
-                  style={{ fontSize: 10.5, letterSpacing: 1.05 }}
+                  className="font-sans font-extrabold"
+                  style={{ fontSize: 11, letterSpacing: 0.5, color: c.accentColor }}
                 >
                   {c.tag}
                 </Text>
               </View>
             </View>
 
-            {/* Bottom block: title + desc + arrow CTA. */}
+            {/* Bottom block: title + desc + white pill "Seç" CTA. */}
             <View>
               <Text
-                className="font-display font-extrabold text-white"
-                style={{ fontSize: 27, letterSpacing: -0.54 }}
+                className="font-display font-bold text-white"
+                style={{ fontSize: 32, letterSpacing: -0.64 }}
               >
                 {c.title}
               </Text>
               <Text
-                className="font-sans text-white/80"
+                className="font-sans font-medium"
                 style={{
-                  fontSize: 13.5,
-                  lineHeight: 19,
-                  marginTop: 6,
-                  maxWidth: '78%',
+                  fontSize: 15,
+                  lineHeight: 22.5,
+                  marginTop: 8,
+                  maxWidth: '82%',
+                  color: 'rgba(255,255,255,0.82)',
                 }}
               >
                 {c.desc}
               </Text>
+
+              {/* White pill: accent circle with white arrow + "Seç" label. */}
               <View
-                className="flex-row items-center"
-                style={{ marginTop: 16, gap: 10 }}
+                style={{
+                  marginTop: 22,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  alignSelf: 'flex-start',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: 9999,
+                  paddingLeft: 6,
+                  paddingRight: 24,
+                  paddingVertical: 6,
+                  gap: 13,
+                }}
               >
                 <View
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: '#FFFFFF',
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: c.accentColor,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon
-                    name="arrowRight"
-                    size={19}
-                    color={c.arrowFg}
-                    stroke={2.5}
-                  />
+                  <Icon name="arrowRight" size={19} color="#FFFFFF" stroke={2.5} />
                 </View>
                 <Text
-                  className="font-sans font-extrabold text-white"
-                  style={{ fontSize: 14.5 }}
+                  className="font-sans font-extrabold"
+                  style={{ fontSize: 16, color: c.accentColor }}
                 >
                   Seç
                 </Text>

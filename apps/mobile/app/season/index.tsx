@@ -7,7 +7,15 @@
 // Countdown hero + my standing + finale timeline + bracket CTA + annual
 // championship link.
 
+import { useEffect } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
@@ -17,11 +25,30 @@ import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { useMyRankings } from '../../hooks/use-my-rankings';
 import { colors } from '../../theme/colors';
-import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+function PulsingDot() {
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.3, { duration: 900 }),
+        withTiming(1, { duration: 900 }),
+      ),
+      -1,
+      false,
+    );
+  }, []);
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return (
+    <Animated.View
+      style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' }, animStyle]}
+    />
+  );
+}
 
 const SEASON_NAME_MAP: Record<string, string> = {
   guz: 'Güz',
@@ -203,52 +230,70 @@ export default function Season() {
       >
         {/* Countdown hero */}
         <View
-          className="bg-court rounded-xl overflow-hidden"
-          style={{ padding: 20, borderWidth: 1.5, borderColor: colors.borderStrong, ...shadows.hero }}
+          style={{
+            borderRadius: 24,
+            paddingVertical: 22,
+            paddingHorizontal: 24,
+            backgroundColor: '#2270BC',
+          }}
         >
-          <View className="flex-row items-start justify-between">
-            <View>
-              <Text className="text-white/85 font-bold" style={{ fontSize: 12.5 }}>
-                Finale window'a
-              </Text>
+          {/* Top row: pulsing dot + label | days badge */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+              <PulsingDot />
               <Text
-                className="font-num font-extrabold text-white"
-                style={{ fontSize: 40, lineHeight: 40, letterSpacing: -1.2 }}
+                className="font-sans font-bold"
+                style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
               >
-                {daysLeft !== null ? `${daysLeft} gün` : '—'}
-              </Text>
-              <Text className="text-white/85" style={{ fontSize: 12.5, marginTop: 4 }}>
-                {finaleDatesRange} · finale window
+                FİNALE GERİ SAYIM
               </Text>
             </View>
-            <Icon name="trophy" size={32} color="rgba(255,255,255,0.9)" />
+            {daysLeft !== null && (
+              <Text
+                className="font-num font-bold"
+                style={{ fontSize: 13, color: '#FFFFFF' }}
+              >
+                {daysLeft} gün
+              </Text>
+            )}
           </View>
-          <View style={{ marginTop: 16 }}>
+
+          {/* Progress bar: track #13497F, white fill */}
+          <View
+            style={{
+              marginTop: 16,
+              height: 9,
+              borderRadius: 5,
+              backgroundColor: '#13497F',
+              overflow: 'hidden',
+            }}
+          >
             <View
               style={{
-                height: 7,
-                backgroundColor: 'rgba(255,255,255,0.25)',
-                borderRadius: 9999,
-                overflow: 'hidden',
+                width: `${Math.round(finalePct * 100)}%`,
+                height: '100%',
+                backgroundColor: '#FFFFFF',
               }}
+            />
+          </View>
+
+          {/* Bottom row */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
+            <Text
+              className="font-sans font-semibold"
+              style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
             >
-              <View
-                style={{
-                  width: `${Math.round(finalePct * 100)}%`,
-                  height: '100%',
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: 9999,
-                }}
-              />
-            </View>
-            <View className="flex-row justify-between" style={{ marginTop: 7 }}>
-              <Text className="text-white/85 font-semibold" style={{ fontSize: 11 }}>
-                Sezon %{Math.round(finalePct * 100)}
+              {sezonLabel} · ladder
+            </Text>
+            <Pressable
+              onPress={() => router.push('/(tabs)/leaderboard' as never)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            >
+              <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
+                Sezona git
               </Text>
-              <Text className="text-white/85 font-semibold" style={{ fontSize: 11 }}>
-                Top 8 finale gider
-              </Text>
-            </View>
+              <Icon name="chevR" size={13} color="#FFFFFF" />
+            </Pressable>
           </View>
         </View>
 

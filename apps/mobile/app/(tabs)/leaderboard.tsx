@@ -46,6 +46,33 @@ import {
 } from '../../stores/leaderboard-filter-store';
 import { shadows } from '../../theme/shadows';
 import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+
+function PulsingDot() {
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.3, { duration: 900 }),
+        withTiming(1, { duration: 900 }),
+      ),
+      -1,
+      false,
+    );
+  }, []);
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return (
+    <Animated.View
+      style={[{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' }, animStyle]}
+    />
+  );
+}
 
 type Cat =
   | 'erkek_tek'
@@ -330,118 +357,66 @@ export default function Leaderboard() {
         })}
       </ScrollView>
 
-      {/* Finale countdown banner */}
+      {/* Finale countdown hero */}
       <Pressable
         onPress={() => router.push('/season' as never)}
-        className="bg-court rounded-lg overflow-hidden"
         style={{
           marginHorizontal: 14,
           marginTop: 8,
-          padding: 14,
-          borderWidth: 1.5,
-          borderColor: colors.borderStrong,
-          ...shadows.hero,
+          borderRadius: 24,
+          paddingVertical: 22,
+          paddingHorizontal: 24,
+          backgroundColor: '#2270BC',
         }}
       >
-        <View
-          style={{
-            position: 'absolute',
-            right: -28,
-            bottom: -36,
-            opacity: 0.12,
-          }}
-          pointerEvents="none"
-        >
-          <Icon name="trophy" size={150} color="#FFFFFF" stroke={1.6} />
-        </View>
-        <View
-          className="flex-row items-center justify-between"
-          style={{ marginBottom: 9 }}
-        >
-          <View className="flex-row items-center" style={{ gap: 7 }}>
-            <View
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: '#FFFFFF',
-              }}
-            />
+        {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+            <PulsingDot />
             <Text
-              className="font-extrabold"
-              style={{
-                fontSize: 10.5,
-                letterSpacing: 1.26,
-                color: 'rgba(255,255,255,0.72)',
-              }}
+              className="font-sans font-bold"
+              style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
             >
               FİNALE GERİ SAYIM
             </Text>
           </View>
-          {meRow && meRow.rank <= 8 && (
-            <View
-              style={{
-                borderWidth: 1.5,
-                borderColor: 'rgba(255,255,255,0.55)',
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 9999,
-              }}
-            >
+          <View style={{ alignItems: 'flex-end', gap: 5 }}>
+            {daysLeft !== null && (
               <Text
-                className="text-white font-extrabold"
-                style={{ fontSize: 10, letterSpacing: 0.6 }}
+                className="font-num font-bold"
+                style={{ fontSize: 13, color: '#FFFFFF' }}
               >
-                İLK 8&apos;DESİN
+                {daysLeft} gün
               </Text>
-            </View>
-          )}
-        </View>
-        <View
-          className="flex-row items-baseline"
-          style={{ gap: 7, marginBottom: 12 }}
-        >
-          {daysLeft !== null ? (
-            <>
-              <Text
-                className="font-num font-extrabold text-white"
-                style={{ fontSize: 46, lineHeight: 54, letterSpacing: -1.38 }}
+            )}
+            {meRow && meRow.rank <= 8 && (
+              <View
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(255,255,255,0.55)',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 9999,
+                }}
               >
-                {daysLeft}
-              </Text>
-              <Text className="text-white font-extrabold" style={{ fontSize: 17 }}>
-                gün
-              </Text>
-              {season?.finale_starts_at && (
                 <Text
-                  className="font-bold"
-                  style={{
-                    fontSize: 12.5,
-                    marginLeft: 4,
-                    color: 'rgba(255,255,255,0.72)',
-                  }}
+                  className="text-white font-extrabold"
+                  style={{ fontSize: 10, letterSpacing: 0.6 }}
                 >
-                  · final {new Date(season.finale_starts_at).toLocaleDateString('tr-TR', {
-                    day: 'numeric',
-                    month: 'short',
-                  })}
+                  İLK 8&apos;DESİN
                 </Text>
-              )}
-            </>
-          ) : (
-            <Text
-              className="font-num font-extrabold text-white"
-              style={{ fontSize: 28, lineHeight: 36 }}
-            >
-              —
-            </Text>
-          )}
+              </View>
+            )}
+          </View>
         </View>
+
+        {/* Progress bar: track #13497F, white fill */}
         <View
           style={{
-            height: 7,
-            backgroundColor: 'rgba(255,255,255,0.22)',
-            borderRadius: 9999,
+            marginTop: 16,
+            height: 9,
+            borderRadius: 5,
+            backgroundColor: '#13497F',
             overflow: 'hidden',
           }}
         >
@@ -453,18 +428,17 @@ export default function Leaderboard() {
             }}
           />
         </View>
-        <View
-          className="flex-row justify-between"
-          style={{ marginTop: 7 }}
-        >
+
+        {/* Bottom row */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
           <Text
-            className="font-bold"
-            style={{ fontSize: 11, color: 'rgba(255,255,255,0.78)' }}
+            className="font-sans font-semibold"
+            style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
           >
             {sezonLabel} · ladder
           </Text>
-          <View className="flex-row items-center" style={{ gap: 3 }}>
-            <Text className="text-white font-bold" style={{ fontSize: 11 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
               Sezona git
             </Text>
             <Icon name="chevR" size={13} color="#FFFFFF" />
