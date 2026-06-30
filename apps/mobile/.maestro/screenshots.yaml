@@ -1,0 +1,71 @@
+# screenshots.yaml — App Store screenshot capture (run on iPhone 16 Pro Max = 6.9").
+#
+# Robust: logs in only if logged out, otherwise reuses the session. Dismisses the
+# dev-client connect + notification-permission dialogs. Captures the key screens.
+#
+# Prereqs: Supabase stack + Mailpit + Metro running; JDK 17+ on PATH.
+# Run: JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+#      maestro --device <ProMax-UDID> test \
+#        -e EMAIL=hazar.ustun@std.bogazici.edu.tr .maestro/screenshots.yaml
+appId: app.challengebu.ios
+env:
+  EMAIL: "hazar.ustun@std.bogazici.edu.tr"
+---
+- launchApp
+- tapOn:
+    text: "Aç"
+    optional: true
+
+# Log in only if the Welcome screen is showing (otherwise the session persists).
+- runFlow:
+    when:
+      visible: "Üniversite e-postanla başla"
+    commands:
+      - tapOn: "Üniversite e-postanla başla"
+      - assertVisible: "E-postanı gir"
+      - tapOn: "ad.soyad@std.bogazici.edu.tr"
+      - inputText: ${EMAIL}
+      - hideKeyboard
+      - tapOn: "KVKK onayı"
+      - tapOn: "Kod gönder"
+      - extendedWaitUntil:
+          visible: "Gelen kutunu kontrol et"
+          timeout: 15000
+      - runScript: get-otp.js
+      - inputText: ${output.d0}
+      - inputText: ${output.d1}
+      - inputText: ${output.d2}
+      - inputText: ${output.d3}
+      - inputText: ${output.d4}
+      - inputText: ${output.d5}
+      - waitForAnimationToEnd
+
+# Dismiss the iOS notification-permission dialog if it pops up.
+- tapOn:
+    text: "İzin Ver"
+    optional: true
+- tapOn:
+    text: "İzin Verme"
+    optional: true
+
+# ── Home (ELO hero) ──
+- extendedWaitUntil:
+    visible: "Yeni Maç"
+    timeout: 40000
+- waitForAnimationToEnd
+- takeScreenshot: shots/01-home
+
+# ── Leaderboard ──
+- tapOn: "leaderboard"
+- waitForAnimationToEnd
+- takeScreenshot: shots/02-leaderboard
+
+# ── Profile ──
+- tapOn: "profile"
+- waitForAnimationToEnd
+- takeScreenshot: shots/03-profile
+
+# ── New match (match-type cards) ──
+- tapOn: "new-match"
+- waitForAnimationToEnd
+- takeScreenshot: shots/04-newmatch

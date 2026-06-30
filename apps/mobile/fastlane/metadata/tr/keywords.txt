@@ -1,0 +1,1 @@
+ELO,sıralama,maç,turnuva,raket,kort,üniversite,sezon,şampiyon,rakip,meydan,çift
