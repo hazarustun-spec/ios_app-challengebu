@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shimal — Mobile Software Studio</title>
+<meta name="description" content="Shimal is a mobile software studio designing and shipping native iOS apps — for individuals, businesses, and developers.">
+<meta name="theme-color" content="#f1f1ee">
+<link rel="canonical" href="https://shimal.app/">
+<meta property="og:title" content="Shimal — Mobile Software Studio">
+<meta property="og:description" content="We build mobile apps. A studio designing and shipping native iOS products.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shimal.app/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23111'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='18' font-weight='800' fill='%23fff' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --accent:#2626F5;
+    --bg:#f1f1ee;
+    --ink:#111;
+    --muted:#555;
+    --line:#c9c9c4;
+    --card:#fff;
+    --card-line:#e2e2dd;
+    --live:#12a150;
+    --sans:'Helvetica Neue',Helvetica,Arial,-apple-system,system-ui,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  a{color:inherit}
+  img{display:block;max-width:100%}
+  ::selection{background:var(--accent);color:#fff}
+  .container{max-width:1240px;margin:0 auto;padding:0 32px}
+  .rule{height:1px;background:var(--line)}
+
+  /* ---------- top bar ---------- */
+  .topbar .bar{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:14px;text-decoration:none}
+  .brand .mark{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .brand .word{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .brand .word .dot{color:var(--accent)}
+  .mainnav{display:flex;align-items:center;gap:30px}
+  .mainnav a{font-size:15px;font-weight:600;text-decoration:none;color:var(--ink);opacity:.85}
+  .mainnav a:hover{opacity:1;color:var(--accent)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:44px 0 20px}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:stretch}
+  .hero-left{display:flex;flex-direction:column;justify-content:space-between}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);margin-bottom:22px}
+  .eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .hero h1{font-size:clamp(48px,8vw,84px);line-height:.9;font-weight:800;letter-spacing:-.045em}
+  .hero .lede{font-size:17px;font-weight:500;color:var(--muted);max-width:440px;line-height:1.55;margin:36px 0 22px}
+  .cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;text-decoration:none;padding:14px 26px;border-radius:14px;font-size:16px;font-weight:700;transition:transform .12s ease,opacity .12s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{opacity:.88}
+  .btn-outline{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+  .btn-outline:hover{background:var(--ink);color:#fff}
+
+  .hero-block{position:relative;background:var(--accent);border-radius:26px;min-height:460px;overflow:hidden;color:#fff}
+  .hero-block .hb-est{position:absolute;top:28px;left:34px;font-size:15px;font-weight:600;opacity:.85}
+  .hero-block .hb-arrow{position:absolute;top:20px;right:34px;font-size:70px;font-weight:800;line-height:.8}
+  .hero-block .hb-word{position:absolute;bottom:30px;left:34px;right:34px;font-size:clamp(72px,9vw,112px);line-height:.8;font-weight:800;letter-spacing:-.05em}
+
+  /* ---------- section heads ---------- */
+  .sec{padding-top:64px}
+  .sec-head{border-top:1px solid var(--line);padding-top:28px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:34px}
+  .sec-head h2{font-size:clamp(34px,5vw,46px);font-weight:800;letter-spacing:-.035em;line-height:.95}
+  .sec-head .note{font-size:15px;font-weight:600;color:var(--muted);white-space:nowrap}
+
+  /* ---------- status rows ---------- */
+  .status{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .status .dot{width:9px;height:9px;border-radius:50%}
+  .status .label{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .status.live .dot{background:var(--live)} .status.live .label{color:var(--live)}
+  .status.soon .dot{background:#999} .status.soon .label{color:#777}
+
+  /* ---------- app cards ---------- */
+  .apps-live{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:46px}
+  .app-card{background:var(--card);border:1px solid var(--card-line);border-radius:24px;overflow:hidden;display:flex;flex-direction:column}
+  .app-cover{height:190px;display:flex;align-items:center;justify-content:center}
+  .app-cover img{width:96px;height:96px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+  .app-body{padding:24px 26px 26px}
+  .app-title{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .app-title h3{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .pill{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill-live{color:var(--live);border:1.5px solid var(--live)}
+  .app-cat{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:12px}
+  .app-body p{font-size:15px;color:var(--muted);line-height:1.5;margin-bottom:18px}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;text-decoration:none;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:700}
+  .chip:hover{opacity:.88}
+
+  .apps-soon{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .soon-card{background:var(--card);border:1px dashed var(--line);border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:16px;min-height:180px}
+  .soon-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .soon-ic{width:64px;height:64px;border-radius:16px;background:#ecebe6;display:flex;align-items:center;justify-content:center;font-size:26px}
+  .soon-tag{font-size:11px;font-weight:700;color:#888;border:1.5px solid #d4d4cf;border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .soon-card h3{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+  .soon-card p{font-size:14px;color:#666;line-height:1.5}
+
+  /* ---------- marquee ---------- */
+  .marquee{margin-top:72px;background:var(--ink);color:#fff;overflow:hidden;padding:16px 0}
+  .marquee .track{display:flex;width:max-content;animation:shimalMarquee 24s linear infinite;white-space:nowrap}
+  .marquee span{font-size:30px;font-weight:800;letter-spacing:-.02em;padding-right:40px}
+  @keyframes shimalMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  @media(prefers-reduced-motion:reduce){.marquee .track{animation:none}}
+
+  /* ---------- studio / services ---------- */
+  .studio-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:40px}
+  .studio-head h2{font-size:clamp(38px,6vw,52px);font-weight:800;letter-spacing:-.04em;line-height:.95}
+  .studio-head p{max-width:380px;font-size:16px;color:var(--muted);line-height:1.55;padding-bottom:6px}
+  .services{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .service{background:var(--card);border:1px solid var(--card-line);border-radius:22px;padding:26px;min-height:200px;display:flex;flex-direction:column}
+  .service .n{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;margin-bottom:auto}
+  .service h3{margin:20px 0 8px;font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .service p{font-size:14px;color:var(--muted);line-height:1.55}
+
+  /* ---------- facts ---------- */
+  .facts{background:var(--accent);border-radius:26px;padding:44px 40px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;color:#fff}
+  .fact .v{font-size:clamp(44px,6vw,64px);font-weight:800;line-height:.9;letter-spacing:-.04em}
+  .fact .l{font-size:15px;font-weight:600;opacity:.85;margin-top:8px}
+
+  /* ---------- contact ---------- */
+  .contact-head{border-top:1px solid var(--line);padding-top:34px;margin-bottom:32px}
+  .contact-head h2{font-size:clamp(32px,5vw,40px);font-weight:800;letter-spacing:-.03em}
+  .contact-card{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:24px;padding:34px 38px;text-decoration:none}
+  .contact-card .cc-l .k{font-size:13px;opacity:.6;margin-bottom:6px}
+  .contact-card .cc-l .v{font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-.02em}
+  .contact-card .cc-ic{width:52px;height:52px;border-radius:14px;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+
+  /* ---------- footer ---------- */
+  .foot{margin-top:64px;padding:32px;max-width:1240px;margin-left:auto;margin-right:auto;border-top:1px solid var(--line)}
+  .foot .row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+  .foot .legal{display:flex;gap:18px;flex-wrap:wrap}
+  .foot .legal a{font-size:14px;color:#777;text-decoration:none}
+  .foot .legal a:hover{color:var(--ink)}
+  .foot .copy{font-size:14px;color:#777}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:940px){
+    .hero-grid{grid-template-columns:1fr}
+    .hero-block{min-height:320px}
+    .services{grid-template-columns:repeat(2,1fr)}
+    .studio-head{flex-direction:column;align-items:flex-start;gap:16px}
+  }
+  @media(max-width:720px){
+    .container{padding:0 20px}
+    .mainnav{gap:18px}
+    .apps-live,.apps-soon{grid-template-columns:1fr}
+    .facts{grid-template-columns:1fr;gap:28px;padding:34px 28px}
+    .contact-card{padding:26px}
+  }
+  @media(max-width:480px){
+    .mainnav a:not(:last-child){display:none}
+    .sec-head{flex-direction:column;align-items:flex-start;gap:8px}
+  }
+</style>
+</head>
+<body>
+
+  <!-- top bar -->
+  <header class="topbar">
+    <div class="container bar">
+      <a class="brand" href="/">
+        <span class="mark">S</span>
+        <span class="word">shimal<span class="dot">.app</span></span>
+      </a>
+      <nav class="mainnav">
+        <a href="#apps">Apps</a>
+        <a href="#studio">Studio</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+    <div class="container"><div class="rule"></div></div>
+  </header>
+
+  <!-- hero -->
+  <section class="container hero">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> Mobile Software Studio</div>
+          <h1>We build<br>mobile apps.</h1>
+        </div>
+        <div>
+          <p class="lede">Shimal is a mobile software studio designing and shipping native iOS products — for individuals, businesses, and developers.</p>
+          <div class="cta">
+            <a class="btn btn-dark" href="#apps">Explore our apps</a>
+            <a class="btn btn-outline" href="#contact">Work with us</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-block">
+        <div class="hb-est">EST. 2025</div>
+        <div class="hb-arrow">&#8600;</div>
+        <div class="hb-word">SHI<br>MAL</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- apps -->
+  <section class="container sec" id="apps">
+    <div class="sec-head">
+      <h2>Our apps</h2>
+      <div class="note">1 live &middot; more in the studio</div>
+    </div>
+
+    <div class="status live"><span class="dot"></span><span class="label">Live now</span></div>
+    <div class="apps-live">
+      <article class="app-card">
+        <div class="app-cover" style="background:#3E7BD1">
+          <img src="challengebu/icon.png" alt="ChallengeBu app icon" width="96" height="96">
+        </div>
+        <div class="app-body">
+          <div class="app-title"><h3>ChallengeBu</h3></div>
+          <div class="app-cat">Tennis league &middot; iOS</div>
+          <p>Create and join amateur tennis leagues, challenge rivals, log matches and climb the ELO rankings.</p>
+          <div><a class="chip" href="challengebu/">Coming to the App Store &rarr;</a></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="status soon"><span class="dot"></span><span class="label">Coming soon</span></div>
+    <div class="apps-soon">
+      <div class="soon-card">
+        <div class="soon-top">
+          <div class="soon-ic">&#9728;</div>
+          <span class="soon-tag">SOON</span>
+        </div>
+        <div>
+          <h3>Astrology app</h3>
+          <p>A daily astrology companion — your sky, your chart, your day, beautifully simple. In the studio right now.</p>
+        </div>
+      </div>
+      <div class="soon-card">
+        <div class="soon-top">
+          <div class="soon-ic">&#9727;</div>
+          <span class="soon-tag">SOON</span>
+        </div>
+        <div>
+          <h3>In the studio</h3>
+          <p>New ideas up next — we&rsquo;re always prototyping the next native app.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>iOS &#10035; ANDROID &#10035; PRODUCT DESIGN &#10035; BACKEND &#10035; iOS &#10035; ANDROID &#10035; PRODUCT DESIGN &#10035; BACKEND &#10035; </span>
+      <span>iOS &#10035; ANDROID &#10035; PRODUCT DESIGN &#10035; BACKEND &#10035; iOS &#10035; ANDROID &#10035; PRODUCT DESIGN &#10035; BACKEND &#10035; </span>
+    </div>
+  </div>
+
+  <!-- studio / what we do -->
+  <section class="container sec" id="studio">
+    <div class="studio-head">
+      <h2>What we<br>do.</h2>
+      <p>We take mobile products from idea to store listing — design, native engineering, and everything in between.</p>
+    </div>
+    <div class="services">
+      <div class="service"><div class="n">01</div><h3>iOS development</h3><p>Native Swift apps built for performance and the latest Apple platforms.</p></div>
+      <div class="service"><div class="n">02</div><h3>Android development</h3><p>Native Kotlin apps that feel right at home on every Android device.</p></div>
+      <div class="service"><div class="n">03</div><h3>Product design</h3><p>From first wireframe to polished UI — interfaces people love to use.</p></div>
+      <div class="service"><div class="n">04</div><h3>Backend &amp; API</h3><p>Reliable, secure infrastructure that keeps every app fast and in sync.</p></div>
+    </div>
+  </section>
+
+  <!-- facts -->
+  <section class="container sec">
+    <div class="facts">
+      <div class="fact"><div class="v">Native</div><div class="l">iOS-first development</div></div>
+      <div class="fact"><div class="v">2025</div><div class="l">Studio founded</div></div>
+      <div class="fact"><div class="v">İstanbul</div><div class="l">Where we build</div></div>
+    </div>
+  </section>
+
+  <!-- contact -->
+  <section class="container sec" id="contact">
+    <div class="contact-head"><h2>Get in touch</h2></div>
+    <a class="contact-card" href="mailto:hello@shimal.app">
+      <div class="cc-l">
+        <div class="k">Email</div>
+        <div class="v">hello@shimal.app</div>
+      </div>
+      <div class="cc-ic">&#9993;</div>
+    </a>
+  </section>
+
+  <!-- footer -->
+  <footer class="foot">
+    <div class="row">
+      <a class="brand" href="/">
+        <span class="mark" style="width:30px;height:30px;font-size:14px">S</span>
+        <span class="word" style="font-size:18px">shimal<span class="dot">.app</span></span>
+      </a>
+      <div class="legal">
+        <a href="challengebu/">ChallengeBu</a>
+        <a href="challengebu/gizlilik.html">Privacy</a>
+        <a href="challengebu/kosullar.html">Terms</a>
+      </div>
+      <div class="copy">© 2026 Shimal · Mobile Software Studio</div>
+    </div>
+  </footer>
+
+</body>
+</html>

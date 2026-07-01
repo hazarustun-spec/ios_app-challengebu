@@ -3,181 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ChallengeBu — Tenis Ligi</title>
+<title>ChallengeBu — Tenis Ligi · Shimal</title>
 <meta name="description" content="ChallengeBu: rakibine meydan oku, sıralama maçı oyna, ELO'nla tırman. Destek ve gizlilik bilgileri.">
-<meta name="theme-color" content="#2270BC">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --court:#2270BC; --court-deep:#1B5EA0; --lime:#8FD43B; --pink:#C81C82; --ink:#161618;
-  --paper:#EDF1F5; --frame:#FCFDFE; --t2:#5b6570; --t3:#9aa3ad; --line:#DCE4EC; --line2:#CBD6E0;
-  --disp:'Space Grotesk',sans-serif; --sans:'Hanken Grotesk',-apple-system,sans-serif;
-}
-html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
-.caps{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-a{color:inherit}
-
-.outer{max-width:1180px;margin:0 auto;padding:26px 40px;display:flex;align-items:center;justify-content:space-between}
-.outer .mark{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:-.02em}
-.outer .tag{color:var(--court)}
-
-.frame{max-width:1180px;margin:0 auto 60px;background:var(--frame);border:1px solid var(--line2);border-radius:10px;overflow:hidden}
-.win{display:flex;gap:7px;padding:16px 20px;border-bottom:1px solid var(--line)}
-.win i{width:11px;height:11px;border-radius:50%;background:var(--line2);display:block}
-.pad{padding:44px clamp(24px,5vw,70px) 60px}
-
-.inav{display:flex;align-items:center;justify-content:space-between;padding-bottom:44px}
-.inav .logo{display:flex;align-items:center;gap:11px;font-family:var(--disp);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink);letter-spacing:-.02em}
-.inav .logo .tile{width:30px;height:30px;border-radius:9px;background:var(--court);display:flex;align-items:center;justify-content:center}
-.inav .logo .tile svg{width:19px;height:19px}
-.inav .links{display:flex;gap:24px;align-items:center}
-.inav .links a{color:var(--t2);text-decoration:none}
-.inav .links a:hover{color:var(--court)}
-.inav .right{color:var(--t2);text-decoration:none}
-.inav .right:hover{color:var(--court)}
-
-.hero{max-width:640px;padding-bottom:52px;border-bottom:1px solid var(--line)}
-.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(38px,6vw,62px);line-height:1.02;letter-spacing:-.03em}
-.hero h1 em{font-style:normal;color:var(--court)}
-.hero p{margin-top:18px;max-width:500px;color:var(--t2);font-size:15.5px;line-height:1.65}
-
-.sec{padding-top:44px}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
-.sec-head h2{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:-.02em}
-.sec-head .count{color:var(--t3)}
-
-.grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line2);border-left:1px solid var(--line2)}
-.card{border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}
-.thumb{aspect-ratio:4/3;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.thumb .tile{width:60px;height:60px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.12)}
-.thumb .tile svg{width:30px;height:30px}
-.thumb .motif{position:absolute;right:-22px;bottom:-28px;opacity:.14;pointer-events:none}
-.thumb .motif svg{width:140px;height:140px}
-.meta{padding:16px 20px 20px}
-.meta h3{font-family:var(--disp);font-size:19px;font-weight:700;letter-spacing:-.02em}
-.meta .m{margin-top:7px;color:var(--t3)}
-.bg-court{background:var(--court)} .bg-lime{background:var(--lime)} .bg-pink{background:var(--pink)}
-
-.support{margin-top:44px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
-  background:var(--court);border-radius:20px;padding:30px 34px}
-.support h3{font-family:var(--disp);font-weight:700;font-size:22px;color:#fff;letter-spacing:-.02em}
-.support p{color:rgba(255,255,255,.8);font-size:14.5px;margin-top:4px}
-.support a.btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--court);text-decoration:none;
-  font-weight:800;font-size:15px;padding:13px 22px;border-radius:999px}
-
-.foot{max-width:1180px;margin:0 auto;padding:0 40px 60px;display:flex;align-items:center;justify-content:space-between;color:var(--t3)}
-.foot a{color:var(--t2);text-decoration:none}
-.foot a:hover{color:var(--court)}
-.foot .l a{margin-left:18px}
-
-@media(max-width:860px){.grid{grid-template-columns:1fr 1fr}.inav .links{display:none}}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.outer,.foot{padding-left:22px;padding-right:22px}.foot{flex-direction:column;gap:12px}.support{flex-direction:column;align-items:flex-start}}
-</style>
+<meta name="theme-color" content="#f1f1ee">
+<link rel="canonical" href="https://shimal.app/challengebu/">
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="outer">
-  <span class="mark">ChallengeBu</span>
-  <span class="tag caps">Tenis Ligi</span>
-</div>
-
-<div class="frame">
-  <div class="win"><i></i><i></i><i></i></div>
-  <div class="pad">
-
-    <nav class="inav">
-      <a href="index.html" class="logo">
-        <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 6.5C9 9.5 9 14.5 5.5 17.5M18.5 6.5C15 9.5 15 14.5 18.5 17.5"/></svg></span>
-        ChallengeBu
-      </a>
-      <div class="links caps">
-        <a href="#ozellikler">Özellikler</a>
-        <a href="#destek">Destek</a>
-        <a href="gizlilik.html">Gizlilik</a>
-        <a href="kosullar.html">Koşullar</a>
-      </div>
-      <a href="mailto:hello@shimal.app" class="right caps">İletişim</a>
-    </nav>
-
-    <header class="hero">
-      <h1>Meydan oku.<br>Tırman. <em>Şampiyon</em> ol.</h1>
-      <p>Rakibine meydan oku, sıralama maçı oyna, ELO'nla merdivende tırman. Sezonlar, finaller ve kilit ekranında canlı skor — hepsi tek uygulamada. Şimdilik Boğaziçi'ye özel.</p>
-    </header>
-
-    <section class="sec" id="ozellikler">
-      <div class="sec-head">
-        <h2>Nasıl çalışır</h2>
-        <span class="count caps">Altı adım</span>
-      </div>
-
-      <div class="grid">
-        <div class="card">
-          <div class="thumb bg-court">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5C5 5 5 11 9 11M16 5c3 0 3 6-1 6M10 16h4M9 20h6"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="var(--court)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5C5 5 5 11 9 11M16 5c3 0 3 6-1 6M10 16h4M9 20h6"/></svg></div>
-          </div>
-          <div class="meta"><h3>Sıralama Maçı</h3><p class="m caps">ELO Etkiler</p></div>
-        </div>
-        <div class="card">
-          <div class="thumb bg-lime">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4a7a15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></div>
-          </div>
-          <div class="meta"><h3>Seviye &amp; Rozet</h3><p class="m caps">Çaylak → Şampiyon</p></div>
-        </div>
-        <div class="card">
-          <div class="thumb bg-pink">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M12 3c1 4-2 5-2 8a4 4 0 0 0 8 0c0-2-1-3-2-5 0 2-1 3-2 3 0-3-2-6 0-9"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 4-2 5-2 8a4 4 0 0 0 8 0c0-2-1-3-2-5 0 2-1 3-2 3 0-3-2-6 0-9"/></svg></div>
-          </div>
-          <div class="meta"><h3>Sezon &amp; Final</h3><p class="m caps">İlk 8 · Bracket</p></div>
-        </div>
-        <div class="card">
-          <div class="thumb bg-court">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="var(--court)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
-          </div>
-          <div class="meta"><h3>Canlı Skor</h3><p class="m caps">Kilit Ekranı</p></div>
-        </div>
-        <div class="card">
-          <div class="thumb bg-lime">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4a7a15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
-          </div>
-          <div class="meta"><h3>Kategoriler</h3><p class="m caps">Tek · Çift · Open</p></div>
-        </div>
-        <div class="card">
-          <div class="thumb bg-pink">
-            <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M4 20c0-3 2-5 5-5s5 2 5 5M14 20c0-2 1-4 3-4s3 1 3 3"/></svg></div>
-            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M4 20c0-3 2-5 5-5s5 2 5 5M14 20c0-2 1-4 3-4s3 1 3 3"/></svg></div>
-          </div>
-          <div class="meta"><h3>Dostluk Maçı</h3><p class="m caps">ELO'suz · Keyif</p></div>
-        </div>
-      </div>
-
-      <div class="support" id="destek">
-        <div>
-          <h3>Destek &amp; İletişim</h3>
-          <p>Bir sorun mu var, bir önerin mi? Bize yaz — en kısa sürede döneriz.</p>
-        </div>
-        <a class="btn" href="mailto:hello@shimal.app">hello@shimal.app</a>
-      </div>
-    </section>
-
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 6.5C9 9.5 9 14.5 5.5 17.5M18.5 6.5C15 9.5 15 14.5 18.5 17.5"/></svg></span>
+      ChallengeBu
+    </a>
+    <div class="links">
+      <a class="link" href="#ozellikler">Özellikler</a>
+      <a class="link" href="#destek">Destek</a>
+      <a class="link" href="gizlilik.html">Gizlilik</a>
+      <a class="link" href="kosullar.html">Koşullar</a>
+      <a class="back" href="../">← shimal.app</a>
+    </div>
   </div>
-</div>
+</nav>
 
-<footer class="foot">
-  <span class="caps">© 2026 ChallengeBu · Shimal</span>
-  <span class="l">
-    <a href="../">Shimal</a>
-    <a href="gizlilik.html">Gizlilik &amp; KVKK</a>
-    <a href="kosullar.html">Koşullar</a>
-  </span>
+<main class="wrap">
+
+  <header class="hero">
+    <span class="tag">Tenis Ligi · iOS</span>
+    <h1>Meydan oku.<br>Tırman. <em>Şampiyon</em> ol.</h1>
+    <p>Rakibine meydan oku, sıralama maçı oyna, ELO'nla merdivende tırman. Sezonlar, finaller ve kilit ekranında canlı skor — hepsi tek uygulamada. Şimdilik Boğaziçi'ye özel.</p>
+  </header>
+
+  <section class="sec" id="ozellikler">
+    <div class="sec-head">
+      <h2>Nasıl çalışır</h2>
+      <span class="count">Altı adım</span>
+    </div>
+
+    <div class="grid">
+      <div class="feat">
+        <div class="thumb bg-court">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5C5 5 5 11 9 11M16 5c3 0 3 6-1 6M10 16h4M9 20h6"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#2270BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5C5 5 5 11 9 11M16 5c3 0 3 6-1 6M10 16h4M9 20h6"/></svg></div>
+        </div>
+        <div class="meta"><h3>Sıralama Maçı</h3><p class="m">ELO Etkiler</p></div>
+      </div>
+      <div class="feat">
+        <div class="thumb bg-lime">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4a7a15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></div>
+        </div>
+        <div class="meta"><h3>Seviye &amp; Rozet</h3><p class="m">Çaylak → Şampiyon</p></div>
+      </div>
+      <div class="feat">
+        <div class="thumb bg-pink">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M12 3c1 4-2 5-2 8a4 4 0 0 0 8 0c0-2-1-3-2-5 0 2-1 3-2 3 0-3-2-6 0-9"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#C81C82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 4-2 5-2 8a4 4 0 0 0 8 0c0-2-1-3-2-5 0 2-1 3-2 3 0-3-2-6 0-9"/></svg></div>
+        </div>
+        <div class="meta"><h3>Sezon &amp; Final</h3><p class="m">İlk 8 · Bracket</p></div>
+      </div>
+      <div class="feat">
+        <div class="thumb bg-court">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#2270BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+        </div>
+        <div class="meta"><h3>Canlı Skor</h3><p class="m">Kilit Ekranı</p></div>
+      </div>
+      <div class="feat">
+        <div class="thumb bg-lime">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4a7a15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
+        </div>
+        <div class="meta"><h3>Kategoriler</h3><p class="m">Tek · Çift · Open</p></div>
+      </div>
+      <div class="feat">
+        <div class="thumb bg-pink">
+          <div class="motif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M4 20c0-3 2-5 5-5s5 2 5 5M14 20c0-2 1-4 3-4s3 1 3 3"/></svg></div>
+          <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#C81C82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M4 20c0-3 2-5 5-5s5 2 5 5M14 20c0-2 1-4 3-4s3 1 3 3"/></svg></div>
+        </div>
+        <div class="meta"><h3>Dostluk Maçı</h3><p class="m">ELO'suz · Keyif</p></div>
+      </div>
+    </div>
+
+    <div class="support" id="destek">
+      <div>
+        <h3>Destek &amp; İletişim</h3>
+        <p>Bir sorun mu var, bir önerin mi? Bize yaz — en kısa sürede döneriz.</p>
+      </div>
+      <a class="btn" href="mailto:hello@shimal.app">hello@shimal.app</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <a href="../">Shimal</a>·
+      <a href="gizlilik.html">Gizlilik &amp; KVKK</a>·
+      <a href="kosullar.html">Koşullar</a>
+    </div>
+    © 2026 ChallengeBu · Shimal
+  </div>
 </footer>
 
 </body>
