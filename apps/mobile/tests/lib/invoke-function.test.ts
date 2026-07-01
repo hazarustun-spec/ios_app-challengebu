@@ -32,6 +32,28 @@ describe('invoke-function', () => {
     globalThis.fetch = originalFetch;
   });
 
+  test('invokeFunction omits Authorization header when no access token is given', async () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'anon-test-key-aaaaaaaaaaaaaaaaaaaaa';
+    const originalFetch = globalThis.fetch;
+    let capturedHeaders: Record<string, string> = {};
+    globalThis.fetch = mock(async (_url: string, init: RequestInit) => {
+      capturedHeaders = (init.headers ?? {}) as Record<string, string>;
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as unknown as typeof fetch;
+
+    const { invokeFunction } = await import('../../lib/invoke-function');
+    await invokeFunction('test-fn', {});
+    expect('Authorization' in capturedHeaders).toBe(false);
+    // The anon apikey is still sent so the gateway accepts the call.
+    expect(capturedHeaders.apikey).toBe('anon-test-key-aaaaaaaaaaaaaaaaaaaaa');
+
+    globalThis.fetch = originalFetch;
+  });
+
   test('invokeFunction returns parsed JSON on 2xx', async () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'anon-test-key-aaaaaaaaaaaaaaaaaaaaa';

@@ -14,13 +14,16 @@ export class EdgeFunctionError extends Error {
 export async function invokeFunction<TResponse = unknown>(
   name: string,
   body: unknown,
-  accessToken: string,
+  // Optional: unauthenticated endpoints (e.g. review-login, called before the
+  // user has a session) omit the Authorization header. The anon apikey below is
+  // always sent so the gateway still accepts the call.
+  accessToken?: string,
 ): Promise<TResponse> {
   const res = await fetch(`${env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/${name}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       apikey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),

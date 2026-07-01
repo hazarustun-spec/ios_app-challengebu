@@ -55,3 +55,9 @@ enable_signup = false
 [edge_runtime]
 enabled = true
 inspector_port = 8083
+
+# review-login is called by the App Store reviewer before they have a session,
+# so it must accept unauthenticated requests. It gates itself: only the review
+# email + the fixed REVIEW_OTP_CODE secret can mint a session.
+[functions.review-login]
+verify_jwt = false

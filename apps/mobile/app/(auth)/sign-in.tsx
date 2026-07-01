@@ -19,6 +19,7 @@ import {
 import { router } from 'expo-router';
 import {
   BOUN_EMAIL_ERROR_TR,
+  isReviewEmail,
   validateBouniMail,
 } from '@tennis/shared/schemas';
 import { getOtpOptions } from '@tennis/shared';
@@ -48,6 +49,13 @@ export default function SignIn() {
 
   const handleSend = async () => {
     if (!canSubmit) return;
+    // App Store review account: no mail is sent (the reviewer can't read the
+    // mailbox). Skip straight to the OTP screen, which collects the fixed review
+    // code and authenticates via the review-login function.
+    if (isReviewEmail(trimmed)) {
+      router.push({ pathname: '/(auth)/otp', params: { email: trimmed } });
+      return;
+    }
     setSending(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({

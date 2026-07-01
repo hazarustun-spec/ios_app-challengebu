@@ -22,6 +22,15 @@ export function validateBouniMail(email: string): boolean {
   return ALLOWED_BOUN_DOMAINS.some((domain) => lower.endsWith(`@${domain}`));
 }
 
+/**
+ * True only for the dedicated App Store review mailbox. The sign-in/OTP screens
+ * use this to route through the fixed-code review-login Edge Function instead of
+ * the normal email-OTP flow (the reviewer can't read the mailbox).
+ */
+export function isReviewEmail(email: string): boolean {
+  return REVIEW_EMAILS.includes(email.toLowerCase().trim());
+}
+
 export const PRONOUN_VALUES = ['he/him', 'she/her', 'they/them', 'other'] as const;
 export const GENDER_CATEGORY_VALUES = ['erkek', 'kadin', 'open_only'] as const;
 export const CLASS_YEAR_VALUES = ['hazirlik', '1', '2', '3', '4', 'yl', 'doktora'] as const;

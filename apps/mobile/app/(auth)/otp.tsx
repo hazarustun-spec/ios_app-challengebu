@@ -21,6 +21,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   getOtpOptions,
+  isReviewEmail,
   OTP_LENGTH,
   OTP_RESEND_COOLDOWN_SEC,
 } from '@tennis/shared';
@@ -29,6 +30,7 @@ import { Icon } from '../../components/ui/Icon';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { colors } from '../../theme/colors';
 import { supabase } from '../../lib/supabase';
+import { reviewLogin } from '../../lib/review-auth';
 import { useAuthStore } from '../../stores/auth-store';
 
 export default function OtpScreen() {
@@ -82,6 +84,14 @@ export default function OtpScreen() {
     }
     setVerifying(true);
     try {
+      // App Store review account: authenticate the fixed review code via the
+      // review-login function instead of the normal mailed-OTP verification.
+      if (isReviewEmail(email)) {
+        const session = await reviewLogin(email, token);
+        setSession(session);
+        router.replace('/');
+        return;
+      }
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token,
@@ -105,6 +115,8 @@ export default function OtpScreen() {
 
   const handleResend = async () => {
     if (resendCooldown > 0 || !email) return;
+    // Review account: nothing is mailed, so there is nothing to resend.
+    if (isReviewEmail(email)) return;
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,

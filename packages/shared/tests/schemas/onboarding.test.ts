@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   ALLOWED_BOUN_DOMAINS,
+  isReviewEmail,
   onboardingSchema,
   validateBouniMail,
 } from '../../src/schemas/onboarding.js';
@@ -40,6 +41,18 @@ describe('BÜ email validation', () => {
 
   test('case insensitive', () => {
     expect(validateBouniMail('Foo@STD.BOGAZICI.EDU.TR')).toBe(true);
+  });
+
+  test('isReviewEmail matches the App Store review mailbox', () => {
+    expect(isReviewEmail('appreview42@proton.me')).toBe(true);
+  });
+
+  test('isReviewEmail is case-insensitive and trims', () => {
+    expect(isReviewEmail('  APPREVIEW42@Proton.Me  ')).toBe(true);
+  });
+
+  test('isReviewEmail is false for a normal BÜ email', () => {
+    expect(isReviewEmail('ayse.fatma@std.bogazici.edu.tr')).toBe(false);
   });
 
   test('ALLOWED_BOUN_DOMAINS has 5 entries', () => {
