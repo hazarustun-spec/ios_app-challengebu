@@ -109,6 +109,14 @@ export default function Settings() {
             chevron
             onPress={() => router.push('/profile/edit' as never)}
           />
+          <Divider />
+          <ListRow
+            icon="ban"
+            title="Engellenen kullanıcılar"
+            subtitle="Engeli kaldırabilirsin"
+            chevron
+            onPress={() => router.push('/settings/blocked' as never)}
+          />
         </Section>
 
         <Section label="Diğer">
