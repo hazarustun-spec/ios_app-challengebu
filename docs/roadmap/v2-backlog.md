@@ -96,6 +96,48 @@ seasons, leaderboard, badges, streaks, live score) already ships.
 
 ---
 
+## 5 · More v2 ideas (raw — from the operator, 2026-07-01)
+
+### Features
+- **Friend system** — add/follow friends (pairs with the social feed in §4).
+- **Post-match photo** — attach a photo to a finished match (memory + social).
+- **Match deletion** — let a user delete/cancel a match they created.
+- **Court-reservation warning before a match offer** — "Listings created without a
+  court reservation may affect your ELO; reserve a court first." (ELO integrity +
+  logistics nudge; possibly integrate court booking.)
+- **In-app mascot** — a character for personality / onboarding / engagement.
+
+### Gamification
+- **Stars currency** — earn stars for **playing** a match (win OR lose → rewards
+  participation, not just winning); spend stars on profile/app customizations.
+  Strong retention hook (shows up even after losses). Ties into §4 league/badges.
+
+### Onboarding & admin
+- **Additional onboarding questions** (see the data list in §4).
+- **Admin panel enrichment** (see §4).
+
+### Growth & platform
+- **Android version.**
+- **Website** — expand beyond the current landing (live at shimal.app/challengebu).
+
+### Monetization (decisions to make)
+- **Monetization strategy — "how does it make money?"** — options: subscriptions
+  (premium stats/features), court-booking commissions/partnerships, sponsorships,
+  paid tournaments. Pick a model.
+- **Data selling — decision.** Currently declared **NO** in App Privacy (no
+  tracking, no selling). If ever monetizing via data, it requires re-declaring App
+  Privacy + updating the privacy policy / KVKK + explicit user consent. Default
+  stance: **do not sell** (trust > short-term revenue).
+
+### UI
+- **General UI polish** (ongoing).
+
+### Already shipped (noted so it isn't re-planned)
+- **Report / şikayet et** — done (in-thread ⋯ menu + admin moderation queue).
+- **Block + blocked-list + unblock** — done (App Store Guideline 1.2).
+
+---
+
 ## Also consciously deferred (noted, out of this list's scope)
 
 - **Dark mode** — the user explicitly declined it for v1.
