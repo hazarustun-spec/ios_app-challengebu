@@ -93,7 +93,8 @@
   .chip:hover{opacity:.88}
 
   .apps-soon{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-  .soon-card{background:var(--card);border:1px dashed var(--line);border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:16px;min-height:180px}
+  .soon-card{background:var(--card);border:1px dashed var(--line);border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:16px;min-height:180px;text-decoration:none;color:inherit;transition:transform .12s ease,border-color .12s ease}
+  a.soon-card:hover{border-color:var(--accent);transform:translateY(-2px)}
   .soon-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .soon-ic{width:64px;height:64px;border-radius:16px;background:#ecebe6;display:flex;align-items:center;justify-content:center;font-size:26px}
   .soon-tag{font-size:11px;font-weight:700;color:#888;border:1.5px solid #d4d4cf;border-radius:999px;padding:3px 10px;white-space:nowrap}
@@ -224,7 +225,7 @@
 
     <div class="status soon"><span class="dot"></span><span class="label">Coming soon</span></div>
     <div class="apps-soon">
-      <div class="soon-card">
+      <a class="soon-card" href="shimal/">
         <div class="soon-top">
           <div class="soon-ic">&#9728;</div>
           <span class="soon-tag">SOON</span>
@@ -233,7 +234,7 @@
           <h3>Shimal</h3>
           <p>A daily astrology companion — your sky, your chart, your day, beautifully simple. In the studio right now.</p>
         </div>
-      </div>
+      </a>
       <div class="soon-card">
         <div class="soon-top">
           <div class="soon-ic">&#9727;</div>
@@ -299,8 +300,8 @@
       </a>
       <div class="legal">
         <a href="challengebu/">ChallengeBu</a>
-        <a href="challengebu/gizlilik.html">Privacy</a>
-        <a href="challengebu/kosullar.html">Terms</a>
+        <a href="shimal/">Shimal</a>
+        <a href="mailto:hello@shimal.app">Contact</a>
       </div>
       <div class="copy">© 2026 Shimal · Mobile Software Studio</div>
     </div>
