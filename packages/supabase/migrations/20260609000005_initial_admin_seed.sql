@@ -15,7 +15,7 @@
 
 do $$
 declare
-  target_email text := 'CHANGE_ME_BEFORE_DEPLOY@example.com';
+  target_email text := 'hazar.ustun@std.bogazici.edu.tr';
 begin
   if target_email = 'CHANGE_ME_BEFORE_DEPLOY@example.com' then
     raise notice 'initial-admin-seed: placeholder email not replaced, skipping';
