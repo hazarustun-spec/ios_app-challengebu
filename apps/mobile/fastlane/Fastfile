@@ -1,0 +1,27 @@
+# fastlane lanes for ChallengeBu (App Store Connect automation).
+# Secrets come from env vars — nothing sensitive is committed here.
+
+default_platform(:ios)
+
+platform :ios do
+  # Authenticate Spaceship with the App Store Connect API key (env-driven).
+  private_lane :asc_auth do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_filepath: ENV.fetch("ASC_KEY_PATH"),
+      in_house: false,
+    )
+  end
+
+  # Upload the App Privacy (data-collection) details from app_privacy_details.json.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane privacy
+  lane :privacy do
+    asc_auth
+    upload_app_privacy_details_to_app_store(
+      app_identifier: "app.challengebu.ios",
+      json_path: "fastlane/app_privacy_details.json",
+      skip_json_file_saving: true,
+    )
+  end
+end
