@@ -12,9 +12,9 @@ export const BOUN_EMAIL_ERROR_TR =
   'Sadece BÜ e-postası kabul edilir (@std.bogazici.edu.tr, @bogazici.edu.tr, @pt.bogazici.edu.tr, @retired.bogazici.edu.tr veya @alumni.bogazici.edu.tr)';
 
 // App Store review account: the reviewer can't access a Boğaziçi inbox, so this
-// single dedicated address (a real mailbox we control on shimal.app) is allowed
-// through. It is NOT a Boğaziçi domain — only this exact address passes.
-export const REVIEW_EMAILS: readonly string[] = ['appreview@shimal.app'];
+// single dedicated mailbox (a real inbox we control, for retrieving the OTP) is
+// allowed through. It is NOT a Boğaziçi domain — only this exact address passes.
+export const REVIEW_EMAILS: readonly string[] = ['appreview42@proton.me'];
 
 export function validateBouniMail(email: string): boolean {
   const lower = email.toLowerCase().trim();
