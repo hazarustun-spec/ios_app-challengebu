@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.challengebu.ios",
+      "buildNumber": "2",
       "appleTeamId": "4MBWF4RGV7",
       "entitlements": {
         "com.apple.security.application-groups": ["group.app.challengebu.ios"]
