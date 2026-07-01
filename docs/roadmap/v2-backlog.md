@@ -57,6 +57,45 @@ finishing it needs, and rough effort.
 
 ---
 
+## 4 · Engagement, retention & growth (product — v1.1+)
+
+From the pre-launch product discussion. Not launch-critical; the core loop (ELO,
+seasons, leaderboard, badges, streaks, live score) already ships.
+
+### Admin
+- **Enrich the admin Users screen** — show department, self-level, ELO, match
+  count, last-active, phone at a glance (currently email + role only), so the
+  operator manages from the app instead of the Supabase Table Editor.
+
+### Onboarding / profile data (collect progressively — mind friction + App Privacy)
+- **Campus / preferred court** (Güney / Kuzey / Kandilli) → proximity matchmaking.
+- **Goal** (competition / fun / training) → personalization + better opponents.
+- **Weekly play-frequency target** → reminders + retention.
+- **Instagram / WhatsApp handle** (optional) → easier match coordination.
+- **Experience** (years played / tournament history) → better starting ELO.
+- Keep onboarding SHORT; collect the rest post-signup ("complete your profile").
+
+### Competition
+- **League / division system** (weekly promotion & relegation, Duolingo-style) —
+  strongest retention mechanic.
+- **Rivalry card** (head-to-head record) + **rematch** prompts.
+- **"X is about to pass you"** notification → FOMO.
+- **Department-vs-department derby** → team belonging.
+
+### Retention
+- **Weekly recap** ("3 matches, +24 ELO, up 2 spots").
+- **Re-engagement push** ("you haven't played in 3 days; X is waiting").
+- **Weekly goals + streak rewards** (extend the existing win-streak flame).
+
+### Growth
+- **Invite / referral system** (invite a friend → both earn a badge) → viral + engagement.
+- **Social feed** (see friends' matches / rank climbs).
+
+### Progression
+- More **badges / achievements** + **season rewards** (digital medal / certificate).
+
+---
+
 ## Also consciously deferred (noted, out of this list's scope)
 
 - **Dark mode** — the user explicitly declined it for v1.
