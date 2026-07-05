@@ -10,6 +10,9 @@ adapted here (Splash → Welcome was added in front of the email screen).
 
 ## Flows
 - `smoke.yaml` — launches the app (target sanity check).
+- `review-login.yaml` — App Store review path (`appreview42@proton.me` + code
+  `424242` via `review-login` Edge Function; no Mailpit). Use for CI / resubmit QA.
+- `ci-suite.yaml` — chains smoke → login → onboarding → leaderboard → profile → settings.
 - `login.yaml` — full email-OTP sign-in: Welcome → email → KVKK → "Kod gönder"
   → `get-otp.js` (reads the code from local Mailpit) → 6-digit entry. Lands a
   NEW account on onboarding step 1. Pass `-e EMAIL=…`.

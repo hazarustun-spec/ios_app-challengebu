@@ -41,3 +41,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# @bacons/apple-targets generated entitlements
+targets/live-activity/generated.entitlements
+
+# fastlane local reports
+fastlane/report.xml

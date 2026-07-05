@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, plan-8-ui-redesign]
   pull_request:
-    branches: [main]
+    branches: [main, plan-8-ui-redesign]
+  workflow_dispatch:
 
 jobs:
   shared-tests:
@@ -131,34 +132,75 @@ jobs:
         working-directory: packages/supabase
         run: supabase stop
 
-  # Optional Maestro E2E job — DISABLED by default (`if: false`).
-  #
-  # This is intentionally a non-gating stub: enabling it requires a macOS
-  # runner that the hosted CI does not currently provide. To run it you need:
-  #   1. A macOS runner (`runs-on: macos-latest`) with Xcode + an iOS Simulator.
-  #   2. A simulator build of the app installed + booted
-  #      (e.g. `npx expo run:ios` from apps/mobile; eas `dev` profile is
-  #      simulator-enabled).
-  #   3. The local Supabase stack running (`supabase start`) so the app can
-  #      talk to the backend.
-  #   4. A signed-in session: Maestro cannot drive the magic-link / email-OTP
-  #      login, so resolve auth via the Mailpit inbox (Inbucket on
-  #      http://127.0.0.1:54324) — fetch the OTP from the local mail server —
-  #      or inject a Supabase session for a password-auth test user.
-  #   5. A 0-0 `MATCH_ID` the signed-in user participates in, created via
-  #      SQL/API in a setup step, then:
-  #        maestro test -e MATCH_ID=<uuid> apps/mobile/.maestro/score-undo.yaml
-  #
-  # Flip `if:` to a real condition (or remove the guard) once a macOS runner
-  # with the auth flow is wired up. CI must NOT hard-fail on Maestro until then.
+  # Maestro E2E — macOS runner + iOS Simulator. Runs review-login (no Mailpit).
+  # Full ci-suite needs a simulator build installed first (see apps/mobile/scripts/maestro-ci.sh).
   maestro-e2e:
-    if: false
     runs-on: macos-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
-      - name: Maestro E2E (stub — see job comment for prerequisites)
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Setup Java 17 (Maestro)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Maestro
         run: |
-          echo "Maestro E2E is a documented stub; see the job comment in ci.yml."
-          echo "Needs: macOS runner + simulator build + local Supabase stack + Mailpit OTP auth."
-          exit 0
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start Supabase + reset DB
+        working-directory: packages/supabase
+        run: |
+          supabase start
+          supabase db reset --no-seed=false
+
+      - name: Serve Edge Functions (review-login secret)
+        working-directory: packages/supabase
+        run: |
+          nohup supabase functions serve --no-verify-jwt --env-file functions/.env.test \
+            > /tmp/functions-serve.log 2>&1 &
+          for i in {1..90}; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:54321/functions/v1/ || echo 0)
+            if [ "$code" != "0" ] && [ "$code" != "000" ]; then echo "Functions ready"; exit 0; fi
+            sleep 1
+          done
+          cat /tmp/functions-serve.log
+          exit 1
+
+      - name: Capture local Supabase env for the app build
+        working-directory: packages/supabase
+        run: |
+          echo "EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" >> $GITHUB_ENV
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=$(supabase status --output json | jq -r .ANON_KEY)" >> $GITHUB_ENV
+
+      - name: Build and install on iOS Simulator
+        working-directory: apps/mobile
+        env:
+          CI: "1"
+        run: |
+          xcrun simctl boot "iPhone 16" 2>/dev/null || true
+          npx expo run:ios --simulator "iPhone 16"
+
+      - name: Maestro review-login
+        working-directory: apps/mobile
+        run: maestro test .maestro/review-login.yaml
+
+      - name: Dump logs on failure
+        if: failure()
+        run: cat /tmp/functions-serve.log || true

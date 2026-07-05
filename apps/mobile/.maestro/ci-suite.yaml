@@ -1,0 +1,18 @@
+# ci-suite.yaml — ordered Maestro flows for CI / local regression.
+#
+# Prereqs: local Supabase + Mailpit (login) OR review-login path; app installed
+# on a booted iOS Simulator (app.challengebu.ios).
+#
+# Run (full new-user path):
+#   maestro test -e EMAIL=maestro-ci@std.bogazici.edu.tr .maestro/ci-suite.yaml
+#
+# Run (review path — no Mailpit):
+#   maestro test .maestro/review-login.yaml
+appId: app.challengebu.ios
+---
+- runFlow: smoke.yaml
+- runFlow: login.yaml
+- runFlow: onboarding.yaml
+- runFlow: leaderboard.yaml
+- runFlow: profile.yaml
+- runFlow: settings.yaml

@@ -1,97 +1,90 @@
 # Production release runbook
 
-Cloud project: `zbjkauljjdosyuwguuhv` (Supabase). iOS app id: `app.challengebu.ios`,
-Apple team `4MBWF4RGV7`.
+Cloud project: `zbjkauljjdosyuwguuhv` (Supabase). iOS bundle id: `app.challengebu.ios`,
+Apple team `4MBWF4RGV7`, App Store Connect id `6785916807`.
 
-This covers the two launch blockers that are **account/dashboard** work (the
-code/config is already in the repo). Do them before the first TestFlight/App
-Store build.
-
----
-
-## 2. Production email (SMTP) — REQUIRED for real OTP login
-
-Locally, auth emails go to Mailpit/Inbucket. The **hosted** project has no custom
-SMTP, so Supabase's built-in mailer is used — which is rate-limited to a handful
-of emails/hour and **not usable for real users**. Configure a real provider.
-
-### a) Pick an SMTP provider
-Any works; cheapest to start: **Resend** (free tier) or **Brevo**. Create an
-account, verify your sending domain (or use their shared sender for testing),
-and get SMTP credentials (host, port `587`, username, password) + a verified
-**From** address (e.g. `noreply@challengebu.app`).
-
-### b) Configure SMTP on the hosted project
-Supabase Dashboard → **Authentication → Emails → SMTP Settings**:
-- Enable **Custom SMTP**
-- Host / Port (587) / Username / Password from the provider
-- **Sender email** = your verified From address, Sender name = `ChallengeBu`
-
-### c) Set the OTP email templates on the hosted project
-The app's sign-in shows a **6-digit code** screen, so the emails must contain the
-code (`{{ .Token }}`), not just a magic link. Locally this is wired via
-`packages/supabase/config.toml` → `packages/supabase/templates/otp-code.html`.
-On the hosted project, set the same content in
-Dashboard → **Authentication → Emails → Templates**:
-- **Confirm signup** → paste the body of `packages/supabase/templates/otp-code.html`
-- **Magic Link** → same content
-(Both must surface `{{ .Token }}`. Subject e.g. "ChallengeBu giriş kodun".)
-
-### d) Site URL / redirects
-Dashboard → **Authentication → URL Configuration**:
-- **Site URL** = your production web URL (config.toml's `http://localhost:3000` is
-  local-only; the OTP flow uses the code, but magic-link/redirect needs a real URL).
-- Add any redirect URLs the app uses.
-
-> Verify: request an OTP from a TestFlight build with a real email — the 6-digit
-> code should arrive from your domain within seconds.
+**Durum (2026-07):** v1 özellik seti tamam. İlk submission **reddedildi** (Guideline 2.1 —
+reviewer OTP girişini anlayamadı). Resubmit adımları: `docs/APP_STORE_RESUBMIT.md`.
 
 ---
 
-## 3. APNs production host — REQUIRED for push on TestFlight/App Store
+## Tamamlanan prod yapılandırma
 
-Dev (Xcode) builds use the APNs **sandbox**; TestFlight & App Store builds use
-**production** APNs. The push host is a Vault value so it flips without a redeploy.
-Currently `apns_host` = sandbox (for dev testing).
+| Madde | Durum |
+|-------|--------|
+| Hosted Supabase URL + anon key (EAS / `.env.production`) | ✅ |
+| Custom SMTP (OTP e-postası) | ✅ (operatör tarafında kurulu) |
+| App Store Connect kaydı + `eas.json` ascAppId | ✅ |
+| Fastlane metadata + screenshots (`apps/mobile/fastlane/`) | ✅ |
+| KVKK / gizlilik / koşullar (`shimal.app/challengebu`) | ✅ |
+| App Privacy JSON (`fastlane/app_privacy_details.json`) | ✅ (Fastlane `privacy` lane ile yüklenebilir) |
+| `review-login` Edge Function (App Store inceleme OTP bypass) | ✅ kodda |
+| Destek e-postası | `hello@shimal.app` |
 
-**When you ship the production/TestFlight build**, run
-`packages/supabase/scripts/set-apns-prod-host.sql` (Dashboard → SQL Editor) to set:
+---
+
+## Resubmit öncesi kontrol listesi
+
+### 1. App Store review girişi (kritik — red sebebi)
+
+Uygulama **şifre kullanmaz**; yalnızca e-posta + 6 haneli OTP.
+
+1. Hosted Supabase → Edge Functions → Secrets: **`REVIEW_OTP_CODE=424242`**
+2. `review-login` fonksiyonu deploy edilmiş ve `verify_jwt = false` (bkz. `packages/supabase/config.toml`)
+3. App Store Connect → App Review Information → Notes: içeriği
+   `apps/mobile/fastlane/metadata/review_information/notes.txt` dosyasından yapıştır
+4. Demo account alanında:
+   - **Username:** `appreview42@proton.me`
+   - **Password:** `424242` (6 haneli OTP — şifre değil; notlarda açıkla)
+5. İnceleme hesabının onboarding'i tamamlanmış olması önerilir (tam özellik erişimi için)
+
+### 2. Demo video (Apple'ın ikinci red maddesi)
+
+Fiziksel iPhone'da ekran kaydı: welcome → e-posta → KVKK → OTP → onboarding (zorunlu alanlar) → ana sekmeler. Video URL'sini App Review Information → Notes alanına ekle.
+
+### 3. APNs production host (TestFlight / App Store push)
+
+Dev (Xcode) build'leri APNs **sandbox** kullanır; TestFlight ve App Store **production** kullanır.
+
+Yayın build'i göndermeden önce Supabase Dashboard → SQL Editor:
+
+```sql
+-- packages/supabase/scripts/set-apns-prod-host.sql
 ```
-apns_host = https://api.push.apple.com
+
+⚠️ Production'a geçince Xcode dev push'u durur. Geri dönmek için host'u `https://api.sandbox.push.apple.com` yap.
+
+### 4. EAS build + submit
+
+```sh
+cd apps/mobile
+eas build --profile production --platform ios
+# TestFlight'ta smoke test (OTP, push, maç akışı)
+eas submit --profile production --platform ios --latest
 ```
-⚠️ This makes production push work and **stops** dev/Xcode (sandbox) push. To go
-back to local device testing, set it to `https://api.sandbox.push.apple.com`.
 
-(One Vault value = one environment at a time. If you need both simultaneously
-later, store the token's environment per row and pick the host accordingly — a
-follow-up, not needed for launch.)
+### 5. Fastlane App Privacy (1.7 — isteğe bağlı ama önerilir)
 
----
+Apple'ın veri toplama bildirimini ASC'ye JSON'dan yükler:
 
-## Other launch items (not in this runbook — for reference)
-- App Store Connect app registration → put the real `ascAppId` in `eas.json`
-  (currently `FILL_AFTER_ASC_REGISTRATION`).
-- Store metadata: screenshots, description, **Privacy Policy URL** (host real KVKK
-  / privacy pages — currently `hazarustun-spec.github.io` spec pages), support URL.
-- App Privacy (data-collection disclosure) + export compliance
-  (`ITSAppUsesNonExemptEncryption`) + age rating.
-- `eas build --profile production` → TestFlight → `eas submit`.
+```sh
+cd apps/mobile
+ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane ios privacy
+```
+
+Gerekli: App Store Connect API key (.p8). Kod repoda; tek seferlik dashboard işi.
 
 ---
 
-## Local native rebuild gotcha (this machine)
+## Live Activity native extension (2.1 açıklama)
 
-Adding a native module (e.g. `expo-blur`) needs `pod install`, which can fail on
-this machine because Homebrew bumped Ruby to 4.0 (breaking the gem CocoaPods) and
-the project's Xcode-16 `objectVersion = 70` isn't understood by the available
-`xcodeproj`. What worked:
+`apps/mobile/targets/live-activity/` — iOS kilit ekranı canlı skor widget'ı (WidgetKit / ActivityKit).
+`app.json` → `extra.eas.build.experimental.ios.appExtensions` EAS cloud build'in extension'ı
+derlemesini sağlar. Yerel `pod install` gerekmez; **EAS production build** yolu tercih edilir.
 
-1. Run pod install under the still-installed Ruby 3.4.1 (which has `xcodeproj 1.27`):
-   `/opt/homebrew/Cellar/ruby/3.4.1/bin/ruby /opt/homebrew/lib/ruby/gems/3.4.0/bin/pod install`
-2. If it still errors on `object version 70`, lower it in
-   `ios/ChallengeBu.xcodeproj/project.pbxproj` (`objectVersion = 70;` → `60;`).
-   Xcode 16 opens/builds a v60 project fine; this is local-only (ios/ is gitignored).
-3. `npx expo run:ios` then builds (it installs its own CocoaPods if PATH's is broken).
+---
 
-**EAS cloud builds (`eas build`) need NONE of this** — they have a clean toolchain.
-The simplest path for native features is a production EAS build.
+## Yerel native build notu (bu makine)
+
+`docs/RELEASE.md` önceki sürümündeki CocoaPods / objectVersion 70 workaround'u hâlâ geçerli.
+EAS cloud build bu sorunlardan etkilenmez.

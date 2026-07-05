@@ -45,6 +45,7 @@ export default function SignIn() {
   const trimmed = email.trim();
   const dirty = trimmed.length > 3;
   const valid = validateBouniMail(trimmed);
+  const isReview = isReviewEmail(trimmed);
   const canSubmit = valid && kvkkAccepted && !sending;
 
   const handleSend = async () => {
@@ -157,6 +158,21 @@ export default function SignIn() {
           ))}
         </View>
 
+        {isReview && valid && (
+          <Text
+            className="font-sans text-text-2"
+            style={{
+              fontSize: 13,
+              lineHeight: 19,
+              marginTop: 16,
+              textAlign: 'center',
+            }}
+          >
+            App Review hesabı: e-postayı gir, KVKK onayla, ardından OTP ekranında
+            App Store Connect notlarındaki 6 haneli kodu kullan (şifre alanı yok).
+          </Text>
+        )}
+
         {/* KVKK + privacy consent — the checkbox is its own control so tapping
             it toggles, while the inline links open their legal pages. */}
         <View
@@ -240,7 +256,7 @@ export default function SignIn() {
           loading={sending}
           onPress={handleSend}
         >
-          {sending ? 'Gönderiliyor…' : 'Kod gönder'}
+          {sending ? 'Gönderiliyor…' : isReview ? 'Devam et' : 'Kod gönder'}
         </Button>
       </View>
     </View>

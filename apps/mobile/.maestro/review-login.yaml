@@ -1,0 +1,36 @@
+# review-login.yaml — App Store review sign-in (no mailbox / Mailpit needed).
+#
+# Uses appreview42@proton.me + fixed 6-digit code via the review-login Edge
+# Function. Requires functions serve with REVIEW_OTP_CODE in the env file:
+#   supabase functions serve --no-verify-jwt --env-file functions/.env.test
+#
+# Run: maestro test .maestro/review-login.yaml
+appId: app.challengebu.ios
+env:
+  REVIEW_EMAIL: "appreview42@proton.me"
+  REVIEW_CODE: "424242"
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: "Üniversite e-postanla başla"
+    timeout: 10000
+- tapOn: "Üniversite e-postanla başla"
+
+- assertVisible: "E-postanı gir"
+- tapOn: "ad.soyad@std.bogazici.edu.tr"
+- inputText: ${REVIEW_EMAIL}
+- hideKeyboard
+- tapOn: "KVKK onayı"
+- tapOn: "Devam et"
+
+- assertVisible: "Doğrulama kodunu gir"
+- inputText: "4"
+- inputText: "2"
+- inputText: "4"
+- inputText: "2"
+- inputText: "4"
+- inputText: "2"
+- waitForAnimationToEnd
+- takeScreenshot: review-login-done

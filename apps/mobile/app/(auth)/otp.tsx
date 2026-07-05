@@ -44,6 +44,7 @@ export default function OtpScreen() {
   const inputs = useRef<Array<TextInput | null>>([]);
 
   const filled = code.join('').length === OTP_LENGTH;
+  const isReview = !!email && isReviewEmail(email);
 
   // Auto-submit when all cells have a digit.
   useEffect(() => {
@@ -163,7 +164,7 @@ export default function OtpScreen() {
             textAlign: 'center',
           }}
         >
-          Gelen kutunu kontrol et
+          {isReview ? 'Doğrulama kodunu gir' : 'Gelen kutunu kontrol et'}
         </Text>
         <Text
           className="font-sans text-text-2"
@@ -174,10 +175,20 @@ export default function OtpScreen() {
             marginBottom: 30,
           }}
         >
-          <Text className="text-text font-bold">
-            {email ?? 'e-postana'}
-          </Text>{' '}
-          adresine 6 haneli bir kod ve sihirli bağlantı gönderdik.
+          {isReview ? (
+            <>
+              Bu uygulama şifre kullanmaz — yalnızca 6 haneli OTP ile giriş
+              yapılır. App Store Connect notlarında belirtilen 6 haneli kodu
+              aşağıya gir.
+            </>
+          ) : (
+            <>
+              <Text className="text-text font-bold">
+                {email ?? 'e-postana'}
+              </Text>{' '}
+              adresine 6 haneli bir kod ve sihirli bağlantı gönderdik.
+            </>
+          )}
         </Text>
 
         <View style={{ flexDirection: 'row', gap: 9, marginBottom: 24 }}>

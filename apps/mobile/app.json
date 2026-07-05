@@ -22,9 +22,7 @@
         "com.apple.security.application-groups": ["group.app.challengebu.ios"]
       },
       "infoPlist": {
-        "UIBackgroundModes": [
-          "remote-notification"
-        ],
+        "UIBackgroundModes": ["remote-notification"],
         "NSSupportsLiveActivities": true,
         "NSSupportsLiveActivitiesFrequentUpdates": true,
         "ITSAppUsesNonExemptEncryption": false
@@ -79,8 +77,31 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3cb84a03-8354-4944-adac-c719dfb4e9d3"
+        "projectId": "3cb84a03-8354-4944-adac-c719dfb4e9d3",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "app.challengebu.ios.widget",
+                  "targetName": "LiveMatch",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.app.challengebu.ios"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3cb84a03-8354-4944-adac-c719dfb4e9d3"
     }
   }
 }

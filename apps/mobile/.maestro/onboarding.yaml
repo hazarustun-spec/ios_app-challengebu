@@ -17,15 +17,11 @@
 #   maestro test .maestro/onboarding.yaml
 appId: app.challengebu.ios
 ---
-# 1/10 — name. Tap the two stacked input fields by point (the "Ad"/"Soyad"
-# labels are not the inputs, and placeholder text duplicates the labels).
-# Tune the points if the redesigned layout shifts.
+# 1/10 — name (Field labels "Ad" / "Soyad" are tappable).
 - assertVisible: "Adın ve soyadın"
-- tapOn:
-    point: "50%,33%"
+- tapOn: "Ad"
 - inputText: "Alice"
-- tapOn:
-    point: "50%,45%"
+- tapOn: "Soyad"
 - inputText: "Aksoy"
 - hideKeyboard
 - tapOn: "Devam"
@@ -54,7 +50,7 @@ appId: app.challengebu.ios
 - tapOn: "Bölüm seç"
 - tapOn: "Bölüm ara…"
 - inputText: "Fizik"
-- tapOn: "Fizik"
+- tapOn: "Fizik Bölümü"
 - tapOn: "Devam"
 
 # 7/10 — tennis level.

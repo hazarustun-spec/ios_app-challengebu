@@ -27,12 +27,17 @@ appId: app.challengebu.ios
 - assertVisible: "Erkek Tek"
 - assertVisible: "FİNALE GERİ SAYIM"
 
-# Standings list renders — scroll the "SEN" standing card into view.
-- scrollUntilVisible:
-    element:
-      text: "SEN"
-    direction: DOWN
-- takeScreenshot: leaderboard-standings
+# Standings list — "SEN" appears when the user has a ladder row (after onboarding).
+- runFlow:
+    when:
+      visible: "SEN"
+    commands:
+      - takeScreenshot: leaderboard-standings
+- runFlow:
+    when:
+      notVisible: "SEN"
+    commands:
+      - takeScreenshot: leaderboard-no-standing
 
 # Apply a filter (1): switch category via the chip strip.
 - tapOn: "Open Tek"
