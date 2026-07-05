@@ -56,8 +56,17 @@ Yayın build'i göndermeden önce Supabase Dashboard → SQL Editor:
 
 ### 4. EAS build + submit
 
+Production build needs hosted Supabase env on EAS (not only local `.env.production`):
+
 ```sh
 cd apps/mobile
+eas env:list --environment production   # must show URL + anon key
+# If empty, create once:
+eas env:create production --name EXPO_PUBLIC_SUPABASE_URL \
+  --value "https://zbjkauljjdosyuwguuhv.supabase.co" --visibility plaintext --non-interactive
+eas env:create production --name EXPO_PUBLIC_SUPABASE_ANON_KEY \
+  --value "<anon-key-from-.env.production>" --visibility sensitive --non-interactive
+
 eas build --profile production --platform ios
 # TestFlight'ta smoke test (OTP, push, maç akışı)
 eas submit --profile production --platform ios --latest
