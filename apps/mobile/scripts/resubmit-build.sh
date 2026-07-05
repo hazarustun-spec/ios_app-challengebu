@@ -15,6 +15,6 @@ echo "→ EAS production iOS build (auto-increments build number)…"
 "${EAS[@]}" build --profile production --platform ios "$@"
 
 read -r -p "Submit latest build to App Store Connect? [y/N] " ans
-if [[ "${ans,,}" == "y" || "${ans}" == "y" || "${ans}" == "Y" ]]; then
-  "${EAS[@]}" submit --profile production --platform ios --latest
-fi
+case "$ans" in
+  y|Y|yes|YES) "${EAS[@]}" submit --profile production --platform ios --latest ;;
+esac
