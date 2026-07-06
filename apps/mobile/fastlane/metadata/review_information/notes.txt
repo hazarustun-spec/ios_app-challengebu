@@ -1,20 +1,28 @@
 ChallengeBu! uses email OTP sign-in only — there is NO password field in the app.
 
-Demo account (App Review):
+Sign-in (App Review demo account):
   Email: appreview42@proton.me
-  Password field in App Store Connect: leave as N/A or repeat the OTP below — Apple cannot use username/password on a login form that does not exist.
+  App Store Connect "Password" field: 424242 (this is the 6-digit OTP code, not a password)
 
-Sign-in steps for the reviewer:
-  1. Launch the app → tap "Üniversite e-postanla başla"
-  2. Enter: appreview42@proton.me
-  3. Check the KVKK consent checkbox → tap "Devam et"
-  4. On the OTP screen, enter the 6-digit code: 424242 (six digits, no dots or spaces)
-  5. If the account already completed onboarding, the main app (tabs: Sıralama, Maçlar, Profil) opens. If onboarding appears, complete the required fields (name, pronoun, category, year, department, level, hand, availability — phone and photo are optional/skippable).
+Steps:
+  1. Launch → tap "Üniversite e-postanla başla"
+  2. Enter appreview42@proton.me
+  3. Check KVKK consent → tap "Devam et"
+  4. On the OTP screen enter: 424242 (six digits, no dots or spaces)
+  5. The account should open directly to the main app (Sıralama, Maçlar, Profil tabs). If onboarding still appears, complete required fields only (name, pronoun, category, year, department, level, hand, availability — phone and photo are optional/skippable).
 
-Backend requirement: the hosted Supabase project must have Edge Function secret REVIEW_OTP_CODE=424242 and review-login deployed with verify_jwt=false.
+About the app:
+  ChallengeBu is a community ranking app for Boğaziçi University tennis players (student/faculty/alumni email). Empty match lists or a small ladder at launch are expected for a new season — the reviewer can still explore: create a match offer (+), leaderboard categories, profile stats, notifications, settings (including account deletion), and block/report on messaging.
 
-Demo video (required by App Review):
-  Upload a screen recording from a physical iPhone showing the full new-user flow: welcome → email → KVKK → OTP → onboarding (required fields only) → home tabs. Paste the video URL in this Notes field before resubmitting.
+Device notes:
+  iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode; core flows work the same.
+
+Messaging (Guideline 1.2):
+  In-thread ⋯ menu offers Report and Block. Blocked users can be managed under Settings → Engellenen kullanıcılar. Messaging requires an active match offer between two users.
+
+Demo video (physical iPhone — required):
+  DEMO_VIDEO_URL: PASTE_YOUR_LINK_HERE_BEFORE_SUBMIT
+  The video shows: welcome → email → KVKK → OTP 424242 → main tabs → create match flow → profile → settings.
 
 Support: hello@shimal.app
 Privacy / KVKK: https://shimal.app/challengebu/gizlilik.html
