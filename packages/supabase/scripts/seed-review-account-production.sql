@@ -10,7 +10,6 @@ do $$
 declare
   v_uid uuid;
   v_dept uuid;
-  v_dummy uuid := gen_random_uuid();
 begin
   select id into v_uid from auth.users where lower(email) = 'appreview42@proton.me' limit 1;
   if v_uid is null then
@@ -54,29 +53,9 @@ begin
     rating = excluded.rating,
     matches_played = excluded.matches_played;
 
-  -- Optional second player so leaderboard / opponent suggest is not empty.
-  insert into public.profiles (
-    user_id, role, first_name, last_name, email,
-    pronoun, gender_category, department_id, class_year,
-    show_department, show_class_year,
-    skill_self_assessment, dominant_hand, availability_windows,
-    status, kvkk_accepted_at
-  ) values (
-    v_dummy, 'player', 'Demo', 'Rakip', 'demo.rakip.review@std.bogazici.edu.tr',
-    'she/her', 'kadin', v_dept, '2',
-    true, true,
-    'orta', 'sag', array['weekday_evening'],
-    'active', now()
-  )
-  on conflict (user_id) do nothing;
-
-  insert into public.elo_ratings (profile_id, category, rating, matches_played)
-  values (v_dummy, 'kadin_tek', 1185, 5)
-  on conflict (profile_id, category) do nothing;
-
   raise notice 'Review account seeded for user_id=%', v_uid;
 end $$;
 
 -- Verify:
 select user_id, first_name, last_name, email, gender_category, status
-  from public.profiles where email in ('appreview42@proton.me', 'demo.rakip.review@std.bogazici.edu.tr');
+  from public.profiles where email = 'appreview42@proton.me';
