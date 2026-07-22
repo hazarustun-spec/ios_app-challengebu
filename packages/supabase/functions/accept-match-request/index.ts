@@ -3,6 +3,7 @@ import { handleCors } from '../_shared/cors.ts';
 import { conflict, errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { buildPlayedAtTR } from '../_shared/turkey-time.ts';
 
 const inputSchema = z.object({ requestId: z.string().uuid() });
 
@@ -40,9 +41,22 @@ Deno.serve(async (req) => {
       return conflict('Request has expired');
     }
 
-    const timeStr: string = request.proposed_time;
-    const normalizedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
-    const playedAt = new Date(`${request.proposed_date}T${normalizedTime}Z`).toISOString();
+    // Anti-fake #4.2: cap rated matches between the same two primary opponents
+    // to 3 in a rolling 7-day window (ELO farming guard). Friendly matches
+    // (is_rated=false) are unlimited.
+    if (request.is_rated) {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: pairCount } = await supa.rpc('count_rated_matches_between', {
+        p_a: request.creator_id,
+        p_b: request.target_id,
+        p_since: weekAgo,
+      });
+      if ((pairCount ?? 0) >= 3) {
+        return conflict('Bu oyuncuyla bu hafta en fazla 3 puanlı maç oynayabilirsiniz.');
+      }
+    }
+
+    const playedAt = buildPlayedAtTR(request.proposed_date, request.proposed_time);
     const teamA = request.creator_partner_id
       ? [request.creator_id, request.creator_partner_id]
       : [request.creator_id];

@@ -3,10 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
 import { SLOT_TO_DB } from '../lib/availability';
 import { useAuthStore } from '../stores/auth-store';
-import type {
-  GenderCategory,
-  OnboardingState,
-} from '../stores/onboarding-store';
+import type { OnboardingState } from '../stores/onboarding-store';
 
 type DraftSnapshot = Omit<OnboardingState, 'setField' | 'reset'>;
 
@@ -63,29 +60,11 @@ export function useSubmitOnboarding() {
       });
       if (profileErr) throw profileErr;
 
-      // 3. Seed ELO ratings (1200) for relevant categories
-      // category is guaranteed non-null by onboarding gating, but TypeScript
-      // sees it as nullable after the store type change — fall back to open-only.
-      const categories = pickCategories(draft.category ?? 'open_only');
-      const rows = categories.map((c) => ({
-        profile_id: user.id,
-        category: c,
-        rating: 1200,
-        matches_played: 0,
-      }));
-      await supabase.from('elo_ratings').insert(rows);
+      // ELO ratings (1200, per eligible category) are seeded server-side by
+      // the trg_seed_elo_ratings trigger on profiles insert — elo_ratings RLS
+      // doesn't allow the client to write these directly.
 
       return { profileCreated: true };
     },
   });
-}
-
-function pickCategories(genderCategory: GenderCategory): string[] {
-  if (genderCategory === 'erkek') {
-    return ['erkek_tek', 'open_tek', 'erkek_cift', 'karma_cift', 'open_cift'];
-  }
-  if (genderCategory === 'kadin') {
-    return ['kadin_tek', 'open_tek', 'kadin_cift', 'karma_cift', 'open_cift'];
-  }
-  return ['open_tek', 'open_cift'];
 }

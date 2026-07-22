@@ -12,7 +12,7 @@
 //   • Match already has winner_team (scored) → skip straight to /score.
 //   • Both already confirmed on first load → play animation directly.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -59,6 +59,21 @@ function formatPlayedAt(iso: string): string {
   return `${dateStr} · ${hhmm}`;
 }
 
+// Anti-fake #3: the match may be started at most 15 minutes before played_at.
+// Mirrors the same tolerance enforced server-side in start_match().
+const EARLY_TOLERANCE_MS = 15 * 60 * 1000;
+
+/** "1 sa 20 dk", "14 dk", "45 sn" — remaining time until the start unlocks. */
+function formatCountdown(ms: number): string {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h} sa ${m} dk`;
+  if (m > 0) return `${m} dk`;
+  return `${s} sn`;
+}
+
 // ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
@@ -74,6 +89,14 @@ export default function MatchStartLobby() {
 
   // Guard so navigation fires only once after animation completes.
   const navigatedRef = useRef(false);
+
+  // Ticking clock so the start-time gate + countdown update live and the
+  // "Maçı Başlat" button unlocks the moment the window opens.
+  const [nowMs, setNowMs] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // Realtime subscription: invalidate match detail whenever the row updates
   // so started_by refreshes when the opponent confirms.
@@ -112,6 +135,14 @@ export default function MatchStartLobby() {
   const categoryLabel = match ? (CATEGORY_LABELS[match.category] ?? match.category) : '';
   const whenLabel = match?.played_at ? formatPlayedAt(match.played_at) : '—';
   const courtLabel = match?.court?.name ?? '—';
+
+  // Start-time gate: locked until 15 min before played_at.
+  const playedAtMs = match?.played_at ? new Date(match.played_at).getTime() : null;
+  const earliestStartMs = playedAtMs != null ? playedAtMs - EARLY_TOLERANCE_MS : null;
+  const tooEarly =
+    earliestStartMs != null && !iAmReady && nowMs < earliestStartMs;
+  const startsInLabel =
+    earliestStartMs != null ? formatCountdown(earliestStartMs - nowMs) : '';
 
   // -------------------------------------------------------------------------
   // Navigation shortcuts
@@ -284,6 +315,22 @@ export default function MatchStartLobby() {
           <InfoRow label="Kategori" value={categoryLabel} />
         </View>
 
+        {/* Start-time lock banner (before the allowed window) */}
+        {tooEarly && (
+          <View
+            className="flex-row items-center rounded-md"
+            style={{ padding: 14, gap: 10, backgroundColor: colors.surface2 }}
+          >
+            <Icon name="lock" size={16} color={colors.text3} />
+            <Text
+              className="font-sans font-semibold"
+              style={{ flex: 1, fontSize: 13.5, color: colors.text2 }}
+            >
+              Maç saatine {startsInLabel} var — o zaman başlatabilirsin.
+            </Text>
+          </View>
+        )}
+
         {/* Waiting banner (shown when I'm ready but opponent isn't) */}
         {iAmReady && !bothReady && (
           <View
@@ -311,11 +358,21 @@ export default function MatchStartLobby() {
           <Button
             full
             size="lg"
-            icon={<Icon name="spark" size={17} color={colors.onLime} />}
+            icon={
+              <Icon
+                name={tooEarly ? 'lock' : 'spark'}
+                size={17}
+                color={tooEarly ? colors.text3 : colors.onLime}
+              />
+            }
             onPress={handleStartMatch}
-            disabled={startMutation.isPending}
+            disabled={startMutation.isPending || tooEarly}
           >
-            {startMutation.isPending ? 'Başlatılıyor…' : 'Maçı Başlat'}
+            {startMutation.isPending
+              ? 'Başlatılıyor…'
+              : tooEarly
+                ? `${startsInLabel} sonra`
+                : 'Maçı Başlat'}
           </Button>
         ) : (
           <Button

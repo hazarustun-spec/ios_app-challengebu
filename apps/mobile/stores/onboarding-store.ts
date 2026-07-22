@@ -22,7 +22,7 @@ import * as SecureStore from 'expo-secure-store';
 
 export type Pronoun = 'he/him' | 'she/her' | 'they/them' | 'other';
 export type GenderCategory = 'erkek' | 'kadin' | 'open_only';
-export type ClassYear = 'hazirlik' | '1' | '2' | '3' | '4' | 'yl' | 'doktora';
+export type ClassYear = 'hazirlik' | '1' | '2' | '3' | '4' | 'yl' | 'doktora' | 'mezun';
 export type SkillLevel = 'baslangic' | 'orta' | 'ileri';
 export type DominantHand = 'sag' | 'sol';
 export type AvailabilitySlot =

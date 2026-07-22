@@ -45,6 +45,7 @@ import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
 import {
   useIncomingMatchRequests,
+  useOutgoingMatchRequests,
   type MatchRequestRow,
 } from '../../hooks/use-match-requests';
 import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
@@ -141,6 +142,7 @@ export default function MatchesTab() {
   const matchesQ = useActiveMatches();
   const opponentNames = useOpponentNames();
   const requestsQ = useIncomingMatchRequests();
+  const outgoingQ = useOutgoingMatchRequests();
   const feedQ = useOpenCallsFeed();
   const myOpenQ = useMyOpenCalls();
   const accept = useAcceptMatchRequest();
@@ -162,8 +164,10 @@ export default function MatchesTab() {
 
   function handleRefresh() {
     if (view === 'upcoming') matchesQ.refetch();
-    else if (view === 'offers') requestsQ.refetch();
-    else feedQ.refetch();
+    else if (view === 'offers') {
+      requestsQ.refetch();
+      outgoingQ.refetch();
+    } else feedQ.refetch();
   }
 
   return (
@@ -268,12 +272,15 @@ export default function MatchesTab() {
           />
         )}
         {view === 'offers' && (
-          <OffersList
-            requestsQ={requestsQ}
-            accept={accept}
-            reject={reject}
-            ratingOf={playerRatings.ratingOf}
-          />
+          <>
+            <OffersList
+              requestsQ={requestsQ}
+              accept={accept}
+              reject={reject}
+              ratingOf={playerRatings.ratingOf}
+            />
+            <SentOffersList outgoingQ={outgoingQ} />
+          </>
         )}
         {view === 'feed' && (
           <FeedList
@@ -804,6 +811,116 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
         );
       })}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SentOffersList — the user's OWN outgoing direct challenges + their status.
+// (Own open calls surface in the İlanlar tab; this covers person-to-person
+// challenges, which otherwise had no visible status anywhere.)
+// ---------------------------------------------------------------------------
+
+const SENT_STATUS: Record<string, { label: string; color: string }> = {
+  pending: { label: 'Yanıt bekleniyor', color: colors.warn },
+  accepted: { label: 'Kabul edildi', color: colors.win },
+  rejected: { label: 'Reddedildi', color: colors.loss },
+  expired: { label: 'Süresi doldu', color: colors.text3 },
+  completed: { label: 'Tamamlandı', color: colors.text3 },
+};
+
+interface SentOffersListProps {
+  outgoingQ: ReturnType<typeof useOutgoingMatchRequests>;
+}
+
+function SentOffersList({ outgoingQ }: SentOffersListProps) {
+  const sent = (outgoingQ.data ?? []).filter(
+    (r) => r.type === 'direct_challenge',
+  );
+
+  if (sent.length === 0) return null;
+
+  return (
+    <View style={{ gap: 11, marginTop: 6 }}>
+      <Text
+        className="font-display font-extrabold text-text"
+        style={{ fontSize: 15, letterSpacing: -0.15, paddingHorizontal: 2 }}
+      >
+        Gönderdiğim teklifler
+      </Text>
+      {sent.map((m) => {
+        const fmtKey = toFormatKey(m.format);
+        const targetName = m.target_profile
+          ? `${m.target_profile.first_name} ${m.target_profile.last_name}`
+          : 'Rakip';
+        const timeLabel = formatRequestDateTime(m.proposed_date, m.proposed_time);
+        const courtLabel = m.court?.name ?? 'Bilinmeyen kort';
+        const catLabel = CATEGORY_LABELS[m.category] ?? m.category;
+        const status = SENT_STATUS[m.status] ?? {
+          label: m.status,
+          color: colors.text3,
+        };
+
+        return (
+          <View
+            key={m.id}
+            className="rounded-lg border-base border-border-strong bg-surface"
+            style={{ padding: 16 }}
+          >
+            <View
+              className="flex-row items-center"
+              style={{ gap: 12, marginBottom: 12 }}
+            >
+              <Avatar
+                name={targetName}
+                size={46}
+                uri={m.target_profile?.avatar_url ?? undefined}
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  className="font-sans font-bold text-text"
+                  style={{ fontSize: 15.5 }}
+                >
+                  {targetName}
+                </Text>
+                <Text
+                  className="font-sans text-text-3"
+                  style={{ fontSize: 12.5, marginTop: 2 }}
+                >
+                  meydan okudun · {catLabel}
+                </Text>
+              </View>
+              <View
+                className="rounded-pill"
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  backgroundColor: `${status.color}1F`,
+                }}
+              >
+                <Text
+                  className="font-sans font-bold"
+                  style={{ fontSize: 11.5, color: status.color }}
+                >
+                  {status.label}
+                </Text>
+              </View>
+            </View>
+            <View
+              className="flex-row items-center"
+              style={{ gap: 12, flexWrap: 'wrap' }}
+            >
+              <FormatChip fmtKey={fmtKey} />
+              <Text
+                className="font-sans font-semibold text-text-2"
+                style={{ fontSize: 12.5 }}
+              >
+                {timeLabel} · {courtLabel}
+              </Text>
+            </View>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 

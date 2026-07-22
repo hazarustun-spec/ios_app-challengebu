@@ -3,13 +3,9 @@ import { handleCors } from '../_shared/cors.ts';
 import { conflict, errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { buildPlayedAtTR } from '../_shared/turkey-time.ts';
 
 const inputSchema = z.object({ applicationId: z.string().uuid() });
-
-function buildPlayedAt(date: string, time: string): string {
-  const normalizedTime = time.length === 5 ? `${time}:00` : time;
-  return new Date(`${date}T${normalizedTime}Z`).toISOString();
-}
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -39,7 +35,22 @@ Deno.serve(async (req) => {
     if (request.creator_id !== auth.userId) return forbidden('Only the creator can select');
     if (request.status !== 'pending') return conflict(`Request is ${request.status}`);
 
-    const playedAt = buildPlayedAt(request.proposed_date, request.proposed_time);
+    // Anti-fake #4.2: cap rated matches between the creator and the selected
+    // applicant to 3 in a rolling 7-day window (ELO farming guard). Friendly
+    // matches (is_rated=false) are unlimited.
+    if (request.is_rated) {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: pairCount } = await supa.rpc('count_rated_matches_between', {
+        p_a: request.creator_id,
+        p_b: app.applicant_id,
+        p_since: weekAgo,
+      });
+      if ((pairCount ?? 0) >= 3) {
+        return conflict('Bu oyuncuyla bu hafta en fazla 3 puanlı maç oynayabilirsiniz.');
+      }
+    }
+
+    const playedAt = buildPlayedAtTR(request.proposed_date, request.proposed_time);
     const teamA = request.creator_partner_id
       ? [request.creator_id, request.creator_partner_id]
       : [request.creator_id];

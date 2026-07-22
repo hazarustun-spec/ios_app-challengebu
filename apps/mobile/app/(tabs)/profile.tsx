@@ -36,6 +36,7 @@ import { useMyRankings, type RankingRow } from '../../hooks/use-my-rankings';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 import { useMyProfile } from '../../hooks/use-profile';
+import { formatClassYear } from '../../lib/class-year';
 import { ListRow } from '../../components/ui/ListRow';
 import { shadows } from '../../theme/shadows';
 
@@ -115,7 +116,7 @@ export default function ProfileTab() {
     : 'Oyuncu';
   const pronoun = fullProfile?.pronoun ?? 'they/them';
   const dept = fullProfile?.departments?.name ?? 'Bölüm';
-  const year = fullProfile?.class_year ?? '';
+  const yearLabel = formatClassYear(fullProfile?.class_year);
   const hand = fullProfile?.dominant_hand === 'sol' ? 'Sol' : 'Sağ';
 
   // --- Rankings ---
@@ -257,7 +258,7 @@ export default function ProfileTab() {
               className="font-sans text-text-3"
               style={{ fontSize: 12.5, marginTop: 3 }}
             >
-              {dept} · {year ? `${year}. sınıf · ` : ''}{hand} el
+              {dept} · {yearLabel ? `${yearLabel} · ` : ''}{hand} el
             </Text>
             {lp.next && (
               <View style={{ marginTop: 7, maxWidth: 210 }}>

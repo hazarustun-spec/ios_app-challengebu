@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     const { data: match } = await supa
       .from('matches')
-      .select('id, status, team_a_player_ids, team_b_player_ids')
+      .select('id, status, team_a_player_ids, team_b_player_ids, played_at')
       .eq('id', input.matchId)
       .single();
     if (!match) return errorResponse('Match not found', 404);
@@ -51,6 +51,14 @@ Deno.serve(async (req) => {
     // Reject re-submission once the match has been settled (confirmed, voided, disputed, etc.)
     if (match.status !== 'awaiting_confirmation') {
       return conflict(`Match is already ${match.status} — score submission not allowed`);
+    }
+
+    // Anti-fake #4.3: a score cannot be entered before the match's scheduled
+    // time (minus the same 15-minute early tolerance as start_match). Blocks
+    // scoring a made-up match well ahead of when it was arranged to be played.
+    const earliestScoreMs = new Date(match.played_at).getTime() - 15 * 60 * 1000;
+    if (Date.now() < earliestScoreMs) {
+      return conflict('Maç saati gelmeden skor girilemez.');
     }
 
     const scoreDetails = {

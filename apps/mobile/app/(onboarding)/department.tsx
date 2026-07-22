@@ -35,7 +35,7 @@ export default function ObDepartment() {
   const [q, setQ] = useState('');
 
   const programLevel: ProgramLevel | undefined =
-    classYear == null
+    classYear == null || classYear === 'mezun'
       ? undefined
       : classYear === 'yl' || classYear === 'doktora'
         ? 'lisansustu'

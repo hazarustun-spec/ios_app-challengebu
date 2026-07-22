@@ -274,13 +274,11 @@ export default function NewMatchDetail() {
           {FORMATS.map((f) => {
             const on = f.key === format;
             return (
-              <Pressable
+              <View
                 key={f.key}
-                onPress={() => {
-                  setField('format', f.key);
-                  setOpenSheet(null);
-                }}
                 style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
                   padding: 14,
                   borderRadius: 18,
                   borderWidth: 1.5,
@@ -288,9 +286,13 @@ export default function NewMatchDetail() {
                   backgroundColor: on ? `${f.color}14` : colors.surface,
                 }}
               >
-                <View
+                <Pressable
+                  onPress={() => {
+                    setField('format', f.key);
+                    setOpenSheet(null);
+                  }}
                   className="flex-row items-center"
-                  style={{ gap: 10 }}
+                  style={{ flex: 1, gap: 10 }}
                 >
                   <View
                     style={{
@@ -318,8 +320,15 @@ export default function NewMatchDetail() {
                   {on && (
                     <Icon name="check" size={18} color={f.color} stroke={3} />
                   )}
-                </View>
-              </Pressable>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push(`/match/new/format-rules?format=${f.key}` as never)}
+                  hitSlop={10}
+                  style={{ paddingLeft: 10 }}
+                >
+                  <Icon name="info" size={18} color={colors.text3} />
+                </Pressable>
+              </View>
             );
           })}
         </View>

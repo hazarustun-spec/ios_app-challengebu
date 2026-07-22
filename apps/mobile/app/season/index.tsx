@@ -156,6 +156,9 @@ export default function Season() {
       large
       title={sezonLabel}
       subtitle={season ? `${datesRange} · Aktif ladder` : 'Yükleniyor…'}
+      onBack={() =>
+        router.canGoBack() ? router.back() : router.replace('/(tabs)/leaderboard')
+      }
       actionIcon="clock"
       onAction={() => router.push('/season/archive' as never)}
     />
@@ -197,6 +200,9 @@ export default function Season() {
           large
           title="Sezon"
           subtitle="Aktif sezon yok"
+          onBack={() =>
+            router.canGoBack() ? router.back() : router.replace('/(tabs)/leaderboard')
+          }
           actionIcon="clock"
           onAction={() => router.push('/season/archive' as never)}
         />

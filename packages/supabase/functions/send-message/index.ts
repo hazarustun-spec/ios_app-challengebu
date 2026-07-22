@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         category: 'message_received',
         title: senderName,
         body: preview,
-        data: { conversationId },
+        data: { conversationId, otherUserId: me, name: senderName },
       })
       .select('id')
       .single();
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
           to: t.token,
           title: senderName,
           body: preview,
-          data: { conversationId },
+          data: { conversationId, otherUserId: me, name: senderName },
         }));
         try {
           await sendToExpo(messages);

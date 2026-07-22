@@ -65,6 +65,7 @@ const YEARS: { value: UpdateProfileInput['class_year']; label: string }[] = [
   { value: '4', label: '4' },
   { value: 'yl', label: 'Yüksek Lisans' },
   { value: 'doktora', label: 'Doktora' },
+  { value: 'mezun', label: 'Mezun' },
 ];
 
 export default function ProfileEdit() {
@@ -116,10 +117,10 @@ export default function ProfileEdit() {
     setShowClassYear(profile.show_class_year ?? true);
   }, [profile]);
 
-  // programLevel: lisansustu for yl/doktora, lisans for everything else.
-  // Matches the exact derivation used in app/(onboarding)/department.tsx.
+  // programLevel: lisansustu for yl/doktora, lisans for everything else,
+  // unfiltered (both) for mezun. Matches app/(onboarding)/department.tsx.
   const programLevel: ProgramLevel | undefined =
-    classYear == null
+    classYear == null || classYear === 'mezun'
       ? undefined
       : classYear === 'yl' || classYear === 'doktora'
         ? 'lisansustu'
@@ -518,8 +519,8 @@ export default function ProfileEdit() {
               value={hand}
               onChange={(v) => setHand(v)}
               options={[
-                { value: 'sag', label: 'Sağ' },
                 { value: 'sol', label: 'Sol' },
+                { value: 'sag', label: 'Sağ' },
               ]}
             />
           </View>

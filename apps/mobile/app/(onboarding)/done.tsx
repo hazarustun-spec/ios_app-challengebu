@@ -75,6 +75,7 @@ const YEAR_LABEL: Record<ClassYear, string> = {
   '4': '4. Sınıf',
   yl: 'Yüksek Lisans',
   doktora: 'Doktora',
+  mezun: 'Mezun',
 };
 
 const SLOT_LABEL: Record<AvailabilitySlot, string> = {

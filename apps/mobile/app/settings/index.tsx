@@ -121,6 +121,14 @@ export default function Settings() {
 
         <Section label="Diğer">
           <ListRow
+            icon="megaphone"
+            title="Geri bildirim"
+            subtitle="Hata bildir · fikrini paylaş"
+            chevron
+            onPress={() => router.push('/settings/feedback' as never)}
+          />
+          <Divider />
+          <ListRow
             icon="info"
             title="Hakkında & kurallar"
             subtitle={`ChallengeBu! · v${APP_VERSION}`}

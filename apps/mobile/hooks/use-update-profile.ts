@@ -9,7 +9,7 @@ export interface UpdateProfileInput {
   pronoun_custom?: string | null;
   department_id?: string | null;
   show_department: boolean;
-  class_year: 'hazirlik' | '1' | '2' | '3' | '4' | 'yl' | 'doktora';
+  class_year: 'hazirlik' | '1' | '2' | '3' | '4' | 'yl' | 'doktora' | 'mezun';
   show_class_year: boolean;
   skill_self_assessment: 'baslangic' | 'orta' | 'ileri';
   dominant_hand: 'sag' | 'sol';

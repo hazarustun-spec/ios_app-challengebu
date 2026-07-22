@@ -22,8 +22,8 @@ export default function ObHand() {
         onPick={(v) => setField('hand', v)}
         cols={2}
         options={[
-          { value: 'sag', label: 'Sağ' },
           { value: 'sol', label: 'Sol' },
+          { value: 'sag', label: 'Sağ' },
         ]}
       />
     </OBFrame>

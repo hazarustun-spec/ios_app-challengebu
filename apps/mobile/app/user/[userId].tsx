@@ -28,6 +28,7 @@ import type { FormResult } from '../../components/ui/FormGuide';
 import { levelForElo } from '../../lib/levels';
 import { myPerspective } from '../../lib/match-opponent';
 import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
+import { formatClassYear } from '../../lib/class-year';
 import { useNewMatchStore } from '../../stores/new-match-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
@@ -269,7 +270,7 @@ export default function PlayerPreview() {
               className="font-sans"
               style={{ fontSize: 13, color: colors.text2 }}
             >
-              {[showDept ? deptName : null, showYear ? `${p.class_year}. sınıf` : null]
+              {[showDept ? deptName : null, showYear ? formatClassYear(p.class_year) : null]
                 .filter(Boolean)
                 .join(' · ')}
             </Text>

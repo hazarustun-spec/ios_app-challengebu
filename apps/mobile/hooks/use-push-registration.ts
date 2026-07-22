@@ -34,40 +34,58 @@ export function usePushRegistration() {
       .catch((err) => console.warn('[push] registration failed', err));
   }, [profile?.userId, session?.access_token]);
 
-  // Handle notification taps — route by payload category.
+  // Handle notification taps — route by payload category. Covers both the
+  // warm path (listener fires while the app is running) and the cold-start
+  // path (app was killed and launched by tapping the notification), which the
+  // listener alone misses — getLastNotificationResponseAsync replays it.
   useEffect(() => {
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let cancelled = false;
 
     const sub = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
-
-        // Message deep-link: navigate to the specific conversation thread.
-        if (typeof data.conversationId === 'string' && UUID_RE.test(data.conversationId)) {
-          router.push({
-            pathname: '/messages/[conversationId]',
-            params: {
-              conversationId: data.conversationId,
-              otherUserId: typeof data.otherUserId === 'string' && UUID_RE.test(data.otherUserId) ? data.otherUserId : '',
-              name: typeof data.name === 'string' ? data.name : '',
-            },
-          } as never);
-          return;
-        }
-
-        // Match-related deep-links.
-        if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
-          router.push(`/match/${data.matchId}` as never);
-          return;
-        }
-        if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
-          router.push(`/tournament/${data.tournamentId}` as never);
-          return;
-        }
-      },
+      (response) => routeFromNotification(response),
     );
-    return () => sub.remove();
+
+    Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (!cancelled && response) routeFromNotification(response);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
   }, []);
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Deep-link from a tapped notification's data payload. */
+function routeFromNotification(response: Notifications.NotificationResponse) {
+  const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
+
+  // Message deep-link: navigate to the specific conversation thread.
+  if (typeof data.conversationId === 'string' && UUID_RE.test(data.conversationId)) {
+    router.push({
+      pathname: '/messages/[conversationId]',
+      params: {
+        conversationId: data.conversationId,
+        otherUserId: typeof data.otherUserId === 'string' && UUID_RE.test(data.otherUserId) ? data.otherUserId : '',
+        name: typeof data.name === 'string' ? data.name : '',
+      },
+    } as never);
+    return;
+  }
+
+  // Match-related deep-links.
+  if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
+    router.push(`/match/${data.matchId}` as never);
+    return;
+  }
+  if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
+    router.push(`/tournament/${data.tournamentId}` as never);
+    return;
+  }
 }
 
 /**

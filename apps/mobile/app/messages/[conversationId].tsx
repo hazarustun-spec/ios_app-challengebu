@@ -33,6 +33,7 @@ import {
   useMessages,
   useSendMessage,
   useMarkConversationRead,
+  useDeleteMessage,
   type MessageRow,
 } from '../../hooks/use-messages';
 import { useBlockUser, useReportUser } from '../../hooks/use-moderation';
@@ -55,9 +56,11 @@ function formatBubbleTime(iso: string): string {
 interface BubbleProps {
   item: MessageRow;
   isMine: boolean;
+  onLongPress?: () => void;
 }
 
-function Bubble({ item, isMine }: BubbleProps) {
+function Bubble({ item, isMine, onLongPress }: BubbleProps) {
+  const isDeleted = !!item.deleted_at;
   return (
     <View
       style={{
@@ -66,16 +69,22 @@ function Bubble({ item, isMine }: BubbleProps) {
         marginBottom: 6,
       }}
     >
-      <View
+      <Pressable
+        onLongPress={isMine && !isDeleted ? onLongPress : undefined}
+        delayLongPress={300}
         style={{
           paddingHorizontal: 14,
           paddingVertical: 9,
           borderRadius: 18,
           borderBottomRightRadius: isMine ? 4 : 18,
           borderBottomLeftRadius: isMine ? 18 : 4,
-          backgroundColor: isMine ? colors.clay : colors.surface2,
+          backgroundColor: isDeleted
+            ? colors.surface2
+            : isMine
+            ? colors.clay
+            : colors.surface2,
           // Subtle border for theirs
-          borderWidth: isMine ? 0 : 1,
+          borderWidth: isMine && !isDeleted ? 0 : 1,
           borderColor: colors.surface3,
         }}
       >
@@ -83,13 +92,18 @@ function Bubble({ item, isMine }: BubbleProps) {
           style={{
             fontSize: 15,
             lineHeight: 21,
-            color: isMine ? '#FFFFFF' : colors.text,
+            fontStyle: isDeleted ? 'italic' : 'normal',
+            color: isDeleted
+              ? colors.text3
+              : isMine
+              ? '#FFFFFF'
+              : colors.text,
             fontFamily: undefined, // inherits NativeWind sans
           }}
         >
-          {item.body}
+          {isDeleted ? 'Bu mesaj silindi' : item.body}
         </Text>
-      </View>
+      </Pressable>
       {isMine ? (
         // Sent bubble footer: time + read/delivery status
         <View
@@ -149,6 +163,7 @@ export default function ConversationScreen() {
   const { data: messages = [], isLoading } = useMessages(conversationId);
   const sendMessage = useSendMessage();
   const markRead = useMarkConversationRead();
+  const deleteMessage = useDeleteMessage();
   const blockUser = useBlockUser();
   const reportUser = useReportUser();
 
@@ -186,6 +201,29 @@ export default function ConversationScreen() {
     sendMessage.mutate(
       { conversationId: conversationId!, body: trimmed },
       { onSuccess: () => setBody('') },
+    );
+  }
+
+  function handleDeleteMessage(messageId: string) {
+    Alert.alert(
+      'Mesajı sil',
+      'Bu mesaj herkesten silinsin mi? Bu işlem geri alınamaz.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Herkesten sil',
+          style: 'destructive',
+          onPress: () => {
+            deleteMessage.mutate(
+              { messageId, conversationId: conversationId! },
+              {
+                onError: () =>
+                  Alert.alert('Hata', 'Mesaj silinemedi, tekrar dene.'),
+              },
+            );
+          },
+        },
+      ],
     );
   }
 
@@ -290,7 +328,11 @@ export default function ConversationScreen() {
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <Bubble item={item} isMine={item.sender_id === myUserId} />
+            <Bubble
+              item={item}
+              isMine={item.sender_id === myUserId}
+              onLongPress={() => handleDeleteMessage(item.id)}
+            />
           )}
           contentContainerStyle={{
             paddingHorizontal: 16,

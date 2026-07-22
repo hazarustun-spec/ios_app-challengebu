@@ -36,6 +36,7 @@ import { levelForElo } from '../../lib/levels';
 import { colors } from '../../theme/colors';
 import { useLadder, type LadderRow } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyProfile } from '../../hooks/use-profile';
 import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useAuthStore } from '../../stores/auth-store';
 import {
@@ -46,6 +47,8 @@ import {
 } from '../../stores/leaderboard-filter-store';
 import { shadows } from '../../theme/shadows';
 import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import { EloInfoSheet } from '../../components/matches/EloInfoSheet';
+import { useUiFlagsStore } from '../../stores/ui-flags-store';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -124,6 +127,21 @@ export default function Leaderboard() {
     params.cat && CAT_KEYS.has(params.cat) ? (params.cat as Cat) : 'erkek_tek',
   );
   const [stuck, setStuck] = useState(false);
+  const [userPickedCat, setUserPickedCat] = useState(false);
+  const [eloInfoOpen, setEloInfoOpen] = useState(false);
+
+  // First-launch ELO explainer: open once when the user first reaches the
+  // leaderboard, then never auto-open again. Gated on hydration so returning
+  // users don't see it flash before the persisted flag loads.
+  const eloExplainerSeen = useUiFlagsStore((s) => s.eloExplainerSeen);
+  const uiFlagsHydrated = useUiFlagsStore((s) => s._hydrated);
+  const markEloExplainerSeen = useUiFlagsStore((s) => s.markEloExplainerSeen);
+  useEffect(() => {
+    if (uiFlagsHydrated && !eloExplainerSeen) {
+      setEloInfoOpen(true);
+      markEloExplainerSeen();
+    }
+  }, [uiFlagsHydrated, eloExplainerSeen, markEloExplainerSeen]);
 
   // Honour a `cat` deep-link (e.g. from the profile screen) even when the tab
   // is already mounted.
@@ -133,6 +151,18 @@ export default function Leaderboard() {
 
   const userId = useAuthStore((s) => s.user?.id);
   const profile = useAuthStore((s) => s.profile);
+  const myProfileQ = useMyProfile();
+
+  // Default the initial tab to the viewer's own gender category (kadın →
+  // Kadın Tek, erkek → Erkek Tek) instead of always opening on Erkek Tek —
+  // but don't fight a deep-link or a tab the user already tapped.
+  useEffect(() => {
+    if (params.cat && CAT_KEYS.has(params.cat)) return;
+    if (userPickedCat) return;
+    const gender = myProfileQ.data?.gender_category;
+    if (!gender) return;
+    setCat(gender === 'kadin' ? 'kadin_tek' : gender === 'erkek' ? 'erkek_tek' : 'open_tek');
+  }, [myProfileQ.data?.gender_category, params.cat, userPickedCat]);
 
   const { rows, isLoading, isError, isRefetching, refetch } = useLadder(cat);
   const myRankingsQ = useMyRankings();
@@ -293,6 +323,24 @@ export default function Leaderboard() {
     <ScreenEnter className="flex-1 bg-bg">
       {header}
 
+      {/* ELO explainer entry point */}
+      <Pressable
+        onPress={() => setEloInfoOpen(true)}
+        className="flex-row items-center self-end"
+        style={{ gap: 5, paddingHorizontal: 18, paddingTop: 2, paddingBottom: 2 }}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="ELO nasıl çalışır?"
+      >
+        <Icon name="info" size={14} color={colors.text3} />
+        <Text
+          className="font-sans font-semibold"
+          style={{ fontSize: 12, color: colors.text3 }}
+        >
+          ELO nasıl çalışır?
+        </Text>
+      </Pressable>
+
       {/* Category chip strip */}
       <ScrollView
         horizontal
@@ -311,7 +359,10 @@ export default function Leaderboard() {
           return (
             <Pressable
               key={c.key}
-              onPress={() => setCat(c.key)}
+              onPress={() => {
+                setUserPickedCat(true);
+                setCat(c.key);
+              }}
               className="flex-row items-center rounded-pill"
               style={{
                 paddingHorizontal: 15,
@@ -768,6 +819,8 @@ export default function Leaderboard() {
           </>
         )}
       </ScrollView>
+
+      <EloInfoSheet visible={eloInfoOpen} onClose={() => setEloInfoOpen(false)} />
     </ScreenEnter>
   );
 }

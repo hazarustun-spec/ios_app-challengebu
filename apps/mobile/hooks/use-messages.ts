@@ -12,6 +12,7 @@ export interface MessageRow {
   body: string;
   created_at: string;
   read_at: string | null;
+  deleted_at: string | null;
 }
 
 interface SendMessageResponse {
@@ -35,6 +36,13 @@ export function useMessages(conversationId: string | undefined) {
         table: 'messages',
         filter: `conversation_id=eq.${conversationId ?? ''}`,
       },
+      {
+        // Also catch UPDATEs so a "delete for everyone" tombstone (and read_at
+        // flips) propagate to the other participant live.
+        event: 'UPDATE',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId ?? ''}`,
+      },
     ],
     invalidateKeys: [
       queryKeys.conversations.messages(conversationId ?? ''),
@@ -49,7 +57,7 @@ export function useMessages(conversationId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('messages')
-        .select('id, conversation_id, sender_id, body, created_at, read_at')
+        .select('id, conversation_id, sender_id, body, created_at, read_at, deleted_at')
         .eq('conversation_id', conversationId!)
         .order('created_at', { ascending: true });
       if (error) throw error;
@@ -83,6 +91,30 @@ export function useSendMessage() {
       });
       qc.invalidateQueries({ queryKey: queryKeys.conversations.list() });
       qc.invalidateQueries({ queryKey: queryKeys.conversations.unreadCount() });
+    },
+  });
+}
+
+export function useDeleteMessage() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+    }: {
+      messageId: string;
+      conversationId: string;
+    }) => {
+      const { error } = await supabase.rpc('delete_message', {
+        p_message_id: messageId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.conversations.messages(variables.conversationId),
+      });
+      qc.invalidateQueries({ queryKey: queryKeys.conversations.list() });
     },
   });
 }

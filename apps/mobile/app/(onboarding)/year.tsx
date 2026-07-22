@@ -17,6 +17,7 @@ const YEARS: { value: ClassYear; label: string }[] = [
   { value: '4', label: '4' },
   { value: 'yl', label: 'Yüksek Lisans' },
   { value: 'doktora', label: 'Doktora' },
+  { value: 'mezun', label: 'Mezun' },
 ];
 
 export default function ObYear() {
