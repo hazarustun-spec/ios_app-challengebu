@@ -16,7 +16,13 @@ import { useAuthStore } from '../stores/auth-store';
  * 2. Call supabase.auth.signOut() — clears the persisted session.
  * 3. Clear the auth store + React Query cache so no stale data leaks across
  *    user boundaries.
- * 4. Redirect to /(auth)/sign-in (Phase D may rename this to /(auth)/welcome).
+ * 4. Reset navigation to the /(auth)/welcome landing.
+ *
+ * Steps 3-4 run in `onSettled` (not `onSuccess`) so a failing server signOut —
+ * network down, already-expired session — still tears down local state and
+ * navigates away instead of stranding the user on the Settings screen. Settings
+ * is its own nested Stack; replacing to the auth group from there works, but
+ * only if the redirect actually fires, hence onSettled.
  *
  * Step 1 failures are swallowed — sign-out must succeed even if token cleanup
  * fails (e.g., network down, simulator without device token). The weekly
@@ -54,12 +60,13 @@ export function useSignOut() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     },
-    onSuccess: () => {
-      // 3. Clear local state.
+    onSettled: () => {
+      // 3. Clear local state — runs even if the server signOut threw, so the
+      //    user is never left signed-in-looking on the Settings screen.
       signOutStore();
       qc.clear();
-      // 4. Redirect to auth landing.
-      router.replace('/(auth)/sign-in');
+      // 4. Reset navigation to the auth landing (first-launch page).
+      router.replace('/(auth)/welcome');
     },
   });
 }
