@@ -29,7 +29,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik',
+  bu_klasik: 'Klasik',
   hizli_tiebreak: 'Hızlı Tiebreak',
   full_set: 'Full Set',
   pro_set: 'Pro Set',

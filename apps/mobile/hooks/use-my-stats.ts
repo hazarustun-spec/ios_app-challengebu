@@ -86,7 +86,7 @@ const EMPTY_STATS: PlayerStats = {
 };
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik',
+  bu_klasik: 'Klasik',
   hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8',
   '3set_klasik': '3 Set Klasik',

@@ -13,7 +13,7 @@ export interface FormatRule {
 
 export const FORMAT_RULES: Record<MatchFormat, FormatRule> = {
   bu_klasik: {
-    displayName: 'BÜ Klasik',
+    displayName: 'Klasik',
     approximateDuration: 60,
     targetUnits: 4,
     unitName: 'el',

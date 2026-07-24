@@ -30,7 +30,7 @@ const ROWS: Array<{ icon: IconName; color: string; title: string; body: string }
     icon: 'bolt',
     color: colors.court,
     title: 'Farklı kazanmak da önemli',
-    body: 'Skor farkı büyükse (örn. BÜ Klasik 4-0) puan çarpanı artar. Çekişmeli biten maç (4-3) daha az puan oynatır.',
+    body: 'Skor farkı büyükse (örn. Klasik 4-0) puan çarpanı artar. Çekişmeli biten maç (4-3) daha az puan oynatır.',
   },
   {
     icon: 'spark',

@@ -104,7 +104,7 @@ export default function Gallery() {
 
   // Controlled state for interactive components.
   const [searchValue, setSearchValue] = useState('');
-  const [emailValue, setEmailValue] = useState('ad.soyad@std.bogazici.edu.tr');
+  const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('hunter2hunter2');
   const [showPassword, setShowPassword] = useState(false);
   const [errorValue, setErrorValue] = useState('abc');
@@ -172,7 +172,8 @@ export default function Gallery() {
         {/* ---------- 3. Fields ---------- */}
         <Section title="3. Fields">
           <Field
-            label="BÜ e-posta"
+            label="Üniversite e-postası"
+            placeholder="Öğrenci ya da mezun e-postan"
             value={emailValue}
             onChange={setEmailValue}
             icon="mail"

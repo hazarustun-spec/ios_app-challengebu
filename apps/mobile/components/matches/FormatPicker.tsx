@@ -5,7 +5,7 @@ export type MatchFormat = 'bu_klasik' | 'hizli_tiebreak' | 'pro_set_8' | '3set_k
 const FORMATS: { value: MatchFormat; label: string; duration: string; description: string }[] = [
   {
     value: 'bu_klasik',
-    label: 'BÜ Klasik',
+    label: 'Klasik',
     duration: '~60 dk',
     description: '4 el alan kazanır. 3-3 olursa maç yapılmamış sayılır.',
   },

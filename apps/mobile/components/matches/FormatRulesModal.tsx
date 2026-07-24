@@ -10,7 +10,7 @@ interface Props {
 
 const RULES: Record<MatchFormat, { title: string; bullets: string[] }> = {
   bu_klasik: {
-    title: 'BÜ Klasik (~60 dk)',
+    title: 'Klasik (~60 dk)',
     bullets: [
       'Maç en fazla 1 saat sürer.',
       'İlk 4 eli kazanan maçı alır.',

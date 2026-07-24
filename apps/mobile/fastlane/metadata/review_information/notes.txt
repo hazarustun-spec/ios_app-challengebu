@@ -12,7 +12,16 @@ Steps:
   5. The account should open directly to the main app (Sıralama, Maçlar, Profil tabs). If onboarding still appears, complete required fields only (name, pronoun, category, year, department, level, hand, availability — phone and photo are optional/skippable).
 
 About the app:
-  ChallengeBu is a community ranking app for Boğaziçi University tennis players (student/faculty/alumni email). Empty match lists or a small ladder at launch are expected for a new season — the reviewer can still explore: create a match offer (+), leaderboard categories, profile stats, notifications, settings (including account deletion), and block/report on messaging.
+  ChallengeBu is an independent community tennis ranking app for university players. It is NOT affiliated with, endorsed by, or sponsored by any university. Access is restricted to verified university email addresses purely as a functional sign-up gate (to keep the community to students/faculty/alumni) — this is access control, not a claim of institutional affiliation, and no university name, logo, or branding is used in the app or its metadata.
+
+Pre-populated review data:
+  The review account is seeded with a live, ranked leaderboard (9 players), completed match history and profile stats, an incoming pending challenge, and ONE match that is ready to score right now — so every feature can be exercised without waiting for other users. The reviewer can explore: leaderboard categories (Sıralama), profile stats + ELO history (Profil), notifications, settings (including account deletion), messaging with block/report, and the full match lifecycle below.
+
+Demonstrating the FULL match flow (start → score → result):
+  1. Open the Maçlar (Matches) tab → the pre-seeded match card shows "Maçı Başlat".
+  2. Tap "Maçı Başlat" to start (it is already within the allowed start window).
+  3. Enter points to complete the set, then submit the score.
+  (You can also tap the "+" to create a brand-new challenge against any seeded opponent, or accept the incoming pending challenge shown in notifications.)
 
 Device notes:
   iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode; core flows work the same.

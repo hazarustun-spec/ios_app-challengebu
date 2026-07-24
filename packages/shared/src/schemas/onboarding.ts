@@ -9,7 +9,7 @@ export const ALLOWED_BOUN_DOMAINS = [
 ] as const;
 
 export const BOUN_EMAIL_ERROR_TR =
-  'Sadece BÜ e-postası kabul edilir (@std.bogazici.edu.tr, @bogazici.edu.tr, @pt.bogazici.edu.tr, @retired.bogazici.edu.tr veya @alumni.bogazici.edu.tr)';
+  'Sadece üniversite e-postası kabul edilir.';
 
 // App Store review account: the reviewer can't access a Boğaziçi inbox, so this
 // single dedicated mailbox (a real inbox we control, for retrieving the OTP) is

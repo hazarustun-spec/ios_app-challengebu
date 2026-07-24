@@ -37,7 +37,7 @@ export interface FormatDef {
 export const FORMATS: FormatDef[] = [
   {
     key: 'klasik',
-    name: 'BÜ Klasik',
+    name: 'Klasik',
     tag: '4 El',
     color: '#2742A0',
     mark: 'spark',

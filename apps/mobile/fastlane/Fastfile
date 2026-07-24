@@ -24,4 +24,23 @@ platform :ios do
       skip_json_file_saving: true,
     )
   end
+
+  # Push TEXT metadata only (name/subtitle/description/keywords/promo/release
+  # notes/review notes) to App Store Connect. Deliberately skips screenshots and
+  # the binary: screenshots must be regenerated after the "BÜ Klasik" rename and
+  # uploaded separately, and the binary ships via EAS. No submission is made.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane metadata
+  lane :metadata do
+    asc_auth
+    deliver(
+      app_identifier: "app.challengebu.ios",
+      metadata_path: "fastlane/metadata",
+      skip_screenshots: true,
+      skip_binary_upload: true,
+      skip_metadata: false,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      force: true,
+    )
+  end
 end

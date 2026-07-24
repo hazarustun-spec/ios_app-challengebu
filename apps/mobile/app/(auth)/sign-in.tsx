@@ -111,7 +111,7 @@ export default function SignIn() {
         <Field
           icon="mail"
           type="email"
-          placeholder="ad.soyad@std.bogazici.edu.tr"
+          placeholder="Öğrenci ya da mezun e-postan"
           value={email}
           onChange={setEmail}
           autoFocus

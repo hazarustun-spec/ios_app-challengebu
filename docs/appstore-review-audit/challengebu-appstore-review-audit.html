@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ChallengeBu! — App Store Ön İnceleme Denetimi v2</title>
+<style>
+  @page { size: A4; margin: 15mm 13mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: -apple-system,"Helvetica Neue",Arial,sans-serif; color:#1a1f2b; font-size:10.3pt; line-height:1.48; margin:0; }
+  h1 { font-size:20pt; margin:0 0 2px; letter-spacing:-0.5px; }
+  h2 { font-size:13.5pt; margin:24px 0 8px; padding-bottom:5px; border-bottom:2px solid #16324f; color:#16324f; }
+  h3 { font-size:11pt; margin:14px 0 4px; }
+  .sub { color:#5a6472; font-size:9.3pt; margin:0 0 2px; }
+  .cover { background:linear-gradient(135deg,#16324f,#2742A0); color:#fff; padding:20px 22px; border-radius:12px; margin-bottom:16px; }
+  .cover h1 { color:#fff; } .cover .sub { color:#cdd8ea; }
+  .meta-row { display:flex; flex-wrap:wrap; gap:7px 20px; margin-top:11px; font-size:9pt; color:#e7eef8; }
+  .meta-row b { color:#fff; }
+  .scores { display:flex; gap:12px; margin:14px 0; }
+  .score-card { flex:1; border-radius:10px; padding:12px 16px; border:1px solid #ddd; }
+  .score-card.now { background:#f3faf6; border-color:#bfe3ce; }
+  .score-card.risk { background:#fff8f0; border-color:#f0d9bd; }
+  .score-num { font-size:30pt; font-weight:800; line-height:1; }
+  .green { color:#1e7d43; } .amber { color:#c77d10; } .red { color:#c0392b; }
+  table { width:100%; border-collapse:collapse; margin:8px 0 4px; font-size:9.1pt; }
+  th,td { border:1px solid #d8dee7; padding:6px 8px; text-align:left; vertical-align:top; }
+  th { background:#eef2f7; font-weight:700; }
+  .badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:7.8pt; font-weight:700; color:#fff; white-space:nowrap; }
+  .b-crit{background:#c0392b;} .b-high{background:#e67e22;} .b-med{background:#c9a227;} .b-low{background:#2d8659;} .b-ok{background:#2d8659;} .b-na{background:#7a8594;} .b-done{background:#1e7d43;}
+  .risk { border:1px solid #dce2ea; border-left-width:5px; border-radius:8px; padding:10px 13px; margin:11px 0; page-break-inside:avoid; }
+  .risk.done{border-left-color:#1e7d43;background:#f2faf5;} .risk.high{border-left-color:#e67e22;background:#fdf8f2;} .risk.med{border-left-color:#c9a227;background:#fdfbf2;} .risk.low{border-left-color:#2d8659;background:#f3faf6;} .risk.crit{border-left-color:#c0392b;background:#fdf4f3;}
+  .risk h3 { margin:0 0 5px; display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+  .risk .gl { font-size:8.3pt; color:#5a6472; font-weight:600; }
+  .risk p { margin:3px 0; } .lbl { font-weight:700; color:#16324f; }
+  .apple-quote { font-style:italic; color:#7a3b3b; background:#fbeeee; border-radius:5px; padding:5px 9px; margin:5px 0; font-size:8.8pt; }
+  code { background:#eef1f5; padding:1px 4px; border-radius:3px; font-size:8.6pt; font-family:"SF Mono",Menlo,monospace; }
+  ul { margin:4px 0; padding-left:18px; } li { margin:2px 0; }
+  .footer { margin-top:22px; padding-top:10px; border-top:1px solid #d8dee7; color:#7a8594; font-size:8.4pt; }
+  .pagebreak { page-break-before:always; }
+  .chk { list-style:none; padding-left:0; } .chk li { padding-left:22px; position:relative; margin:6px 0; }
+  .chk li::before { position:absolute; left:0; top:0; }
+  .chk li.d::before { content:"✅"; } .chk li.u::before { content:"⬜"; }
+  .verified { background:#e8f6ee; border:1px solid #bfe3ce; border-radius:6px; padding:8px 12px; font-size:9pt; margin:8px 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>ChallengeBu! — App Store Ön İnceleme Denetimi</h1>
+  <p class="sub"><b>v2 · 24 Temmuz 2026</b> — bu oturumdaki düzeltmeler + doğrulamalar sonrası · Bundle <code style="background:rgba(255,255,255,.15);color:#fff">app.challengebu.ios</code></p>
+  <div class="meta-row">
+    <span><b>Sürüm:</b> 1.1.0</span>
+    <span><b>Geçmiş:</b> 2× red (2.1 + 4.1a)</span>
+    <span><b>Stack:</b> Expo RN + Supabase</span>
+    <span><b>IAP:</b> yok</span>
+    <span><b>Tracking:</b> yok</span>
+  </div>
+</div>
+
+<div class="scores">
+  <div class="score-card now">
+    <div class="score-num green">3<span style="font-size:14pt;color:#999">/10</span></div>
+    <div style="font-weight:700;color:#1e7d43;margin-top:3px;">Kod/Repo durumu — DÜŞÜK</div>
+    <div class="sub" style="margin-top:2px;">De-Boğaziçi + dolu review seed (lokal DB'de doğrulandı) uygulandı. Kalan riskler artık kod değil, <b>senin yayın-öncesi aksiyonların</b>.</div>
+  </div>
+  <div class="score-card risk">
+    <div class="score-num amber">6.5<span style="font-size:14pt;color:#999">/10</span></div>
+    <div style="font-weight:700;color:#c77d10;margin-top:3px;">Aksiyonlar yapılmazsa — YÜKSEK</div>
+    <div class="sub" style="margin-top:2px;">Demo video, ASC metadata push, screenshot yenileme, seed'i prod'da çalıştırma ve yeni build yapılmazsa red neredeyse kesin.</div>
+  </div>
+</div>
+
+<h2>Bu Oturumda Çözülenler (kanıtlı)</h2>
+<div class="verified">
+  <b>Doğrulama yöntemi:</b> Lokal Supabase (prod ile aynı GoTrue image) ayağa kaldırıldı → 81 migration + seed temiz uygulandı → review seed <b>gerçekten çalıştırıldı</b> ve idempotency dahil test edildi.
+</div>
+<table>
+  <tr><th>#</th><th>Yapılan</th><th>Kanıt</th><th>Durum</th></tr>
+  <tr><td>1</td><td><b>De-Boğaziçi</b> — metadata (subtitle/promo/description/release-notes/review-notes) + app-içi metin (welcome, e-posta hata mesajı, "BÜ Klasik"→"Klasik" 9 yerde) + placeholder → "Öğrenci ya da mezun e-postan"</td><td>Görünen-string sweep = 0 kalan; şema enum'ları korundu</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>2</td><td><b>Review seed doldduruldu</b> — 8 sahte rakip + 9 kişilik sıralı leaderboard + reviewer profil geçmişi (3 tamamlanmış maç) + <b>başlatılabilir 1 maç</b> + 1 bekleyen meydan okuma</td><td>Lokal: <code>ladder=9, matches=6, ready=1</code>; idempotent (2× temiz)</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>3</td><td><b>Anti-fake 15-dk friction giderildi</b> — seed maçı <code>played_at</code> geçmişte → start + score gate doğal geçer, güvenlik koduna dokunulmadı</td><td>Lokal: <code>past=t, status ok</code></td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>4</td><td><b>notes.txt güncellendi</b> — bağımsızlık ibaresi + dolu review verisi + tam maç akışı (start→score) adımları</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>5</td><td><b>Cleanup script</b> — onay sonrası demo veriyi prod'dan silmek için (<code>cleanup-review-seed-production.sql</code>)</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>6</td><td><b>Regresyon kontrolü</b> — shared typecheck exit 0; 81 migration+seed temiz uygulandı; değişen string'lerin test bağı yok (allowlist/validateBouniMail dokunulmadı)</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
+</table>
+
+<h2>Kalan Riskler — Öncelik Sırası</h2>
+
+<div class="risk high">
+  <h3><span>R1 · Demo video hâlâ eksik</span><span class="gl">Guideline 2.1 — Information Needed</span></h3>
+  <p><span class="lbl">Neden red?</span> Apple, fiziksel iOS cihazda tüm yeni-kullanıcı onboarding'ini gösteren video istedi; sağlanmazsa otomatik red tekrarı.</p>
+  <p class="apple-quote">"We need a demo video… running on a physical iOS device… the entire new user onboarding experience."</p>
+  <p><span class="lbl">Kontrol:</span> <code>notes.txt</code>'te <code>DEMO_VIDEO_URL</code> hâlâ placeholder; ASC Notes'ta gerçek link var mı?</p>
+  <p><span class="lbl">Düzeltme (SENDE):</span> iPhone ekran kaydı: welcome→e-posta→KVKK→OTP 424242→ana sekmeler→Maçlar'da "Maçı Başlat"→skor→profil→ayarlar. Link'i ASC Notes + notes.txt'e koy.</p>
+</div>
+
+<div class="risk high">
+  <h3><span>R2 · Metadata ASC'de canlı değil + screenshot'lar eski</span><span class="gl">2.3.3 / 4.1(a)</span></h3>
+  <p><span class="lbl">Neden red?</span> De-Boğaziçi metin sadece lokal fastlane dosyalarında. Reviewer ASC'deki <b>canlı</b> alanları + <b>screenshot'ları</b> görür; bunlar hâlâ "BÜ/Boğaziçi" içeriyorsa 4.1(a)+2.3 tekrar tetiklenir.</p>
+  <p><span class="lbl">Kontrol:</span> 4 screenshot (<code>fastlane/screenshots/tr/</code>) "BÜ Klasik"/"Boğaziçi" gösteriyor mu? ASC Subtitle/Description/Promo güncel mi?</p>
+  <p><span class="lbl">Düzeltme (SENDE):</span> <code>fastlane deliver</code> ile metadata'yı push et (veya ASC'de elle) + rename sonrası screenshot'ları yeniden üret (Maestro), üniversite adı/rozet olmadığını teyit et.</p>
+</div>
+
+<div class="risk high">
+  <h3><span>R3 · Seed'i PROD'da çalıştır + yeni build gerekli</span><span class="gl">2.1 / 2.3</span></h3>
+  <p><span class="lbl">Neden red?</span> Seed lokal doğrulandı ama <b>prod DB'de çalışması senin adımın</b> (prod erişimi gerekli). Ayrıca app-içi de-Boğaziçi metin binary'de — build 12 hâlâ eski string taşıyor.</p>
+  <p><span class="lbl">Düzeltme (SENDE):</span> (a) <code>scripts/seed-review-account-production.sql</code>'i Supabase SQL Editor'de çalıştır, verify çıktısını kontrol et. Ön koşul: reviewer bir kez OTP ile giriş yapmış olmalı. (b) EAS ile <b>yeni build (v1.1.0)</b> çıkar, onu submit et.</p>
+</div>
+
+<div class="risk med">
+  <h3><span>R4 · Sürüm/build string tutarsızlığı</span><span class="gl">2.3.0</span></h3>
+  <p><span class="lbl">Neden red?</span> <code>app.json</code> version <b>1.1.0</b>; review edilen <b>1.0.0 (12)</b>. ASC'deki marketing sürüm string'i, gönderilen build'in <code>CFBundleShortVersionString</code>'i ile eşleşmeli.</p>
+  <p><span class="lbl">Düzeltme (SENDE):</span> ASC'de yeni sürümü <b>1.1.0</b> olarak aç, build'i ona bağla.</p>
+</div>
+
+<div class="risk med">
+  <h3><span>R5 · Privacy Nutrition Label ↔ kod uyumu</span><span class="gl">5.1.1 / 5.1.2</span></h3>
+  <p><span class="lbl">Neden red?</span> ASC App Privacy beyanı toplanan veriyle (e-posta, ad, telefon ops., foto, bölüm, cinsiyet kategorisi) eşleşmeli.</p>
+  <p><span class="lbl">Kontrol/Düzeltme (SENDE):</span> ASC App Privacy'de bu alanları işaretle; <b>"Data Used to Track You" = None</b> (kodda tracking/ATT yok → doğru).</p>
+</div>
+
+<div class="risk low">
+  <h3><span>R6 · UGC güvenceleri &amp; diğer — DÜŞÜK (mevcut)</span><span class="gl">1.2 / 4.x / 5.1.1(v)</span></h3>
+  <ul>
+    <li>Engelleme/engel kaldırma (<code>settings/blocked.tsx</code>), şikayet, hesap silme (<code>settings/delete-account.tsx</code> + anonymize), terms/privacy/KVKK linkleri — <b>mevcut ✅</b></li>
+    <li>SIWA gerekmez (sosyal login yok) · ATT gerekmez (tracking yok) · Section 3 N/A (IAP yok) · export compliance ✅ · http link yok ✅</li>
+    <li><span class="badge b-low">İYİLEŞTİR</span> Yaş rating'i UGC/mesajlaşmaya uygun ver; profil adında küfür filtresi; thread içi "Şikayet"in görünürlüğü.</li>
+  </ul>
+</div>
+
+<h2 class="pagebreak">Sende Kalanlar — Yayın Öncesi Checklist</h2>
+<p class="sub">Bunlar prod erişimi / Apple hesabı / fiziksel cihaz gerektirdiği için yalnız sen yapabilirsin.</p>
+<ul class="chk">
+  <li class="u"><b>Demo video</b> çek (fiziksel iPhone, tam onboarding + start→score akışı) → ASC → App Review Information → Notes'a link koy (+ <code>notes.txt</code>'teki placeholder'ı doldur). <span class="badge b-crit">EN KRİTİK</span></li>
+  <li class="u"><b>Review seed'i PROD'da çalıştır</b> — Supabase SQL Editor → <code>scripts/seed-review-account-production.sql</code>. Önce reviewer bir kez OTP ile giriş yapmış olmalı. Verify çıktısında ladder=9, matches=6, ready=1 gör.</li>
+  <li class="u"><b>Metadata'yı ASC'ye push et</b> (<code>fastlane deliver</code> ya da elle) — Subtitle/Description/Promo/Release-notes/Review-notes.</li>
+  <li class="u"><b>Screenshot'ları yeniden üret</b> (rename sonrası) — hiçbirinde "BÜ/Boğaziçi" görünmesin, ASC'ye yükle.</li>
+  <li class="u"><b>Yeni build (v1.1.0)</b> çıkar (EAS) ve submit et — app-içi de-Boğaziçi metni bu build taşır.</li>
+  <li class="u"><b>ASC sürümünü 1.1.0</b> aç, build'i bağla (1.0.0 ↔ 1.1.0 tutarsızlığını gider).</li>
+  <li class="u"><b>ASC App Privacy</b>'yi kodla eşle, "tracking = none" bırak.</li>
+  <li class="u"><b>Apple'a mesajla yanıt ver</b> — her iki red kalemine: video linki + "no university affiliation; metadata revised" açıklaması.</li>
+  <li class="u"><b>(Onay sonrası)</b> <code>cleanup-review-seed-production.sql</code> ile demo veriyi temizle.</li>
+</ul>
+
+<div style="background:#f2faf5;border:1px solid #bfe3ce;border-radius:8px;padding:12px 15px;margin-top:12px;">
+  <b>Sonuç:</b> Kodda çözülebilecek her şey çözüldü ve lokal DB'de doğrulandı. İlk denemede geçmek için <b>en kritik ikisi</b>: (1) demo video, (2) seed'i prod'da çalıştırıp yeni build'i güncel metadata + screenshot ile submit etmek. Bu ikisi yapılırsa iki açık red kalemi + gizli "boş app" 2.1 riski kapanır → onay olasılığı yüksek.
+</div>
+
+<div class="footer">
+  ChallengeBu! App Store ön inceleme denetimi v2 · Apple App Store Review Guidelines (2025–2026) · Seed lokal Supabase'de (prod-eşdeğeri GoTrue) çalıştırılıp doğrulandı · Bu rapor kod/metadata kanıtına dayanır, Apple'ın nihai kararını garanti etmez · 24.07.2026
+</div>
+
+</body>
+</html>
