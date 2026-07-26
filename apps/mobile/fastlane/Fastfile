@@ -43,4 +43,25 @@ platform :ios do
       force: true,
     )
   end
+
+  # Create/select an App Store version, ATTACH a finished (already-uploaded via
+  # EAS) build to it, and push text metadata onto that version. Screenshots and
+  # the binary upload are skipped; no review submission is made. The build must
+  # have finished Apple processing first.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=... fastlane release version:1.1.0 build:13
+  lane :release do |options|
+    asc_auth
+    deliver(
+      app_identifier: "app.challengebu.ios",
+      app_version: options[:version],
+      build_number: options[:build],
+      metadata_path: "fastlane/metadata",
+      skip_screenshots: true,
+      skip_binary_upload: true,
+      skip_metadata: false,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      force: true,
+    )
+  end
 end
