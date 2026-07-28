@@ -327,6 +327,12 @@ export default function ConversationScreen() {
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
+          // flex:1 bounds the list to the space between the header and the
+          // composer. Without it the list sizes to its content and, once there
+          // are enough messages, grows past the screen bottom — pushing the
+          // composer (and its send button) off-screen. The loading/empty
+          // branches above already use a flex:1 container; match that here.
+          style={{ flex: 1 }}
           renderItem={({ item }) => (
             <Bubble
               item={item}

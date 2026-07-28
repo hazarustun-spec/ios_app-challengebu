@@ -13,16 +13,26 @@
 -- so the local onboarding draft (expo-secure-store) is empty and the wizard
 -- starts at step 1 (name).
 
+-- Match on auth.users.id, NOT profiles.email: the profile row's `email`
+-- column may differ from the reviewer's auth email (onboarding writes
+-- user.email, which is not guaranteed to equal the login address), so a
+-- `where profiles.email = ...` update can match 0 rows. The auth.users join
+-- is authoritative.
 update public.profiles
    set first_name = '',
        last_name  = ''
- where lower(email) = 'appreview42@proton.me';
+ where user_id in (
+   select id from auth.users where lower(email) = 'appreview42@proton.me'
+ );
 
 -- Verify: onboarding_complete should now be false.
-select email,
-       first_name,
-       last_name,
-       status,
-       (status is not null and length(coalesce(first_name, '')) > 0) as onboarding_complete
-  from public.profiles
- where lower(email) = 'appreview42@proton.me';
+select p.user_id,
+       p.email as profile_email,
+       u.email as auth_email,
+       p.first_name,
+       p.last_name,
+       p.status,
+       (p.status is not null and length(coalesce(p.first_name, '')) > 0) as onboarding_complete
+  from public.profiles p
+  join auth.users u on u.id = p.user_id
+ where lower(u.email) = 'appreview42@proton.me';

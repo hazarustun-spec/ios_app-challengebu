@@ -77,12 +77,14 @@ begin
   on conflict (user_id) do update set
     first_name = excluded.first_name,
     last_name  = excluded.last_name,
+    email      = excluded.email,       -- un-anonymize: in-app account deletion
     gender_category = excluded.gender_category,
     class_year = excluded.class_year,
     skill_self_assessment = excluded.skill_self_assessment,
     dominant_hand = excluded.dominant_hand,
     availability_windows = excluded.availability_windows,
-    status = 'active',
+    avatar_url = null,                 -- rewrites the scrubbed profile back to a
+    status = 'active',                 -- clean, active, not-yet-onboarded state
     kvkk_accepted_at = coalesce(public.profiles.kvkk_accepted_at, now());
 
   -- ---------------------------------------------------------------------------
