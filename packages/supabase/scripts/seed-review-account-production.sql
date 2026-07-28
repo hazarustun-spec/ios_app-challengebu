@@ -52,6 +52,14 @@ begin
   -- ---------------------------------------------------------------------------
   -- 1. Reviewer profile (self-sufficient upsert; supersedes the old script)
   --    gender_category 'open_only' → trigger auto-seeds open_tek + open_cift elo.
+  --
+  --    first_name/last_name are INTENTIONALLY blank: the app derives
+  --    `onboardingComplete = status<>null AND first_name.length>0`
+  --    (mobile/lib/auth-bootstrap.ts). Leaving the name empty makes the
+  --    reviewer land in the onboarding wizard on first sign-in — Apple asked
+  --    to see the FULL onboarding flow (Guideline 2.1). The reviewer completes
+  --    the wizard once, then reaches the pre-seeded ladder/history below.
+  --    Do NOT "fix" these to real names.
   -- ---------------------------------------------------------------------------
   insert into public.profiles (
     user_id, role, first_name, last_name, email,
@@ -60,7 +68,7 @@ begin
     skill_self_assessment, dominant_hand, availability_windows,
     status, kvkk_accepted_at
   ) values (
-    v_rev, 'player', 'App', 'Review', 'appreview42@proton.me',
+    v_rev, 'player', '', '', 'appreview42@proton.me',
     'they/them', 'open_only', '3',
     true, true,
     'orta', 'sag', array['weekday_evening','weekend_morning'],
