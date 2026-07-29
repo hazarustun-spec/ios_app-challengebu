@@ -10,8 +10,8 @@
 //      "Kaybedersen -Y" tiles using the standard ELO expectation formula
 //      with K=32. Friendly matches skip this card.
 //   3. Summary table — tip / format / tarih·saat / kort rows.
-//   4. (ranking only) "Format kurallarını oku (zorunlu)" link → E15.
-//   5. Sticky "Teklifi gönder" CTA.
+//   4. Sticky footer — (ranking only) "Format kurallarını oku (zorunlu)"
+//      gate link → E15, directly above the "Teklifi gönder" CTA.
 //
 // Live data:
 //   - useNewMatchStore → draft state (kind, path, category, format, date,

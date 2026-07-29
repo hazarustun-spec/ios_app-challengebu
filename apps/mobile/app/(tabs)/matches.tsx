@@ -55,7 +55,6 @@ import {
   useApplyToMatchRequest,
   useMyMatchApplications,
 } from '../../hooks/use-match-applications';
-import { useDeleteOpenCall } from '../../hooks/use-delete-open-call';
 import { useDeleteMatchRequest } from '../../hooks/use-delete-match-request';
 import { canCancelSentOffer } from '../../lib/match-request-rules';
 import { useAuthStore } from '../../stores/auth-store';
@@ -178,29 +177,24 @@ export default function MatchesTab() {
         title="Maçlar"
         actionIcon="clock"
         onAction={() => router.push('/match/history' as never)}
+        rightSlot={<MessagesButton />}
       />
       <View
         style={{
           paddingHorizontal: 18,
           paddingTop: 4,
           paddingBottom: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Segmented<HubView>
-            value={view}
-            onChange={setView}
-            options={[
-              { value: 'upcoming', label: 'Yaklaşan' },
-              { value: 'offers', label: 'Teklifler' },
-              { value: 'feed', label: 'İlanlar' },
-            ]}
-          />
-        </View>
-        <MessagesButton />
+        <Segmented<HubView>
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'upcoming', label: 'Yaklaşan' },
+            { value: 'offers', label: 'Teklifler' },
+            { value: 'feed', label: 'İlanlar' },
+          ]}
+        />
       </View>
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 11 }}
@@ -637,6 +631,7 @@ interface OffersListProps {
 }
 
 function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
+  const toast = useToast();
   const requests: MatchRequestRow[] = (requestsQ.data ?? []).filter(
     (r) => r.status === 'pending',
   );
@@ -747,7 +742,17 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
                   size="sm"
                   variant="danger"
                   full
-                  onPress={() => reject.mutate({ requestId: m.id })}
+                  onPress={() =>
+                    reject.mutate(
+                      { requestId: m.id },
+                      {
+                        onError: () => {
+                          toast.show('Teklif artık geçerli değil', 'error');
+                          requestsQ.refetch();
+                        },
+                      },
+                    )
+                  }
                   disabled={isRejecting || isAccepting}
                 >
                   {isRejecting ? 'Reddediliyor…' : 'Reddet'}
@@ -765,7 +770,17 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
                       stroke={3}
                     />
                   }
-                  onPress={() => accept.mutate({ requestId: m.id })}
+                  onPress={() =>
+                    accept.mutate(
+                      { requestId: m.id },
+                      {
+                        onError: () => {
+                          toast.show('Teklif artık geçerli değil', 'error');
+                          requestsQ.refetch();
+                        },
+                      },
+                    )
+                  }
                   disabled={isAccepting || isRejecting}
                 >
                   {isAccepting ? 'Kabul ediliyor…' : 'Kabul et'}
@@ -832,7 +847,7 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
         const confirmCancel = () =>
           Alert.alert(
             'Teklifi geri çek',
-            `${targetName} adlı oyuncuya gönderdiğin teklif iptal edilsin mi?`,
+            `${targetName} adlı oyuncuya gönderdiğin teklif iptal edilsin mi? Bu teklifle ilgili sohbet de silinir.`,
             [
               { text: 'Vazgeç', style: 'cancel' },
               {
@@ -950,7 +965,7 @@ interface FeedListProps {
 
 function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListProps) {
   const toast = useToast();
-  const deleteOpenCall = useDeleteOpenCall();
+  const deleteOpenCall = useDeleteMatchRequest();
   const listings: MatchRequestRow[] = feedQ.data ?? [];
   const mine: MatchRequestRow[] = myQ.data ?? [];
 

@@ -10,22 +10,31 @@
 
 import type { IconName } from './Icon';
 
-export interface TabSlotConfig {
+interface TabSlotBase {
   /** Expo Router screen name. Must match the file inside `app/(tabs)/`. */
   name: string;
-  /**
-   * Glyph for a normal slot. Omitted for the center slot, which renders the
-   * BallMark doodle instead of an Icon glyph.
-   */
-  icon?: IconName;
-  /** Central action button — visually dominant, never persists as active. */
-  isCenter?: boolean;
+  /** Turkish accessibility label announced by VoiceOver/TalkBack. */
+  label: string;
 }
 
+/** Central action button — visually dominant, never persists as active. */
+export interface TabSlotCenter extends TabSlotBase {
+  isCenter: true;
+}
+
+/** A normal slot always has a glyph — no `?? fallback` needed, no silent
+ *  misconfiguration possible. */
+export interface TabSlotNormal extends TabSlotBase {
+  isCenter?: false;
+  icon: IconName;
+}
+
+export type TabSlotConfig = TabSlotCenter | TabSlotNormal;
+
 export const TAB_SLOTS: TabSlotConfig[] = [
-  { name: 'index', icon: 'home' }, // Anasayfa (landing)
-  { name: 'matches', icon: 'calendar' }, // Maçlar — upcoming/planned matches
-  { name: 'new-match', isCenter: true }, // "+" slot → BallMark
-  { name: 'leaderboard', icon: 'ranking' }, // Sıralama
-  { name: 'profile', icon: 'user' },
+  { name: 'index', icon: 'home', label: 'Anasayfa' },
+  { name: 'matches', icon: 'calendar', label: 'Maçlar' }, // upcoming/planned matches
+  { name: 'new-match', isCenter: true, label: 'Yeni maç' }, // "+" slot → BallMark
+  { name: 'leaderboard', icon: 'ranking', label: 'Sıralama' },
+  { name: 'profile', icon: 'user', label: 'Profil' },
 ];

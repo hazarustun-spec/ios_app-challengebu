@@ -19,11 +19,11 @@ export function MessagesButton() {
     <Pressable
       onPress={() => router.push('/messages' as never)}
       accessibilityRole="button"
-      accessibilityLabel="Mesajlar"
+      accessibilityLabel={unread > 0 ? `Mesajlar, ${unread} okunmamış` : 'Mesajlar'}
       style={{
         width: 40,
         height: 40,
-        borderRadius: 8,
+        borderRadius: 14,
         backgroundColor: colors.surface2,
         alignItems: 'center',
         justifyContent: 'center',
@@ -47,7 +47,10 @@ export function MessagesButton() {
             justifyContent: 'center',
           }}
         >
-          <Text style={{ fontSize: 10, fontWeight: '800', color: '#FFFFFF' }}>
+          <Text
+            className="font-sans font-extrabold"
+            style={{ fontSize: 10, color: '#FFFFFF' }}
+          >
             {unread > 99 ? '99+' : unread}
           </Text>
         </View>

@@ -61,10 +61,8 @@ export interface TabBarProps {
   insets?: unknown;
 }
 
-// ---------------------------------------------------------------------------
-// Slot configuration
-// ---------------------------------------------------------------------------
-
+// The slot dimension shared by the sliding indicator + every non-center slot
+// (slot interface + array now live in `tab-slots.ts`).
 const SLOT_SIZE = 48;
 
 // ---------------------------------------------------------------------------
@@ -82,7 +80,7 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
   const scale = useSharedValue(1);
   const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
-  const isCenter = !!slot.isCenter;
+  const isCenter = slot.isCenter === true;
   const size = isCenter ? 52 : SLOT_SIZE;
 
   const handlePress = () => {
@@ -101,7 +99,7 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
       onPress={handlePress}
       onLayout={onLayout}
       accessibilityRole="button"
-      accessibilityLabel={slot.name}
+      accessibilityLabel={slot.label}
       accessibilityState={{ selected: isActive }}
       style={{
         width: size,
@@ -130,13 +128,13 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
       ].join(' ')}
     >
       <Animated.View style={iconStyle}>
-        {isCenter ? (
+        {slot.isCenter === true ? (
           // Brand mark instead of a "+" glyph. White seams read against the
           // court-blue center button the same way the white "+" stroke did.
           <BallMark size={28} color={colors.lime} stroke="#FFFFFF" sw={3.6} />
         ) : (
           <Icon
-            name={slot.icon ?? 'home'}
+            name={slot.icon}
             size={23}
             color="#FFFFFF"
             stroke={isActive ? 2.4 : 2.1}
