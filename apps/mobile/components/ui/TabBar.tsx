@@ -30,7 +30,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
-import { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
+import { BallMark } from './doodles/BallMark';
+import { TAB_SLOTS, type TabSlotConfig } from './tab-slots';
 
 // ---------------------------------------------------------------------------
 // Structural BottomTabBarProps shim — only the fields we touch are typed.
@@ -63,22 +65,6 @@ export interface TabBarProps {
 // Slot configuration
 // ---------------------------------------------------------------------------
 
-interface SlotConfig {
-  /** Expo Router screen name. Must match the file inside `app/(tabs)/`. */
-  name: string;
-  icon: IconName;
-  /** Central "+" — visually dominant, never persists as the active tab. */
-  isCenter?: boolean;
-}
-
-const SLOTS: SlotConfig[] = [
-  { name: 'index', icon: 'home' }, // Anasayfa (landing)
-  { name: 'matches', icon: 'matches' },
-  { name: 'new-match', icon: 'plus', isCenter: true },
-  { name: 'leaderboard', icon: 'ranking' }, // Sıralama
-  { name: 'profile', icon: 'user' },
-];
-
 const SLOT_SIZE = 48;
 
 // ---------------------------------------------------------------------------
@@ -86,7 +72,7 @@ const SLOT_SIZE = 48;
 // ---------------------------------------------------------------------------
 
 interface TabSlotProps {
-  slot: SlotConfig;
+  slot: TabSlotConfig;
   isActive: boolean;
   onPress: () => void;
   onLayout: (e: LayoutChangeEvent) => void;
@@ -144,12 +130,18 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
       ].join(' ')}
     >
       <Animated.View style={iconStyle}>
-        <Icon
-          name={slot.icon}
-          size={isCenter ? 25 : 23}
-          color="#FFFFFF"
-          stroke={isCenter ? 2.7 : isActive ? 2.4 : 2.1}
-        />
+        {isCenter ? (
+          // Brand mark instead of a "+" glyph. White seams read against the
+          // court-blue center button the same way the white "+" stroke did.
+          <BallMark size={28} color={colors.lime} stroke="#FFFFFF" sw={3.6} />
+        ) : (
+          <Icon
+            name={slot.icon ?? 'home'}
+            size={23}
+            color="#FFFFFF"
+            stroke={isActive ? 2.4 : 2.1}
+          />
+        )}
       </Animated.View>
     </Pressable>
   );
@@ -220,7 +212,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
               indicatorStyle,
             ]}
           />
-          {SLOTS.map((slot, i) => {
+          {TAB_SLOTS.map((slot, i) => {
             const route = state.routes[i];
             if (!route) return null;
             const isActive = activeIndex === i;
