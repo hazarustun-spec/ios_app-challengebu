@@ -64,12 +64,19 @@ görünürlük ve tek bir eksik yetenek (kendi teklifini iptal) düzeltiliyor.
   - Tekrarı önlemek için küçük bir paylaşılan başlık-aksiyonu bileşeni
     (ör. `components/ui/MessagesButton.tsx`) — rozet dahil — ve her sekme
     başlığına yerleştir.
-- **Okunmamış rozet kaynağı:** Yeni hafif hook `useUnreadMessageCount`.
-  `hooks/use-conversations.ts` her konuşma için `unreadCount` üretiyor;
-  toplamı döndüren ince bir hook (veya `messages` tablosunda okunmamış
-  sayımı yapan tek sorgu). `queryKeys.conversations.unreadCount()` anahtarı
-  zaten ayrılmış. Notification rozetiyle (`useUnreadCount`) karıştırma —
-  o `notifications` tablosu içindir.
+- **Okunmamış rozet kaynağı:** `useUnreadMessageCount`
+  (`hooks/use-conversations.ts:113`) **zaten mevcut** — `unread_message_count`
+  RPC'sini çağırıyor. Yeni hook yazılmayacak. Notification rozetiyle
+  (`useUnreadCount`) karıştırma — o `notifications` tablosu içindir.
+- **Buton zaten var:** rozetli mesaj butonu `(tabs)/matches.tsx:202-244`
+  içinde satır içi yazılmış durumda. İş = icat değil, **paylaşılan bileşene
+  çıkarma** (extract) + diğer üç sekmeye yerleştirme.
+- **Yerleştirme engeli:** `NavHeader` tek aksiyon yuvası sunuyor
+  (`actionIcon` + `onAction`) ve üç sekme de onu kullanıyor
+  (matches→`clock`, leaderboard→`filter`, profile→`settings`). Bu yüzden
+  `NavHeader`'a opsiyonel bir `rightSlot?: ReactNode` eklenecek. Anasayfa
+  `NavHeader` kullanmıyor — `GreetHeader` (zil butonu) kullanıyor; mesaj
+  butonu oraya zilin yanına eklenecek.
 
 ### 4. Gönderdiğim teklifi iptal etme
 
@@ -80,15 +87,21 @@ görünürlük ve tek bir eksik yetenek (kendi teklifini iptal) düzeltiliyor.
 - **Çözüm:** Her gönderilen teklif kartına, **yalnızca `pending`**
   durumdayken `İptal et` (destructive) butonu. Onay Alert'i ("Teklifi geri
   çek?") → silme. Kabul/ret sonrası (pending değilse) buton görünmez.
-- **Backend:** Yeni backend gerekmiyor. `useDeleteOpenCall`
-  (`supabase.from('match_requests').delete().eq('id', id)`) RLS'i "kendi
-  oluşturduğun `pending` kaydı sil" mantığında — tür (`direct_challenge`
-  vs `open_call`) fark etmiyor; FK'ler cascade. Aynı yolu direkt teklifler
-  için de kullan. **Doğrulama adımı (plan):** RLS delete politikasının
-  `type`'a kısıtlı olmadığını migration'da teyit et; kısıtlıysa politikayı
-  `pending` + creator olacak şekilde genişlet. Semantik netlik için hook'u
-  `useCancelSentChallenge` adıyla ince bir sarmalayıcı yapabiliriz (aynı
-  delete), ya da `useDeleteOpenCall`'ı doğrudan kullan.
+- **Backend: DOĞRULANDI — migration gerekmiyor.**
+  `20260619000004_match_request_creator_delete.sql:6-9`:
+
+  ```sql
+  create policy "Creator can delete own pending request"
+    on public.match_requests for delete to authenticated
+    using (auth.uid() = creator_id and status = 'pending');
+  ```
+
+  Politika `type` sütununa kısıtlı değil → `direct_challenge` satırları da
+  sahibi tarafından `pending` iken silinebilir. FK'ler cascade.
+- **Adlandırma:** `useDeleteOpenCall` bu iş için doğru davranışı yapıyor ama
+  adı yanıltıcı olur. Genel `useDeleteMatchRequest` hook'u oluşturulup
+  `use-delete-open-call.ts` ona tek satırla delege edecek (mevcut çağıran
+  kod değişmez).
 - **Sorgu tazeleme:** İptal sonrası `matchRequests.all` ve ilgili
   giden-teklif sorgularını invalidate et (mevcut `onSuccess` deseni).
 
@@ -123,23 +136,39 @@ görünürlük ve tek bir eksik yetenek (kendi teklifini iptal) düzeltiliyor.
 
 | Alan | Dosya |
 |------|-------|
-| Tab ikonları | `components/ui/TabBar.tsx` (+ gerekirse `components/ui/Icon.tsx`) |
-| Mesaj butonu | yeni `components/ui/MessagesButton.tsx`; `(tabs)/index.tsx`, `matches.tsx`, `leaderboard.tsx`, `profile.tsx` başlıkları |
-| Unread hook | yeni `hooks/use-unread-message-count.ts` |
-| Teklif iptal | `(tabs)/matches.tsx` (`SentOffersList`); yeni/mevcut delete hook; gerekirse RLS migration |
+| Tab ikonları | yeni `components/ui/tab-slots.ts` (saf konfig); `components/ui/TabBar.tsx` |
+| Mesaj butonu | yeni `components/ui/MessagesButton.tsx`; `components/ui/NavHeader.tsx` (`rightSlot`); `components/ui/GreetHeader.tsx`; `(tabs)/matches.tsx`, `leaderboard.tsx`, `profile.tsx`, `index.tsx` |
+| Teklif iptal | yeni `lib/match-request-rules.ts`; yeni `hooks/use-delete-match-request.ts`; `hooks/use-delete-open-call.ts` (delege); `(tabs)/matches.tsx` (`SentOffersList`) |
 | Segment netlik | `(tabs)/matches.tsx` (Teklifler görünümü başlıkları) |
-| Kural vurgusu | `app/match/new/preview.tsx` |
+| Kural vurgusu | yeni `lib/rules-gate.ts`; `app/match/new/preview.tsx` |
+
+## Test altyapısı (doğrulanmış durum)
+
+`bun` kurulu değildi; `brew install oven-sh/bun/bun` ile 1.3.14 kuruldu.
+Suite baseline: **72 pass / 11 fail / 10 error** — bu kırıklar
+**önceden var** ve bu işten bağımsız. Kök neden: RN 0.85 + bun
+`mock.module` named-export uyumsuzluğu
+(`Export named 'View' not found in module react-native/index.js`) ve
+hook kullanan bileşenlerin doğrudan fonksiyon olarak çağrılması
+(`Invalid hook call`). `Nav.test.tsx` (TabBar+Avatar) tamamen kırık: 0 pass.
+
+**Karar:** Test altyapısını onarmak bu işin kapsamı dışında (tavşan deliği).
+Bunun yerine değişen mantık **saf modüllere** çıkarılır — `tab-slots.ts`,
+`match-request-rules.ts`, `rules-gate.ts` react-native import etmez, bu
+yüzden `bun test` altında gerçekten çalışır. Saf mantığa indirgenemeyen
+JSX/yerleşim değişiklikleri `npx tsc --noEmit` + cihazda elle doğrulanır.
+`Nav.test.tsx` bilinen-kırık olarak olduğu gibi bırakılır (bu iş onu ne
+düzeltir ne bozar).
 
 ## Riskler / doğrulama
 
-- **Teklif iptal RLS:** delete politikasının `direct_challenge` kayıtlarını
-  da kapsadığı teyit edilecek (aksi hâlde küçük migration). Tek gerçek
-  belirsizlik.
+- ~~Teklif iptal RLS~~ — **çözüldü**, politika doğrulandı, migration yok.
 - **Merkez top ikonu keşfedilebilirlik:** "+" kadar net "oluştur" sinyali
   vermeyebilir; kullanıcı bilinçli seçti. İstenirse ileride topun üstüne
   küçük "+" rozeti eklenebilir (bu iş kapsamında değil).
-- **Başlık aksiyonu tekrarı:** paylaşılan `MessagesButton` bileşeniyle her
-  sekmede kod tekrarından kaçın.
+- **Elle doğrulama yükü:** JSX değişikliklerinin (mesaj butonu yerleşimi,
+  başlıklar, kural kartı) otomatik testi yok; TestFlight/dev build'de
+  gözle kontrol gerekir.
 
 ## Kabul kriterleri
 
