@@ -29,6 +29,7 @@ import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
 import { clientKFactor, FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
 import { formatDateLabel } from '../../../lib/match-dates';
+import { rulesGateState } from '../../../lib/rules-gate';
 import { useNewMatchStore } from '../../../stores/new-match-store';
 import { useAuthStore } from '../../../stores/auth-store';
 import { useMyRankings } from '../../../hooks/use-my-rankings';
@@ -57,6 +58,7 @@ export default function MatchPreview() {
   const profile = useAuthStore((s) => s.profile);
   const meName = profile?.firstName ?? 'Sen';
   const fmt = FORMATS.find((f) => f.key === nm.format)!;
+  const gate = rulesGateState(nm.kind, nm.format, nm.rulesAcknowledgedFormat);
 
   // --- Live ELO (my own) ---
   const rankingsQ = useMyRankings();
@@ -361,49 +363,47 @@ export default function MatchPreview() {
             </View>
           ))}
         </View>
-
-        {/* Format rules link — ranking only. */}
-        {nm.kind === 'ranking' && (() => {
-          const rulesRead = nm.rulesAcknowledgedFormat === nm.format;
-          return (
-            <Pressable
-              onPress={() =>
-                router.push(
-                  `/match/new/format-rules?format=${nm.format}` as never,
-                )
-              }
-              className="flex-row items-center rounded-md"
-              style={{
-                padding: 14,
-                gap: 10,
-                borderWidth: 1,
-                borderColor: rulesRead ? colors.win : colors.claySoft,
-                backgroundColor: rulesRead ? colors.limeSoft : colors.claySofter,
-              }}
-            >
-              <Icon
-                name={rulesRead ? 'check' : 'info'}
-                size={18}
-                color={rulesRead ? colors.win : colors.clay}
-              />
-              <Text
-                className="font-sans font-bold"
-                style={{ flex: 1, fontSize: 13.5, color: colors.clayText }}
-              >
-                {rulesRead
-                  ? 'Format kuralları okundu'
-                  : 'Format kurallarını oku (zorunlu)'}
-              </Text>
-              <Icon name="chevR" size={18} color={rulesRead ? colors.win : colors.clay} />
-            </Pressable>
-          );
-        })()}
       </ScrollView>
-      <View style={{ padding: 18 }}>
+      <View style={{ padding: 18, gap: 10 }}>
+        {gate !== 'not-required' && (
+          <Pressable
+            onPress={() =>
+              router.push(`/match/new/format-rules?format=${nm.format}` as never)
+            }
+            accessibilityRole="button"
+            className="flex-row items-center rounded-md"
+            style={{
+              padding: 14,
+              gap: 10,
+              borderWidth: 2,
+              borderColor: gate === 'read' ? colors.win : colors.warn,
+              backgroundColor: gate === 'read' ? colors.limeSoft : `${colors.warn}1F`,
+            }}
+          >
+            <Icon
+              name={gate === 'read' ? 'check' : 'warn'}
+              size={18}
+              color={gate === 'read' ? colors.win : colors.warn}
+            />
+            <Text
+              className="font-sans font-bold"
+              style={{ flex: 1, fontSize: 13.5, color: colors.text }}
+            >
+              {gate === 'read'
+                ? 'Format kuralları okundu'
+                : 'Önce format kurallarını oku (zorunlu)'}
+            </Text>
+            <Icon
+              name="chevR"
+              size={18}
+              color={gate === 'read' ? colors.win : colors.warn}
+            />
+          </Pressable>
+        )}
         <Button
           full
           size="lg"
-          disabled={nm.kind === 'ranking' && nm.rulesAcknowledgedFormat !== nm.format}
+          disabled={gate === 'unread'}
           icon={
             submitting ? (
               <ActivityIndicator size="small" color={colors.onLime} />
@@ -415,6 +415,14 @@ export default function MatchPreview() {
         >
           {submitting ? 'Gönderiliyor…' : 'Teklifi gönder'}
         </Button>
+        {gate === 'unread' && (
+          <Text
+            className="font-sans text-text-3"
+            style={{ fontSize: 12.5, textAlign: 'center' }}
+          >
+            Göndermek için format kurallarını okumalısın.
+          </Text>
+        )}
       </View>
     </View>
   );
