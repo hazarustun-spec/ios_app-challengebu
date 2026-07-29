@@ -56,6 +56,9 @@ import {
   useMyMatchApplications,
 } from '../../hooks/use-match-applications';
 import { useDeleteOpenCall } from '../../hooks/use-delete-open-call';
+import { useDeleteMatchRequest } from '../../hooks/use-delete-match-request';
+import { canCancelSentOffer } from '../../lib/match-request-rules';
+import { useAuthStore } from '../../stores/auth-store';
 import { useToast } from '../../components/ui/ToastProvider';
 import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
@@ -789,6 +792,9 @@ interface SentOffersListProps {
 }
 
 function SentOffersList({ outgoingQ }: SentOffersListProps) {
+  const toast = useToast();
+  const myUserId = useAuthStore((s) => s.user?.id);
+  const cancelRequest = useDeleteMatchRequest();
   const sent = (outgoingQ.data ?? []).filter(
     (r) => r.type === 'direct_challenge',
   );
@@ -815,6 +821,25 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
           label: m.status,
           color: colors.text3,
         };
+        const cancelable = canCancelSentOffer(m, myUserId);
+        const isCancelling = cancelRequest.isPending && cancelRequest.variables === m.id;
+        const confirmCancel = () =>
+          Alert.alert(
+            'Teklifi geri çek',
+            `${targetName} adlı oyuncuya gönderdiğin teklif iptal edilsin mi?`,
+            [
+              { text: 'Vazgeç', style: 'cancel' },
+              {
+                text: 'Geri çek',
+                style: 'destructive',
+                onPress: () =>
+                  cancelRequest.mutate(m.id, {
+                    onSuccess: () => toast.show('Teklif geri çekildi'),
+                    onError: () => toast.show('Teklif geri çekilemedi', 'error'),
+                  }),
+              },
+            ],
+          );
 
         return (
           <View
@@ -873,6 +898,31 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                 {timeLabel} · {courtLabel}
               </Text>
             </View>
+            {cancelable && (
+              <Pressable
+                onPress={confirmCancel}
+                disabled={isCancelling}
+                accessibilityRole="button"
+                accessibilityLabel="Teklifi geri çek"
+                className="flex-row items-center justify-center rounded-md"
+                style={{
+                  marginTop: 12,
+                  paddingVertical: 10,
+                  gap: 8,
+                  borderWidth: 1.5,
+                  borderColor: colors.loss,
+                  opacity: isCancelling ? 0.5 : 1,
+                }}
+              >
+                <Icon name="x" size={15} color={colors.loss} />
+                <Text
+                  className="font-sans font-bold"
+                  style={{ fontSize: 13, color: colors.loss }}
+                >
+                  {isCancelling ? 'Geri çekiliyor…' : 'Teklifi geri çek'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         );
       })}
