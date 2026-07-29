@@ -18,6 +18,7 @@
 //   ink stroke — matches the source. Text actions are bare clay-colored
 //   labels with no chip background.
 
+import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from './Icon';
@@ -35,6 +36,13 @@ export interface NavHeaderProps {
   /** Icon name for the trailing action (e.g., 'clock', 'filter', 'settings'). */
   actionIcon?: IconName;
   onAction?: () => void;
+  /**
+   * Extra element rendered immediately to the LEFT of the `actionIcon` chip.
+   * Exists because every main tab already spends the single `actionIcon` slot
+   * (matches→clock, leaderboard→filter, profile→settings) and still needs a
+   * messages entry point.
+   */
+  rightSlot?: ReactNode;
   /** Switch to the large display title layout. */
   large?: boolean;
   /** When provided, the title text becomes a pressable that calls this. */
@@ -49,6 +57,7 @@ export function NavHeader({
   action,
   actionIcon,
   onAction,
+  rightSlot,
   large,
   onPressTitle,
 }: NavHeaderProps) {
@@ -137,6 +146,7 @@ export function NavHeader({
             </Text>
           </Pressable>
         )}
+        {rightSlot}
         {actionIcon && (
           <Pressable
             onPress={onAction}
@@ -157,7 +167,7 @@ export function NavHeader({
 
         {/* Spacer to balance the row when there's nothing on the right and
             no back button on the left — keeps the centered title centered. */}
-        {!onBack && !large && !action && !actionIcon && (
+        {!onBack && !large && !action && !actionIcon && !rightSlot && (
           <View className="w-9 h-9" />
         )}
       </View>

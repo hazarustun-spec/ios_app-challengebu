@@ -15,6 +15,7 @@
 // to the same optical edge as other 18px-padded headers in the design
 // bundle.
 
+import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
@@ -29,6 +30,8 @@ export interface GreetHeaderProps {
   unreadCount?: number;
   /** Bell tap handler. */
   onBellPress?: () => void;
+  /** Extra element rendered immediately to the left of the bell. */
+  leftOfBell?: ReactNode;
 }
 
 export function GreetHeader({
@@ -36,6 +39,7 @@ export function GreetHeader({
   sub,
   unreadCount = 0,
   onBellPress,
+  leftOfBell,
 }: GreetHeaderProps) {
   const insets = useSafeAreaInsets();
   return (
@@ -76,15 +80,18 @@ export function GreetHeader({
           </Text>
         )}
       </View>
-      <Pressable
-        onPress={onBellPress}
-        className="items-center justify-center"
-        style={{ width: 44, height: 44, marginRight: -8 }}
-        accessibilityRole="button"
-        accessibilityLabel="Bildirimler"
-      >
-        <BellWithBadge count={unreadCount} />
-      </Pressable>
+      <View className="flex-row items-center" style={{ gap: 6 }}>
+        {leftOfBell}
+        <Pressable
+          onPress={onBellPress}
+          className="items-center justify-center"
+          style={{ width: 44, height: 44, marginRight: -8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Bildirimler"
+        >
+          <BellWithBadge count={unreadCount} />
+        </Pressable>
+      </View>
     </View>
   );
 }

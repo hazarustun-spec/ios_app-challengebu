@@ -38,8 +38,8 @@ import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { FormatChip } from '../../components/ui/FormatChip';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { MessagesButton } from '../../components/ui/MessagesButton';
 import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
-import { useUnreadMessageCount } from '../../hooks/use-conversations';
 import { useActiveMatches } from '../../hooks/use-active-matches';
 import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
@@ -155,8 +155,6 @@ export default function MatchesTab() {
   );
   const playerRatings = usePlayerRatings();
 
-  const { data: unreadMessages = 0 } = useUnreadMessageCount();
-
   const isRefetching =
     (view === 'upcoming' && matchesQ.isRefetching) ||
     (view === 'offers' && requestsQ.isRefetching) ||
@@ -199,49 +197,7 @@ export default function MatchesTab() {
             ]}
           />
         </View>
-        <Pressable
-          onPress={() => router.push('/messages' as never)}
-          accessibilityRole="button"
-          accessibilityLabel="Mesajlar"
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 8,
-            backgroundColor: colors.surface2,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Icon name="mail" size={20} color={colors.text} />
-          {unreadMessages > 0 && (
-            <View
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -5,
-                minWidth: 17,
-                height: 17,
-                paddingHorizontal: 4,
-                borderRadius: 8.5,
-                backgroundColor: colors.pinkDeep,
-                borderWidth: 1.5,
-                borderColor: colors.bg,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: '800',
-                  color: '#FFFFFF',
-                }}
-              >
-                {unreadMessages > 99 ? '99+' : unreadMessages}
-              </Text>
-            </View>
-          )}
-        </Pressable>
+        <MessagesButton />
       </View>
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 4, gap: 11 }}

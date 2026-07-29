@@ -26,6 +26,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
+import { MessagesButton } from '../../components/ui/MessagesButton';
 import { LevelRing } from '../../components/ui/LevelRing';
 import { BadgeArt } from '../../components/ui/BadgeArt';
 import { LevelIcon } from '../../components/ui/LevelIcon';
@@ -150,6 +151,7 @@ export default function ProfileTab() {
           title="Profil"
           actionIcon="settings"
           onAction={() => router.push('/settings' as never)}
+          rightSlot={<MessagesButton />}
         />
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }} scrollEnabled={false}>
           {/* Hero row — avatar ring + name/level/meta lines */}
@@ -197,6 +199,7 @@ export default function ProfileTab() {
         title="Profil"
         actionIcon="settings"
         onAction={() => router.push('/settings' as never)}
+        rightSlot={<MessagesButton />}
       />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         {/* Hero */}

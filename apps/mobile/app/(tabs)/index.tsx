@@ -38,6 +38,7 @@ import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Avatar } from '../../components/ui/Avatar';
 import { GreetHeader } from '../../components/ui/GreetHeader';
+import { MessagesButton } from '../../components/ui/MessagesButton';
 import { Icon, type IconName } from '../../components/ui/Icon';
 // Sparkline removed — ELO hero now uses form-dots instead of a trend line.
 import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
@@ -263,6 +264,7 @@ export default function HomeScreen() {
           sub="Bugün maç günü mü?"
           unreadCount={unreadCount}
           onBellPress={() => router.push('/notifications')}
+          leftOfBell={<MessagesButton />}
         />
         <ScrollView
           contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 24, gap: 14 }}
@@ -294,6 +296,7 @@ export default function HomeScreen() {
         sub="Bugün maç günü mü?"
         unreadCount={unreadCount}
         onBellPress={() => router.push('/notifications')}
+        leftOfBell={<MessagesButton />}
       />
       <ScrollView
         contentContainerStyle={{

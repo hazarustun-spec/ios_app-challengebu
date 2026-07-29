@@ -29,6 +29,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
+import { MessagesButton } from '../../components/ui/MessagesButton';
 import { Avatar } from '../../components/ui/Avatar';
 import { LevelIcon } from '../../components/ui/LevelIcon';
 import { Icon } from '../../components/ui/Icon';
@@ -237,6 +238,7 @@ export default function Leaderboard() {
         onAction={() =>
           router.push((`/leaderboard/filter?cat=${cat}`) as never)
         }
+        rightSlot={<MessagesButton />}
       />
       {/* Filter-active indicator dot — shown when a non-default filter is set */}
       {filterOn && (
