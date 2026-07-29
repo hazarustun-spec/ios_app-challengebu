@@ -660,7 +660,13 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
   }
 
   return (
-    <>
+    <View style={{ gap: 11 }}>
+      <Text
+        className="font-display font-extrabold text-text"
+        style={{ fontSize: 15, letterSpacing: -0.15, paddingHorizontal: 2 }}
+      >
+        Gelen teklifler
+      </Text>
       {requests.map((m) => {
         const fmtKey = toFormatKey(m.format);
         const creatorName = m.creator_profile
@@ -769,7 +775,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
           </View>
         );
       })}
-    </>
+    </View>
   );
 }
 
