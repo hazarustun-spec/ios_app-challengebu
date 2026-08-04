@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { useAuthStore } from '../stores/auth-store';
 import { writeLiveActivityAuthContext } from './live-match-activity';
+import { isOnboardingComplete } from './onboarding-status';
 
 export async function bootstrapAuth() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -44,6 +45,6 @@ export async function loadProfile(_userId?: string) {
     firstName: row.first_name,
     lastName: row.last_name,
     role: row.role,
-    onboardingComplete: row.status !== null && row.first_name?.length > 0,
+    onboardingComplete: isOnboardingComplete(row),
   });
 }

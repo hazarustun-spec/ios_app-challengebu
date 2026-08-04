@@ -29,8 +29,8 @@ Deno.test('anonymize-account: player anonymizes self', async () => {
       .select('*')
       .eq('user_id', alice.userId)
       .single();
-    assertEquals(profile!.first_name, 'Eski');
-    assertEquals(profile!.last_name, 'Üye');
+    assertEquals(profile!.first_name, 'Silinmiş');
+    assertEquals(profile!.last_name, 'Oyuncu');
     assertEquals(profile!.phone, null);
     assertEquals(profile!.avatar_url, null);
     assertEquals(profile!.status, 'anonymized');
@@ -59,6 +59,75 @@ Deno.test('anonymize-account: player anonymizes self', async () => {
   } finally {
     // Teardown: alice's auth.users row still exists (anonymize doesn't delete it)
     await teardownUsers([alice.userId]);
+  }
+});
+
+// Closes the loop opened by anonymization: the auth user survives, so the
+// same person can sign in again. The app then shows onboarding (status
+// 'anonymized' reads as not-onboarded), and writing a real name must restore
+// 'active' — the client cannot set `status` itself, UPDATE on that column is
+// revoked from `authenticated` (20260619000001_security_hardening.sql:18).
+// Without trg_reactivate_on_reonboarding (20260804000001) onboarding loops.
+Deno.test('anonymize-account: re-onboarding reactivates the tombstoned profile', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  const bob = await createTestUser({
+    email: `bob-reonboard-${s}@test.local`,
+    genderCategory: 'erkek',
+    firstName: 'Bob',
+    lastName: 'Jones',
+  });
+  const supa = adminClient();
+  try {
+    await invokeFunction('anonymize-account', {}, bob.accessToken);
+
+    const { data: dead } = await supa
+      .from('profiles')
+      .select('status, first_name')
+      .eq('user_id', bob.userId)
+      .single();
+    assertEquals(dead!.status, 'anonymized');
+
+    // Re-onboarding writes a real name (and nothing else privileged).
+    await supa
+      .from('profiles')
+      .update({ first_name: 'Bob', last_name: 'Jones' })
+      .eq('user_id', bob.userId);
+
+    const { data: revived } = await supa
+      .from('profiles')
+      .select('status, first_name')
+      .eq('user_id', bob.userId)
+      .single();
+    assertEquals(revived!.status, 'active');
+    assertEquals(revived!.first_name, 'Bob');
+  } finally {
+    await teardownUsers([bob.userId]);
+  }
+});
+
+// The trigger must not become an escape hatch from moderation: a suspended
+// user renaming themselves stays suspended.
+Deno.test('reactivation trigger does not clear a suspension', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  const carol = await createTestUser({
+    email: `carol-susp-${s}@test.local`,
+    genderCategory: 'kadin',
+    firstName: 'Carol',
+    lastName: 'White',
+  });
+  const supa = adminClient();
+  try {
+    await supa.from('profiles').update({ status: 'suspended' }).eq('user_id', carol.userId);
+    await supa.from('profiles').update({ first_name: 'Caroline' }).eq('user_id', carol.userId);
+
+    const { data: still } = await supa
+      .from('profiles')
+      .select('status')
+      .eq('user_id', carol.userId)
+      .single();
+    assertEquals(still!.status, 'suspended');
+  } finally {
+    await teardownUsers([carol.userId]);
   }
 });
 

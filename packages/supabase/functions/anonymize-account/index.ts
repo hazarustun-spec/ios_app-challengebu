@@ -30,8 +30,10 @@ Deno.serve(async (req) => {
     await supa
       .from('profiles')
       .update({
-        first_name: 'Eski',
-        last_name: 'Üye',
+        // Matches the promise the delete-account screen makes to the user
+        // (app/settings/delete-account.tsx:64 — "Silinmiş Oyuncu olarak").
+        first_name: 'Silinmiş',
+        last_name: 'Oyuncu',
         email: `anonymized-${auth.userId}@deleted.local`,
         phone: null,
         avatar_url: null,
@@ -54,8 +56,17 @@ Deno.serve(async (req) => {
 
     // Revoke all sessions for the user. We cannot delete auth.users because of the
     // ON DELETE CASCADE on profiles.user_id, and we need the profile row to stay so
-    // historical matches/ELO retain a valid foreign key. The user is locked out via
-    // session revocation + anonymized email (which can no longer receive magic links).
+    // historical matches/ELO retain a valid foreign key.
+    //
+    // NOTE: this signs the user out everywhere, but it does NOT lock the account.
+    // Only `public.profiles.email` is anonymized above — `auth.users.email` is
+    // untouched, so the same address can still receive an OTP and sign in again.
+    // That is deliberate: deletion is a tombstone, not a ban. On the next sign-in
+    // the profile reads as not-onboarded (status 'anonymized' —
+    // apps/mobile/lib/onboarding-status.ts), the wizard runs again, and
+    // trg_reactivate_on_reonboarding (20260804000001) restores status to 'active'.
+    // An earlier version of this comment claimed the user was "locked out"; that
+    // was never true.
     await supa.auth.admin.signOut(auth.userId, 'global');
 
     return jsonResponse({ status: 'anonymized' });
