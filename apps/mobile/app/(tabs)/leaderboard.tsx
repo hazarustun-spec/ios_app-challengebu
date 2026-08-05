@@ -93,7 +93,8 @@ const CAT_CHIPS: Array<{ key: Cat; label: string }> = [
   { key: 'open_tek', label: 'Open Tek' },
   { key: 'erkek_cift', label: 'Erkek Çift' },
   { key: 'kadin_cift', label: 'Kadın Çift' },
-  { key: 'karma_cift', label: 'Karma Çift' },
+  // 'karma_cift' retired — see 20260805000002. No rows carry it any more, so
+  // a chip for it would always show an empty ladder.
   { key: 'open_cift', label: 'Open Çift' },
 ];
 

@@ -41,7 +41,9 @@ const CATEGORIES: CategoryDef[] = [
   { key: 'open_tek', label: 'Open Tek', group: 'tek' },
   { key: 'erkek_cift', label: 'Erkek Çift', group: 'cift' },
   { key: 'kadin_cift', label: 'Kadın Çift', group: 'cift' },
-  { key: 'karma_cift', label: 'Karma Çift', group: 'cift' },
+  // 'karma_cift' retired in 20260805000002 — nothing enforced the one-man-
+  // one-woman rule that would have distinguished it from Open Çift, so the
+  // two categories were the same ladder twice over. Open Çift is the survivor.
   { key: 'open_cift', label: 'Open Çift', group: 'cift' },
 ];
 

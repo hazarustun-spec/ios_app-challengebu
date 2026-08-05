@@ -7,7 +7,11 @@ import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 const inputSchema = z.object({ seasonId: z.string().uuid() });
 
 const SINGLES_CATEGORIES = ['erkek_tek', 'kadin_tek', 'open_tek'] as const;
-const DOUBLES_CATEGORIES = ['erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift'] as const;
+// 'karma_cift' retired in 20260805000002 — it was open_cift under another
+// name (nothing enforced the mixed-team rule) and no rows carry it any more.
+// This list is iterated to seed one finale bracket per category, so leaving
+// it in would mint an empty karma bracket every single season.
+const DOUBLES_CATEGORIES = ['erkek_cift', 'kadin_cift', 'open_cift'] as const;
 const SINGLES_BRACKET_SIZE = 8;
 const DOUBLES_BRACKET_SIZE = 4;
 
