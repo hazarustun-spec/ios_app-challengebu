@@ -344,6 +344,13 @@ export default function ConversationScreen() {
             paddingHorizontal: 16,
             paddingTop: 12,
             paddingBottom: 8,
+            // Anchor a short thread to the composer instead of the header.
+            // flexGrow lets the content box fill the list's height when the
+            // messages are shorter than the viewport; justifyContent then
+            // pushes them down. Once the thread overflows, flexGrow stops
+            // mattering and normal scrolling takes over.
+            flexGrow: 1,
+            justifyContent: 'flex-end',
           }}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() =>
@@ -390,6 +397,12 @@ export default function ConversationScreen() {
           returnKeyType="default"
           blurOnSubmit={false}
         />
+        {/* Send.
+            The idle (empty composer) state has to stay legible: the button is
+            always rendered so the affordance is discoverable before you type.
+            That means the glyph colour must follow the background — a hardcoded
+            white arrow on the surface-3 idle fill (#FFFFFF on #E8E8E4) is
+            invisible, which reads as "there is no send button at all". */}
         <Pressable
           onPress={handleSend}
           disabled={!canSend}
@@ -407,8 +420,11 @@ export default function ConversationScreen() {
           })}
           accessibilityRole="button"
           accessibilityLabel="Gönder"
+          accessibilityState={{ disabled: !canSend }}
         >
-          <Icon name="arrowUp" size={20} color="#FFFFFF" />
+          {/* text-2, not text-3: on the surface-3 idle fill text-3 lands around
+              2:1, under the 3:1 WCAG minimum for a non-text control. */}
+          <Icon name="arrowUp" size={20} color={canSend ? '#FFFFFF' : colors.text2} />
         </Pressable>
       </View>
 
