@@ -114,20 +114,31 @@ export function OpponentSuggestStrip({
               gap: variant === 'compact' ? 6 : 8,
             }}
           >
-            {/* Avatar with level ring */}
-            <Avatar name={s.name} size={variant === 'compact' ? 38 : 44} ring={lv.color} />
-
-            {/* Name — single line, ellipsis */}
-            <Text
-              className="font-sans font-bold text-text"
-              style={{
-                fontSize: variant === 'compact' ? 12.5 : 13.5,
-                textAlign: 'center',
-              }}
-              numberOfLines={1}
+            {/* Avatar + name open the player's profile. The Meydan oku button
+                below stays the card's primary action; this is the secondary
+                "who is this?" path. */}
+            <Pressable
+              onPress={() => router.push(`/user/${s.userId}` as never)}
+              accessibilityRole="button"
+              accessibilityLabel={`${s.name} profilini aç`}
+              style={({ pressed }) => ({
+                alignItems: 'center',
+                gap: variant === 'compact' ? 6 : 8,
+                opacity: pressed ? 0.6 : 1,
+              })}
             >
-              {s.name}
-            </Text>
+              <Avatar name={s.name} size={variant === 'compact' ? 38 : 44} ring={lv.color} />
+              <Text
+                className="font-sans font-bold text-text"
+                style={{
+                  fontSize: variant === 'compact' ? 12.5 : 13.5,
+                  textAlign: 'center',
+                }}
+                numberOfLines={1}
+              >
+                {s.name}
+              </Text>
+            </Pressable>
 
             {/* ELO pill — uses the same inline pill pattern as OffersList / FeedList */}
             <View

@@ -36,6 +36,8 @@ import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useUserMatchHistory } from '../../hooks/use-match-history';
 import { useHeadToHead } from '../../hooks/use-head-to-head';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
+import { useMessageableContacts } from '../../hooks/use-messageable-contacts';
+import { useStartConversation } from '../../hooks/use-start-conversation';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -94,6 +96,14 @@ export default function PlayerPreview() {
   const historyQ = useUserMatchHistory(userId);
   const h2hQ = useHeadToHead(userId);
   const opponentNames = useOpponentNames();
+
+  // Messaging is gated on a shared match_request — get_or_create_conversation
+  // takes a request_id, and list_messageable_contacts only returns players you
+  // already have one with. So the CTA is offered only when that link exists;
+  // showing it unconditionally would hand the user a button that always errors.
+  const contactsQ = useMessageableContacts();
+  const contact = contactsQ.data?.find((c) => c.other_user_id === userId);
+  const { start: startConversation } = useStartConversation();
 
   const p = profileQ.data;
   const rankings = rankingsQ.data ?? [];
@@ -551,15 +561,36 @@ export default function PlayerPreview() {
       </ScrollView>
 
       {!isSelf && (
-        <View style={{ padding: 20 }}>
-          <Button
-            size="lg"
-            full
-            icon={<Icon name="bolt" size={17} color={colors.onLime} />}
-            onPress={meydanOku}
-          >
-            Meydan oku
-          </Button>
+        <View style={{ padding: 20, flexDirection: 'row', gap: 10 }}>
+          {contact && (
+            <View style={{ flex: 1 }}>
+              <Button
+                size="lg"
+                full
+                variant="secondary"
+                icon={<Icon name="mail" size={17} color={colors.text} />}
+                onPress={() =>
+                  startConversation({
+                    requestId: contact.request_id,
+                    otherUserId: userId,
+                    name,
+                  })
+                }
+              >
+                Mesaj at
+              </Button>
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Button
+              size="lg"
+              full
+              icon={<Icon name="bolt" size={17} color={colors.onLime} />}
+              onPress={meydanOku}
+            >
+              Meydan oku
+            </Button>
+          </View>
         </View>
       )}
     </View>

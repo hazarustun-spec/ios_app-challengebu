@@ -685,9 +685,20 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
             className="rounded-lg border-base border-border-strong bg-surface"
             style={{ padding: 16 }}
           >
-            <View
+            {/* The identity block opens the player's profile. The card's own
+                Kabul/Reddet buttons stay separate — only the avatar + name
+                strip is pressable, so acting on the offer is never a
+                mis-tap away from navigating off the screen. */}
+            <Pressable
+              onPress={() => router.push(`/user/${m.creator_id}` as never)}
+              accessibilityRole="button"
+              accessibilityLabel={`${creatorName} profilini aç`}
               className="flex-row items-center"
-              style={{ gap: 12, marginBottom: 12 }}
+              style={({ pressed }) => ({
+                gap: 12,
+                marginBottom: 12,
+                opacity: pressed ? 0.6 : 1,
+              })}
             >
               <Avatar name={creatorName} size={46} />
               <View style={{ flex: 1 }}>
@@ -723,7 +734,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
                   sana meydan okudu · {catLabel}
                 </Text>
               </View>
-            </View>
+            </Pressable>
             <View
               className="flex-row items-center"
               style={{ gap: 12, marginBottom: 13, flexWrap: 'wrap' }}
@@ -872,25 +883,42 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
               className="flex-row items-center"
               style={{ gap: 12, marginBottom: 12 }}
             >
-              <Avatar
-                name={targetName}
-                size={46}
-                uri={m.target_profile?.avatar_url ?? undefined}
-              />
-              <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 15.5 }}
-                >
-                  {targetName}
-                </Text>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ fontSize: 12.5, marginTop: 2 }}
-                >
-                  meydan okudun · {catLabel}
-                </Text>
-              </View>
+              {/* Identity strip opens the target's profile. Open calls have no
+                  target_id, so it stays inert there. */}
+              <Pressable
+                onPress={() =>
+                  m.target_id && router.push(`/user/${m.target_id}` as never)
+                }
+                disabled={!m.target_id}
+                accessibilityRole="button"
+                accessibilityLabel={`${targetName} profilini aç`}
+                className="flex-row items-center"
+                style={({ pressed }) => ({
+                  flex: 1,
+                  gap: 12,
+                  opacity: pressed && m.target_id ? 0.6 : 1,
+                })}
+              >
+                <Avatar
+                  name={targetName}
+                  size={46}
+                  uri={m.target_profile?.avatar_url ?? undefined}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    className="font-sans font-bold text-text"
+                    style={{ fontSize: 15.5 }}
+                  >
+                    {targetName}
+                  </Text>
+                  <Text
+                    className="font-sans text-text-3"
+                    style={{ fontSize: 12.5, marginTop: 2 }}
+                  >
+                    meydan okudun · {catLabel}
+                  </Text>
+                </View>
+              </Pressable>
               <View
                 className="rounded-pill"
                 style={{
