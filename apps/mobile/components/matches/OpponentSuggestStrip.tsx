@@ -22,7 +22,6 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Avatar } from '../ui/Avatar';
 import { Skel } from '../ui/Skel';
-import { Icon } from '../ui/Icon';
 import { levelForElo } from '../../lib/levels';
 import { useOpponentSuggestions } from '../../hooks/use-opponent-suggestions';
 import { useNewMatchStore } from '../../stores/new-match-store';
@@ -169,7 +168,6 @@ export function OpponentSuggestStrip({
                 opacity: pressed ? 0.8 : 1,
               })}
             >
-              <Icon name="bolt" size={variant === 'compact' ? 12 : 13} color={colors.onLime} />
               <Text
                 style={{
                   fontFamily: 'PlusJakartaSans-ExtraBold',
