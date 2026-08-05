@@ -25,8 +25,26 @@ export function useDeleteAccount() {
       const token = useAuthStore.getState().session?.access_token;
       if (!token) throw new Error('Oturum bulunamadı');
       await invokeFunction('anonymize-account', {}, token);
-      // Server revoked sessions globally; clear the local persisted session too.
-      await supabase.auth.signOut();
+
+      // Clear the locally persisted session.
+      //
+      // `scope: 'local'` matters. The Edge Function has already called
+      // `auth.admin.signOut(userId, 'global')`, so by the time we get here the
+      // refresh token is dead server-side. A default (global) signOut would
+      // POST to /logout with that dead token, get a 401/403 back, and throw —
+      // which used to abort this mutation before `onSuccess` ran. The result:
+      // the session stayed in SecureStore, the caller never navigated to
+      // /(auth)/welcome, and the next cold start booted straight back into the
+      // app on a tombstoned profile. `scope: 'local'` only touches storage, so
+      // there is nothing left to fail.
+      //
+      // The try/catch is belt-and-braces: the account IS deleted at this point,
+      // so no storage-layer error may turn this into a failed mutation.
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch (err) {
+        console.warn('[delete-account] local signOut failed (continuing)', err);
+      }
     },
     onSuccess: () => {
       signOutStore();
