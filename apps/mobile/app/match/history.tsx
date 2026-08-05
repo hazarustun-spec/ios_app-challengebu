@@ -230,7 +230,17 @@ export default function MatchHistory() {
                             : colors.text3,
                     }}
                   >
-                    {isVoid ? 'voided' : `${delta > 0 ? '+' : ''}${delta}`}
+                    {/* A void has two very different causes and the user can
+                        only act on one of them. 'Oynanmadı' is written by
+                        void_unplayed_matches() (20260805000001) when nobody
+                        submitted a score; anything else is a real void
+                        (disputed, admin-annulled). The old label printed the
+                        raw enum value, in English. */}
+                    {isVoid
+                      ? m.voided_reason === 'Oynanmadı'
+                        ? 'Oynanmadı'
+                        : 'Geçersiz'
+                      : `${delta > 0 ? '+' : ''}${delta}`}
                   </Text>
                 </View>
               </Pressable>

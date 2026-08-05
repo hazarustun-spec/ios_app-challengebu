@@ -19,6 +19,8 @@ export interface ActiveMatchRow {
   score_team_a: number;
   score_team_b: number;
   winner_team: 'a' | 'b' | 'void' | null;
+  /** Only selected by the history query — active matches are never voided. */
+  voided_reason?: string | null;
   score_details: unknown;
   confirmed_by: string[];
   rating_before_team_a: number | null;

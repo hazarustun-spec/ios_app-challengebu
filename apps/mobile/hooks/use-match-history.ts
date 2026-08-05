@@ -11,6 +11,7 @@ function fetchHistoryFor(userId: string) {
       id, match_request_id, category, format, is_rated, played_at, status,
       team_a_player_ids, team_b_player_ids,
       score_team_a, score_team_b, winner_team, score_details, confirmed_by,
+      voided_reason,
       rating_before_team_a, rating_after_team_a,
       rating_before_team_b, rating_after_team_b,
       created_at,
