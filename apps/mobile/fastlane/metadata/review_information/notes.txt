@@ -30,7 +30,7 @@ Messaging (Guideline 1.2):
   In-thread ⋯ menu offers Report and Block. Blocked users can be managed under Settings → Engellenen kullanıcılar. Messaging requires an active match offer between two users.
 
 Demo video (physical iPhone — required):
-  DEMO_VIDEO_URL: PASTE_YOUR_LINK_HERE_BEFORE_SUBMIT
+  https://youtu.be/cKQQbn5gL9E
   The video shows: welcome → email → KVKK → OTP 424242 → main tabs → create match flow → profile → settings.
 
 Support: hello@shimal.app
