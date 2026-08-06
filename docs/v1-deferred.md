@@ -44,8 +44,22 @@ Bu liste `docs/roadmap/v2-backlog.md` özetidir. **Launch blocker değil** — v
 - Gelir modeli (abonelik, sponsorluk, kort ortaklığı vb.)
 - Veri satışı: şu an hayır (App Privacy + KVKK)
 
+## Onay sonrası İLK iş
+
+- **Crash reporting (Sentry).** Artık "düşük öncelikli teknik borç" değil.
+  Karar (2026-08-06): App Store onayı çıkar çıkmaz kurulacak, ondan önce
+  değil — şu anki tek hedef en kısa yoldan yayına çıkmak.
+
+  Gerekçe, rakip verisinden: Glass Padel (padel, TR, Nisan 2026'da çıktı,
+  4.0★ / 53 oy) — nisan-mayıs yorumlarının hepsi övgü, temmuz yorumlarının
+  hepsi çökme. *"2 günde bir uygulama çöküyor"*, *"çok yavaş ve işlem
+  yaparken bir anda çöküyor"*. Tek bir özellik şikâyeti yok; puanı düşüren
+  şey kararlılık. Bizde crash reporting olmadığı sürece aynısı başımıza
+  gelse haberimiz olmaz — ilk öğrenme yolumuz mağaza yorumları olur, ki o
+  noktada puan zaten düşmüştür.
+
 ## Teknik borç (düşük öncelik)
-- Analytics / crash reporting (PostHog, Sentry)
+- Analytics (PostHog)
 - In-app rating prompt
 - Push deep-linking gelişmiş senaryolar
 - Live skor undo (server op)
