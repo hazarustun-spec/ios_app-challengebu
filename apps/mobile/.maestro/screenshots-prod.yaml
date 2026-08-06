@@ -1,0 +1,93 @@
+# screenshots-prod.yaml — App Store screenshot capture against PRODUCTION.
+#
+# Why a second flow instead of editing screenshots.yaml: that one drives a
+# local stack (Mailpit for the OTP, seeded local data) and is still the right
+# tool for that job. This one signs in as the App Review account on production,
+# whose seeded ladder, match history and pending challenge are exactly the
+# populated state the store listing needs — no local Supabase, no Docker.
+#
+# Prereqs: a Release simulator build installed on a booted iPhone Pro Max
+#   eas build --platform ios --profile simulator
+#   xcrun simctl install <UDID> ChallengeBu.app
+#
+# Run: JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+#      maestro --device <ProMax-UDID> test .maestro/screenshots-prod.yaml
+appId: app.challengebu.ios
+env:
+  EMAIL: "appreview42@proton.me"
+  OTP: "424242"
+---
+- launchApp:
+    clearState: true
+
+# Sign in only when signed out. A warm simulator keeps the session.
+- runFlow:
+    when:
+      visible: "Üniversite e-postanla başla"
+    commands:
+      - tapOn: "Üniversite e-postanla başla"
+      - assertVisible: "E-postanı gir"
+      - tapOn:
+          id: "email-input"
+          optional: true
+      - inputText: ${EMAIL}
+      - hideKeyboard
+      - tapOn: "KVKK onayı"
+      - tapOn: "Devam et"
+      - extendedWaitUntil:
+          visible: "Doğrulama kodunu gir"
+          timeout: 20000
+      # Fixed review OTP — the review-login function accepts it on production
+      # (REVIEW_OTP_CODE secret), so no mailbox is involved.
+      #
+      # One digit per box. A single inputText of "424242" only lands four
+      # digits: each box takes one character and steals focus, and the tail is
+      # dropped.
+      - inputText: "4"
+      - inputText: "2"
+      - inputText: "4"
+      - inputText: "2"
+      - inputText: "4"
+      - inputText: "2"
+      - waitForAnimationToEnd
+
+- tapOn:
+    text: "İzin Ver"
+    optional: true
+- tapOn:
+    text: "İzin Verme"
+    optional: true
+
+# ── 1. Home ──
+- extendedWaitUntil:
+    visible: "Yeni Maç"
+    timeout: 40000
+- waitForAnimationToEnd
+- takeScreenshot: shots/01-home
+
+# ── 2. Leaderboard ──
+# Tab accessibility labels are Turkish since components/ui/tab-slots.ts —
+# the old flow still taps "leaderboard"/"profile" and silently does nothing.
+- tapOn: "Sıralama"
+- waitForAnimationToEnd
+# The active-tab indicator slides (TabBar useSharedValue). waitForAnimationToEnd
+# returns before it lands, which is how the previous set caught the pill
+# mid-flight, floating between two tabs.
+- extendedWaitUntil:
+    visible: "Sıralama"
+    timeout: 5000
+- takeScreenshot: shots/02-leaderboard
+
+# ── 3. Matches → Teklifler ──
+- tapOn: "Maçlar"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Teklifler"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/03-offers
+
+# ── 4. New match ──
+- tapOn: "Yeni maç"
+- waitForAnimationToEnd
+- takeScreenshot: shots/04-newmatch

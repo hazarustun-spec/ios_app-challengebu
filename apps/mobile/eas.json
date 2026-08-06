@@ -18,6 +18,15 @@
         "resourceClass": "m-medium"
       }
     },
+    "simulator": {
+      "distribution": "internal",
+      "environment": "production",
+      "channel": "production",
+      "ios": {
+        "simulator": true,
+        "resourceClass": "m-medium"
+      }
+    },
     "production": {
       "channel": "production",
       "autoIncrement": true,
