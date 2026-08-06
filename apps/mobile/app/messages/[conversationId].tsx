@@ -398,33 +398,42 @@ export default function ConversationScreen() {
           blurOnSubmit={false}
         />
         {/* Send.
-            The idle (empty composer) state has to stay legible: the button is
-            always rendered so the affordance is discoverable before you type.
-            That means the glyph colour must follow the background — a hardcoded
-            white arrow on the surface-3 idle fill (#FFFFFF on #E8E8E4) is
-            invisible, which reads as "there is no send button at all". */}
+            The circle is drawn by a plain View, not by the Pressable's own
+            style. On device the Pressable's function-form style was not
+            painting its backgroundColor at all — the arrow rendered bare on
+            the white composer, so the moment `canSend` turned it white it
+            vanished. Typing made the send button disappear.
+            Keeping the fill on an inner View makes it independent of however
+            the Pressable resolves its style, and `pressed` only drives
+            opacity, which cannot fail the same way.
+
+            Both states must stay legible on their own fill: white on clay
+            when sending is possible, text-2 on surface-2 when it is not.
+            text-2 rather than text-3 because text-3 on that fill is about
+            2:1, under the 3:1 WCAG minimum for a non-text control. */}
         <Pressable
           onPress={handleSend}
           disabled={!canSend}
-          style={({ pressed }) => ({
-            width: 42,
-            height: 42,
-            borderRadius: 21,
-            backgroundColor: canSend
-              ? pressed
-                ? colors.clayPress
-                : colors.clay
-              : colors.surface3,
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
+          hitSlop={6}
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Gönder"
           accessibilityState={{ disabled: !canSend }}
         >
-          {/* text-2, not text-3: on the surface-3 idle fill text-3 lands around
-              2:1, under the 3:1 WCAG minimum for a non-text control. */}
-          <Icon name="arrowUp" size={20} color={canSend ? '#FFFFFF' : colors.text2} />
+          <View
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              backgroundColor: canSend ? colors.clay : colors.surface2,
+              borderWidth: canSend ? 0 : 1,
+              borderColor: colors.surface3,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="arrowUp" size={20} color={canSend ? '#FFFFFF' : colors.text2} />
+          </View>
         </Pressable>
       </View>
 
