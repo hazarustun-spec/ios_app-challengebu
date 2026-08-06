@@ -205,6 +205,7 @@ export default function EloHistory() {
 
   const primaryCat = primaryCategoryOf(
     availableCats.map((c) => ({ category: c })),
+    genderCategory,
     defaultCategoryForGender(genderCategory),
   );
 

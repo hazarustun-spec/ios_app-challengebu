@@ -53,7 +53,7 @@ import { myPerspective } from '../../lib/match-opponent';
 import { levelForElo, levelProgress } from '../../lib/levels';
 import { useAuthStore } from '../../stores/auth-store';
 import { useMyProfile } from '../../hooks/use-profile';
-import { defaultCategoryForGender } from '../../lib/primary-category';
+import { defaultCategoryForGender, pickPrimaryCategory } from '../../lib/primary-category';
 import { colors } from '../../theme/colors';
 import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
 import { shadows } from '../../theme/shadows';
@@ -81,17 +81,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** Pick the "primary" ranking row to show in the hero.
- *  Priority: erkek_tek > kadin_tek > open_tek > first row returned. */
-function pickPrimaryCategory(rows: { category: string; rating: number; rank: number }[]) {
-  const ORDER = ['erkek_tek', 'kadin_tek', 'open_tek'];
-  for (const cat of ORDER) {
-    const row = rows.find((r) => r.category === cat);
-    if (row) return row;
-  }
-  return rows[0] ?? null;
-}
 
 /** Format played_at date relative to today ("Bugün 18:30", "Dün", "3 gün önce"). */
 function relativeDate(iso: string): string {
@@ -136,7 +125,7 @@ export default function HomeScreen() {
   const eloHistoryQ = useEloHistory(userId);
 
   const rankings = rankingsQ.data ?? [];
-  const primaryRanking = pickPrimaryCategory(rankings);
+  const primaryRanking = pickPrimaryCategory(rankings, genderCategory);
   const primaryCat = primaryRanking?.category ?? defaultCategoryForGender(genderCategory);
   const ME_ELO = primaryRanking?.rating ?? 1200;
   const ME_RANK = primaryRanking?.rank ?? 0;

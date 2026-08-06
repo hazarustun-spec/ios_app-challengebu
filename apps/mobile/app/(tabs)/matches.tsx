@@ -61,6 +61,7 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useToast } from '../../components/ui/ToastProvider';
 import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyProfile } from '../../hooks/use-profile';
 import { primaryCategoryOf } from '../../lib/primary-category';
 import { DB_TO_UI_FORMAT } from '../../lib/formats';
 import type { FormatKey } from '../../lib/formats';
@@ -137,7 +138,11 @@ export default function MatchesTab() {
 
   // Suggestions are personalized to the player's primary category.
   const rankingsQ = useMyRankings();
-  const primaryCat = primaryCategoryOf(rankingsQ.data);
+  const myProfileQ = useMyProfile();
+  const primaryCat = primaryCategoryOf(
+    rankingsQ.data,
+    myProfileQ.data?.gender_category,
+  );
 
   // Hoist all queries here so we can feed a single refreshControl to the
   // outer ScrollView without nesting ScrollViews.

@@ -143,6 +143,16 @@ export function Avatar({ name, size = 44, uri, ring, badge }: AvatarProps) {
                 fontFamily: 'PlusJakartaSans-ExtraBold',
                 fontSize,
                 fontWeight: '800',
+                // Without an explicit lineHeight the line box inherits the
+                // font's own ascent/descent, which are not symmetric — flex
+                // centring then centres that box, not the glyphs, and the
+                // initials sit visibly high in the circle. Initials are always
+                // uppercase with no descenders, so a line box equal to the
+                // font size is safe and makes the two centres coincide.
+                lineHeight: fontSize,
+                textAlign: 'center',
+                // Android adds its own padding around the line box.
+                includeFontPadding: false,
               }}
             >
               {initials}
