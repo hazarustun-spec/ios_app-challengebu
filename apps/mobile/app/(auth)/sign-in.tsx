@@ -7,35 +7,29 @@
 // taps "Kod gönder" — Supabase sends a magic-link + 6-digit OTP and we route
 // to /(auth)/otp with the email param for verification.
 
+import { getOtpOptions } from '@tennis/shared';
+import { BOUN_EMAIL_ERROR_TR, isReviewEmail, validateBouniMail } from '@tennis/shared/schemas';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import {
-  BOUN_EMAIL_ERROR_TR,
-  isReviewEmail,
-  validateBouniMail,
-} from '@tennis/shared/schemas';
-import { getOtpOptions } from '@tennis/shared';
 import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
 import { Field } from '../../components/ui/Field';
 import { NavHeader } from '../../components/ui/NavHeader';
-import { colors } from '../../theme/colors';
-import { supabase } from '../../lib/supabase';
 import { LEGAL_URLS } from '../../lib/legal';
+import { supabase } from '../../lib/supabase';
+import { colors } from '../../theme/colors';
 
-const QUICK_DOMAINS = [
-  '@std.bogazici.edu.tr',
-  '@bogazici.edu.tr',
-  '@alumni.bogazici.edu.tr',
-];
+const QUICK_DOMAINS = ['@std.bogazici.edu.tr', '@bogazici.edu.tr', '@alumni.bogazici.edu.tr'];
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -69,25 +63,29 @@ export default function SignIn() {
         params: { email: trimmed },
       });
     } catch (err) {
-      Alert.alert(
-        'Hata',
-        err instanceof Error ? err.message : 'Bir sorun oluştu.',
-      );
+      Alert.alert('Hata', err instanceof Error ? err.message : 'Bir sorun oluştu.');
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <View className="flex-1 bg-bg">
+    // The field autofocuses, so the keyboard is up before the user can read the
+    // screen. Without this the KVKK checkbox sits half under the keyboard and
+    // the footer "Kod gönder" button is hidden entirely — the whole screen has
+    // to lift, since the button lives outside the ScrollView and cannot be
+    // scrolled into view.
+    <KeyboardAvoidingView
+      className="flex-1 bg-bg"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <NavHeader
-        onBack={() =>
-          router.canGoBack() ? router.back() : router.replace('/(auth)/welcome')
-        }
+        onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))}
       />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         <Text
           className="font-display font-extrabold text-text"
@@ -104,8 +102,8 @@ export default function SignIn() {
           className="font-sans text-text-2"
           style={{ fontSize: 15, lineHeight: 23, marginBottom: 28 }}
         >
-          Sana giriş bağlantısı ve 6 haneli kod göndereceğiz. Sadece üniversite
-          hesapları kabul edilir.
+          Sana giriş bağlantısı ve 6 haneli kod göndereceğiz. Sadece üniversite hesapları kabul
+          edilir.
         </Text>
 
         <Field
@@ -135,9 +133,7 @@ export default function SignIn() {
           {QUICK_DOMAINS.map((d) => (
             <Pressable
               key={d}
-              onPress={() =>
-                setEmail((cur) => (cur.split('@')[0] || 'ad.soyad') + d)
-              }
+              onPress={() => setEmail((cur) => (cur.split('@')[0] || 'ad.soyad') + d)}
               style={{
                 paddingHorizontal: 11,
                 paddingVertical: 7,
@@ -168,21 +164,44 @@ export default function SignIn() {
               textAlign: 'center',
             }}
           >
-            App Review hesabı: e-postayı gir, KVKK onayla, ardından OTP ekranında
-            App Store Connect notlarındaki 6 haneli kodu kullan (şifre alanı yok).
+            App Review hesabı: e-postayı gir, KVKK onayla, ardından OTP ekranında App Store Connect
+            notlarındaki 6 haneli kodu kullan (şifre alanı yok).
           </Text>
         )}
 
+        {/* Dev-only component gallery link — preserved from previous sign-in. */}
+        {__DEV__ && (
+          <Pressable
+            onPress={() => router.push('/(dev)/gallery' as never)}
+            style={{ alignSelf: 'center', marginTop: 24, padding: 8 }}
+          >
+            <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 13 }}>
+              Component Gallery (dev)
+            </Text>
+          </Pressable>
+        )}
+
+        {/* Dev-only onboarding wizard jump — Plan 8 Phase D5-D14 visual QA. */}
+        {__DEV__ && (
+          <Pressable
+            onPress={() => router.push('/(onboarding)/name')}
+            style={{ alignSelf: 'center', marginTop: 4, padding: 8 }}
+          >
+            <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 13 }}>
+              Onboarding wizard (dev)
+            </Text>
+          </Pressable>
+        )}
+      </ScrollView>
+
+      {/* Consent + CTA share the footer: the button is disabled until the box
+          is ticked, so the two have to be on screen together. Keeping the
+          consent up in the ScrollView left it scrolled out of sight behind the
+          keyboard, next to a button that looked permanently dead. */}
+      <View style={{ padding: 24, paddingTop: 8, gap: 14 }}>
         {/* KVKK + privacy consent — the checkbox is its own control so tapping
             it toggles, while the inline links open their legal pages. */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 10,
-            marginTop: 32,
-          }}
-        >
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
           <Pressable
             onPress={() => setKvkkAccepted((v) => !v)}
             style={{ marginTop: 1, paddingVertical: 4, paddingRight: 4 }}
@@ -192,10 +211,7 @@ export default function SignIn() {
           >
             <CheckBox checked={kvkkAccepted} onChange={setKvkkAccepted} />
           </Pressable>
-          <Text
-            className="font-sans flex-1 text-text-2"
-            style={{ fontSize: 13, lineHeight: 19 }}
-          >
+          <Text className="font-sans flex-1 text-text-2" style={{ fontSize: 13, lineHeight: 19 }}>
             <Text
               className="font-bold"
               style={{ color: colors.court, textDecorationLine: 'underline' }}
@@ -217,38 +233,6 @@ export default function SignIn() {
           </Text>
         </View>
 
-        {/* Dev-only component gallery link — preserved from previous sign-in. */}
-        {__DEV__ && (
-          <Pressable
-            onPress={() => router.push('/(dev)/gallery' as never)}
-            style={{ alignSelf: 'center', marginTop: 24, padding: 8 }}
-          >
-            <Text
-              className="font-sans font-semibold text-text-3"
-              style={{ fontSize: 13 }}
-            >
-              Component Gallery (dev)
-            </Text>
-          </Pressable>
-        )}
-
-        {/* Dev-only onboarding wizard jump — Plan 8 Phase D5-D14 visual QA. */}
-        {__DEV__ && (
-          <Pressable
-            onPress={() => router.push('/(onboarding)/name')}
-            style={{ alignSelf: 'center', marginTop: 4, padding: 8 }}
-          >
-            <Text
-              className="font-sans font-semibold text-text-3"
-              style={{ fontSize: 13 }}
-            >
-              Onboarding wizard (dev)
-            </Text>
-          </Pressable>
-        )}
-      </ScrollView>
-
-      <View style={{ padding: 24, paddingTop: 8 }}>
         <Button
           full
           size="lg"
@@ -259,6 +243,6 @@ export default function SignIn() {
           {sending ? 'Gönderiliyor…' : isReview ? 'Devam et' : 'Kod gönder'}
         </Button>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

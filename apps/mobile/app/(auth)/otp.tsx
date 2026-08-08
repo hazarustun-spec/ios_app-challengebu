@@ -3,80 +3,60 @@
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-auth.jsx
 // `function OtpScreen({ params })` lines 77-112.
 //
-// Renders 6 single-digit inputs. Auto-advances focus on input, backspace
-// jumps to the previous cell, and auto-submits when all 6 cells fill. Also
-// surfaces a 60s resend cooldown + the "Sihirli bağlantıyı kullandım"
-// secondary action.
+// Renders 6 digit cells and auto-submits once all 6 are filled. Also surfaces a
+// 60s resend cooldown + the "Sihirli bağlantıyı kullandım" secondary action.
+//
+// The cells are presentational: a single full-width TextInput sitting invisibly
+// on top of them owns the whole code. An earlier version gave each cell its own
+// maxLength={1} input and hopped focus forward on every keystroke, which dropped
+// and duplicated digits when the code was typed at speed (see lib/otp-code.ts)
+// and kept only one digit when it was pasted.
 
+import { OTP_LENGTH, OTP_RESEND_COOLDOWN_SEC, getOtpOptions, isReviewEmail } from '@tennis/shared';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  type NativeSyntheticEvent,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   Text,
   TextInput,
-  type TextInputKeyPressEventData,
   View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import {
-  getOtpOptions,
-  isReviewEmail,
-  OTP_LENGTH,
-  OTP_RESEND_COOLDOWN_SEC,
-} from '@tennis/shared';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { NavHeader } from '../../components/ui/NavHeader';
-import { colors } from '../../theme/colors';
-import { supabase } from '../../lib/supabase';
+import { sanitizeOtp } from '../../lib/otp-code';
 import { reviewLogin } from '../../lib/review-auth';
+import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
 
 export default function OtpScreen() {
   const { email } = useLocalSearchParams<{ email?: string }>();
   const setSession = useAuthStore((s) => s.setSession);
-  const [code, setCode] = useState<string[]>(() =>
-    Array<string>(OTP_LENGTH).fill(''),
-  );
+  const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const inputs = useRef<Array<TextInput | null>>([]);
+  const input = useRef<TextInput | null>(null);
 
-  const filled = code.join('').length === OTP_LENGTH;
+  const filled = code.length === OTP_LENGTH;
   const isReview = !!email && isReviewEmail(email);
 
-  // Auto-submit when all cells have a digit.
+  // Auto-submit once the last digit lands.
   useEffect(() => {
     if (!filled || verifying) return;
-    void handleVerify(code.join(''));
+    void handleVerify(code);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filled]);
 
   // Resend cooldown countdown.
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    const t = setInterval(
-      () => setResendCooldown((s) => Math.max(0, s - 1)),
-      1000,
-    );
+    const t = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
   }, [resendCooldown]);
-
-  const setDigit = (i: number, v: string) => {
-    if (!/^\d?$/.test(v)) return;
-    setCode((c) => c.map((x, j) => (j === i ? v : x)));
-    if (v && i < OTP_LENGTH - 1) inputs.current[i + 1]?.focus();
-  };
-
-  const handleKeyPress = (
-    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
-    i: number,
-  ) => {
-    if (e.nativeEvent.key === 'Backspace' && code[i] === '' && i > 0) {
-      inputs.current[i - 1]?.focus();
-    }
-  };
 
   const handleVerify = async (token: string) => {
     if (!email) {
@@ -107,8 +87,8 @@ export default function OtpScreen() {
         'Geçersiz kod',
         err instanceof Error ? err.message : 'Kod yanlış veya süresi doldu.',
       );
-      setCode(Array<string>(OTP_LENGTH).fill(''));
-      inputs.current[0]?.focus();
+      setCode('');
+      input.current?.focus();
     } finally {
       setVerifying(false);
     }
@@ -126,21 +106,20 @@ export default function OtpScreen() {
       if (error) throw error;
       setResendCooldown(OTP_RESEND_COOLDOWN_SEC);
     } catch (err) {
-      Alert.alert(
-        'Hata',
-        err instanceof Error
-          ? err.message
-          : 'Kod yeniden gönderilemedi.',
-      );
+      Alert.alert('Hata', err instanceof Error ? err.message : 'Kod yeniden gönderilemedi.');
     }
   };
 
   return (
-    <View className="flex-1 bg-bg">
+    // The number pad is tall enough on iPad — where an iPhone-sized app runs in
+    // compatibility mode — to bury the footer button, so lift the whole screen
+    // above it rather than letting it sit underneath.
+    <KeyboardAvoidingView
+      className="flex-1 bg-bg"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <NavHeader onBack={() => router.back()} />
-      <View
-        style={{ flex: 1, paddingHorizontal: 24, alignItems: 'center' }}
-      >
+      <View style={{ flex: 1, paddingHorizontal: 24, alignItems: 'center' }}>
         <View
           style={{
             width: 64,
@@ -177,50 +156,82 @@ export default function OtpScreen() {
         >
           {isReview ? (
             <>
-              Bu uygulama şifre kullanmaz — yalnızca 6 haneli OTP ile giriş
-              yapılır. App Store Connect notlarında belirtilen 6 haneli kodu
-              aşağıya gir.
+              Bu uygulama şifre kullanmaz — yalnızca 6 haneli OTP ile giriş yapılır. App Store
+              Connect notlarında belirtilen 6 haneli kodu aşağıya gir.
             </>
           ) : (
             <>
-              <Text className="text-text font-bold">
-                {email ?? 'e-postana'}
-              </Text>{' '}
-              adresine 6 haneli bir kod ve sihirli bağlantı gönderdik.
+              <Text className="text-text font-bold">{email ?? 'e-postana'}</Text> adresine 6 haneli
+              bir kod ve sihirli bağlantı gönderdik.
             </>
           )}
         </Text>
 
-        <View style={{ flexDirection: 'row', gap: 9, marginBottom: 24 }}>
-          {code.map((d, i) => (
-            <TextInput
-              key={i}
-              ref={(r) => {
-                inputs.current[i] = r;
-              }}
-              value={d}
-              onChangeText={(v) => setDigit(i, v.slice(-1))}
-              onKeyPress={(e) => handleKeyPress(e, i)}
-              keyboardType="number-pad"
-              maxLength={1}
-              autoFocus={i === 0}
-              editable={!verifying}
-              textContentType="oneTimeCode"
-              style={{
-                width: 44,
-                height: 56,
-                textAlign: 'center',
-                fontSize: 24,
-                fontFamily: 'SpaceGrotesk-ExtraBold',
-                borderRadius: 18,
-                borderWidth: 1.5,
-                borderColor: d ? colors.clay : colors.borderStrong,
-                backgroundColor: colors.surface,
-                color: colors.text,
-              }}
-            />
-          ))}
-        </View>
+        {/* Six presentational cells with one invisible input laid over them.
+            Tapping anywhere on the row focuses that single input, so no
+            keystroke can arrive at a cell that is still handing over focus. */}
+        <Pressable
+          onPress={() => input.current?.focus()}
+          accessibilityRole="none"
+          style={{ marginBottom: 24 }}
+        >
+          <View style={{ flexDirection: 'row', gap: 9 }}>
+            {Array.from({ length: OTP_LENGTH }, (_, i) => {
+              const digit = code[i] ?? '';
+              const active = !verifying && i === Math.min(code.length, OTP_LENGTH - 1);
+              return (
+                <View
+                  key={i}
+                  style={{
+                    width: 44,
+                    height: 56,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 18,
+                    borderWidth: 1.5,
+                    borderColor: digit || active ? colors.clay : colors.borderStrong,
+                    backgroundColor: colors.surface,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      fontFamily: 'SpaceGrotesk-ExtraBold',
+                      color: colors.text,
+                    }}
+                  >
+                    {digit}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <TextInput
+            ref={input}
+            value={code}
+            onChangeText={(v) => setCode(sanitizeOtp(v, OTP_LENGTH))}
+            keyboardType="number-pad"
+            maxLength={OTP_LENGTH}
+            autoFocus
+            editable={!verifying}
+            textContentType="oneTimeCode"
+            autoComplete="one-time-code"
+            caretHidden
+            accessibilityLabel="Doğrulama kodu"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: 0,
+              // Keeping the text off-colour as well as transparent means a
+              // platform that ignores opacity on inputs still shows nothing.
+              color: 'transparent',
+            }}
+          />
+        </Pressable>
 
         <Pressable
           onPress={handleResend}
@@ -259,6 +270,6 @@ export default function OtpScreen() {
           Sihirli bağlantıyı kullandım
         </Button>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

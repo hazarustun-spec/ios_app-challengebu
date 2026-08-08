@@ -5,10 +5,9 @@
 // racket + ball + net illustration, the hero headline, and the BÜ-email CTA.
 // The two illustrations are rendered as SVG via react-native-svg's <SvgXml>.
 
-import { useEffect } from 'react';
-import { Text, View, useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,6 +15,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import { Button } from '../../components/ui/Button';
 
@@ -70,10 +70,6 @@ const ILLO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 362 348" 
 
 export default function Welcome() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  // Illustration spans the hero card's inner width (screen − outer padding).
-  const illoW = width - 36;
-  const illoH = illoW * (348 / 362);
 
   return (
     <View
@@ -115,15 +111,29 @@ export default function Welcome() {
           <FloatyLogo />
         </View>
 
-        {/* Illustration */}
-        <View style={{ alignItems: 'center', marginVertical: 6 }}>
-          <SvgXml xml={ILLO_SVG} width={illoW} height={illoH} />
+        {/* Illustration — sized in percentages so it scales into whatever
+            height the badge row and the copy leave behind (the SVG's own
+            preserveAspectRatio keeps it undistorted). Sizing it off the window
+            width instead used to overflow the card on iPad, where the app runs
+            in iPhone compatibility mode in a proportionally shorter window, and
+            the headline's last line ("Şampiyon ol.") was clipped away. */}
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginVertical: 6,
+          }}
+        >
+          <SvgXml xml={ILLO_SVG} width="100%" height="100%" />
         </View>
 
         {/* Hero text */}
-        <View>
+        <View style={{ flexShrink: 0 }}>
           <Text
             className="text-white font-display font-extrabold"
+            adjustsFontSizeToFit
+            numberOfLines={3}
             style={{ fontSize: 40, lineHeight: 39, letterSpacing: -1.2 }}
           >
             {'Meydan oku. ★\nTırman.\nŞampiyon ol.'}
