@@ -51,6 +51,16 @@ export default function OtpScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filled]);
 
+  // Raise the keyboard ourselves instead of relying on autoFocus. iOS declines
+  // autoFocus on the hidden input often enough — reliably so when the screen is
+  // reached from a link rather than from sign-in — and the failure is invisible:
+  // the cells are presentational, so the screen just sits there with no keyboard
+  // and nothing to type into.
+  useEffect(() => {
+    const t = setTimeout(() => input.current?.focus(), 250);
+    return () => clearTimeout(t);
+  }, []);
+
   // Resend cooldown countdown.
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -188,20 +198,36 @@ export default function OtpScreen() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 18,
-                    borderWidth: 1.5,
+                    // The cell being typed into is drawn heavier and tinted. The
+                    // real input is invisible, so without this the field looks
+                    // dead — nothing on screen says where the next digit lands.
+                    borderWidth: active ? 2.5 : 1.5,
                     borderColor: digit || active ? colors.clay : colors.borderStrong,
-                    backgroundColor: colors.surface,
+                    backgroundColor: active ? colors.claySofter : colors.surface,
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 24,
-                      fontFamily: 'SpaceGrotesk-ExtraBold',
-                      color: colors.text,
-                    }}
-                  >
-                    {digit}
-                  </Text>
+                  {digit ? (
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        fontFamily: 'SpaceGrotesk-ExtraBold',
+                        color: colors.text,
+                      }}
+                    >
+                      {digit}
+                    </Text>
+                  ) : (
+                    active && (
+                      <View
+                        style={{
+                          width: 2,
+                          height: 26,
+                          borderRadius: 1,
+                          backgroundColor: colors.clay,
+                        }}
+                      />
+                    )
+                  )}
                 </View>
               );
             })}
@@ -225,10 +251,11 @@ export default function OtpScreen() {
               left: 0,
               right: 0,
               bottom: 0,
-              opacity: 0,
-              // Keeping the text off-colour as well as transparent means a
-              // platform that ignores opacity on inputs still shows nothing.
+              // Invisible by having nothing to draw — transparent text on no
+              // background — rather than by `opacity: 0`, which iOS treats as a
+              // hidden view and then declines to give the keyboard to.
               color: 'transparent',
+              backgroundColor: 'transparent',
             }}
           />
         </Pressable>
