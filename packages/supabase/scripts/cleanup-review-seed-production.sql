@@ -31,6 +31,30 @@ delete from public.match_requests
 delete from auth.users
  where email like 'seed-opp-%@challengebu-review.invalid';
 
+-- 5. Drop the review-only exception in void_unplayed_matches().
+--    20260808000001 keeps the demo match cccc0001 startable for the length of a
+--    review. With the demo data gone the exception has nothing to protect, and
+--    leaving it behind would quietly exempt that uuid forever.
+create or replace function public.void_unplayed_matches()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.matches
+  set status        = 'voided',
+      winner_team   = 'void',
+      voided_reason = 'Oynanmadı',
+      updated_at    = now()
+  where status = 'awaiting_confirmation'
+    and winner_team is null
+    and played_at < now() - interval '24 hours';
+end;
+$$;
+
+revoke all on function public.void_unplayed_matches() from public;
+
 -- Verify (all counts should be 0) --------------------------------------------
 select 'seeded_profiles_left' as check, count(*)::text as n
   from public.profiles where email like 'seed-opp-%@challengebu-review.invalid'
