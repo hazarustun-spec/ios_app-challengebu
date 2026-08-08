@@ -211,39 +211,103 @@ begin
   --    started_by pre-filled with the opponent → reviewer taps "Maçı Başlat"
   --    once to complete the handshake, then enters the score. winner_team NULL
   --    so the card renders "Maçı Başlat" (see apps/mobile matches list logic).
+  --
+  --    `do update`, NOT `do nothing`: this row is the one thing time acts on.
+  --    cron_void_unplayed_matches (20260805000001) flips an unplayed match to
+  --    'voided' a day later, and an insert-only upsert then had no way to bring
+  --    it back — re-running the seed looked like it worked while the reviewer
+  --    still saw "Yaklaşan maçın yok". Reset every field the app reads.
   -- ---------------------------------------------------------------------------
   insert into public.matches (
     id, category, format, court_id, played_at, is_rated, kind,
     team_a_player_ids, team_b_player_ids,
-    score_team_a, score_team_b, winner_team, status, started_by
+    score_team_a, score_team_b, winner_team, status, started_by,
+    confirmed_by, confirmed_at, voided_reason
   ) values (
     'cccc0001-0000-4000-8000-000000000001', 'open_tek', 'bu_klasik', v_court,
     now() - interval '90 minutes', true, 'ranking',
     array[v_rev]::uuid[], array[o2]::uuid[],
-    0, 0, null, 'awaiting_confirmation', array[o2]::uuid[]
+    0, 0, null, 'awaiting_confirmation', array[o2]::uuid[],
+    '{}'::uuid[], null, null
   )
-  on conflict (id) do nothing;
+  on conflict (id) do update set
+    court_id          = excluded.court_id,
+    played_at         = excluded.played_at,
+    score_team_a      = excluded.score_team_a,
+    score_team_b      = excluded.score_team_b,
+    winner_team       = excluded.winner_team,
+    status            = excluded.status,
+    started_by        = excluded.started_by,
+    confirmed_by      = excluded.confirmed_by,
+    confirmed_at      = excluded.confirmed_at,
+    voided_reason     = excluded.voided_reason;
 
   -- ---------------------------------------------------------------------------
   -- 6. ONE incoming pending challenge to the reviewer (dddd0001) — lets the
   --    reviewer exercise the accept flow. Generous expiry so cron won't expire
   --    it before review.
+  --
+  --    `do update` for the same reason as the match above: once accepted or
+  --    expired, an insert-only upsert could never restore it to 'pending'.
   -- ---------------------------------------------------------------------------
   insert into public.match_requests (
     id, creator_id, type, target_id, category, format, is_rated,
-    proposed_date, proposed_time, court_id, status, expires_at
+    proposed_date, proposed_time, court_id, status, expires_at, accepted_at
   ) values (
     'dddd0001-0000-4000-8000-000000000001', o5, 'direct_challenge', v_rev,
     'open_tek', 'hizli_tiebreak', true,
     current_date, (now() - interval '20 minutes')::time, v_court,
-    'pending', now() + interval '30 days'
+    'pending', now() + interval '30 days', null
   )
-  on conflict (id) do nothing;
+  on conflict (id) do update set
+    proposed_date = excluded.proposed_date,
+    proposed_time = excluded.proposed_time,
+    court_id      = excluded.court_id,
+    status        = excluded.status,
+    expires_at    = excluded.expires_at,
+    accepted_at   = excluded.accepted_at;
+
+  -- ---------------------------------------------------------------------------
+  -- 7. Clear the reviewer's OTHER voided matches. They are leftovers from
+  --    earlier demo rows that cron closed out, and they render in the profile's
+  --    match history as "Oynanmadı" 0-0 cards — an App Reviewer reading that
+  --    history sees a broken-looking account. The seeded history (bbbb*) and
+  --    the startable match (cccc0001) are kept.
+  -- ---------------------------------------------------------------------------
+  --    tournament_matches.match_id has no ON DELETE action, so a bracket row
+  --    pointing at one of these would abort the whole script — skip those.
+  delete from public.matches m
+   where m.status = 'voided'
+     and (m.team_a_player_ids @> array[v_rev] or m.team_b_player_ids @> array[v_rev])
+     and not exists (
+       select 1 from public.tournament_matches tm where tm.match_id = m.id
+     );
 
   raise notice 'Review seed complete: reviewer=% + 8 opponents, ladder + history + 1 startable match + 1 pending challenge', v_rev;
 end $$;
 
 -- Verify -----------------------------------------------------------------------
+-- Counting rows by id was not enough: both demo rows survive as 'voided' /
+-- 'accepted' after cron touches them, so the old checks reported a healthy
+-- ready_match=1 while the reviewer's Maçlar tab was empty. Assert the STATUS the
+-- app actually filters on, and fail loudly instead of printing a false green.
+do $$
+declare
+  v_status text;
+begin
+  select status::text into v_status from public.matches
+   where id = 'cccc0001-0000-4000-8000-000000000001';
+  if v_status is distinct from 'awaiting_confirmation' then
+    raise exception 'startable match is % (expected awaiting_confirmation) — the reviewer will see an empty Maçlar tab', coalesce(v_status, 'MISSING');
+  end if;
+
+  select status::text into v_status from public.match_requests
+   where id = 'dddd0001-0000-4000-8000-000000000001';
+  if v_status is distinct from 'pending' then
+    raise exception 'incoming challenge is % (expected pending) — the reviewer cannot exercise the accept flow', coalesce(v_status, 'MISSING');
+  end if;
+end $$;
+
 select 'ladder_open_tek' as check, count(*)::text as rows
   from public.elo_ratings where category = 'open_tek' and rating > 0
 union all
@@ -251,8 +315,15 @@ select 'seeded_profiles', count(*)::text from public.profiles
   where email like 'seed-opp-%@challengebu-review.invalid'
 union all
 select 'confirmed_matches', count(*)::text from public.matches
-  where id::text like 'bbbb%'
+  where id::text like 'bbbb%' and status = 'confirmed'
 union all
-select 'ready_match', count(*)::text from public.matches where id::text like 'cccc%'
+select 'ready_match_awaiting', count(*)::text from public.matches
+  where id::text like 'cccc%' and status = 'awaiting_confirmation'
 union all
-select 'pending_challenge', count(*)::text from public.match_requests where id::text like 'dddd%';
+select 'pending_challenge', count(*)::text from public.match_requests
+  where id::text like 'dddd%' and status = 'pending'
+union all
+select 'reviewer_voided_leftovers', count(*)::text from public.matches m
+  join public.profiles p on lower(p.email) = 'appreview42@proton.me'
+ where m.status = 'voided'
+   and (m.team_a_player_ids @> array[p.user_id] or m.team_b_player_ids @> array[p.user_id]);
