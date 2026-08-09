@@ -14,26 +14,18 @@
 //   - `useReorderBracket` wraps the `admin_reorder_bracket_seeds` RPC
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Banner } from '../../components/ui/Banner';
 import { Icon } from '../../components/ui/Icon';
 import { Avatar } from '../../components/ui/Avatar';
-import {
-  useAdminTournaments,
-  useVoidBracketMatch,
-} from '../../hooks/use-admin-tournaments';
+import { useAdminTournaments, useVoidBracketMatch } from '../../hooks/use-admin-tournaments';
 import { useTournamentBracket } from '../../hooks/use-tournament-bracket';
 import { useBracketSeeds, type BracketSeedEntry } from '../../hooks/use-bracket-seeds';
 import { useReorderBracket } from '../../hooks/use-reorder-bracket';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -84,8 +76,7 @@ export default function AdminTournamentsScreen() {
       },
       {
         onSuccess: () => Alert.alert('Kaydedildi', 'Bracket sırası güncellendi.'),
-        onError: (e) =>
-          Alert.alert('Hata', e instanceof Error ? e.message : 'Kaydedilemedi'),
+        onError: (e) => Alert.alert('Hata', userMessage(e, 'Kaydedilemedi')),
       },
     );
   };
@@ -102,22 +93,18 @@ export default function AdminTournamentsScreen() {
   const handleVoid = (matchId: string | null) => {
     if (!matchId) return;
     Alert.alert(
-      'Maçı voided yap',
-      'Bu bracket maçı void edilecek ve advance pipeline durdurulacak. Emin misin?',
+      'Maçı geçersiz say',
+      'Bu turnuva maçı geçersiz sayılacak ve bir sonraki tura geçiş duracak. Emin misin?',
       [
         { text: 'Vazgeç', style: 'cancel' },
         {
-          text: 'Void et',
+          text: 'Geçersiz say',
           style: 'destructive',
           onPress: () =>
             voidMatch.mutate(
-              { matchId, reason: 'Admin tarafından bracket maçı voided' },
+              { matchId, reason: 'Turnuva maçı yönetici tarafından geçersiz sayıldı' },
               {
-                onError: (e) =>
-                  Alert.alert(
-                    'Hata',
-                    e instanceof Error ? e.message : 'Voided edilemedi',
-                  ),
+                onError: (e) => Alert.alert('Hata', userMessage(e, 'Maç geçersiz sayılamadı.')),
               },
             ),
         },
@@ -186,16 +173,9 @@ export default function AdminTournamentsScreen() {
         ) : !bracket.data ? (
           <Loading />
         ) : isDoubles ? (
-          <DoublesAdmin
-            slots={bracket.data.slots}
-            onVoid={handleVoid}
-          />
+          <DoublesAdmin slots={bracket.data.slots} onVoid={handleVoid} />
         ) : (
-          <SinglesReorder
-            draft={draft}
-            onMove={move}
-            saving={reorder.isPending}
-          />
+          <SinglesReorder draft={draft} onMove={move} saving={reorder.isPending} />
         )}
       </ScrollView>
     </View>
@@ -283,8 +263,7 @@ function SinglesReorder({
                   width: 34,
                   height: 34,
                   borderRadius: 10,
-                  backgroundColor:
-                    i === draft.length - 1 ? colors.surface3 : colors.surface2,
+                  backgroundColor: i === draft.length - 1 ? colors.surface3 : colors.surface2,
                   alignItems: 'center',
                   justifyContent: 'center',
                   opacity: i === draft.length - 1 ? 0.5 : 1,
@@ -338,16 +317,10 @@ function DoublesAdmin({
               borderRadius: 14,
             }}
           >
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 13, color: colors.loss }}
-            >
+            <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.loss }}>
               Tur {s.round} · poz {s.bracket_position}
             </Text>
-            <Text
-              className="font-sans text-text"
-              style={{ fontSize: 12, marginTop: 2 }}
-            >
+            <Text className="font-sans text-text" style={{ fontSize: 12, marginTop: 2 }}>
               {s.player_a_name ?? '—'} vs {s.player_b_name ?? '—'}
             </Text>
             <Text

@@ -54,6 +54,7 @@ import { useAuthStore } from '../../../stores/auth-store';
 import { ShareSheet } from '../../../components/share/ShareSheet';
 import { CardMatchResult } from '../../../components/share/CardMatchResult';
 import { Confetti } from '../../../components/ui/Confetti';
+import { userMessage } from '../../../lib/user-message';
 
 // AnimatedTextInput: drives the ELO count-up at 60fps via reanimated.
 // Must be defined OUTSIDE the component so createAnimatedComponent runs once.
@@ -578,7 +579,7 @@ export default function MatchResult() {
                       onError: (e) =>
                         Alert.alert(
                           'Onaylanamadı',
-                          (e as Error)?.message ?? 'Lütfen tekrar dene.',
+                          userMessage(e, 'Lütfen tekrar dene.'),
                         ),
                     },
                   )

@@ -37,6 +37,7 @@ import { usePlayerRatings } from '../../../hooks/use-ladder';
 import { useStartConversation } from '../../../hooks/use-start-conversation';
 import { levelForElo } from '../../../lib/levels';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -91,7 +92,7 @@ export default function OpenApplicants() {
                 onError: (err) => {
                   Alert.alert(
                     'Hata',
-                    err instanceof Error ? err.message : 'Bir hata oluştu.',
+                    userMessage(err, 'Bir hata oluştu.'),
                   );
                 },
               },

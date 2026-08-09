@@ -32,6 +32,7 @@ import { reviewLogin } from '../../lib/review-auth';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 export default function OtpScreen() {
   const { email } = useLocalSearchParams<{ email?: string }>();
@@ -92,10 +93,7 @@ export default function OtpScreen() {
       // Root index.tsx handles the branching between onboarding & app.
       router.replace('/');
     } catch (err) {
-      Alert.alert(
-        'Geçersiz kod',
-        err instanceof Error ? err.message : 'Kod yanlış veya süresi doldu.',
-      );
+      Alert.alert('Geçersiz kod', userMessage(err, 'Kod yanlış veya süresi doldu.'));
       setCode('');
       input.current?.focus();
     } finally {
@@ -115,7 +113,7 @@ export default function OtpScreen() {
       if (error) throw error;
       setResendCooldown(OTP_RESEND_COOLDOWN_SEC);
     } catch (err) {
-      Alert.alert('Hata', err instanceof Error ? err.message : 'Kod yeniden gönderilemedi.');
+      Alert.alert('Hata', userMessage(err, 'Kod yeniden gönderilemedi.'));
     }
   };
 

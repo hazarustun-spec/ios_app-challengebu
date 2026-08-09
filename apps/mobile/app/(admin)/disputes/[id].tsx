@@ -12,11 +12,9 @@ import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
 import { Banner } from '../../../components/ui/Banner';
 import { useDisputeDetail } from '../../../hooks/use-dispute-detail';
-import {
-  useResolveDispute,
-  type DisputeOutcome,
-} from '../../../hooks/use-resolve-dispute';
+import { useResolveDispute, type DisputeOutcome } from '../../../hooks/use-resolve-dispute';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -44,10 +42,7 @@ export default function DisputeDetailScreen() {
     return (
       <View className="flex-1 bg-bg">
         <NavHeader title="İtiraz" onBack={() => router.back()} />
-        <View
-          className="flex-1 items-center justify-center"
-          style={{ padding: 24 }}
-        >
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
             Yükleniyor…
           </Text>
@@ -61,10 +56,7 @@ export default function DisputeDetailScreen() {
     return (
       <View className="flex-1 bg-bg">
         <NavHeader title="İtiraz" onBack={() => router.back()} />
-        <View
-          className="flex-1 items-center justify-center"
-          style={{ padding: 24 }}
-        >
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
             İtiraz bulunamadı.
           </Text>
@@ -83,11 +75,7 @@ export default function DisputeDetailScreen() {
             { disputeId: d.id, outcome },
             {
               onSuccess: () => router.back(),
-              onError: (e) =>
-                Alert.alert(
-                  'Hata',
-                  e instanceof Error ? e.message : 'İşlem başarısız',
-                ),
+              onError: (e) => Alert.alert('Hata', userMessage(e, 'İşlem tamamlanamadı.')),
             },
           );
         },
@@ -98,28 +86,19 @@ export default function DisputeDetailScreen() {
   return (
     <View className="flex-1 bg-bg">
       <NavHeader title="İtiraz" onBack={() => router.back()} />
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 32 }}
-      >
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 32 }}>
         <Banner tone="warning" title="İtiraz gerekçesi" body={d.reason} />
 
         <Section title="Maç özeti">
           <Row label="Kategori" value={CATEGORY_LABELS[d.match.category] ?? d.match.category} />
           <Row label="Format" value={FORMAT_LABELS[d.match.format] ?? d.match.format} />
-          <Row
-            label="Skor"
-            value={`${d.match.score_team_a} - ${d.match.score_team_b}`}
-            bold
-          />
+          <Row label="Skor" value={`${d.match.score_team_a} - ${d.match.score_team_b}`} bold />
           <Row label="Kazanan" value={d.match.winner_team ?? 'belirsiz'} />
         </Section>
 
         <Section title="Skor kayıtları">
           {d.submissions.length === 0 ? (
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 12.5, paddingVertical: 4 }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 12.5, paddingVertical: 4 }}>
               Kayıt yok.
             </Text>
           ) : (
@@ -132,16 +111,10 @@ export default function DisputeDetailScreen() {
                   borderTopColor: colors.surface3,
                 }}
               >
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 13 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 13 }}>
                   {s.submitted_by_name}
                 </Text>
-                <Text
-                  className="font-num text-text-3"
-                  style={{ fontSize: 11, marginTop: 2 }}
-                >
+                <Text className="font-num text-text-3" style={{ fontSize: 11, marginTop: 2 }}>
                   {new Date(s.submitted_at).toLocaleString('tr-TR')}
                 </Text>
                 <Text
@@ -163,7 +136,7 @@ export default function DisputeDetailScreen() {
           <Button onPress={() => submit('approve_b', 'Skor B')} variant="secondary" full>
             B lehine onayla
           </Button>
-          <Button onPress={() => submit('void', 'Voided')} variant="danger" full>
+          <Button onPress={() => submit('void', 'Maçı geçersiz say')} variant="danger" full>
             Maçı geçersiz say
           </Button>
           <Button onPress={() => submit('replay', 'Tekrar oynat')} variant="ghost" full>
@@ -219,10 +192,7 @@ function Row({ label, value, bold }: { label: string; value: string; bold?: bool
         paddingVertical: 6,
       }}
     >
-      <Text
-        className="font-sans text-text-3"
-        style={{ fontSize: 12.5 }}
-      >
+      <Text className="font-sans text-text-3" style={{ fontSize: 12.5 }}>
         {label}
       </Text>
       <Text

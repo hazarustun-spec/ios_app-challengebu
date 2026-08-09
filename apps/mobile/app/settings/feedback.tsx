@@ -22,6 +22,7 @@ import {
   type FeedbackCategory,
 } from '../../hooks/use-submit-feedback';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const CATEGORIES: Array<{ value: FeedbackCategory; label: string }> = [
   { value: 'bug', label: 'Hata' },
@@ -54,7 +55,7 @@ export default function FeedbackScreen() {
         onError: (err) => {
           Alert.alert(
             'Gönderilemedi',
-            err instanceof Error ? err.message : 'Bir sorun oluştu.',
+            userMessage(err, 'Bir sorun oluştu.'),
           );
         },
       },

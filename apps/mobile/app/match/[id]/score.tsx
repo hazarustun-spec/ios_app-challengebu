@@ -38,6 +38,7 @@ import { useToast } from '../../../components/ui/ToastProvider';
 import { useAuthStore } from '../../../stores/auth-store';
 import { env } from '../../../lib/env';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 const PTS = ['0', '15', '30', '40', 'Ad'];
 
@@ -177,7 +178,7 @@ export default function ActiveMatch() {
         onError: (e) =>
           Alert.alert(
             'Skor gönderilemedi',
-            (e as Error)?.message ?? 'Lütfen tekrar dene.',
+            userMessage(e, 'Lütfen tekrar dene.'),
           ),
       },
     );

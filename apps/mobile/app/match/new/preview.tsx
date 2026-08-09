@@ -36,6 +36,7 @@ import { useMyRankings } from '../../../hooks/use-my-rankings';
 import { useCourts } from '../../../hooks/use-courts';
 import { useCreateMatchRequest } from '../../../hooks/use-create-match-request';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 /** Standard ELO expectation for player A vs player B. */
 function expected(myElo: number, oppElo: number): number {
@@ -122,7 +123,7 @@ export default function MatchPreview() {
       router.replace('/(tabs)/matches' as never);
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
+        userMessage(err, 'Bilinmeyen bir hata oluştu.');
       Alert.alert('Teklif gönderilemedi', msg);
     } finally {
       setSubmitting(false);

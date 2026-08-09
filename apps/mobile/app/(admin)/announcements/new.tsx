@@ -23,6 +23,7 @@ import { ListRow } from '../../../components/ui/ListRow';
 import { Toggle } from '../../../components/ui/Toggle';
 import { usePublishAnnouncement } from '../../../hooks/use-publish-announcement';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 export default function NewAnnouncementScreen() {
   const [title, setTitle] = useState('');
@@ -43,8 +44,7 @@ export default function NewAnnouncementScreen() {
       },
       {
         onSuccess: () => router.back(),
-        onError: (e) =>
-          Alert.alert('Hata', e instanceof Error ? e.message : 'Yayımlanamadı'),
+        onError: (e) => Alert.alert('Hata', userMessage(e, 'Yayımlanamadı')),
       },
     );
   };

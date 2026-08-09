@@ -18,6 +18,7 @@ import { Banner } from '../../../components/ui/Banner';
 import { useAdminUpdateProfile } from '../../../hooks/use-admin-update-profile';
 import { useAdminUserDetail } from '../../../hooks/use-admin-user-detail';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 const STATUS_LABEL: Record<string, string> = {
   active: 'Aktif',
@@ -49,10 +50,7 @@ export default function AdminUserDetailScreen() {
     return (
       <View className="flex-1 bg-bg">
         <NavHeader title="Kullanıcı" onBack={() => router.back()} />
-        <View
-          className="flex-1 items-center justify-center"
-          style={{ padding: 24 }}
-        >
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
             Yükleniyor…
           </Text>
@@ -66,10 +64,7 @@ export default function AdminUserDetailScreen() {
     return (
       <View className="flex-1 bg-bg">
         <NavHeader title="Kullanıcı" onBack={() => router.back()} />
-        <View
-          className="flex-1 items-center justify-center"
-          style={{ padding: 24 }}
-        >
+        <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
             Kullanıcı bulunamadı.
           </Text>
@@ -99,8 +94,7 @@ export default function AdminUserDetailScreen() {
           update.mutate(
             { targetUserId: u.user_id, ...patch },
             {
-              onError: (e) =>
-                Alert.alert('Hata', e instanceof Error ? e.message : 'Başarısız'),
+              onError: (e) => Alert.alert('Hata', userMessage(e, 'Başarısız')),
             },
           ),
       },
@@ -122,9 +116,7 @@ export default function AdminUserDetailScreen() {
   return (
     <View className="flex-1 bg-bg">
       <NavHeader title="Kullanıcı" onBack={() => router.back()} />
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 32 }}
-      >
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 32 }}>
         {/* Hero */}
         <View
           style={{
@@ -209,17 +201,10 @@ export default function AdminUserDetailScreen() {
           <Divider />
           <Meta
             label="Son maç"
-            value={
-              u.last_match_at
-                ? new Date(u.last_match_at).toLocaleDateString('tr-TR')
-                : '—'
-            }
+            value={u.last_match_at ? new Date(u.last_match_at).toLocaleDateString('tr-TR') : '—'}
           />
           <Divider />
-          <Meta
-            label="Kayıt"
-            value={new Date(u.created_at).toLocaleDateString('tr-TR')}
-          />
+          <Meta label="Kayıt" value={new Date(u.created_at).toLocaleDateString('tr-TR')} />
         </SectionCard>
 
         {/* Actions */}
@@ -285,11 +270,7 @@ export default function AdminUserDetailScreen() {
         </SectionCard>
       </ScrollView>
 
-      <Sheet
-        visible={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        title="Askıya alma süresi"
-      >
+      <Sheet visible={sheetOpen} onClose={() => setSheetOpen(false)} title="Askıya alma süresi">
         <View style={{ gap: 4 }}>
           {SUSPEND_OPTIONS.map((opt) => (
             <ListRow
@@ -340,10 +321,7 @@ function Meta({ label, value }: { label: string; value: string }) {
         gap: 12,
       }}
     >
-      <Text
-        className="font-sans text-text-3"
-        style={{ fontSize: 12.5 }}
-      >
+      <Text className="font-sans text-text-3" style={{ fontSize: 12.5 }}>
         {label}
       </Text>
       <Text
@@ -358,7 +336,7 @@ function Meta({ label, value }: { label: string; value: string }) {
 }
 
 function StatusPill({ status }: { status: string | null }) {
-  const label = status ? STATUS_LABEL[status] ?? status : 'Aktif';
+  const label = status ? (STATUS_LABEL[status] ?? status) : 'Aktif';
   const tone =
     status === 'banned'
       ? { bg: '#FCE6E4', color: colors.loss }

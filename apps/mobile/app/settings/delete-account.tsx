@@ -22,6 +22,7 @@ import { Button } from '../../components/ui/Button';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { useDeleteAccount } from '../../hooks/use-delete-account';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 export default function DeleteAccount() {
   const [step, setStep] = useState<1 | 2>(1);
@@ -155,9 +156,7 @@ export default function DeleteAccount() {
               onSuccess: () => router.replace('/(auth)/welcome' as never),
               onError: (err: unknown) => {
                 const msg =
-                  err instanceof Error
-                    ? err.message
-                    : 'Hesap silinemedi. Lütfen tekrar dene.';
+                  userMessage(err, 'Hesap silinemedi. Lütfen tekrar dene.');
                 Alert.alert('Hesap silinemedi', msg);
               },
             });

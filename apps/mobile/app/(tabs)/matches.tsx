@@ -69,6 +69,7 @@ import { levelForElo } from '../../lib/levels';
 import { colors } from '../../theme/colors';
 import { Sheet } from '../../components/ui/Sheet';
 import { haptics } from '../../lib/haptics';
+import { userMessage } from '../../lib/user-message';
 
 type HubView = 'upcoming' | 'offers' | 'feed';
 
@@ -1194,7 +1195,7 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
                     onSuccess: () => toast.show('Başvurun gönderildi'),
                     onError: (e) =>
                       toast.show(
-                        e instanceof Error ? e.message : 'Başvuru gönderilemedi',
+                        userMessage(e, 'Başvuru gönderilemedi'),
                         'error',
                       ),
                   },

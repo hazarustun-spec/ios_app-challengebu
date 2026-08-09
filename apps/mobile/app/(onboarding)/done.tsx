@@ -43,6 +43,7 @@ import {
   type SkillLevel,
 } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const INITIAL_ELO = 1200;
 
@@ -132,7 +133,7 @@ export default function ObDone() {
         haptics.success();
       })
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'Profil oluşturulamadı.');
+        setError(userMessage(e, 'Profil oluşturulamadı.'));
       });
   };
 

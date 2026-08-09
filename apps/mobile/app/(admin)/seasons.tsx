@@ -20,6 +20,7 @@ import {
   type SeasonStatus,
 } from '../../hooks/use-admin-seasons';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const STATUS_LABEL: Record<SeasonStatus, string> = {
   upcoming: 'Yaklaşan',
@@ -28,10 +29,7 @@ const STATUS_LABEL: Record<SeasonStatus, string> = {
   closed: 'Kapandı',
 };
 
-const STATUS_TONE: Record<
-  SeasonStatus,
-  { bg: string; color: string }
-> = {
+const STATUS_TONE: Record<SeasonStatus, { bg: string; color: string }> = {
   upcoming: { bg: colors.surface2, color: colors.text2 },
   active: { bg: colors.limeSoft, color: colors.lvCaylak },
   finale: { bg: colors.blueSoft, color: colors.court },
@@ -53,8 +51,7 @@ export default function AdminSeasonsScreen() {
           text: 'Başlat',
           onPress: () =>
             startFinale.mutate(s.id, {
-              onError: (e) =>
-                Alert.alert('Hata', e instanceof Error ? e.message : 'Başlatılamadı'),
+              onError: (e) => Alert.alert('Hata', userMessage(e, 'Başlatılamadı')),
             }),
         },
       ],
@@ -72,8 +69,7 @@ export default function AdminSeasonsScreen() {
           style: 'destructive',
           onPress: () =>
             closeSeason.mutate(s.id, {
-              onError: (e) =>
-                Alert.alert('Hata', e instanceof Error ? e.message : 'Kapatılamadı'),
+              onError: (e) => Alert.alert('Hata', userMessage(e, 'Kapatılamadı')),
             }),
         },
       ],
@@ -122,16 +118,11 @@ export default function AdminSeasonsScreen() {
             {closed.length > 0 && <SectionLabel>Geçmiş sezonlar</SectionLabel>}
           </View>
         }
-        renderItem={({ item }) => (
-          <PastSeasonRow season={item} />
-        )}
+        renderItem={({ item }) => <PastSeasonRow season={item} />}
         ListEmptyComponent={
           active || list.isLoading ? null : (
             <View style={{ alignItems: 'center', paddingTop: 32 }}>
-              <Text
-                className="font-sans text-text-3"
-                style={{ fontSize: 13, textAlign: 'center' }}
-              >
+              <Text className="font-sans text-text-3" style={{ fontSize: 13, textAlign: 'center' }}>
                 Sezon kaydı yok.
               </Text>
             </View>
@@ -178,10 +169,7 @@ function ActiveSeasonCard({
           justifyContent: 'space-between',
         }}
       >
-        <Text
-          className="font-display font-extrabold text-text"
-          style={{ fontSize: 18 }}
-        >
+        <Text className="font-display font-extrabold text-text" style={{ fontSize: 18 }}>
           {seasonDisplayName(season.name)} {season.year}
         </Text>
         <View
@@ -192,25 +180,16 @@ function ActiveSeasonCard({
             borderRadius: 999,
           }}
         >
-          <Text
-            className="font-sans font-bold"
-            style={{ fontSize: 11.5, color: tone.color }}
-          >
+          <Text className="font-sans font-bold" style={{ fontSize: 11.5, color: tone.color }}>
             {STATUS_LABEL[season.status]}
           </Text>
         </View>
       </View>
-      <Text
-        className="font-sans text-text-2"
-        style={{ fontSize: 13 }}
-      >
+      <Text className="font-sans text-text-2" style={{ fontSize: 13 }}>
         {fmtDate(season.starts_at)} – {fmtDate(season.ends_at)} · Finale{' '}
         {fmtDate(season.finale_starts_at)}–{fmtDate(season.finale_ends_at)}
       </Text>
-      <Text
-        className="font-sans text-text-3"
-        style={{ fontSize: 12 }}
-      >
+      <Text className="font-sans text-text-3" style={{ fontSize: 12 }}>
         Turnuva: {season.tournament_count}
       </Text>
       {(canStartFinale || canClose) && (
@@ -274,16 +253,10 @@ function PastSeasonRow({ season }: { season: AdminSeason }) {
         <Icon name="crown" size={20} color={colors.acGold} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 14 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
           {seasonDisplayName(season.name)} {season.year}
         </Text>
-        <Text
-          className="font-sans text-text-3"
-          style={{ fontSize: 12, marginTop: 1 }}
-        >
+        <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 1 }}>
           {fmtDate(season.starts_at)} – {fmtDate(season.ends_at)}
         </Text>
       </View>

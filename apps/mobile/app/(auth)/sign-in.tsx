@@ -35,6 +35,7 @@ import { reviewLogin } from '../../lib/review-auth';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const QUICK_DOMAINS = ['@std.bogazici.edu.tr', '@bogazici.edu.tr', '@alumni.bogazici.edu.tr'];
 
@@ -76,7 +77,7 @@ export default function SignIn() {
         params: { email: trimmed },
       });
     } catch (err) {
-      Alert.alert('Hata', err instanceof Error ? err.message : 'Bir sorun oluştu.');
+      Alert.alert('Hata', userMessage(err, 'Bir sorun oluştu.'));
     } finally {
       setSending(false);
     }

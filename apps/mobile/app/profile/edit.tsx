@@ -42,6 +42,7 @@ import {
   type ProgramLevel,
 } from '../../hooks/use-departments';
 import { colors } from '../../theme/colors';
+import { userMessage } from '../../lib/user-message';
 
 const PRONOUNS = ['he/him', 'she/her', 'they/them'] as const;
 type Pronoun = (typeof PRONOUNS)[number];
@@ -158,7 +159,7 @@ export default function ProfileEdit() {
           if (res?.url) setLocalAvatarUri(res.url);
         },
         onError: (err) => {
-          Alert.alert('Hata', err instanceof Error ? err.message : 'Fotoğraf yüklenemedi.');
+          Alert.alert('Hata', userMessage(err, 'Fotoğraf yüklenemedi.'));
         },
       },
     );
@@ -188,7 +189,7 @@ export default function ProfileEdit() {
     updateProfile.mutate(input, {
       onSuccess: () => router.back(),
       onError: (err) => {
-        Alert.alert('Hata', err instanceof Error ? err.message : 'Kaydedilemedi.');
+        Alert.alert('Hata', userMessage(err, 'Kaydedilemedi.'));
       },
     });
   };

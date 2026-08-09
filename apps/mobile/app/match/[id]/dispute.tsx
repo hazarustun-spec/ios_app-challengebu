@@ -16,6 +16,7 @@ import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { colors } from '../../../theme/colors';
+import { userMessage } from '../../../lib/user-message';
 
 type DisputeReason = 'score' | 'notplayed' | 'format' | 'other';
 
@@ -50,7 +51,7 @@ export default function DisputeForm() {
         },
         onError: (err) => {
           const msg =
-            err instanceof Error ? err.message : 'İtiraz gönderilemedi. Tekrar dene.';
+            userMessage(err, 'İtiraz gönderilemedi. Tekrar dene.');
           Alert.alert('Hata', msg);
         },
       }
