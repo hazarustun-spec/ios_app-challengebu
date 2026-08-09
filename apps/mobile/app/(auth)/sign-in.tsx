@@ -8,7 +8,12 @@
 // to /(auth)/otp with the email param for verification.
 
 import { getOtpOptions } from '@tennis/shared';
-import { BOUN_EMAIL_ERROR_TR, isReviewEmail, validateBouniMail } from '@tennis/shared/schemas';
+import {
+  BOUN_EMAIL_ERROR_TR,
+  REVIEW_FIXED_CODE,
+  isReviewEmail,
+  validateBouniMail,
+} from '@tennis/shared/schemas';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -26,12 +31,15 @@ import { CheckBox } from '../../components/ui/CheckBox';
 import { Field } from '../../components/ui/Field';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { LEGAL_URLS } from '../../lib/legal';
+import { reviewLogin } from '../../lib/review-auth';
 import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 
 const QUICK_DOMAINS = ['@std.bogazici.edu.tr', '@bogazici.edu.tr', '@alumni.bogazici.edu.tr'];
 
 export default function SignIn() {
+  const setSession = useAuthStore((s) => s.setSession);
   const [email, setEmail] = useState('');
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [sending, setSending] = useState(false);
@@ -44,15 +52,20 @@ export default function SignIn() {
 
   const handleSend = async () => {
     if (!canSubmit) return;
-    // App Store review account: no mail is sent (the reviewer can't read the
-    // mailbox). Skip straight to the OTP screen, which collects the fixed review
-    // code and authenticates via the review-login function.
-    if (isReviewEmail(trimmed)) {
-      router.push({ pathname: '/(auth)/otp', params: { email: trimmed } });
-      return;
-    }
     setSending(true);
     try {
+      // Demo account: nothing is mailed (the mailbox is not readable by whoever
+      // is reviewing), and the fixed code is already in the bundle, so sign in
+      // right here. The OTP screen — six cells, a hidden input and a keyboard
+      // that has to come up on an iPad running the app in iPhone compatibility
+      // mode — is the most environment-sensitive screen in the app, and this is
+      // the one account that has no reason to go through it.
+      if (isReviewEmail(trimmed)) {
+        const session = await reviewLogin(trimmed, REVIEW_FIXED_CODE);
+        setSession(session);
+        router.replace('/');
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: getOtpOptions({ email: trimmed, withMagicLink: true }),
@@ -114,7 +127,9 @@ export default function SignIn() {
           onChange={setEmail}
           autoFocus
           big
-          error={dirty && !valid}
+          // Deliberately not `error`: an address from outside the university is
+          // the membership rule doing its job, not a failure to fix. Red styling
+          // reads as a broken app to anyone who tries their own address first.
           hint={
             dirty && !valid
               ? BOUN_EMAIL_ERROR_TR
@@ -153,21 +168,6 @@ export default function SignIn() {
             </Pressable>
           ))}
         </View>
-
-        {isReview && valid && (
-          <Text
-            className="font-sans text-text-2"
-            style={{
-              fontSize: 13,
-              lineHeight: 19,
-              marginTop: 16,
-              textAlign: 'center',
-            }}
-          >
-            App Review hesabı: e-postayı gir, KVKK onayla, ardından OTP ekranında App Store Connect
-            notlarındaki 6 haneli kodu kullan (şifre alanı yok).
-          </Text>
-        )}
 
         {/* Dev-only component gallery link — preserved from previous sign-in. */}
         {__DEV__ && (
