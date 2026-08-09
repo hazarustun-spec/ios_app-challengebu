@@ -91,23 +91,10 @@ export default function Welcome() {
           justifyContent: 'space-between',
         }}
       >
-        {/* Top row: badge + floating logo */}
-        <View className="flex-row items-start justify-between">
-          <View
-            style={{
-              backgroundColor: '#35631A',
-              paddingHorizontal: 15,
-              paddingVertical: 8,
-              borderRadius: 9999,
-            }}
-          >
-            <Text
-              className="font-display font-extrabold"
-              style={{ color: '#EAF7D0', fontSize: 11, letterSpacing: 1.4 }}
-            >
-              CHALLENGEBU! · LADDER
-            </Text>
-          </View>
+        {/* Top row: floating logo, right-aligned. The "CHALLENGEBU! · LADDER"
+            pill used to sit opposite it; it only restated the app name the user
+            just tapped to open. */}
+        <View className="flex-row items-start justify-end">
           <FloatyLogo />
         </View>
 
