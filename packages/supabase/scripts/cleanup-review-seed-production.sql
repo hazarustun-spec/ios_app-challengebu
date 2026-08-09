@@ -55,6 +55,11 @@ $$;
 
 revoke all on function public.void_unplayed_matches() from public;
 
+-- 6. Drop the per-login demo reset (20260809000001). review-login still calls
+--    it, and .rpc() on a missing function only logs — the reviewer still gets a
+--    session — but with the demo data gone there is nothing left to restore.
+drop function if exists public.reset_review_account();
+
 -- Verify (all counts should be 0) --------------------------------------------
 select 'seeded_profiles_left' as check, count(*)::text as n
   from public.profiles where email like 'seed-opp-%@challengebu-review.invalid'

@@ -80,6 +80,14 @@ Deno.serve(async (req) => {
       return errorResponse(createErr.message, 422, createErr);
     }
 
+    // Hand the reviewer a demo account in the state the seed script produced,
+    // no matter what the previous reviewer left behind — a deleted (anonymized)
+    // profile, a played-out demo match, an accepted challenge. Best-effort: a
+    // failure here must not cost the reviewer their session, which is the one
+    // thing they cannot work around.
+    const { error: resetErr } = await supa.rpc('reset_review_account');
+    if (resetErr) console.error('[review-login] reset_review_account failed', resetErr);
+
     const { data, error } = await supa.auth.admin.generateLink({
       type: 'magiclink',
       email,
