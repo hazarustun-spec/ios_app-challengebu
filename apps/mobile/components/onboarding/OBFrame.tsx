@@ -14,7 +14,7 @@
 // present, 1:1 when Devam-only).
 
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Button } from '../ui/Button';
@@ -67,7 +67,17 @@ export function OBFrame({
   const canGoBack = router.canGoBack();
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    // "Devam" lives outside the ScrollView, so on the steps with a text field
+    // (name, phone, the department search) the keyboard covered it completely —
+    // nothing to scroll, no visible way forward until you thought to dismiss the
+    // keyboard first. Worse on an iPad running the app in iPhone compatibility
+    // mode, where the keyboard takes a bigger share of a shorter window. Lift
+    // the whole frame instead.
+    <KeyboardAvoidingView
+      className="flex-1 bg-bg"
+      style={{ paddingTop: insets.top }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {/* Progress header */}
       <View
         style={{
@@ -130,6 +140,7 @@ export function OBFrame({
           flexGrow: 1,
         }}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         <Text
           className="font-display font-extrabold text-text"
@@ -170,6 +181,6 @@ export function OBFrame({
           </Button>
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
