@@ -60,6 +60,12 @@ export function useSubmitOnboarding() {
         last_name: draft.lastName,
         phone: draft.phone ?? null,
         pronoun: draft.pronoun,
+        // No screen collects a custom pronoun — the wizard's "other" option is
+        // "belirtmek istemiyorum". Sent explicitly so the UPDATE branch below
+        // (re-onboarding after account deletion, or the pre-seeded review
+        // account) clears whatever the previous profile left here instead of
+        // pairing a new pronoun with a stale string.
+        pronoun_custom: null,
         gender_category: draft.category,
         department_id: draft.departmentId,
         class_year: draft.classYear,

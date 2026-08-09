@@ -170,7 +170,12 @@ export default function ProfileEdit() {
       first_name: firstName.trim() || profile.first_name,
       last_name: lastName.trim() || profile.last_name,
       pronoun,
-      pronoun_custom: pronoun === 'they/them' ? profile.pronoun_custom : null,
+      // This form only offers he/him, she/her and they/them (see the seeding
+      // effect above), so the saved pronoun is never 'other' and there is no
+      // custom text to carry. It used to preserve profile.pronoun_custom for
+      // 'they/them', which kept a stale string alive on a pronoun that never
+      // reads it.
+      pronoun_custom: null,
       department_id: departmentId,
       show_department: showDepartment,
       class_year: classYear,
