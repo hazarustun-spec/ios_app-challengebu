@@ -26,7 +26,7 @@ export interface SendOtpInput {
 export interface OtpOptions {
   /** Allow new users to be created on first sign-in (no separate sign-up screen). */
   shouldCreateUser: boolean;
-  /** Deep link for the magic-link path. iOS app handles tenniskampus:// scheme. */
+  /** Deep link for the magic-link path. Must match expo.scheme in app.json. */
   emailRedirectTo?: string;
 }
 
@@ -40,6 +40,11 @@ export interface OtpOptions {
 export function getOtpOptions(input: SendOtpInput): OtpOptions {
   return {
     shouldCreateUser: true,
-    ...(input.withMagicLink ? { emailRedirectTo: 'tenniskampus://auth/callback' } : {}),
+    // `tennischallenger` is expo.scheme in apps/mobile/app.json and the scheme
+    // registered in Info.plist. This used to say `tenniskampus`, the project's
+    // pre-rename scheme, which no build has ever registered — every magic link
+    // we have ever mailed pointed at a URL no app on the device could open, so
+    // the "Sihirli bağlantıyı kullandım" path was dead end to end.
+    ...(input.withMagicLink ? { emailRedirectTo: 'tennischallenger://auth/callback' } : {}),
   };
 }
