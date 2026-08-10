@@ -1,15 +1,25 @@
-ChallengeBu! uses email OTP sign-in only — there is NO password field in the app.
+ChallengeBu! uses email sign-in only — there is NO password field anywhere in the app.
+There is nothing to enter in App Store Connect's "Sign-In Information" password
+field; leave it blank or put "N/A" there.
 
 Sign-in (App Review demo account):
   Email: appreview42@proton.me
-  App Store Connect "Password" field: 424242 (this is the 6-digit OTP code, not a password)
 
 Steps:
   1. Launch → tap "Üniversite e-postanla başla"
   2. Enter appreview42@proton.me
   3. Check KVKK consent → tap "Devam et"
-  4. On the OTP screen enter: 424242 (six digits, no dots or spaces)
-  5. The account should open directly to the main app (Sıralama, Maçlar, Profil tabs). If onboarding still appears, complete required fields only (name, pronoun, category, year, department, level, hand, availability — phone and photo are optional/skippable).
+  4. The account signs in immediately — no code, no password, no second screen.
+     You land directly on the onboarding wizard (name, pronoun, category, year,
+     department, level, hand, availability — phone and photo are optional/
+     skippable) the first time, or straight on the main app (Sıralama, Maçlar,
+     Profil tabs) on any later sign-in.
+
+Note: earlier review notes mentioned a 6-digit OTP code (424242) entered on a
+separate screen. That step has been removed for the demo account — it now
+signs in on the single tap above. Regular users (real university accounts)
+still get a mailed 6-digit code, since the reviewer can't read their inbox
+that flow doesn't need to be exercised.
 
 About the app:
   ChallengeBu is an independent community tennis ranking app for university players. It is NOT affiliated with, endorsed by, or sponsored by any university. Access is restricted to verified university email addresses purely as a functional sign-up gate (to keep the community to students/faculty/alumni) — this is access control, not a claim of institutional affiliation, and no university name, logo, or branding is used in the app or its metadata.
@@ -31,7 +41,9 @@ Messaging (Guideline 1.2):
 
 Demo video (physical iPhone — required):
   https://youtu.be/cKQQbn5gL9E
-  The video shows: welcome → email → KVKK → OTP 424242 → main tabs → create match flow → profile → settings.
+  NOTE: this video predates the sign-in change above — it still shows the OTP
+  424242 screen, which no longer appears for the demo account. Re-record before
+  submitting, or the video and the live app will visibly disagree.
 
 Support: hello@shimal.app
 Privacy / KVKK: https://shimal.app/challengebu/gizlilik.html
