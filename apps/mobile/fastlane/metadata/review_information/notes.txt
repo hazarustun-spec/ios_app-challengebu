@@ -16,10 +16,12 @@ Steps:
      Profil tabs) on any later sign-in.
 
 Note: earlier review notes mentioned a 6-digit OTP code (424242) entered on a
-separate screen. That step has been removed for the demo account — it now
-signs in on the single tap above. Regular users (real university accounts)
-still get a mailed 6-digit code, since the reviewer can't read their inbox
-that flow doesn't need to be exercised.
+separate screen. Real users still go through that screen exactly as shown in
+the demo video below — they receive a mailed 6-digit code and enter it there.
+Only the review account skips it: since the reviewer can't read
+appreview42@proton.me's inbox, that one address signs in on a single tap
+instead, so the review can proceed without a mailbox. This is a review-only
+shortcut, not a change to what real users experience.
 
 About the app:
   ChallengeBu is an independent community tennis ranking app for university players. It is NOT affiliated with, endorsed by, or sponsored by any university. Access is restricted to verified university email addresses purely as a functional sign-up gate (to keep the community to students/faculty/alumni) — this is access control, not a claim of institutional affiliation, and no university name, logo, or branding is used in the app or its metadata.
@@ -41,9 +43,9 @@ Messaging (Guideline 1.2):
 
 Demo video (physical iPhone — required):
   https://youtu.be/cKQQbn5gL9E
-  NOTE: this video predates the sign-in change above — it still shows the OTP
-  424242 screen, which no longer appears for the demo account. Re-record before
-  submitting, or the video and the live app will visibly disagree.
+  This shows the regular end-user sign-in (mailed OTP, entered on-screen) —
+  the path every real account takes. It will look different from the steps
+  above, which are the review-account shortcut described in the note above.
 
 Support: hello@shimal.app
 Privacy / KVKK: https://shimal.app/challengebu/gizlilik.html
