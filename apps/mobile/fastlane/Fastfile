@@ -44,6 +44,25 @@ platform :ios do
     )
   end
 
+  # Upload ONLY screenshots (skipping text metadata and the binary). Reads
+  # every PNG under fastlane/screenshots/<lang>/<Device>/ and overwrites the
+  # matching slot on the current in-review version.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane screenshots
+  lane :screenshots do
+    asc_auth
+    deliver(
+      app_identifier: "app.challengebu.ios",
+      screenshots_path: "fastlane/screenshots",
+      skip_screenshots: false,
+      overwrite_screenshots: true,
+      skip_metadata: true,
+      skip_binary_upload: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      force: true,
+    )
+  end
+
   # Create/select an App Store version, ATTACH a finished (already-uploaded via
   # EAS) build to it, and push text metadata onto that version. Screenshots and
   # the binary upload are skipped; no review submission is made. The build must

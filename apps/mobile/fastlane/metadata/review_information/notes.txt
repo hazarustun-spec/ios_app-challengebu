@@ -1,6 +1,5 @@
-ChallengeBu! uses email sign-in only — there is NO password field anywhere in the app.
-There is nothing to enter in App Store Connect's "Sign-In Information" password
-field; leave it blank or put "N/A" there.
+ChallengeBu! uses email sign-in only — there is NO password field anywhere in
+the app. Leave the "Sign-In Information" password field blank or type "N/A".
 
 Sign-in (App Review demo account):
   Email: appreview42@proton.me
@@ -8,58 +7,64 @@ Sign-in (App Review demo account):
 Steps:
   1. Launch → tap "Üniversite e-postanla başla"
   2. Enter appreview42@proton.me
-  3. Check KVKK consent → tap "Devam et"
-  4. The account signs in immediately — no code, no password, no second screen.
-     You land directly on the onboarding wizard (name, pronoun, category, year,
-     department, level, hand, availability — phone and photo are optional/
-     skippable) the first time, or straight on the main app (Sıralama, Maçlar,
-     Profil tabs) on any later sign-in.
+  3. Check the KVKK consent box → tap "Devam et"
+  4. The account signs in on a single tap — no code, no password, no second
+     screen. Every review sign-in resets the demo profile to an un-onboarded
+     state, so you land on the full onboarding wizard (name, pronoun,
+     category, class year, department, level, hand, availability — phone and
+     photo are optional/skippable). Walk through the wizard once, then you
+     reach the main app (Sıralama, Maçlar, Profil tabs).
 
 Note: real users sign in with a .edu.tr university e-mail address and enter a
 6-digit code that is mailed to them. Only the review account skips that step:
-since the reviewer can't read the appreview42@proton.me inbox, that one address
-signs in on a single tap instead, so the review can proceed without a mailbox.
-This is a review-only shortcut, not a change to what real users experience.
+since the reviewer can't read the appreview42@proton.me inbox, that one
+address signs in on a single tap instead, so the review can proceed without
+a mailbox. This is a review-only shortcut, not a change to what real users
+experience.
 
 About the app:
   ChallengeBu! is an independent community tennis ranking app for university
   players. Sign-up is gated to e-mail addresses under the Turkish academic
   top-level .edu.tr — an access-control check to keep the community to
-  students, faculty and alumni. The app is not affiliated with, endorsed by,
-  sponsored by, or a copy of any specific university; no university name,
-  logo, colors, or branding is used in the app or its metadata.
+  students, faculty, and alumni. The app is not affiliated with, endorsed
+  by, sponsored by, or a copy of any specific university; no university
+  name, logo, colors, or branding is used in the app or its metadata.
 
 Pre-populated review data:
-  The review account is seeded with a live, ranked leaderboard (9 players),
-  completed match history and profile stats, an incoming pending challenge,
-  and ONE match that is ready to score right now — so every feature can be
-  exercised without waiting for other users. The reviewer can explore:
-  leaderboard categories (Sıralama), profile stats + ELO history (Profil),
-  notifications, settings (including account deletion), messaging with
-  block/report, and the full match lifecycle below.
+  The demo account lands on a live, populated app after finishing the
+  onboarding wizard:
+    - A ranked leaderboard with 6 players (the demo account + 5 seeded
+      opponents): 2 in Erkek Tek (men's singles), 2 in Kadın Tek (women's
+      singles), everyone in Open Tek.
+    - Completed match history on the demo profile (3 matches: 2 won, 1 lost)
+      driving ELO history + form stats.
+    - ONE match already ready to score right now — no waiting required.
+    - ONE incoming pending challenge from a seeded opponent, so the accept
+      flow is exercisable.
 
-Demonstrating the FULL match flow (start → score → result):
-  1. Open the Maçlar (Matches) tab → the pre-seeded match card shows
-     "Maçı Başlat".
-  2. Tap "Maçı Başlat" to start (it is already within the allowed start window).
+Demonstrating the FULL match flow (start → score → confirm):
+  1. Open the Maçlar (Matches) tab → the pre-seeded card shows "Maçı
+     Başlat".
+  2. Tap "Maçı Başlat" to start (it is already within the allowed start
+     window).
   3. Enter points to complete the set, then submit the score.
-  (You can also tap the "+" to create a brand-new challenge against any seeded
-  opponent, or accept the incoming pending challenge shown in notifications.)
+  You can also tap "+" to create a brand-new challenge against any seeded
+  opponent, or accept the incoming pending challenge shown in notifications.
 
 Device notes:
   iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode;
   core flows work the same.
 
 Messaging (Guideline 1.2):
-  In-thread ⋯ menu offers Report and Block. Blocked users can be managed under
-  Settings → Engellenen kullanıcılar. Messaging requires an active match offer
-  between two users.
+  In-thread ⋯ menu offers Report and Block. Blocked users can be managed
+  under Settings → Engellenen kullanıcılar. Messaging requires an active
+  match offer between two users.
 
-Demo video (physical iPhone — required):
+Demo video (physical iPhone):
   https://youtu.be/cKQQbn5gL9E
-  This shows the regular end-user sign-in (mailed OTP, entered on-screen) —
-  the path every real account takes. It will look different from the steps
-  above, which are the review-account shortcut described in the note above.
+  Shows the regular end-user sign-in (mailed OTP, entered on-screen) — the
+  path every real account takes. It looks different from the steps above,
+  which are the review-account shortcut described in this note.
 
 Support: hello@shimal.app
 Privacy / KVKK: https://shimal.app/challengebu/gizlilik.html

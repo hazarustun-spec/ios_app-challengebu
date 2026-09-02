@@ -1,44 +1,44 @@
-# screenshots.yaml — App Store screenshot capture (run on iPhone 16 Pro Max = 6.9").
+# screenshots.yaml — App Store screenshot capture, prod-backed.
 #
-# Robust: logs in only if logged out, otherwise reuses the session. Dismisses the
-# dev-client connect + notification-permission dialogs. Captures the key screens.
+# Uses the App Store review demo mailbox (appreview42@proton.me): the client
+# routes that address through the fixed-code review-login Edge Function, so it
+# signs in without an OTP mailbox — perfect for headless screenshotting.
 #
-# Prereqs: Supabase stack + Mailpit + Metro running; JDK 17+ on PATH.
-# Run: JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
-#      maestro --device <ProMax-UDID> test \
-#        -e EMAIL=hazar.ustun@example.edu.tr .maestro/screenshots.yaml
+# Prereqs:
+#   - The bundle is installed on an iOS Simulator (`eas build:run --profile
+#     simulator --platform ios --latest`) and the sim device is iPhone 16 Pro
+#     Max (6.9") to match Apple's required screenshot resolution.
+#   - JDK 17+ on PATH.
+#
+# Run:
+#   JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+#   maestro test .maestro/screenshots.yaml
 appId: app.challengebu.ios
 env:
-  EMAIL: "hazar.ustun@example.edu.tr"
+  EMAIL: "appreview42@proton.me"
 ---
-- launchApp
+- launchApp:
+    clearState: true
+    permissions: { notifications: allow }
 - tapOn:
     text: "Aç"
     optional: true
 
-# Log in only if the Welcome screen is showing (otherwise the session persists).
+# Log in if the Welcome screen is showing (session may already exist from a
+# previous run — reuse it in that case).
 - runFlow:
     when:
       visible: "Üniversite e-postanla başla"
     commands:
       - tapOn: "Üniversite e-postanla başla"
       - assertVisible: "E-postanı gir"
-      - tapOn: "ad.soyad@example.edu.tr"
       - inputText: ${EMAIL}
       - hideKeyboard
       - tapOn: "KVKK onayı"
-      - tapOn: "Kod gönder"
-      - extendedWaitUntil:
-          visible: "Gelen kutunu kontrol et"
-          timeout: 15000
-      - runScript: get-otp.js
-      - inputText: ${output.d0}
-      - inputText: ${output.d1}
-      - inputText: ${output.d2}
-      - inputText: ${output.d3}
-      - inputText: ${output.d4}
-      - inputText: ${output.d5}
-      - waitForAnimationToEnd
+      # The review-login shortcut signs the demo account in on a single tap,
+      # so the CTA reads "Devam et" (not "Kod gönder") and the OTP screen is
+      # skipped entirely.
+      - tapOn: "Devam et"
 
 # Dismiss the iOS notification-permission dialog if it pops up.
 - tapOn:
@@ -48,24 +48,29 @@ env:
     text: "İzin Verme"
     optional: true
 
-# ── Home (ELO hero) ──
+# ── Home / Sıralama (leaderboard) ──
 - extendedWaitUntil:
-    visible: "Yeni Maç"
+    visible: "Sıralama"
     timeout: 40000
 - waitForAnimationToEnd
-- takeScreenshot: shots/01-home
+- takeScreenshot: shots/01-siralama
 
-# ── Leaderboard ──
-- tapOn: "leaderboard"
+# ── Maçlar ──
+- tapOn: "Maçlar"
 - waitForAnimationToEnd
-- takeScreenshot: shots/02-leaderboard
+- takeScreenshot: shots/02-maclar
 
-# ── Profile ──
-- tapOn: "profile"
+# ── Profil ──
+- tapOn: "Profil"
 - waitForAnimationToEnd
-- takeScreenshot: shots/03-profile
+- takeScreenshot: shots/03-profil
 
-# ── New match (match-type cards) ──
-- tapOn: "new-match"
+# ── Yeni Maç oluştur ──
+- tapOn:
+    id: "new-match"
+    optional: true
+- tapOn:
+    text: "Yeni Maç"
+    optional: true
 - waitForAnimationToEnd
-- takeScreenshot: shots/04-newmatch
+- takeScreenshot: shots/04-yeni-mac
