@@ -79,9 +79,9 @@ import { adminClient, cleanupTestData, createTestUser } from '../functions/helpe
 
 Deno.test('messaging: participants can read/write, outsiders cannot', async () => {
   const supa = adminClient();
-  const a = await createTestUser({ email: 'msg-a@std.bogazici.edu.tr' });
-  const b = await createTestUser({ email: 'msg-b@std.bogazici.edu.tr' });
-  const c = await createTestUser({ email: 'msg-c@std.bogazici.edu.tr' });
+  const a = await createTestUser({ email: 'msg-a@example.edu.tr' });
+  const b = await createTestUser({ email: 'msg-b@example.edu.tr' });
+  const c = await createTestUser({ email: 'msg-c@example.edu.tr' });
 
   // A direct-challenge request a -> b (court from seed)
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
@@ -238,8 +238,8 @@ git commit -m "feat(msg): conversations + messages tables with participant RLS"
 ```typescript
 Deno.test('messaging: get_or_create_conversation is idempotent + marks read', async () => {
   const supa = adminClient();
-  const a = await createTestUser({ email: 'rpc-a@std.bogazici.edu.tr' });
-  const b = await createTestUser({ email: 'rpc-b@std.bogazici.edu.tr' });
+  const a = await createTestUser({ email: 'rpc-a@example.edu.tr' });
+  const b = await createTestUser({ email: 'rpc-b@example.edu.tr' });
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
   const { data: req } = await supa.from('match_requests').insert({
     creator_id: a.userId, target_id: b.userId, type: 'direct_challenge',

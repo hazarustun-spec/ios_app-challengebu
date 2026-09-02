@@ -1,6 +1,6 @@
 // apps/mobile/lib/formats.ts — Plan 8 Phase C9.
 //
-// Source of truth for the four playable match formats (BÜ Klasik, Hızlı
+// Source of truth for the four playable match formats (Klasik, Hızlı
 // Tiebreak, Pro Set 8, 3 Set Klasik). Ports the design bundle's `FORMATS`
 // table from
 //   docs/superpowers/specs/plan-8-design-bundle/project/app/data.jsx

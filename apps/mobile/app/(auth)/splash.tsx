@@ -3,8 +3,8 @@
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-auth.jsx
 // `function Splash()` lines 7-18.
 //
-// Renders the BÜ tenis ball mark in the center, three pulsing clay dots near
-// the bottom, then auto-replaces to the welcome screen after 1500ms.
+// Renders the ChallengeBu tenis ball mark in the center, three pulsing clay
+// dots near the bottom, then auto-replaces to the welcome screen after 1500ms.
 
 import { useEffect } from 'react';
 import { View } from 'react-native';

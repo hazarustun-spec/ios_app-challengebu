@@ -157,10 +157,10 @@ Edit `apps/mobile/app.json`:
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "tr.edu.boun.tennischallenger"
+      "bundleIdentifier": "app.challengebu.ios"
     },
     "android": {
-      "package": "tr.edu.boun.tennischallenger",
+      "package": "app.challengebu.ios",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -912,8 +912,8 @@ const schema = z.object({
     .string()
     .email('Geçerli bir e-posta gir')
     .refine(
-      (e) => e.endsWith('@boun.edu.tr') || e.endsWith('@std.bogazici.edu.tr'),
-      'Sadece BÜ e-postası kabul edilir (@boun.edu.tr veya @std.bogazici.edu.tr)',
+      (e) => e.endsWith('@example.edu.tr') || e.endsWith('@example.edu.tr'),
+      'Sadece üniversite e-postası kabul edilir (@example.edu.tr veya @example.edu.tr)',
     ),
 });
 
@@ -944,7 +944,7 @@ export default function SignInScreen() {
       <View className="flex-1 justify-center">
         <Text className="mb-2 text-3xl font-bold text-gray-900">Hoş geldin</Text>
         <Text className="mb-8 text-base text-gray-600">
-          BÜ e-postanı gir, sana 6 haneli giriş kodu yollayalım.
+          üniversite e-postanı gir, sana 6 haneli giriş kodu yollayalım.
         </Text>
 
         <Controller
@@ -953,7 +953,7 @@ export default function SignInScreen() {
           render={({ field: { onChange, onBlur, value } }) => (
             <TextField
               label="E-posta"
-              placeholder="ad.soyad@boun.edu.tr"
+              placeholder="ad.soyad@example.edu.tr"
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
@@ -978,7 +978,7 @@ export default function SignInScreen() {
 
 ```bash
 git add apps/mobile/app/\(auth\)/
-git commit -m "feat(mobile): add sign-in screen with BÜ email validation"
+git commit -m "feat(mobile): add sign-in screen with üniversite email validation"
 ```
 
 ---
@@ -2339,8 +2339,8 @@ Open in iOS Simulator (`i`) or Expo Go on iPhone (scan QR).
 
 Walk through:
 1. ✅ App opens to sign-in screen
-2. ✅ Email validation rejects non-BÜ emails
-3. ✅ Submitting BÜ email triggers OTP (check Inbucket: http://127.0.0.1:54324)
+2. ✅ Email validation rejects non-üniversite emails
+3. ✅ Submitting üniversite email triggers OTP (check Inbucket: http://127.0.0.1:54324)
 4. ✅ Entering correct OTP signs in
 5. ✅ Onboarding starts at name screen
 6. ✅ All 11 steps work, going back is disabled (intentional)
@@ -2718,7 +2718,7 @@ iPhone opens Expo Go and loads the app. First load takes ~30s.
 
 User walks through:
 1. Sign-in screen appears
-2. Type a BÜ email
+2. Type a üniversite email
 3. Open Inbucket on Mac (http://127.0.0.1:54324) to see OTP email
 4. Type the 6-digit code on iPhone
 5. Onboarding starts
@@ -2777,7 +2777,7 @@ Edit `.github/workflows/ci.yml`. Find the `shared-tests` job and ADD a new job a
 ```markdown
 # Tennis Challenger Mobile
 
-Expo iOS-first app for the Boğaziçi Tennis Challenger ranking system.
+Expo iOS-first app for the ChallengeBu! ranking system.
 
 ## Dev setup
 
@@ -2821,7 +2821,7 @@ git commit -m "ci(mobile): add typecheck + test job and README"
 Bu plan tamamlandığında:
 
 - **Çalışan iOS uygulaması** (Expo Go ile iPhone'da preview)
-- **Auth flow**: BÜ e-postası → OTP → session persistence
+- **Auth flow**: üniversite e-postası → OTP → session persistence
 - **11-step onboarding** wizard (persisted draft, ELO seed, profile creation)
 - **Profile + Settings** placeholder ekranları
 - **CI** mobile typecheck + test

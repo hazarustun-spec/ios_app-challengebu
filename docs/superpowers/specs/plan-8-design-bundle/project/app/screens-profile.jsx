@@ -190,7 +190,7 @@ function Badges() {
 function Stats() {
   const { nav } = useApp();
   const big = [['67%', 'Kazanma oranı'], ['26', 'Toplam maç'], ['5', 'En uzun seri'], ['+412', 'ELO kazanımı']];
-  const facts = [['pin', 'En sık kort', 'Kort 1', '14 maç'], ['spark', 'En sık format', 'BÜ Klasik', '18 maç'], ['user', 'En sık rakip', 'Berk Aydın', '5 maç'], ['flame', 'Mevcut seri', '3 galibiyet', 'devam ediyor']];
+  const facts = [['pin', 'En sık kort', 'Kort 1', '14 maç'], ['spark', 'En sık format', 'Klasik', '18 maç'], ['user', 'En sık rakip', 'Berk Aydın', '5 maç'], ['flame', 'Mevcut seri', '3 galibiyet', 'devam ediyor']];
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <NavHeader onBack={() => nav.back()} title="İstatistikler" />

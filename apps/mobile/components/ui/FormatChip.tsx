@@ -1,6 +1,6 @@
 // FormatChip — Plan 8 Phase C9.
 //
-// Small colored pill identifying the match format (BÜ Klasik / Hızlı
+// Small colored pill identifying the match format (Klasik / Hızlı
 // Tiebreak / Pro Set 8 / 3 Set Klasik). Glyph + text adopt the format brand
 // color; background is the same color tinted ~13% so the chip pops without
 // drowning out the surrounding row.

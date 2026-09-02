@@ -138,7 +138,7 @@ describe('Field', () => {
   test('renders with leading icon + suffix', () => {
     expect(
       normalize(
-        Field({ icon: 'mail', suffix: 'değiştir', value: 'ad@bogazici.edu.tr' }),
+        Field({ icon: 'mail', suffix: 'değiştir', value: 'ad@example.edu.tr' }),
       ),
     ).toMatchSnapshot();
   });

@@ -43,7 +43,7 @@ const { DesignCanvas, DCSection, DCArtboard, StatusBar, AppCtx, SCREENS } = wind
 const FLOW = [
   ['splash', 'Splash'],
   ['welcome', 'Karşılama'],
-  ['email', '1 · BÜ e-posta girişi'],
+  ['email', '1 · üniversite e-posta girişi'],
   ['otp', '2 · Sihirli bağlantı / OTP'],
   ['ob_name', '3 · Ad Soyad'],
   ['ob_phone', '4 · Telefon'],
@@ -90,7 +90,7 @@ function Board() {
   return (
     <AppCtx.Provider value={{ nav: fakeNav, theme: 'light', setTheme(){}, dark: false }}>
       <DesignCanvas>
-        <DCSection id="auth" title="Auth & Onboarding" subtitle="Giriş → 13 adımlı kayıt akışı · BÜ e-posta gating'li">
+        <DCSection id="auth" title="Auth & Onboarding" subtitle="Giriş → 13 adımlı kayıt akışı · üniversite e-posta gating'li">
           {FLOW.map(([id, label]) => {
             const meta = SCREENS[id];
             if (!meta) return null;

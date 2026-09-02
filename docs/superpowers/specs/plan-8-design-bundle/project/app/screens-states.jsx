@@ -100,7 +100,7 @@ function AuthExpired() {
   return <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
     <NavHeader title="Oturum" />
     <EmptyState tone="error" icon="lock" title="Oturum süresi doldu"
-      body="Güvenlik için yeniden giriş yapman gerekiyor. BÜ mailine yeni bir magic link gönderelim."
+      body="Güvenlik için yeniden giriş yapman gerekiyor. üniversite mailine yeni bir magic link gönderelim."
       action="Tekrar giriş yap" onAction={() => nav.reset('welcome')}
       extra={<code style={{ fontSize: 11, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>auth: TOKEN_EXPIRED · 401</code>} />
   </div>;

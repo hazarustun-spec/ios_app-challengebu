@@ -9,7 +9,7 @@
 --     -f apps/mobile/.maestro/seed/01-opponent.sql
 --
 -- Opponent email is hard-coded to match the Maestro flows; change in one place.
-\set opp_email '''rakip.test@std.bogazici.edu.tr'''
+\set opp_email '''rakip.test@example.edu.tr'''
 
 -- Minimal local auth user (LOCAL DEV ONLY — bypasses GoTrue).
 insert into auth.users (

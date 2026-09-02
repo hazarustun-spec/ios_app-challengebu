@@ -49,7 +49,7 @@ function AdminHome() {
 function AdminDisputes() {
   const { nav } = useApp();
   const disputes = [
-    { a: 'Kaan Demir', b: 'Mert Şahin', aScore: '4-2', bScore: '4-3', reason: 'Skor yanlış girilmiş', format: 'BÜ Klasik', when: '2 saat önce', note: 'Son eli ben kazandım, 4-2 olmalı.' },
+    { a: 'Kaan Demir', b: 'Mert Şahin', aScore: '4-2', bScore: '4-3', reason: 'Skor yanlış girilmiş', format: 'Klasik', when: '2 saat önce', note: 'Son eli ben kazandım, 4-2 olmalı.' },
     { a: 'Emre Yıldız', b: 'Onur Çelik', aScore: '10-8', bScore: 'Oynanmadı', reason: 'Bu maç oynanmadı', format: 'Hızlı Tiebreak', when: '5 saat önce', note: 'Hiç sahaya çıkmadık.' },
   ];
   return (

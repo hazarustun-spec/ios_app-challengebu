@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-17
 **Status:** Approved (design); pending implementation plan
-**Context:** Boğaziçi Tennis Challenger — Plan 8 polish complete (all screens live, no
+**Context:** ChallengeBu! — Plan 8 polish complete (all screens live, no
 mocks). This spec adds two competitive-gap features (in-app messaging, opponent
 suggestions) and defines the 5-step roadmap to an App Store-ready final build.
 

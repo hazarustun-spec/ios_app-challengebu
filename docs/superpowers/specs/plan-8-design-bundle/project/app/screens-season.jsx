@@ -38,7 +38,7 @@ function Season() {
         {/* finale calendar */}
         <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 10 }}>Finale Takvimi</div>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: 16 }}>
-          {[['Çeyrek Final', '16–19 Oca', 'BÜ Klasik', 'flame'], ['Yarı Final', '20–22 Oca', 'BÜ Klasik', 'bolt'], ['Final', '24–25 Oca', '3 Set Klasik', 'trophy']].map(([t, d, f, ic], i) => (
+          {[['Çeyrek Final', '16–19 Oca', 'Klasik', 'flame'], ['Yarı Final', '20–22 Oca', 'Klasik', 'bolt'], ['Final', '24–25 Oca', '3 Set Klasik', 'trophy']].map(([t, d, f, ic], i) => (
             <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderTop: i ? '1px solid var(--border)' : 'none' }}>
               <div style={{ width: 36, height: 36, borderRadius: 'var(--r-sm)', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={ic} size={18} color="var(--clay)" /></div>
               <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14.5 }}>{t}</div><div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 1 }}>{f}</div></div>

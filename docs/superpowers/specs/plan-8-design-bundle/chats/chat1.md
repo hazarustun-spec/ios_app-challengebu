@@ -6,7 +6,7 @@ _Started 2026-06-06 17:19 UTC_
 
 ## User
 
-Boğaziçi Üniversitesi tenis topluluğu için "Tennis Challenger" adında iOS uygulamasının tüm ekranlarını tasarla. React Native + Expo + NativeWind ile geliştireceğim. Tasarım dili minimalist, modern, tenisi çağrıştıran ama abartısız olmalı. Türkçe.
+üniversite tenis topluluğu için "Tennis Challenger" adında iOS uygulamasının tüm ekranlarını tasarla. React Native + Expo + NativeWind ile geliştireceğim. Tasarım dili minimalist, modern, tenisi çağrıştıran ama abartısız olmalı. Türkçe.
 
     ## Genel Tasarım Sistemi
 
@@ -20,14 +20,14 @@ Boğaziçi Üniversitesi tenis topluluğu için "Tennis Challenger" adında iOS 
     ### Auth + Onboarding (12 ekran)
     1. Splash / launch
     2. Welcome / giriş ekranı
-    3. Email girişi (sadece @boun.edu.tr ve @std.bogazici.edu.tr)
+    3. Email girişi (sadece @example.edu.tr ve @example.edu.tr)
     4. OTP / magic link bekleme ekranı
     5. Onboarding adım 1: Ad
     6. Onboarding adım 2: Soyad
     7. Onboarding adım 3: Telefon (opsiyonel)
     8. Onboarding adım 4: Pronoun (he/him, she/her, they/them, other)
     9. Onboarding adım 5: Yarışma kategorisi (Erkek / Kadın / Sadece Open) — kategori uygunluğu açıklaması ile
-    10. Onboarding adım 6: Bölüm seçimi (dropdown, ~37 BÜ bölümü) + "profilimde göster" toggle
+    10. Onboarding adım 6: Bölüm seçimi (dropdown, ~37 üniversite bölümü) + "profilimde göster" toggle
     11. Onboarding adım 7: Sınıf (Hazırlık, 1, 2, 3, 4, YL, Doktora) + "profilimde göster" toggle
     12. Onboarding adım 8: Tenis seviyesi (Başlangıç / Orta / İleri)
     13. Onboarding adım 9: Dominant el (Sağ / Sol)
@@ -51,7 +51,7 @@ Boğaziçi Üniversitesi tenis topluluğu için "Tennis Challenger" adında iOS 
     26. Yeni maç — kategori + format + tarih + saat + kort seçimi
     27. Yeni maç — rakip seçimi (direkt meydan okumada) / partner seçimi (çift maçında)
     28. Maç teklif önizleme + gönder
-    29. Format kuralları modal'ı (maça başlamadan önce zorunlu okuma — BÜ Klasik için 4 el, 15/30/40/avantaj, 3-3 voided gibi açıklama)
+    29. Format kuralları modal'ı (maça başlamadan önce zorunlu okuma — Klasik için 4 el, 15/30/40/avantaj, 3-3 voided gibi açıklama)
     30. **Aktif maç skor giriş ekranı** — en kritik ekran. Her el sonrası iki oyuncunun da skor girdiği, realtime senkronizasyon, uyumsuzluk uyarısı, "Maçı Bitir" butonu (3-3 durumunda)
     31. Maç sonu özeti — kazanan, skor detayı, tahmini ELO değişimi, "Onayla" / "İtiraz Et"
     32. İtiraz formu33. Geçmiş maçlar listesi + detay
@@ -117,9 +117,9 @@ Questions answered:
 - delivery_format: Tıklanabilir prototip (gerçek navigasyon, akışları test edebilirsin)
 - build_strategy: Önce tüm ana akışların 'iskelet' hali, sonra detaylandır
 - rounding: 2
-- logo: boğaziçi tenis topluluğu adına yapmıyoruz. ben özel bir developer olarak yapıyorum. logo yok isim yazma.
+- logo: üniversite tenis topluluğu adına yapmıyoruz. ben özel bir developer olarak yapıyorum. logo yok isim yazma.
 - elo_rules: ├────────────────┼────────────────────────────────────────┤
-    │ BÜ Klasik      │ 4-0→1.5×, 4-1→1.3×, 4-2→1.1×, 4-3→1.0× │
+    │ Klasik      │ 4-0→1.5×, 4-1→1.3×, 4-2→1.1×, 4-3→1.0× │
     ├────────────────┼────────────────────────────────────────┤                 │ Hızlı Tiebreak │ 10-0→1.5×, 10-5→1.2×, 10-8→1.0×        │
     ├────────────────┼────────────────────────────────────────┤
     │ Pro Set 8      │ 8-0→1.5×, 8-4→1.2×, 9-8 tiebreak→1.0×  │
@@ -129,7 +129,7 @@ Questions answered:
                                                                                   K-factor: İlk 10 maç K=40 (hızlı kalibrasyon), 10+ maç K=20
 
     Sezon Finali Formatı                                                   
-      - Çeyrek + yarı final: BÜ Klasik
+      - Çeyrek + yarı final: Klasik
       - Final: 3 Set Klasik (ATP standardı, ciddi turnuva hissi)
 
     Sezon Takvimi (boşluksuz, son 10 gün finale window)                                                                                                   ┌───────┬─────────────────┬───────────────┐
@@ -672,11 +672,11 @@ _[tool: eval_js]_
 
 _[tool: show_html]_
 
-Oldu — yeşil bloğun üstündeki başlık, alt metin, "BÜ TENİS · LADDER" etiketi ve yıldız artık beyaz. Daha temiz, kontrastlı ve referans havasında duruyor.
+Oldu — yeşil bloğun üstündeki başlık, alt metin, "KAMPÜS TENİS · LADDER" etiketi ve yıldız artık beyaz. Daha temiz, kontrastlı ve referans havasında duruyor.
 
 ## User
 
-@boun.edu.tr diye bir mail uzatısı yok. yalnızca std.bogazici.edu.tr, bogazici.edu.tr,
+@example.edu.tr diye bir mail uzatısı yok. yalnızca example.edu.tr, example.edu.tr,
 
 ## Assistant
 
@@ -690,17 +690,17 @@ _[tool: eval_js]_
 
 _[tool: show_html]_
 
-boun.edu.tr'yi kaldırdım — artık yalnızca **@std.bogazici.edu.tr** ve **@bogazici.edu.tr** kabul ediliyor (regex, ipucu metni, hızlı-doldur çipleri ve karşılama metni dahil).
+example.edu.tr'yi kaldırdım — artık yalnızca **@example.edu.tr** ve **@example.edu.tr** kabul ediliyor (regex, ipucu metni, hızlı-doldur çipleri ve karşılama metni dahil).
 
 _[tool: str_replace_edit]_
 
-Tüm Boğaziçi uzantılarını destekliyorum: öğrenci, akademisyen/personel, yarı zamanlı, emekli ve mezun.Artık şu uzantıların tümü kabul ediliyor:
+Tüm üniversite uzantılarını destekliyorum: öğrenci, akademisyen/personel, yarı zamanlı, emekli ve mezun.Artık şu uzantıların tümü kabul ediliyor:
 
-- **@std.bogazici.edu.tr** — Öğrenciler
-- **@bogazici.edu.tr** — Akademisyenler & Personel
-- **@pt.bogazici.edu.tr** — Yarı zamanlı akademik personel/araştırmacılar
-- **@retired.bogazici.edu.tr** — Emekli akademisyenler
-- **@alumni.bogazici.edu.tr** — Mezunlar
+- **@example.edu.tr** — Öğrenciler
+- **@example.edu.tr** — Akademisyenler & Personel
+- **@pt.example.edu.tr** — Yarı zamanlı akademik personel/araştırmacılar
+- **@retired.example.edu.tr** — Emekli akademisyenler
+- **@alumni.example.edu.tr** — Mezunlar
 
 Doğrulama regex'i hepsini kapsıyor; hızlı-doldur çiplerinde en yaygın üçünü (öğrenci, personel, mezun) bıraktım, ipucu metnini de güncelledim.
 

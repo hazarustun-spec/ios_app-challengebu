@@ -4,7 +4,7 @@
 
 **Goal:** Build the mobile UI for the second half of the match flow — after a request is accepted (Plan 4a), Alice and Bob can see the resulting active match, start play, enter scores el-by-el per format, see live mismatch detection when their inputs differ, confirm the final score (triggering ELO update server-side), and either raise a dispute mid-flow. Match history also lands in this plan so users can browse their past matches. End-to-end verifiable in iOS Simulator against the local Plan 2 backend.
 
-**Architecture:** Active matches surface as a new section in the existing Maçlar tab via a TanStack Query hook (`useActiveMatches`). The match detail screen for `awaiting_confirmation` status replaces the request-detail screen and routes to a format-specific score entry screen (BÜ Klasik, Hızlı Tiebreak, Pro Set 8, 3 Set Klasik — each with its own component). A Zustand store (`score-entry-store`) keeps local play state per match (current el, running counts) so the user can leave + come back. Score submission goes through the Plan 2 `submit-match-score` Edge Function; when both players' submissions match, the match moves forward; when they differ, a mismatch banner appears in both detail screens. Confirm flow calls `confirm-match` and reads the resulting `matches.rating_after_*` to show ELO delta. Dispute flow calls `raise-dispute`. Match history is a paginated TanStack Query against the `matches` table joined to profiles + courts. UI continues with NativeWind placeholder per Plan 8 design redo agreement.
+**Architecture:** Active matches surface as a new section in the existing Maçlar tab via a TanStack Query hook (`useActiveMatches`). The match detail screen for `awaiting_confirmation` status replaces the request-detail screen and routes to a format-specific score entry screen (Klasik, Hızlı Tiebreak, Pro Set 8, 3 Set Klasik — each with its own component). A Zustand store (`score-entry-store`) keeps local play state per match (current el, running counts) so the user can leave + come back. Score submission goes through the Plan 2 `submit-match-score` Edge Function; when both players' submissions match, the match moves forward; when they differ, a mismatch banner appears in both detail screens. Confirm flow calls `confirm-match` and reads the resulting `matches.rating_after_*` to show ELO delta. Dispute flow calls `raise-dispute`. Match history is a paginated TanStack Query against the `matches` table joined to profiles + courts. UI continues with NativeWind placeholder per Plan 8 design redo agreement.
 
 **Tech Stack:** Expo Router 4, TanStack Query v5, Zustand 5, NativeWind 4, `@tennis/shared` schemas reused where applicable, bun:test for store + helper unit tests.
 
@@ -23,7 +23,7 @@
 **Known limitations (documented in code, fixed later):**
 - Mismatch detection requires manual re-pull (pull-to-refresh) since realtime subscriptions land in Plan 7
 - 48-hour auto-confirm cron does NOT apply ELO (Plan 2 limitation); user must manually confirm in-app for ELO to apply
-- "Match Voided" (3-3 BÜ Klasik) flow allows both players to mutually exit, but no shared "tap-to-void" coordination — both must press finish button in their own UI
+- "Match Voided" (3-3 Klasik) flow allows both players to mutually exit, but no shared "tap-to-void" coordination — both must press finish button in their own UI
 - All formats trust the user to count points (15/30/40/advantage). UI shows running el count, NOT live point count — keeping it dumb on purpose per spec "amateur match, no per-point tracking"
 
 ---
@@ -194,7 +194,7 @@ interface Props {
 }
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik',
+  bu_klasik: 'Klasik',
   hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8',
   '3set_klasik': '3 Set Klasik',
@@ -478,7 +478,7 @@ import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useAuthStore } from '../../stores/auth-store';
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
+  bu_klasik: 'Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8', '3set_klasik': '3 Set Klasik',
 };
 const CATEGORY_LABELS: Record<string, string> = {
@@ -720,7 +720,7 @@ interface Props {
 
 const RULES: Record<string, { title: string; bullets: string[] }> = {
   bu_klasik: {
-    title: 'BÜ Klasik (~60 dk)',
+    title: 'Klasik (~60 dk)',
     bullets: [
       'Maç en fazla 1 saat sürer.',
       'İlk 4 eli kazanan maçı alır.',
@@ -977,7 +977,7 @@ git commit -m "feat(mobile): add useSubmitMatchScore mutation"
 
 ## Phase D — Format-specific score entry
 
-### Task 9: BÜ Klasik score entry component + screen
+### Task 9: Klasik score entry component + screen
 
 **Files:**
 - Create: `apps/mobile/components/matches/score-entry/BuKlasikScoreEntry.tsx`
@@ -1223,7 +1223,7 @@ import { Alert, ActivityIndicator, Text, View } from 'react-native';
 mkdir -p /Users/hazarustun/Desktop/VIBE\ CODING/tennis-challenger/apps/mobile/app/play
 mkdir -p /Users/hazarustun/Desktop/VIBE\ CODING/tennis-challenger/apps/mobile/components/matches/score-entry
 git add apps/mobile/app/play/ apps/mobile/components/matches/score-entry/
-git commit -m "feat(mobile): BÜ Klasik el-by-el score entry"
+git commit -m "feat(mobile): Klasik el-by-el score entry"
 ```
 
 ---
@@ -1859,7 +1859,7 @@ import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useAuthStore } from '../../../stores/auth-store';
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
+  bu_klasik: 'Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8', '3set_klasik': '3 Set Klasik',
 };
 
@@ -2348,7 +2348,7 @@ As Alice:
 1. ✅ Maçlar → Aktif tab shows the match
 2. ✅ Tap card → detail screen, status "Onay bekliyor", "Maça başla / Skor gir" button
 3. ✅ Tap button → format rules modal appears, read, "Anladım, başla"
-4. ✅ BÜ Klasik el-by-el entry — tap "Ben" / "Rakip" for each el
+4. ✅ Klasik el-by-el entry — tap "Ben" / "Rakip" for each el
 5. ✅ Submit at 4 els → returns to detail, "skor uyuşmazlığı olabilir" hint if Bob hasn't submitted
 
 As Bob (sign out + in):
@@ -2396,7 +2396,7 @@ Bu plan tamamlandığında:
 - **Aktif maçlar tab'i** Maçlar ekranında — awaiting_confirmation / disputed maçlar görünür
 - **Maç detay ekranı** match request + active match için tek bileşen — status'a göre branch
 - **Format kuralları modal'ı** her formatta zorunlu okuma
-- **4 format için skor giriş ekranı** — BÜ Klasik el-by-el, Hızlı Tiebreak point input, Pro Set 8 game + tiebreak input, 3 Set Klasik per-set input
+- **4 format için skor giriş ekranı** — Klasik el-by-el, Hızlı Tiebreak point input, Pro Set 8 game + tiebreak input, 3 Set Klasik per-set input
 - **Skor gönderim** Plan 2 `submit-match-score` Edge Function'a — mismatch detection backend tarafında
 - **Onay ekranı** ayrı route + ELO delta display sonrasında
 - **İtiraz formu** kısa açıklama ile

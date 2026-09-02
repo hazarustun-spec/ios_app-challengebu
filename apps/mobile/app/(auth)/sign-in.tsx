@@ -3,16 +3,16 @@
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-auth.jsx
 // `function EmailScreen()` lines 51-75.
 //
-// User enters a BÜ-eligible e-mail, accepts the KVKK + privacy notice, then
-// taps "Kod gönder" — Supabase sends a magic-link + 6-digit OTP and we route
-// to /(auth)/otp with the email param for verification.
+// User enters a .edu.tr university e-mail, accepts the KVKK + privacy notice,
+// then taps "Kod gönder" — Supabase sends a magic-link + 6-digit OTP and we
+// route to /(auth)/otp with the email param for verification.
 
 import { getOtpOptions } from '@tennis/shared';
 import {
-  BOUN_EMAIL_ERROR_TR,
   REVIEW_FIXED_CODE,
+  UNIVERSITY_EMAIL_ERROR_TR,
   isReviewEmail,
-  validateBouniMail,
+  validateUniversityEmail,
 } from '@tennis/shared/schemas';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -37,8 +37,6 @@ import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 import { userMessage } from '../../lib/user-message';
 
-const QUICK_DOMAINS = ['@std.bogazici.edu.tr', '@bogazici.edu.tr', '@alumni.bogazici.edu.tr'];
-
 export default function SignIn() {
   const setSession = useAuthStore((s) => s.setSession);
   const [email, setEmail] = useState('');
@@ -47,7 +45,7 @@ export default function SignIn() {
 
   const trimmed = email.trim();
   const dirty = trimmed.length > 3;
-  const valid = validateBouniMail(trimmed);
+  const valid = validateUniversityEmail(trimmed);
   const isReview = isReviewEmail(trimmed);
   const canSubmit = valid && kvkkAccepted && !sending;
 
@@ -123,52 +121,21 @@ export default function SignIn() {
         <Field
           icon="mail"
           type="email"
-          placeholder="Öğrenci ya da mezun e-postan"
+          placeholder="Üniversite e-postan"
           value={email}
           onChange={setEmail}
           autoFocus
           big
-          // Deliberately not `error`: an address from outside the university is
-          // the membership rule doing its job, not a failure to fix. Red styling
-          // reads as a broken app to anyone who tries their own address first.
+          // Deliberately not `error`: an address from outside the accepted set
+          // is the membership rule doing its job, not a failure to fix. Red
+          // styling reads as a broken app to anyone who tries their own address
+          // first.
           hint={
             dirty && !valid
-              ? BOUN_EMAIL_ERROR_TR
-              : 'Öğrenci, akademisyen, emekli ve mezun hesapları kabul edilir.'
+              ? UNIVERSITY_EMAIL_ERROR_TR
+              : '.edu.tr uzantılı üniversite e-postaları kabul edilir.'
           }
         />
-
-        <View
-          style={{
-            marginTop: 18,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-          }}
-        >
-          {QUICK_DOMAINS.map((d) => (
-            <Pressable
-              key={d}
-              onPress={() => setEmail((cur) => (cur.split('@')[0] || 'ad.soyad') + d)}
-              style={{
-                paddingHorizontal: 11,
-                paddingVertical: 7,
-                borderRadius: 9999,
-                backgroundColor: colors.claySofter,
-                borderWidth: 1,
-                borderColor: colors.claySoft,
-              }}
-              accessibilityRole="button"
-            >
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 12.5, color: colors.clayText }}
-              >
-                {d}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
 
         {/* Dev-only component gallery link — preserved from previous sign-in. */}
         {__DEV__ && (

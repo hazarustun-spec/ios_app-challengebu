@@ -20,7 +20,7 @@ var KEY =
 var OPP_EMAIL =
   typeof OPPONENT_EMAIL !== 'undefined'
     ? OPPONENT_EMAIL
-    : 'rakip.test@std.bogazici.edu.tr';
+    : 'rakip.test@example.edu.tr';
 
 var H = {
   apikey: KEY,

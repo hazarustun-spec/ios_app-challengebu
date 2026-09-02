@@ -10,10 +10,10 @@
 # routes new users to /(onboarding)/name). Pair with onboarding.yaml to finish
 # account setup.
 #
-# Run:  maestro test -e EMAIL=alice@std.bogazici.edu.tr .maestro/login.yaml
+# Run:  maestro test -e EMAIL=alice@example.edu.tr .maestro/login.yaml
 appId: app.challengebu.ios
 env:
-  EMAIL: "alice@std.bogazici.edu.tr"
+  EMAIL: "alice@example.edu.tr"
 ---
 - launchApp:
     clearState: true
@@ -26,7 +26,7 @@ env:
 
 # Email screen.
 - assertVisible: "E-postanı gir"
-- tapOn: "ad.soyad@std.bogazici.edu.tr"
+- tapOn: "ad.soyad@example.edu.tr"
 - inputText: ${EMAIL}
 - hideKeyboard
 

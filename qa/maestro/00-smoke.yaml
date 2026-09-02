@@ -1,5 +1,5 @@
 # Smoke test: confirms Maestro can launch the app + capture the first screen.
-appId: tr.edu.boun.tennischallenger
+appId: app.challengebu.ios
 ---
 - launchApp:
     clearState: true

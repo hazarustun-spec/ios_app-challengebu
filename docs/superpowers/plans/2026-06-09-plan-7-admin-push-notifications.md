@@ -9,7 +9,7 @@
 **Tech Stack:** Expo SDK 56 (`expo-notifications` newly installed via `bunx expo install`), `@supabase/supabase-js` realtime channels, TanStack Query v5, Expo Router 4 (typed routes — every new route is declared as a file before being referenced), NativeWind 4, Deno 1.x for the two new Edge Functions, `bun:test` not used in this plan (no new shared package code), `deno test` for backend.
 
 **Spec reference:** `docs/superpowers/specs/2026-06-06-tennis-challenger-design.md`
-- Section 7.1 — Admin yapısı (tek admin, role-based, BÜ mail istisnası)
+- Section 7.1 — Admin yapısı (tek admin, role-based, üniversite mail istisnası)
 - Section 7.2 — Admin paneli (6 ekran)
 - Section 7.3 — Bildirim kategorileri (8 kategori, default ON/OFF)
 - Section 7.4 — In-app bildirim merkezi
@@ -185,12 +185,12 @@ Replace it with:
 ]
 ```
 
-Also, inside the `ios` object (currently `{ "supportsTablet": false, "bundleIdentifier": "tr.edu.boun.tennischallenger" }`), add `infoPlist` keys + `usesAppleSignIn: false` is unrelated. Replace the `ios` object with:
+Also, inside the `ios` object (currently `{ "supportsTablet": false, "bundleIdentifier": "app.challengebu.ios" }`), add `infoPlist` keys + `usesAppleSignIn: false` is unrelated. Replace the `ios` object with:
 
 ```json
 "ios": {
   "supportsTablet": false,
-  "bundleIdentifier": "tr.edu.boun.tennischallenger",
+  "bundleIdentifier": "app.challengebu.ios",
   "infoPlist": {
     "UIBackgroundModes": ["remote-notification"]
   }
@@ -1440,8 +1440,8 @@ The user will replace the placeholder email in a follow-up commit before pushing
 ```sql
 -- Initial admin seed.
 --
--- Replace the placeholder email below with the operator's BÜ email or
--- personal email (admin accounts are exempt from the BÜ domain restriction
+-- Replace the placeholder email below with the operator's üniversite email or
+-- personal email (admin accounts are exempt from the .edu.tr domain restriction
 -- per spec 7.1) before deploying to staging or production.
 --
 -- Re-running this migration is safe: it only flips the role to 'admin'
@@ -3545,18 +3545,18 @@ xcrun simctl openurl booted "exp://$IP:8081"
 
 In the Simulator app, do the following and check each item:
 
-1. **Sign-up + onboarding** — create `you+admin@boun.edu.tr`, finish onboarding. Push permission prompt appears.
+1. **Sign-up + onboarding** — create `you+admin@example.edu.tr`, finish onboarding. Push permission prompt appears.
 2. **Promote yourself** — connect to `psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres"` and run:
 
 ```sql
-update public.profiles set role = 'admin' where email = 'you+admin@boun.edu.tr';
+update public.profiles set role = 'admin' where email = 'you+admin@example.edu.tr';
 ```
 
    Cold-reload the simulator. Settings → "Admin Paneli" entry appears.
 3. **Bell badge** — open admin → publish a test announcement with "sadece aktif oyunculara" + "push gönder" off. Return to Maçlar tab: 🔔 shows `1`.
 4. **Tap bell → mark read** — open notifications screen. Tap the row → marks read. Badge goes to 0.
 5. **Mark all read** — publish 3 more announcements, return to bell, tap "Tümünü okundu işaretle". Badge clears.
-6. **Realtime UI update** — sign up a second account `bob@boun.edu.tr` on a second simulator (or use `xcrun simctl boot` for a second device). Bob sends Alice a match request. Alice's Maçlar tab refreshes the Gelen count without manual pull-to-refresh.
+6. **Realtime UI update** — sign up a second account `bob@example.edu.tr` on a second simulator (or use `xcrun simctl boot` for a second device). Bob sends Alice a match request. Alice's Maçlar tab refreshes the Gelen count without manual pull-to-refresh.
 7. **Score submission realtime** — Bob submits a score in `play/[matchId]`. Alice's screen flips into the MismatchBanner state automatically.
 8. **Dispute admin flow** — Alice raises a dispute. As admin (the first account), open admin → Bekleyen İtirazlar. Tap → resolve with "Skor A doğru". Both players see the match flip to `confirmed`.
 9. **User admin** — admin → Kullanıcı Yönetimi → Bob → "Askıya al" applies (verify in `psql`).

@@ -27,7 +27,7 @@ platform :ios do
 
   # Push TEXT metadata only (name/subtitle/description/keywords/promo/release
   # notes/review notes) to App Store Connect. Deliberately skips screenshots and
-  # the binary: screenshots must be regenerated after the "BÜ Klasik" rename and
+  # the binary: screenshots must be regenerated after any UI copy rename and
   # uploaded separately, and the binary ships via EAS. No submission is made.
   #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane metadata
   lane :metadata do

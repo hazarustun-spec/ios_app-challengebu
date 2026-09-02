@@ -1,46 +1,33 @@
 import { describe, expect, test } from 'bun:test';
 import {
-  ALLOWED_BOUN_DOMAINS,
   isReviewEmail,
   onboardingSchema,
-  validateBouniMail,
+  validateUniversityEmail,
 } from '../../src/schemas/onboarding.js';
 
-describe('BÜ email validation', () => {
-  test('accepts @std.bogazici.edu.tr (students)', () => {
-    expect(validateBouniMail('ayse.fatma@std.bogazici.edu.tr')).toBe(true);
+describe('university email validation (.edu.tr gate)', () => {
+  test('accepts a plain .edu.tr address', () => {
+    expect(validateUniversityEmail('someone@example.edu.tr')).toBe(true);
   });
 
-  test('accepts @bogazici.edu.tr (faculty/staff)', () => {
-    expect(validateBouniMail('prof@bogazici.edu.tr')).toBe(true);
+  test('accepts a subdomain under .edu.tr', () => {
+    expect(validateUniversityEmail('alum@alumni.example.edu.tr')).toBe(true);
   });
 
-  test('accepts @pt.bogazici.edu.tr (part-time)', () => {
-    expect(validateBouniMail('pt@pt.bogazici.edu.tr')).toBe(true);
+  test('accepts case-insensitively', () => {
+    expect(validateUniversityEmail('Foo@EXAMPLE.EDU.TR')).toBe(true);
   });
 
-  test('accepts @retired.bogazici.edu.tr (retired)', () => {
-    expect(validateBouniMail('retired@retired.bogazici.edu.tr')).toBe(true);
+  test('rejects a generic consumer address', () => {
+    expect(validateUniversityEmail('user@gmail.com')).toBe(false);
   });
 
-  test('accepts @alumni.bogazici.edu.tr (alumni)', () => {
-    expect(validateBouniMail('alum@alumni.bogazici.edu.tr')).toBe(true);
+  test('rejects a lookalike that appends more after .edu.tr', () => {
+    expect(validateUniversityEmail('user@example.edu.tr.fake.com')).toBe(false);
   });
 
-  test('rejects @boun.edu.tr (deprecated)', () => {
-    expect(validateBouniMail('ahmet.veli@boun.edu.tr')).toBe(false);
-  });
-
-  test('rejects gmail.com', () => {
-    expect(validateBouniMail('user@gmail.com')).toBe(false);
-  });
-
-  test('rejects subdomain spoof', () => {
-    expect(validateBouniMail('user@bogazici.edu.tr.fake.com')).toBe(false);
-  });
-
-  test('case insensitive', () => {
-    expect(validateBouniMail('Foo@STD.BOGAZICI.EDU.TR')).toBe(true);
+  test('rejects .edu without .tr', () => {
+    expect(validateUniversityEmail('user@example.edu')).toBe(false);
   });
 
   test('isReviewEmail matches the App Store review mailbox', () => {
@@ -51,18 +38,12 @@ describe('BÜ email validation', () => {
     expect(isReviewEmail('  APPREVIEW42@Proton.Me  ')).toBe(true);
   });
 
-  test('isReviewEmail is false for a normal BÜ email', () => {
-    expect(isReviewEmail('ayse.fatma@std.bogazici.edu.tr')).toBe(false);
+  test('isReviewEmail is false for a normal university address', () => {
+    expect(isReviewEmail('someone@example.edu.tr')).toBe(false);
   });
 
-  test('ALLOWED_BOUN_DOMAINS has 5 entries', () => {
-    expect(ALLOWED_BOUN_DOMAINS).toEqual([
-      'std.bogazici.edu.tr',
-      'bogazici.edu.tr',
-      'pt.bogazici.edu.tr',
-      'retired.bogazici.edu.tr',
-      'alumni.bogazici.edu.tr',
-    ]);
+  test('review mailbox passes the university-email gate as well', () => {
+    expect(validateUniversityEmail('appreview42@proton.me')).toBe(true);
   });
 });
 
@@ -127,12 +108,16 @@ describe('onboardingSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  test('rejects pronoun=other without custom text', () => {
+  test('accepts pronoun=other without custom text (prefer-not-to-say path)', () => {
+    // The wizard labels "other" as "Diğer / belirtmek istemiyorum" and offers
+    // no follow-up text field; pronounCustom stays optional so this path can
+    // finish sign-up. Guards fix(onboarding): let "prefer not to say" finish
+    // sign-up (commit 9a2d2f0) from silently regressing.
     const result = onboardingSchema.safeParse({
       ...validInput,
       pronoun: 'other',
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   test('rejects whitespace-only firstName', () => {

@@ -44,7 +44,7 @@ Backend setup is via the Supabase Studio dashboard (no migration). Do this once 
 
 From a local Expo client:
 1. Tap "Üniversite e-postanla başla" on welcome
-2. Enter a valid `@std.bogazici.edu.tr` / `@bogazici.edu.tr` / etc. address
+2. Enter a valid `@example.edu.tr` / `@example.edu.tr` / etc. address
 3. Check Mailpit (local dev) at `http://127.0.0.1:54324` — confirm the mail has both the 6-digit code AND a tappable link
 4. Enter the code in the app's OTP screen → confirm sign-in succeeds
 

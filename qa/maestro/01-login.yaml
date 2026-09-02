@@ -1,12 +1,14 @@
 # Login via email OTP (account A = alice) → lands on onboarding (new user).
-appId: tr.edu.boun.tennischallenger
+# NOTE: the QUICK_DOMAINS chip row was removed from the sign-in screen; the
+# `tapOn` on a domain chip no longer applies. inputText writes into the
+# focused email field on its own.
+appId: app.challengebu.ios
 env:
-  EMAIL: "alice@std.bogazici.edu.tr"
+  EMAIL: "alice@example.edu.tr"
 ---
 - launchApp:
     clearState: true
 - assertVisible: "E-postanı gir"
-- tapOn: "ad.soyad@std.bogazici.edu.tr"
 - inputText: ${EMAIL}
 - hideKeyboard
 # KVKK checkbox circle is at the far LEFT of the consent row (tapping the row

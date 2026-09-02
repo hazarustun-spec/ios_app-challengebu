@@ -54,15 +54,15 @@ sayısında (yaklaşan + gelen teklif + gönderilen teklif + açık ilan, tek se
 ### 2. Marka kararı geç verildi
 
 - `a34fff4 rebrand: Tennis Challenger -> ChallengeBu!`
-- `d64245e rebrand: bundle id -> app.challengebu.ios (was tr.edu.boun.tennischallenger)`
-- `c1abf30 fix(review): de-Boğaziçi metadata+UI, populated review seed, App Store audit`
+- `d64245e rebrand: bundle id -> app.challengebu.ios (was app.challengebu.ios)`
+- `c1abf30 fix(review): de-üniversite metadata+UI, populated review seed, App Store audit`
 
 Bundle ID değişimi pahalı olan. Asıl bedel üniversite bağı: App Store reddinin
 gerekçelerinden biri oldu ve **ekran görüntüleri 5 hafta sonra hâlâ
 yenilenmedi.** `apps/mobile/fastlane/Fastfile:30` bunu itiraf ediyor:
 
 ```ruby
-# screenshots must be regenerated after the "BÜ Klasik" rename and
+# screenshots must be regenerated after the "Klasik" rename and
 # uploaded separately
 ```
 

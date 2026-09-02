@@ -1,6 +1,6 @@
 // Fetches the latest 6-digit OTP for the EMAIL account from local Mailpit
 // (Supabase local mail catcher on :54324) and exposes it as output.otp.
-var inbox = typeof EMAIL !== 'undefined' ? EMAIL : 'alice@std.bogazici.edu.tr';
+var inbox = typeof EMAIL !== 'undefined' ? EMAIL : 'alice@example.edu.tr';
 var listRes = http.get('http://127.0.0.1:54324/api/v1/messages');
 var data = json(listRes.body);
 var msgs = (data.messages || []).filter(function (m) {

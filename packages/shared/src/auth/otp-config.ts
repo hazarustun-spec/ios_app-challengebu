@@ -17,7 +17,7 @@ export const OTP_LENGTH = 6;
 export const OTP_RESEND_COOLDOWN_SEC = 60;
 
 export interface SendOtpInput {
-  /** User's BÜ e-posta. Validated against the 5 accepted domains client-side before calling this. */
+  /** User's university e-mail. Validated against the .edu.tr gate client-side before calling this. */
   email: string;
   /** Include emailRedirectTo so the mail also carries a magic-link deep link. */
   withMagicLink?: boolean;
@@ -33,7 +33,7 @@ export interface OtpOptions {
 /**
  * Build the `options` payload for `supabase.auth.signInWithOtp`.
  *
- * Returns a shouldCreateUser-true config so the BÜ-email-gated app can do
+ * Returns a shouldCreateUser-true config so the email-gated app can do
  * sign-up + sign-in in a single screen (no separate "create account" flow).
  * Optionally embeds the magic-link redirect for clients that prefer the link.
  */

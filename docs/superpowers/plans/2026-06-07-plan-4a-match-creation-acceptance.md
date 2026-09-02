@@ -507,7 +507,7 @@ interface Props {
 }
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik',
+  bu_klasik: 'Klasik',
   hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8',
   '3set_klasik': '3 Set Klasik',
@@ -962,7 +962,7 @@ export type MatchFormat = 'bu_klasik' | 'hizli_tiebreak' | 'pro_set_8' | '3set_k
 const FORMATS: { value: MatchFormat; label: string; duration: string; description: string }[] = [
   {
     value: 'bu_klasik',
-    label: 'BÜ Klasik',
+    label: 'Klasik',
     duration: '~60 dk',
     description: '4 el alan kazanır. 3-3 olursa maç yapılmamış sayılır.',
   },
@@ -1724,7 +1724,7 @@ import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
 import { useAuthStore } from '../../stores/auth-store';
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
+  bu_klasik: 'Klasik', hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8', '3set_klasik': '3 Set Klasik',
 };
 const CATEGORY_LABELS: Record<string, string> = {
@@ -2048,8 +2048,8 @@ xcrun simctl openurl booted "exp://192.168.1.7:8081"
 - [ ] **Step 4: Manual verification on Simulator**
 
 Two test accounts needed. Create both via the in-app sign-up flow:
-1. Sign up `alice@boun.edu.tr` → onboarding → home
-2. Sign out → sign up `bob@boun.edu.tr` → onboarding → home
+1. Sign up `alice@example.edu.tr` → onboarding → home
+2. Sign out → sign up `bob@example.edu.tr` → onboarding → home
 
 Now test the full Plan 4a flow:
 
@@ -2057,7 +2057,7 @@ Now test the full Plan 4a flow:
 1. ✅ Maçlar tab opens, "Gelen teklif yok" empty state
 2. ✅ Tap + FAB → create-match modal opens
 3. ✅ Select "Meydan oku", search "Alice", select Alice
-4. ✅ Pick category (erkek_tek), format (BÜ Klasik), court (Kort 1), tomorrow date, 19:00 time
+4. ✅ Pick category (erkek_tek), format (Klasik), court (Kort 1), tomorrow date, 19:00 time
 5. ✅ Submit → returns to inbox, "Atılan" tab shows pending request
 
 **Sign out, sign in as Alice:**

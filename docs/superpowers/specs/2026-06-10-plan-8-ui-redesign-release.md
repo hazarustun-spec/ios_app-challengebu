@@ -237,7 +237,7 @@ Button (6 variant + 4 state), Field, SearchBar, Segmented, Toggle, CheckBox, Car
 ### Grup 3 — Auth & Onboarding (15 ekran)
 1. splash — BallMark logo + 3 pulsing dots, 1.5s auto-replace welcome
 2. welcome — Lime hero kart + doodle (Cloud/Squiggle/Star/Dots) + "Üniversite e-postanla başla"
-3. email — Field big + BÜ regex inline validation + 3 quick-tap domain chip + **KVKK checkbox** (yeni)
+3. email — Field big + üniversite regex inline validation + 3 quick-tap domain chip + **KVKK checkbox** (yeni)
 4. otp — 6 box numerik input + 60s "Tekrar gönder" countdown + "Sihirli bağlantıyı kullandım" alt CTA
 5. ob_name — Ad + Soyad
 6. ob_phone — Telefon (opsiyonel, 🇹🇷 +90 suffix)
@@ -475,9 +475,9 @@ grant execute on function public.admin_cron_status(integer) to authenticated;
 1. App kaydı oluşturulur (yeni app, Türkçe primary)
 2. Metadata:
    - App adı: Tennis Challenger
-   - Subtitle: BÜ tenis ladder + sezon
-   - Description: 1000+ kelime Türkçe (BÜ topluluğu, ELO sistemi, sezon yapısı vurgular)
-   - Keywords: tenis, boğaziçi, üniversite, ELO, ladder, sezon
+   - Subtitle: üniversite tenis ladder + sezon
+   - Description: 1000+ kelime Türkçe (üniversite topluluğu, ELO sistemi, sezon yapısı vurgular)
+   - Keywords: tenis, üniversite, üniversite, ELO, ladder, sezon
    - Category: Sports primary, Social Networking secondary
    - Age rating: 4+
 3. Screenshots:
@@ -496,8 +496,8 @@ grant execute on function public.admin_cron_status(integer) to authenticated;
 
 ### App Store Submission
 1. "App Privacy" form: data collection (email, name, profile photo, match history) — clear opt-in
-2. "App Review Information" — demo hesap (test@std.bogazici.edu.tr) + erişim talimatı
-3. Sign-in with Apple? **Hayır** — magic link only (BÜ email gating zaten yapıyor)
+2. "App Review Information" — demo hesap (test@example.edu.tr) + erişim talimatı
+3. Sign-in with Apple? **Hayır** — magic link only (üniversite email gating zaten yapıyor)
 4. Çevirmenli açıklamalar (Türkçe primary, İngilizce subtitle)
 5. Submission → review (~3-5 gün)
 

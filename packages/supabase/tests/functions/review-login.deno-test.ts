@@ -55,7 +55,7 @@ Deno.test('review-login: wrong code is rejected', async () => {
 
 Deno.test('review-login: non-review email is rejected even with the correct code', async () => {
   const { status } = await invokeFunction('review-login', {
-    email: 'someone@std.bogazici.edu.tr',
+    email: 'someone@example.edu.tr',
     code: REVIEW_CODE,
   });
   assertEquals(status, 403);

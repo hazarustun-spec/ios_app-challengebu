@@ -100,7 +100,7 @@ export default function MatchResult() {
 
   const match = matchQ.data ?? null;
 
-  // Real format · date line (replaces the old hardcoded "BÜ Klasik · Bugün").
+  // Real format · date line (replaces the old hardcoded "Klasik · Bugün").
   const metaLine = match
     ? `${formatByKey(DB_TO_UI_FORMAT[match.format] ?? 'klasik').name} · ${formatDateLabel(match.played_at)}`
     : '';

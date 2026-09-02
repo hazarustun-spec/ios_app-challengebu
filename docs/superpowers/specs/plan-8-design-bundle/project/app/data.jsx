@@ -16,7 +16,7 @@ const CATEGORIES = [
 const COURTS = ['Kort 1', 'Kort 2', 'Bebek Kort'];
 
 const FORMATS = [
-  { key: 'klasik',   name: 'BÜ Klasik',     tag: '4 El',     desc: '4 el, 15/30/40/avantaj. 3-3 olursa maç berabere (voided).', color: 'var(--ac-navy)',
+  { key: 'klasik',   name: 'Klasik',     tag: '4 El',     desc: '4 el, 15/30/40/avantaj. 3-3 olursa maç berabere (voided).', color: 'var(--ac-navy)',
     mult: '4-0 → 1.5×  ·  4-1 → 1.3×  ·  4-2 → 1.1×  ·  4-3 → 1.0×', mark: 'spark' },
   { key: 'tiebreak', name: 'Hızlı Tiebreak', tag: '10 Sayı',  desc: 'Tek tiebreak, 10 sayıya. Hızlı ve keskin.', color: 'var(--ac-blue)',
     mult: '10-0 → 1.5×  ·  10-5 → 1.2×  ·  10-8 → 1.0×', mark: 'bolt' },

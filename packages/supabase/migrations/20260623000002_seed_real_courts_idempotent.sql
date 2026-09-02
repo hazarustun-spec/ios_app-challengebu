@@ -1,4 +1,4 @@
--- The real Boğaziçi courts were created by RENAMING seed.sql placeholders
+-- The real courts were created by RENAMING seed.sql placeholders
 -- ('Kort 1/2', 'Bebek Kort') in 20260619000003. But seed.sql only runs on a
 -- local `db reset` — on a cloud `db push` (migrations only) those placeholders
 -- never exist, so only the INSERT'd 'Anadolu Hisarı' survived and Bebek/BURC 1/2

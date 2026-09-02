@@ -185,7 +185,7 @@ function OpenApplicants() {
   ];
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <NavHeader onBack={() => nav.back()} title="Başvuranlar" subtitle="İlanın · Erkek Tek · BÜ Klasik" />
+      <NavHeader onBack={() => nav.back()} title="Başvuranlar" subtitle="İlanın · Erkek Tek · Klasik" />
       <div className="scroll-y" style={{ flex: 1, padding: '8px 16px 24px' }}>
         <div style={{ background: 'var(--clay-softer)', border: '1px solid var(--clay-soft)', borderRadius: 'var(--r-md)', padding: 14, marginBottom: 14, display: 'flex', gap: 10 }}>
           <Icon name="info" size={18} color="var(--clay)" />

@@ -30,7 +30,7 @@ function Welcome() {
         <Dots size={42} color="rgba(22,22,24,.5)" style={{ position: 'absolute', bottom: 150, left: 30 }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
-          <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,.28)', padding: '6px 13px', borderRadius: 'var(--r-pill)', letterSpacing: '.02em' }}>BÜ TENİS · LADDER</span>
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,.28)', padding: '6px 13px', borderRadius: 'var(--r-pill)', letterSpacing: '.02em' }}>KAMPÜS TENİS · LADDER</span>
           <div style={{ animation: 'floaty 4s ease-in-out infinite' }}><BallMark size={52} color="#fff" /></div>
         </div>
 
@@ -42,7 +42,7 @@ function Welcome() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
         <Button full size="lg" arrow onClick={() => nav.go('email')}>Üniversite e-postanla başla</Button>
-        <p style={{ fontSize: 12.5, color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.5, margin: '2px 0 0', fontWeight: 600 }}>Öğrenci, personel ve mezun Boğaziçi hesapları.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.5, margin: '2px 0 0', fontWeight: 600 }}>Öğrenci, personel ve mezun üniversite hesapları.</p>
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ function Welcome() {
 function EmailScreen() {
   const { nav } = useApp();
   const [email, setEmail] = aS('');
-  const valid = /@(std|pt|retired|alumni)\.bogazici\.edu\.tr$|@bogazici\.edu\.tr$/.test(email.trim());
+  const valid = /^[^\s@]+@[^\s@]+\.edu\.tr$/i.test(email.trim());
   const dirty = email.length > 3;
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -59,10 +59,10 @@ function EmailScreen() {
       <div style={{ flex: 1, padding: '8px 24px', display: 'flex', flexDirection: 'column' }}>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: '-.02em', margin: '8px 0 8px' }}>E-postanı gir</h1>
         <p style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 28 }}>Sana giriş bağlantısı göndereceğiz. Sadece üniversite hesapları kabul edilir.</p>
-        <Field icon="mail" placeholder="ad.soyad@std.bogazici.edu.tr" value={email} onChange={setEmail} type="email" autoFocus big
-          error={dirty && !valid} hint={dirty && !valid ? 'Geçerli bir Boğaziçi e-postası gir (öğrenci, personel, mezun vb.).' : 'Öğrenci, akademisyen, personel, emekli ve mezun hesapları kabul edilir.'} />
+        <Field icon="mail" placeholder="ad.soyad@example.edu.tr" value={email} onChange={setEmail} type="email" autoFocus big
+          error={dirty && !valid} hint={dirty && !valid ? 'Geçerli bir üniversite e-postası gir (öğrenci, personel, mezun vb.).' : 'Öğrenci, akademisyen, personel, emekli ve mezun hesapları kabul edilir.'} />
         <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
-          {['@std.bogazici.edu.tr', '@bogazici.edu.tr', '@alumni.bogazici.edu.tr'].map(d => (
+          {['@example.edu.tr', '@example.edu.tr', '@alumni.example.edu.tr'].map(d => (
             <button key={d} onClick={() => setEmail(e => (e.split('@')[0] || 'ad.soyad') + d)} style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--clay-text)', background: 'var(--clay-softer)', border: '1px solid var(--clay-soft)', padding: '7px 11px', borderRadius: 'var(--r-pill)', cursor: 'pointer' }}>{d}</button>
           ))}
         </div>

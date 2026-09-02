@@ -4,7 +4,7 @@
 # on a booted iOS Simulator (app.challengebu.ios).
 #
 # Run (full new-user path):
-#   maestro test -e EMAIL=maestro-ci@std.bogazici.edu.tr .maestro/ci-suite.yaml
+#   maestro test -e EMAIL=maestro-ci@example.edu.tr .maestro/ci-suite.yaml
 #
 # Run (review path — no Mailpit):
 #   maestro test .maestro/review-login.yaml

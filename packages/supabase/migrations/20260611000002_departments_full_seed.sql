@@ -1,4 +1,4 @@
--- Plan 8 Phase D polish: full BÜ departments list (lisans + lisansüstü)
+-- Plan 8 Phase D polish: full university departments list (lisans + lisansüstü)
 -- Replaces the 37-row dev seed with the official list grouped by faculty/enstitü.
 
 -- Clear existing rows; pre-launch so no FK consequence beyond profiles

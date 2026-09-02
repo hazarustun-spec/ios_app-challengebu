@@ -4,7 +4,7 @@
 -- accept-match-request edge function from the opponent's side: pending
 -- match_request → matches row (awaiting_confirmation) + request 'accepted'.
 -- Prints the new match id (use it to deep-link the start lobby).
-\set opp_email '''rakip.test@std.bogazici.edu.tr'''
+\set opp_email '''rakip.test@example.edu.tr'''
 
 with req as (
   select mr.*

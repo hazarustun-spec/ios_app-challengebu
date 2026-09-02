@@ -5,12 +5,10 @@
 // (hand tossing a tennis ball against open sky) with a small ball-mark logo
 // over it, and the headline/CTA living below the card instead of inside it.
 //
-// The design's own bottom note reads "...Boğaziçi hesapları" (naming the
-// university). Kept the existing generic "üniversite hesapları" copy instead —
-// the current App Review notes state explicitly that no university name is
-// used anywhere in the app or its metadata, specifically so the university
-// email domain check reads as access control rather than a claim of
-// affiliation. Swapping in the named copy here would contradict that on file.
+// Copy is deliberately generic ("üniversite hesapları"): the app is not tied
+// to a single institution, and the email-domain gate (any .edu.tr address)
+// reads as access control rather than a claim of affiliation with any
+// particular university.
 
 import { router } from 'expo-router';
 import { Image, Text, View } from 'react-native';

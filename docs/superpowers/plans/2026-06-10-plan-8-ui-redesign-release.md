@@ -202,8 +202,8 @@ import { adminClient, cleanupTestData, createTestUser } from '../functions/helpe
 
 Deno.test('match_kind: friendly maç ELO trigger çağırmaz', async () => {
   const supa = adminClient();
-  const a = await createTestUser({ email: 'friendly-a@std.bogazici.edu.tr' });
-  const b = await createTestUser({ email: 'friendly-b@std.bogazici.edu.tr' });
+  const a = await createTestUser({ email: 'friendly-a@example.edu.tr' });
+  const b = await createTestUser({ email: 'friendly-b@example.edu.tr' });
 
   // Initial ELO read
   const { data: eloBefore } = await supa
@@ -243,8 +243,8 @@ Deno.test('match_kind: friendly maç ELO trigger çağırmaz', async () => {
 
 Deno.test('match_kind: ranking maç ELO update tetikler', async () => {
   const supa = adminClient();
-  const a = await createTestUser({ email: 'ranked-a@std.bogazici.edu.tr' });
-  const b = await createTestUser({ email: 'ranked-b@std.bogazici.edu.tr' });
+  const a = await createTestUser({ email: 'ranked-a@example.edu.tr' });
+  const b = await createTestUser({ email: 'ranked-b@example.edu.tr' });
 
   const { data: eloBefore } = await supa.from('elo_ratings').select('rating')
     .eq('profile_id', a.userId).eq('category', 'erkek_tek').single();
@@ -360,8 +360,8 @@ import { adminClient, cleanupTestData, createTestUser } from '../functions/helpe
 
 Deno.test('match_request_applications: applicant insert + RLS', async () => {
   const supa = adminClient();
-  const creator = await createTestUser({ email: 'creator@std.bogazici.edu.tr' });
-  const applicant = await createTestUser({ email: 'applicant@std.bogazici.edu.tr' });
+  const creator = await createTestUser({ email: 'creator@example.edu.tr' });
+  const applicant = await createTestUser({ email: 'applicant@example.edu.tr' });
 
   // Open call match request
   const { data: req } = await supa.from('match_requests').insert({
@@ -393,8 +393,8 @@ Deno.test('match_request_applications: applicant insert + RLS', async () => {
 
 Deno.test('match_request_applications: accept flow updates match_requests', async () => {
   const supa = adminClient();
-  const creator = await createTestUser({ email: 'flow-creator@std.bogazici.edu.tr' });
-  const applicant = await createTestUser({ email: 'flow-applicant@std.bogazici.edu.tr' });
+  const creator = await createTestUser({ email: 'flow-creator@example.edu.tr' });
+  const applicant = await createTestUser({ email: 'flow-applicant@example.edu.tr' });
 
   const { data: req } = await supa.from('match_requests').insert({
     creator_id: creator.userId,
@@ -847,7 +847,7 @@ import { adminClient, cleanupTestData, createTestUser } from '../functions/helpe
 
 Deno.test('suspended_until: cron expires past suspensions', async () => {
   const supa = adminClient();
-  const user = await createTestUser({ email: 'suspended@std.bogazici.edu.tr' });
+  const user = await createTestUser({ email: 'suspended@example.edu.tr' });
 
   // Set suspended status with past suspended_until
   await supa.from('profiles').update({
@@ -870,7 +870,7 @@ Deno.test('suspended_until: cron expires past suspensions', async () => {
 Deno.test('admin_cron_status: SECURITY DEFINER requires admin', async () => {
   const supa = adminClient();
   const admin = await createTestUser({
-    email: 'admin-cron@std.bogazici.edu.tr',
+    email: 'admin-cron@example.edu.tr',
     role: 'admin',
   });
 
@@ -886,7 +886,7 @@ Deno.test('admin_cron_status: SECURITY DEFINER requires admin', async () => {
 Deno.test('admin_reorder_bracket_seeds: updates tournament_matches', async () => {
   const supa = adminClient();
   const admin = await createTestUser({
-    email: 'admin-bracket@std.bogazici.edu.tr',
+    email: 'admin-bracket@example.edu.tr',
     role: 'admin',
   });
 
@@ -900,7 +900,7 @@ Deno.test('admin_reorder_bracket_seeds: updates tournament_matches', async () =>
 
   const players = await Promise.all(
     Array.from({ length: 8 }, (_, i) =>
-      createTestUser({ email: `seed-${i}@std.bogazici.edu.tr` })
+      createTestUser({ email: `seed-${i}@example.edu.tr` })
     )
   );
 
@@ -1117,7 +1117,7 @@ import { adminClient, cleanupTestData, createTestUser, invokeFunction } from './
 
 Deno.test('deactivate-push-token: deletes only own token', async () => {
   const supa = adminClient();
-  const user = await createTestUser({ email: 'deactivate@std.bogazici.edu.tr' });
+  const user = await createTestUser({ email: 'deactivate@example.edu.tr' });
 
   await supa.from('push_tokens').insert({
     profile_id: user.userId,
@@ -1142,8 +1142,8 @@ Deno.test('deactivate-push-token: deletes only own token', async () => {
 
 Deno.test('deactivate-push-token: cannot delete other user token', async () => {
   const supa = adminClient();
-  const a = await createTestUser({ email: 'dpt-a@std.bogazici.edu.tr' });
-  const b = await createTestUser({ email: 'dpt-b@std.bogazici.edu.tr' });
+  const a = await createTestUser({ email: 'dpt-a@example.edu.tr' });
+  const b = await createTestUser({ email: 'dpt-b@example.edu.tr' });
 
   await supa.from('push_tokens').insert({
     profile_id: a.userId,
@@ -2388,7 +2388,7 @@ git commit -m "feat(plan-8): port Splash screen to Plan 8 design"
 
 For each:
 - **D2 welcome** (`screens-auth.jsx:Welcome` lines 20-49) → `app/(auth)/welcome.tsx`
-- **D3 sign-in** (`screens-auth.jsx:EmailScreen` 51-75) → `app/(auth)/sign-in.tsx` — **EXTRA: KVKK checkbox + valid BÜ regex**
+- **D3 sign-in** (`screens-auth.jsx:EmailScreen` 51-75) → `app/(auth)/sign-in.tsx` — **EXTRA: KVKK checkbox + valid üniversite regex**
 - **D4 otp** (`screens-auth.jsx:OtpScreen` 77-112) → `app/(auth)/otp.tsx` — 6-box numeric input + Supabase verifyOtp
 - **D5 ob_name** → `app/(onboarding)/name.tsx`
 - **D6 ob_phone** → `app/(onboarding)/phone.tsx`
@@ -2406,7 +2406,7 @@ For each task, use D1 pattern: implement + snapshot test + commit. Specific note
 
 **D3 sign-in extra logic:**
 - KVKK checkbox with link to KVKK metni screen (statik)
-- BÜ regex: `/@(std|pt|retired|alumni)\.bogazici\.edu\.tr$|@bogazici\.edu\.tr$/`
+- üniversite regex: `/^[^\s@]+@[^\s@]+\.edu\.tr$/i`
 - On send: `supabase.auth.signInWithOtp({ email, options: getOtpOptions({ email, withMagicLink: true }) })` + insert `kvkk_accepted_at = now()` on profile create
 
 **D4 otp extra logic:**
@@ -2726,7 +2726,7 @@ Update:
 - `expo.ios.buildNumber`: "1"
 - `expo.ios.infoPlist.NSPhotoLibraryUsageDescription`: "Profil fotoğrafını seçmek için galeri erişimi gerekli."
 - `expo.ios.infoPlist.NSCameraUsageDescription`: "Profil fotoğrafı çekmek için kamera erişimi gerekli."
-- `expo.ios.associatedDomains`: `["applinks:tenniskampus.boun.edu.tr"]` (if magic link deep links used)
+- `expo.ios.associatedDomains`: `["applinks:tenniskampus.example.edu.tr"]` (if magic link deep links used)
 - `expo.scheme`: "tenniskampus"
 
 Commit: `feat(plan-8): app.json production iOS config`
@@ -2749,7 +2749,7 @@ Wait for build to complete (~15-20 min). Download IPA, install on iOS Simulator 
 Smoke test:
 - App launches without crash
 - Splash → welcome flow works
-- Sign-in screen shows BÜ regex validation
+- Sign-in screen shows üniversite regex validation
 
 Commit (just record build ID): `chore(plan-8): first EAS preview build`
 
@@ -2814,7 +2814,7 @@ Commit: `chore(plan-8): App Store Connect app registered (ASC ID: <id>)`
 ### Task K2: Metadata + screenshots
 
 - [ ] App name, subtitle, description (Turkish, 1000+ words)
-- [ ] Keywords: tenis,boğaziçi,üniversite,ELO,ladder,sezon,turnuva
+- [ ] Keywords: tenis,üniversite,üniversite,ELO,ladder,sezon,turnuva
 - [ ] Category: Sports (primary), Social Networking (secondary)
 - [ ] Age rating: 4+
 - [ ] Screenshots:
@@ -2845,12 +2845,12 @@ cd apps/mobile && bunx eas build --platform ios --profile production --auto-subm
 Wait for build (~20 min) + auto-submit to TestFlight (~30-60 min review). Once available:
 
 - [ ] App Store Connect → TestFlight → Internal Testing
-- [ ] Add testers: `hazarustun@gmail.com` + 2-3 BÜ tenisçi
+- [ ] Add testers: `hazarustun@gmail.com` + 2-3 üniversite tenisçi
 - [ ] Send TestFlight invite
 - [ ] Verify internal testers can install and use
 
 Test grup full akış:
-- [ ] Sign up with BÜ email
+- [ ] Sign up with üniversite email
 - [ ] Receive magic link / OTP
 - [ ] Complete onboarding
 - [ ] Create a match, enter score, opponent confirms
@@ -2865,9 +2865,9 @@ Commit: `chore(plan-8): first TestFlight build live + internal testers added`
 - [ ] Use TestFlight build
 - [ ] Fill version notes (Turkish + English)
 - [ ] App Review Information:
-  - Demo account: test@std.bogazici.edu.tr + magic link from review
+  - Demo account: test@example.edu.tr + magic link from review
   - Demo notes: "Sign in with this email, magic link arrives, complete onboarding"
-- [ ] Sign-in with Apple? **No** (BÜ email gates handle this)
+- [ ] Sign-in with Apple? **No** (üniversite email gates handle this)
 - [ ] Click "Submit for Review"
 
 Wait 3-5 business days for review. Common rejections:

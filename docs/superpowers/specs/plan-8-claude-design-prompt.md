@@ -1,7 +1,7 @@
 Daha önce benimle bir tenis uygulaması için tasarım dili oturttuk (renkler, tipografi, spacing, border radius, shadow, animasyon hissi, genel ton). O tasarım dilini AYNEN KORUYACAKSIN. Hiçbir tasarım kararını değiştirme, ekleme yapma, "iyileştirme" deneme — sadece aynı dili yeni ekranlara uygulayacaksın.
 
 # Uygulama bağlamı
-Adı: Tennis Challenger. Boğaziçi Üniversitesi mail uzantısı (boun.edu.tr, std.boun.edu.tr, alum.boun.edu.tr, vb.) ile gating'li, üniversite öğrencileri/mezunları için tenis maç + ELO takip + sezon ladder + finale turnuva uygulaması. iOS-only (React Native + Expo). Türkçe arayüz. Maç oluştur → oyna → skor gir → rakip onayla → ELO güncellensin akışı. Sezonlar boyunca ladder yarışı, sezon sonunda 8 kişilik finale bracket'i.
+Adı: Tennis Challenger. üniversite mail uzantısı (example.edu.tr, std.example.edu.tr, alum.example.edu.tr, vb.) ile gating'li, üniversite öğrencileri/mezunları için tenis maç + ELO takip + sezon ladder + finale turnuva uygulaması. iOS-only (React Native + Expo). Türkçe arayüz. Maç oluştur → oyna → skor gir → rakip onayla → ELO güncellensin akışı. Sezonlar boyunca ladder yarışı, sezon sonunda 8 kişilik finale bracket'i.
 
 # Çıktı formatı
 Her ekranı **ayrı bir React + Tailwind artifact** olarak ver. Her artifact:
@@ -43,7 +43,7 @@ Tek artifact. Atomic component'ler iPhone frame içinde değil, kart kart yerle�
 
 ## Grup 3 — Auth & Onboarding (12 ekran)
 1. Splash (logo + slogan + "Giriş yap" CTA)
-2. Mail giriş (BÜ mail validasyonu, hata state)
+2. Mail giriş (üniversite mail validasyonu, hata state)
 3. Magic link gönderildi (mail check ekranı + "tekrar gönder" countdown)
 4. Onboarding 1/10: Ad, Soyad
 5. 2/10: Bölüm (autocomplete liste)

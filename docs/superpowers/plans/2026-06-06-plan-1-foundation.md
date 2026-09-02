@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Boğaziçi Tennis Challenger uygulamasının altyapısını kur — monorepo, paylaşılan TypeScript paketi (types + ELO logic + zod schemas), Supabase migrasyonları ile tüm veri modeli, seed data ve CI pipeline.
+**Goal:** ChallengeBu! uygulamasının altyapısını kur — monorepo, paylaşılan TypeScript paketi (types + ELO logic + zod schemas), Supabase migrasyonları ile tüm veri modeli, seed data ve CI pipeline.
 
 **Architecture:** bun workspaces tabanlı monorepo, Turborepo build orchestration, packages/shared'da pure TypeScript ELO/types/schemas (bun:test ile TDD), packages/supabase'da declarative migrations + seed scripts. Hiçbir mobil/web app henüz yok — bu plan saf backend foundation.
 
@@ -655,7 +655,7 @@ export interface FormatRule {
 
 export const FORMAT_RULES: Record<MatchFormat, FormatRule> = {
   bu_klasik: {
-    displayName: 'BÜ Klasik',
+    displayName: 'Klasik',
     approximateDuration: 60,
     targetUnits: 4,
     unitName: 'el',
@@ -1379,33 +1379,33 @@ Create `packages/shared/tests/schemas/onboarding.test.ts`:
 import { describe, expect, test } from 'bun:test';
 import {
   onboardingSchema,
-  validateBouniMail,
-  ALLOWED_BOUN_DOMAINS,
+  validateUniversityEmail,
+  ALLOWED_UNIVERSITY_DOMAINS,
 } from '../../src/schemas/onboarding.js';
 
-describe('BÜ email validation', () => {
-  test('accepts @boun.edu.tr', () => {
-    expect(validateBouniMail('ahmet.veli@boun.edu.tr')).toBe(true);
+describe('üniversite email validation', () => {
+  test('accepts @example.edu.tr', () => {
+    expect(validateUniversityEmail('ahmet.veli@example.edu.tr')).toBe(true);
   });
 
-  test('accepts @std.bogazici.edu.tr', () => {
-    expect(validateBouniMail('ayse.fatma@std.bogazici.edu.tr')).toBe(true);
+  test('accepts @example.edu.tr', () => {
+    expect(validateUniversityEmail('ayse.fatma@example.edu.tr')).toBe(true);
   });
 
   test('rejects gmail.com', () => {
-    expect(validateBouniMail('user@gmail.com')).toBe(false);
+    expect(validateUniversityEmail('user@gmail.com')).toBe(false);
   });
 
   test('rejects subdomain spoof', () => {
-    expect(validateBouniMail('user@boun.edu.tr.fake.com')).toBe(false);
+    expect(validateUniversityEmail('user@example.edu.tr.fake.com')).toBe(false);
   });
 
   test('case insensitive', () => {
-    expect(validateBouniMail('Foo@BOUN.EDU.TR')).toBe(true);
+    expect(validateUniversityEmail('Foo@EXAMPLE.EDU.TR')).toBe(true);
   });
 
-  test('ALLOWED_BOUN_DOMAINS has 2 entries', () => {
-    expect(ALLOWED_BOUN_DOMAINS).toEqual(['boun.edu.tr', 'std.bogazici.edu.tr']);
+  test('ALLOWED_UNIVERSITY_DOMAINS has 2 entries', () => {
+    expect(ALLOWED_UNIVERSITY_DOMAINS).toEqual(['example.edu.tr', 'example.edu.tr']);
   });
 });
 
@@ -1492,11 +1492,11 @@ Create `packages/shared/src/schemas/onboarding.ts`:
 ```typescript
 import { z } from 'zod';
 
-export const ALLOWED_BOUN_DOMAINS = ['boun.edu.tr', 'std.bogazici.edu.tr'] as const;
+export const ALLOWED_UNIVERSITY_DOMAINS = ['example.edu.tr', 'example.edu.tr'] as const;
 
-export function validateBouniMail(email: string): boolean {
+export function validateUniversityEmail(email: string): boolean {
   const lower = email.toLowerCase().trim();
-  return ALLOWED_BOUN_DOMAINS.some((domain) => lower.endsWith(`@${domain}`));
+  return ALLOWED_UNIVERSITY_DOMAINS.some((domain) => lower.endsWith(`@${domain}`));
 }
 
 export const PRONOUN_VALUES = ['he/him', 'she/her', 'they/them', 'other'] as const;
@@ -1556,7 +1556,7 @@ Expected: PASS — 16 tests passed.
 
 ```bash
 git add packages/shared/src/schemas/onboarding.ts packages/shared/tests/schemas/onboarding.test.ts
-git commit -m "feat(shared): add onboarding zod schema with BÜ email validation"
+git commit -m "feat(shared): add onboarding zod schema with üniversite email validation"
 ```
 
 ---
@@ -2262,7 +2262,7 @@ insert into public.courts (name, display_order) values
   ('Kort 2', 2),
   ('Bebek Kort', 3);
 
--- Departments — Boğaziçi Üniversitesi bölüm listesi
+-- Departments — üniversite bölüm listesi
 -- Fen-Edebiyat Fakültesi
 insert into public.departments (name, faculty, display_order) values
   ('Batı Dilleri ve Edebiyatları', 'Fen-Edebiyat Fakültesi', 1),
@@ -2342,7 +2342,7 @@ Expected: 33+ satır.
 
 ```bash
 git add packages/supabase/migrations/20260606000003_courts_departments.sql packages/supabase/seed.sql
-git commit -m "feat(supabase): add courts and departments with BÜ seed data"
+git commit -m "feat(supabase): add courts and departments with üniversite seed data"
 ```
 
 ---
@@ -2983,7 +2983,7 @@ insert into public.badges (code, name_tr, description_tr, icon, category, is_sea
   ('win_25', '25 Zafer', '25 sıralama maçı kazandın.', '🥇', 'win', false, 204),
   ('win_50', '50 Zafer', '50 sıralama maçı kazandın!', '👑', 'win', false, 205),
   ('win_100', '100 Zafer', '100 sıralama maçı kazandın!', '👑', 'win', false, 206),
-  ('win_bagel', 'Bagel', '4-0 (BÜ Klasik) veya 6-0 set kazandın.', '🥯', 'win', false, 210),
+  ('win_bagel', 'Bagel', '4-0 (Klasik) veya 6-0 set kazandın.', '🥯', 'win', false, 210),
   ('win_comeback', 'Comeback', '0-2 setten 3-2''ye veya 1-3''ten 4-3''e döndün.', '🔥', 'win', false, 211),
 
   -- Social

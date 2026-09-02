@@ -229,7 +229,7 @@ exports[`FormatChip all 4 formats render with name + glyph: format-klasik 1`] = 
     },
     {
       "children": [
-        "BÜ Klasik",
+        "Klasik",
       ],
       "props": {
         "className": "font-sans font-bold",

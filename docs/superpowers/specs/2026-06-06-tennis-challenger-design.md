@@ -1,7 +1,7 @@
 # Tennis Challenger — Tasarım Belgesi
 
 **Tarih:** 2026-06-06
-**Proje:** Boğaziçi Üniversitesi Tenis Topluluğu Challenger Uygulaması
+**Proje:** üniversite Tenis Topluluğu Challenger Uygulaması
 **Platform:** iOS öncelikli, Android takip (React Native + Expo)
 
 ---
@@ -79,7 +79,7 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 **`courts`** — Seed: `Kort 1`, `Kort 2`, `Bebek Kort`
 - `name`, `display_order`
 
-**`departments`** — BÜ bölümleri sabit liste (~80 satır, seed migration)
+**`departments`** — üniversite bölümleri sabit liste (~80 satır, seed migration)
 
 ### Maç akışı
 
@@ -102,7 +102,7 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 - `is_rated boolean`
 - `team_a_player_ids uuid[]`, `team_b_player_ids uuid[]`
 - `score_team_a`, `score_team_b` — el/set kazanılan sayısı
-- `score_details jsonb` — el bazında detay, örn. BÜ Klasik için `[{"el": 1, "winner": "a"}, ...]`, 3 Set Klasik için `[{"set": 1, "a": 6, "b": 4}, ...]`
+- `score_details jsonb` — el bazında detay, örn. Klasik için `[{"el": 1, "winner": "a"}, ...]`, 3 Set Klasik için `[{"set": 1, "a": 6, "b": 4}, ...]`
 - `winner_team` (`'a' | 'b' | 'void'`)
 - `status` (`'awaiting_confirmation' | 'confirmed' | 'disputed' | 'voided'`)
 - `confirmed_by uuid[]`, `confirmed_at`, `voided_reason text`
@@ -179,8 +179,8 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 ## 3. Kullanıcı Akışı
 
 ### 3.1 Kayıt
-- Email validasyonu: 5 BÜ uzantısı kabul edilir — `@std.bogazici.edu.tr` (öğrenci), `@bogazici.edu.tr` (akademik/personel), `@pt.bogazici.edu.tr` (yarı zamanlı), `@retired.bogazici.edu.tr` (emekli), `@alumni.bogazici.edu.tr` (mezun). Eski `@boun.edu.tr` artık geçerli değildir.
-- Admin maili: BÜ domain zorunluluğundan istisna (beyaz liste mekanizması, ilk admin DB'de manuel atanır)
+- Email validasyonu: 5 üniversite uzantısı kabul edilir — `@example.edu.tr` (öğrenci), `@example.edu.tr` (akademik/personel), `@example.edu.tr` (yarı zamanlı), `@retired.example.edu.tr` (emekli), `@alumni.example.edu.tr` (mezun). Eski `@example.edu.tr` artık geçerli değildir.
+- Admin maili: .edu.tr domain zorunluluğundan istisna (beyaz liste mekanizması, ilk admin DB'de manuel atanır)
 - Magic link / 6-haneli OTP (Supabase Auth email provider)
 
 ### 3.2 Onboarding (zorunlu, sıralı)
@@ -190,7 +190,7 @@ Tüm tablolarda standart: `id uuid primary key`, `created_at timestamptz default
 3. Telefon (opsiyonel) — gizlilik notu ile birlikte
 4. Pronoun (he/him, she/her, they/them, other)
 5. Yarışma kategorisi (Erkek / Kadın / Sadece Open)
-6. Bölüm (BÜ dropdown'undan seçim) → **Profilde göster?** toggle (varsayılan açık)
+6. Bölüm (üniversite dropdown'undan seçim) → **Profilde göster?** toggle (varsayılan açık)
 7. Sınıf (Hazırlık / 1 / 2 / 3 / 4 / YL / Doktora) → **Profilde göster?** toggle
 8. Tenis seviyesi (Başlangıç / Orta / İleri) — ELO'ya etki etmez
 9. Dominant el (Sağ / Sol)
@@ -245,7 +245,7 @@ Maç geçmişi korunur (ELO bütünlüğü). Admin ise: önce başka birine admi
 - **🤝 Dostluk Maçı** (unrated) — ELO etkilemez
 
 Her ikisinde de aynı 4 format seçilebilir:
-- **BÜ Klasik** (default) — ~60 dk, 4 el alan kazanır, 15/30/40/avantaj, 3-3'te Maçı Bitir → voided
+- **Klasik** (default) — ~60 dk, 4 el alan kazanır, 15/30/40/avantaj, 3-3'te Maçı Bitir → voided
 - **Hızlı Tiebreak** — ~20 dk, sadece 10 sayılık match tiebreak
 - **Pro Set 8** — ~75 dk, ilk 8 game alan, 6-6'da tiebreak
 - **3 Set Klasik** — ~2 saat, ATP standardı
@@ -281,7 +281,7 @@ Her ikisinde de aynı 4 format seçilebilir:
 - Realtime sync: A girer → B'nin ekranında "tekrar gir" → eşleşirse onay
 - Uyumsuzlukta banner: *"Uyumsuz skor: iki kullanıcı farklı skor girdi, devam edebilmeniz için aynı skor girmelisiniz. Lütfen tekrar girin."*
 - Aynı skor girilene kadar sonraki ele geçilemez (deneme limiti yok)
-- 3-3'te BÜ Klasik: "Maçı Bitir" iki taraftan da onaylanırsa `voided`, ELO etkilenmez
+- 3-3'te Klasik: "Maçı Bitir" iki taraftan da onaylanırsa `voided`, ELO etkilenmez
 - Maç bittiğinde tahmini ELO değişimi gösterilir — bu değer Edge Function'dan canonical hesapla preview olarak çekilir (frontend kendi hesabını yapmaz, server-side tek doğruluk kaynağı)
 
 ### 4.5 Maç sonu onayı
@@ -309,7 +309,7 @@ new_rating_a = rating_a + K * (score_a - expected_a) * margin_multiplier
 **Margin multiplier (skor farkı):**
 | Format | Multiplier ölçeği |
 |---|---|
-| BÜ Klasik | 4-0 → 1.5×, 4-1 → 1.3×, 4-2 → 1.1×, 4-3 → 1.0× |
+| Klasik | 4-0 → 1.5×, 4-1 → 1.3×, 4-2 → 1.1×, 4-3 → 1.0× |
 | Hızlı Tiebreak | 10-0 → 1.5×, 10-5 → 1.2×, 10-8 → 1.0× |
 | Pro Set 8 | 8-0 → 1.5×, 8-4 → 1.2×, 8-7/tiebreak → 1.0× |
 | 3 Set Klasik | 2-0 set → 1.3×, 2-1 set → 1.0× |
@@ -366,7 +366,7 @@ new_elo = (last_season_final_elo + 1200) / 2
 - Bracket seed: 1v8, 4v5, 3v6, 2v7 (tek); 1v4, 2v3 (çift)
 
 **Maç formatı:**
-- Çeyrek + yarı: BÜ Klasik
+- Çeyrek + yarı: Klasik
 - Final: 3 Set Klasik
 
 **Akış:**
@@ -424,8 +424,8 @@ Veri kaynağı: `matches.rating_before_*` ve `rating_after_*` kolonlarından tü
 
 **Galibiyet** (sadece sıralama maçları):
 - 1, 3, 5, 10, 25, 50, 100 galibiyet
-- **Bagel:** 4-0 BÜ Klasik veya 6-0 set
-- **Comeback:** 0-2'den 3-2 (3 Set Klasik) veya 1-3'ten 4-3 (BÜ Klasik)
+- **Bagel:** 4-0 Klasik veya 6-0 set
+- **Comeback:** 0-2'den 3-2 (3 Set Klasik) veya 1-3'ten 4-3 (Klasik)
 
 **Sosyal:**
 - İlk Çift Maçı
@@ -518,10 +518,10 @@ Açık ilan akışı, karşılıklı maç geçmişi ve profil görüntüleme yet
 
 ### 7.1 Admin yapısı
 
-- **MVP:** Tek admin (kullanıcı). Admin'in ayrı bir player hesabı olur (farklı email; player hesabı BÜ maili, admin hesabı kişisel mail olabilir).
+- **MVP:** Tek admin (kullanıcı). Admin'in ayrı bir player hesabı olur (farklı email; player hesabı üniversite maili, admin hesabı kişisel mail olabilir).
 - **Faz 2:** Mac'ten erişilen web admin dashboard (Next.js + Vercel + aynı Supabase). Mobile'daki admin sekmesi sadeleşir.
 
-`users.role = 'admin'` flag'i ile yetkilendirme. Admin maili BÜ domain restriction'dan istisna.
+`users.role = 'admin'` flag'i ile yetkilendirme. Admin maili .edu.tr domain restriction'dan istisna.
 
 ### 7.2 Admin paneli (mobil MVP — 6 ekran)
 
@@ -594,7 +594,7 @@ Diğerleri pull-to-refresh veya sayfa açılışında yüklenir.
 ## 8. Açık Notlar
 
 ### 8.1 Apple Developer ve store yayını
-- Kullanıcının kendi Apple Developer hesabı var. APNs key, Bundle ID (örn. `tr.edu.boun.tennischallenger`), TestFlight grubu kurulumu implementation planında ele alınır.
+- Kullanıcının kendi Apple Developer hesabı var. APNs key, Bundle ID (örn. `app.challengebu.ios`), TestFlight grubu kurulumu implementation planında ele alınır.
 - Google Play hesabı sonradan açılır (faz 2 Android).
 - App Store policy gereği "Hesabımı Sil" özelliği MVP'de zorunlu (Bölüm 3.6'da var).
 

@@ -1,8 +1,8 @@
 -- Initial admin seed.
 --
--- Replace the placeholder email below with the operator's BÜ email or
--- personal email (admin accounts are exempt from the BÜ domain restriction
--- per spec 7.1) before deploying to staging or production.
+-- Replace the placeholder email below with the operator's own address (admin
+-- accounts are exempt from the university-email domain restriction) before
+-- deploying to staging or production.
 --
 -- Re-running this migration is safe: it only flips the role to 'admin'
 -- if a profile with the target email exists and is currently 'player'.
@@ -15,7 +15,7 @@
 
 do $$
 declare
-  target_email text := 'hazar.ustun@std.bogazici.edu.tr';
+  target_email text := 'CHANGE_ME_BEFORE_DEPLOY@example.com';
 begin
   if target_email = 'CHANGE_ME_BEFORE_DEPLOY@example.com' then
     raise notice 'initial-admin-seed: placeholder email not replaced, skipping';

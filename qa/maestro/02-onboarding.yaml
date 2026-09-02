@@ -1,6 +1,6 @@
 # Onboarding (10 steps) → home. Runs after 01-login lands on step 1/10.
 # Account A = Alice (she/her, Kadın). All 10 steps verified to render content.
-appId: tr.edu.boun.tennischallenger
+appId: app.challengebu.ios
 ---
 # 1/10 name (tap fields by point — tapping the AD/SOYAD labels won't focus them)
 - tapOn: { point: "50%,27%" }

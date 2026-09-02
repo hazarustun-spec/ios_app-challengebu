@@ -1,7 +1,7 @@
--- Real Boğaziçi tennis courts (replacing the "Kort 1/2" placeholders) + the
--- first competitive season (Yaz 2026). Idempotent so it is safe on reset.
+-- Real tennis courts (replacing the "Kort 1/2" placeholders) + the first
+-- competitive season (Yaz 2026). Idempotent so it is safe on reset.
 
--- Courts: rename placeholders to the real Boğaziçi courts.
+-- Courts: rename placeholders to the real court names.
 update public.courts set name = 'Bebek',  display_order = 10 where name = 'Bebek Kort';
 update public.courts set name = 'BURC 1', display_order = 20 where name = 'Kort 1';
 update public.courts set name = 'BURC 2', display_order = 30 where name = 'Kort 2';

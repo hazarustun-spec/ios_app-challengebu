@@ -1,24 +1,20 @@
 import { z } from 'zod';
 
-export const ALLOWED_BOUN_DOMAINS = [
-  'std.bogazici.edu.tr',
-  'bogazici.edu.tr',
-  'pt.bogazici.edu.tr',
-  'retired.bogazici.edu.tr',
-  'alumni.bogazici.edu.tr',
-] as const;
+// Accepted addresses: any e-mail ending with the Turkish academic top-level
+// `.edu.tr`. Kept generic on purpose so the app is not tied to a single
+// institution's brand or domain list.
+const UNIVERSITY_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.edu\.tr$/i;
 
-// Shown when the address is outside ALLOWED_BOUN_DOMAINS. Worded as the
-// membership rule it is, not as a failure: ChallengeBu! is a closed Boğaziçi
-// ladder, so an address from anywhere else is not a mistake the person can
-// correct by retyping, and red "error" styling only makes it read like the app
-// broke.
-export const BOUN_EMAIL_ERROR_TR =
-  'ChallengeBu! yalnızca Boğaziçi Üniversitesi üyelerine açık. Öğrenci, akademisyen, emekli veya mezun e-postanı kullan.';
+// Shown when the address is outside the accepted set. Worded as the membership
+// rule it is, not as a failure: an address from anywhere else is not a mistake
+// the person can correct by retyping, and red "error" styling only makes it
+// read like the app broke.
+export const UNIVERSITY_EMAIL_ERROR_TR =
+  'ChallengeBu! yalnızca .edu.tr uzantılı üniversite e-postalarına açık. Öğrenci, akademisyen veya mezun hesabınla dene.';
 
-// App Store review account: the reviewer can't access a Boğaziçi inbox, so this
-// single dedicated mailbox (a real inbox we control, for retrieving the OTP) is
-// allowed through. It is NOT a Boğaziçi domain — only this exact address passes.
+// App Store review account: the reviewer can't access a real inbox, so this
+// single dedicated mailbox (an ordinary player profile we control) is allowed
+// through. It is not a university address — only this exact address passes.
 export const REVIEW_EMAILS: readonly string[] = ['appreview42@proton.me'];
 
 // Mirror of the REVIEW_OTP_CODE secret the review-login Edge Function checks.
@@ -30,10 +26,10 @@ export const REVIEW_EMAILS: readonly string[] = ['appreview42@proton.me'];
 // demo profile. Rotate the secret (and this constant) after launch.
 export const REVIEW_FIXED_CODE = '424242';
 
-export function validateBouniMail(email: string): boolean {
+export function validateUniversityEmail(email: string): boolean {
   const lower = email.toLowerCase().trim();
   if (REVIEW_EMAILS.includes(lower)) return true;
-  return ALLOWED_BOUN_DOMAINS.some((domain) => lower.endsWith(`@${domain}`));
+  return UNIVERSITY_EMAIL_REGEX.test(lower);
 }
 
 /**

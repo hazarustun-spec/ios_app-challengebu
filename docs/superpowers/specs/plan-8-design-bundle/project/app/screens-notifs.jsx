@@ -69,7 +69,7 @@ function Notifs() {
 
 function PushTemplates({ onClose }) {
   const items = [
-    ['offer', 'Maç Teklifi', 'Emre Yıldız sana meydan okudu 🎾', 'Sıralama Maçı · BÜ Klasik · şimdi yanıtla'],
+    ['offer', 'Maç Teklifi', 'Emre Yıldız sana meydan okudu 🎾', 'Sıralama Maçı · Klasik · şimdi yanıtla'],
     ['confirm', 'Skor Onayı', 'Berk Aydın skoru onayladı', 'Erkek Tek · 4-1 · +18 ELO'],
     ['rank', 'Sıralama', '4. sıraya yükseldin! 📈', 'Erkek Tek · +1 basamak'],
     ['badge', 'Yeni Rozet', '🔥 5 Maç Serisi rozetini kazandın', 'Profilinde vitrine ekleyebilirsin'],

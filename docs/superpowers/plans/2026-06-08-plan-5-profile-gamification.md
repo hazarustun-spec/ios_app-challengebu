@@ -154,7 +154,7 @@ insert into public.badges (code, name_tr, description_tr, icon, category, is_sea
   ('wins_100', 'Yüz Galibiyet',      '100 sıralama maçı kazan', '👑', 'win', false, 70),
 
   -- Special wins
-  ('bagel',    'Bagel',     '4-0 BÜ Klasik veya 6-0 set ile kazan',         '🥯', 'win', false, 80),
+  ('bagel',    'Bagel',     '4-0 Klasik veya 6-0 set ile kazan',         '🥯', 'win', false, 80),
   ('comeback', 'Geri Dönüş','0-2''den 3-2 veya 1-3''ten 4-3 ile kazan',     '🔥', 'win', false, 90),
 
   -- Social
@@ -1557,7 +1557,7 @@ const EMPTY_STATS: PlayerStats = {
 };
 
 const FORMAT_LABELS: Record<string, string> = {
-  bu_klasik: 'BÜ Klasik',
+  bu_klasik: 'Klasik',
   hizli_tiebreak: 'Hızlı Tiebreak',
   pro_set_8: 'Pro Set 8',
   '3set_klasik': '3 Set Klasik',
@@ -3699,7 +3699,7 @@ Bu plan tamamlandığında:
 
 **Bilinen sınırlamalar (sonraki planlara):**
 - Realtime push for badge unlocks across devices — Plan 7
-- Comeback badge sadece BÜ Klasik ve 3 Set Klasik için best-effort heuristik kullanır (score_details şekli yetmezse skip)
+- Comeback badge sadece Klasik ve 3 Set Klasik için best-effort heuristik kullanır (score_details şekli yetmezse skip)
 - Avatar history yok (upsert ile aynı dosya üzerine yazılır)
 - Animasyonlar, haptik, paylaşım ekranları — Plan 8
 

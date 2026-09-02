@@ -184,14 +184,14 @@ function App() {
       <Sec no="02" title="Inputs" note="text · email · password · search · hata">
         <GCard label="Text & email" span={4}>
           <Field label="Ad Soyad" value="Aleyna Kaya" placeholder="Adın" />
-          <Field label="BÜ e-posta" value="aleyna@boun.edu.tr" icon="mail" type="email" />
+          <Field label="üniversite e-posta" value="aleyna@example.edu.tr" icon="mail" type="email" />
         </GCard>
         <GCard label="Password & search" span={4}>
           <Field label="Şifre" value={showPw ? pw : '••••••••'} icon="lock" suffix={showPw ? 'gizle' : 'göster'} />
           <SearchBar placeholder="Oyuncu ara…" value="" />
         </GCard>
         <GCard label="Hata state" span={4}>
-          <Field label="BÜ e-posta" value="aleyna@gmail.com" icon="mail" error hint="Yalnızca @boun.edu.tr uzantısı kabul edilir." />
+          <Field label="üniversite e-posta" value="aleyna@gmail.com" icon="mail" error hint="Yalnızca @example.edu.tr uzantısı kabul edilir." />
           <Field label="Skor" value="" placeholder="4-6 1-6" suffix="set" hint="Set skorunu gir" />
         </GCard>
       </Sec>
@@ -255,7 +255,7 @@ function App() {
           <div className="surface">
             {sheet && <Sheet title="Format seç" onClose={() => setSheet(false)}>
               <div className="col">
-                <ListRow title="BÜ Klasik" subtitle="4 el · 15/30/40" right={<FormatChip fmtKey="klasik" size={11} />} onClick={() => setSheet(false)} />
+                <ListRow title="Klasik" subtitle="4 el · 15/30/40" right={<FormatChip fmtKey="klasik" size={11} />} onClick={() => setSheet(false)} />
                 <ListRow title="Tiebreak" subtitle="Tek set · ilk 7" right={<CheckBox checked shape="circle" />} onClick={() => setSheet(false)} />
               </div>
             </Sheet>}

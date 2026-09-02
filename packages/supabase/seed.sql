@@ -5,7 +5,7 @@ insert into public.courts (name, display_order) values
   ('Bebek Kort', 3);
 
 -- Departments are seeded via migration 20260611000002_departments_full_seed.sql
--- (full BÜ lisans + lisansüstü list grouped by faculty / enstitü). The legacy
+-- (full university lisans + lisansüstü list grouped by faculty / enstitü). The legacy
 -- block here was removed to avoid duplicate inserts after `supabase db reset`.
 
 -- Badges catalog is seeded via migration 20260608000001_seed_badges.sql

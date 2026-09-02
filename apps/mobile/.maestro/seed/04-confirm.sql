@@ -5,7 +5,7 @@
 -- voided). NOTE: production confirmation runs through the confirm-match edge
 -- function, which ALSO applies ELO + badges; this direct update asserts UI
 -- state only. Call confirm-match per participant if you need real ELO effects.
-\set opp_email '''rakip.test@std.bogazici.edu.tr'''
+\set opp_email '''rakip.test@example.edu.tr'''
 
 update public.matches m
    set confirmed_by = m.team_a_player_ids || m.team_b_player_ids,

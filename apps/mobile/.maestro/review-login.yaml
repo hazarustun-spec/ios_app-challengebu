@@ -19,7 +19,7 @@ env:
 - tapOn: "Üniversite e-postanla başla"
 
 - assertVisible: "E-postanı gir"
-- tapOn: "ad.soyad@std.bogazici.edu.tr"
+- tapOn: "ad.soyad@example.edu.tr"
 - inputText: ${REVIEW_EMAIL}
 - hideKeyboard
 - tapOn: "KVKK onayı"

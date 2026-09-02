@@ -1636,7 +1636,7 @@ git commit -m "feat(functions): add submit-match-score with mismatch detection"
 
 When a participant confirms, append to `confirmed_by`. When all participants have confirmed AND a winner is set AND match `is_rated`, run ELO calculation and update `elo_ratings` + `matches.rating_*` + `profiles.last_match_at`.
 
-The `void` case (3-3 BÜ Klasik) sets status `voided` without ELO change.
+The `void` case (3-3 Klasik) sets status `voided` without ELO change.
 
 - [ ] **Step 1: Create _shared/apply-elo.ts**
 

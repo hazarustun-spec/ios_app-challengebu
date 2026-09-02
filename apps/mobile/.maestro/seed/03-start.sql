@@ -3,7 +3,7 @@
 -- Run AFTER the signed-in user taps "Maçı Başlat". Completes the start
 -- handshake by putting BOTH participants in matches.started_by, so the lobby's
 -- realtime subscription advances to score entry.
-\set opp_email '''rakip.test@std.bogazici.edu.tr'''
+\set opp_email '''rakip.test@example.edu.tr'''
 
 update public.matches m
    set started_by = m.team_a_player_ids || m.team_b_player_ids

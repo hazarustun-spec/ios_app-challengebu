@@ -70,7 +70,7 @@ exports[`Field renders with leading icon + suffix 1`] = `
             "placeholder": undefined,
             "placeholderTextColor": "#A2A2AA",
             "secureTextEntry": false,
-            "value": "ad@bogazici.edu.tr",
+            "value": "ad@example.edu.tr",
           },
           "type": "TextInput",
         },

@@ -24,7 +24,7 @@ insert into public.badges (code, name_tr, description_tr, icon, category, is_sea
   ('wins_100', 'Yüz Galibiyet',      '100 sıralama maçı kazan', '👑', 'win', false, 70),
 
   -- Special wins
-  ('bagel',    'Bagel',     '4-0 BÜ Klasik veya 6-0 set ile kazan',         '🥯', 'win', false, 80),
+  ('bagel',    'Bagel',     '4-0 Klasik veya 6-0 set ile kazan',            '🥯', 'win', false, 80),
   ('comeback', 'Geri Dönüş','0-2''den 3-2 veya 1-3''ten 4-3 ile kazan',     '🔥', 'win', false, 90),
 
   -- Social

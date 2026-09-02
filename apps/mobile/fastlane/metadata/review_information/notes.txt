@@ -15,31 +15,45 @@ Steps:
      skippable) the first time, or straight on the main app (Sıralama, Maçlar,
      Profil tabs) on any later sign-in.
 
-Note: earlier review notes mentioned a 6-digit OTP code (424242) entered on a
-separate screen. Real users still go through that screen exactly as shown in
-the demo video below — they receive a mailed 6-digit code and enter it there.
-Only the review account skips it: since the reviewer can't read
-appreview42@proton.me's inbox, that one address signs in on a single tap
-instead, so the review can proceed without a mailbox. This is a review-only
-shortcut, not a change to what real users experience.
+Note: real users sign in with a .edu.tr university e-mail address and enter a
+6-digit code that is mailed to them. Only the review account skips that step:
+since the reviewer can't read the appreview42@proton.me inbox, that one address
+signs in on a single tap instead, so the review can proceed without a mailbox.
+This is a review-only shortcut, not a change to what real users experience.
 
 About the app:
-  ChallengeBu is an independent community tennis ranking app for university players. It is NOT affiliated with, endorsed by, or sponsored by any university. Access is restricted to verified university email addresses purely as a functional sign-up gate (to keep the community to students/faculty/alumni) — this is access control, not a claim of institutional affiliation, and no university name, logo, or branding is used in the app or its metadata.
+  ChallengeBu! is an independent community tennis ranking app for university
+  players. Sign-up is gated to e-mail addresses under the Turkish academic
+  top-level .edu.tr — an access-control check to keep the community to
+  students, faculty and alumni. The app is not affiliated with, endorsed by,
+  sponsored by, or a copy of any specific university; no university name,
+  logo, colors, or branding is used in the app or its metadata.
 
 Pre-populated review data:
-  The review account is seeded with a live, ranked leaderboard (9 players), completed match history and profile stats, an incoming pending challenge, and ONE match that is ready to score right now — so every feature can be exercised without waiting for other users. The reviewer can explore: leaderboard categories (Sıralama), profile stats + ELO history (Profil), notifications, settings (including account deletion), messaging with block/report, and the full match lifecycle below.
+  The review account is seeded with a live, ranked leaderboard (9 players),
+  completed match history and profile stats, an incoming pending challenge,
+  and ONE match that is ready to score right now — so every feature can be
+  exercised without waiting for other users. The reviewer can explore:
+  leaderboard categories (Sıralama), profile stats + ELO history (Profil),
+  notifications, settings (including account deletion), messaging with
+  block/report, and the full match lifecycle below.
 
 Demonstrating the FULL match flow (start → score → result):
-  1. Open the Maçlar (Matches) tab → the pre-seeded match card shows "Maçı Başlat".
+  1. Open the Maçlar (Matches) tab → the pre-seeded match card shows
+     "Maçı Başlat".
   2. Tap "Maçı Başlat" to start (it is already within the allowed start window).
   3. Enter points to complete the set, then submit the score.
-  (You can also tap the "+" to create a brand-new challenge against any seeded opponent, or accept the incoming pending challenge shown in notifications.)
+  (You can also tap the "+" to create a brand-new challenge against any seeded
+  opponent, or accept the incoming pending challenge shown in notifications.)
 
 Device notes:
-  iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode; core flows work the same.
+  iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode;
+  core flows work the same.
 
 Messaging (Guideline 1.2):
-  In-thread ⋯ menu offers Report and Block. Blocked users can be managed under Settings → Engellenen kullanıcılar. Messaging requires an active match offer between two users.
+  In-thread ⋯ menu offers Report and Block. Blocked users can be managed under
+  Settings → Engellenen kullanıcılar. Messaging requires an active match offer
+  between two users.
 
 Demo video (physical iPhone — required):
   https://youtu.be/cKQQbn5gL9E

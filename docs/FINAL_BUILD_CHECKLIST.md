@@ -37,7 +37,7 @@ eas submit --profile production --platform ios --latest
 
 - [ ] Cold launch — crash yok
 - [ ] `appreview42@proton.me` → KVKK → Devam et → `424242` → ana sekmeler
-- [ ] (Opsiyonel) Gerçek BÜ maili OTP
+- [ ] (Opsiyonel) Gerçek üniversite maili OTP
 - [ ] iPad compatibility mode — launch + 1 ekran (Apple iPad test ediyor)
 
 ## D. App Store Connect

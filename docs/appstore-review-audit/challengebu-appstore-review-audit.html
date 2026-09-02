@@ -61,7 +61,7 @@
   <div class="score-card now">
     <div class="score-num green">3<span style="font-size:14pt;color:#999">/10</span></div>
     <div style="font-weight:700;color:#1e7d43;margin-top:3px;">Kod/Repo durumu — DÜŞÜK</div>
-    <div class="sub" style="margin-top:2px;">De-Boğaziçi + dolu review seed (lokal DB'de doğrulandı) uygulandı. Kalan riskler artık kod değil, <b>senin yayın-öncesi aksiyonların</b>.</div>
+    <div class="sub" style="margin-top:2px;">De-üniversite + dolu review seed (lokal DB'de doğrulandı) uygulandı. Kalan riskler artık kod değil, <b>senin yayın-öncesi aksiyonların</b>.</div>
   </div>
   <div class="score-card risk">
     <div class="score-num amber">6.5<span style="font-size:14pt;color:#999">/10</span></div>
@@ -76,12 +76,12 @@
 </div>
 <table>
   <tr><th>#</th><th>Yapılan</th><th>Kanıt</th><th>Durum</th></tr>
-  <tr><td>1</td><td><b>De-Boğaziçi</b> — metadata (subtitle/promo/description/release-notes/review-notes) + app-içi metin (welcome, e-posta hata mesajı, "BÜ Klasik"→"Klasik" 9 yerde) + placeholder → "Öğrenci ya da mezun e-postan"</td><td>Görünen-string sweep = 0 kalan; şema enum'ları korundu</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>1</td><td><b>De-üniversite</b> — metadata (subtitle/promo/description/release-notes/review-notes) + app-içi metin (welcome, e-posta hata mesajı, "Klasik"→"Klasik" 9 yerde) + placeholder → "Öğrenci ya da mezun e-postan"</td><td>Görünen-string sweep = 0 kalan; şema enum'ları korundu</td><td><span class="badge b-done">TAMAM</span></td></tr>
   <tr><td>2</td><td><b>Review seed doldduruldu</b> — 8 sahte rakip + 9 kişilik sıralı leaderboard + reviewer profil geçmişi (3 tamamlanmış maç) + <b>başlatılabilir 1 maç</b> + 1 bekleyen meydan okuma</td><td>Lokal: <code>ladder=9, matches=6, ready=1</code>; idempotent (2× temiz)</td><td><span class="badge b-done">TAMAM</span></td></tr>
   <tr><td>3</td><td><b>Anti-fake 15-dk friction giderildi</b> — seed maçı <code>played_at</code> geçmişte → start + score gate doğal geçer, güvenlik koduna dokunulmadı</td><td>Lokal: <code>past=t, status ok</code></td><td><span class="badge b-done">TAMAM</span></td></tr>
   <tr><td>4</td><td><b>notes.txt güncellendi</b> — bağımsızlık ibaresi + dolu review verisi + tam maç akışı (start→score) adımları</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
   <tr><td>5</td><td><b>Cleanup script</b> — onay sonrası demo veriyi prod'dan silmek için (<code>cleanup-review-seed-production.sql</code>)</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
-  <tr><td>6</td><td><b>Regresyon kontrolü</b> — shared typecheck exit 0; 81 migration+seed temiz uygulandı; değişen string'lerin test bağı yok (allowlist/validateBouniMail dokunulmadı)</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
+  <tr><td>6</td><td><b>Regresyon kontrolü</b> — shared typecheck exit 0; 81 migration+seed temiz uygulandı; değişen string'lerin test bağı yok (allowlist/validateUniversityEmail dokunulmadı)</td><td>—</td><td><span class="badge b-done">TAMAM</span></td></tr>
 </table>
 
 <h2>Kalan Riskler — Öncelik Sırası</h2>
@@ -96,14 +96,14 @@
 
 <div class="risk high">
   <h3><span>R2 · Metadata ASC'de canlı değil + screenshot'lar eski</span><span class="gl">2.3.3 / 4.1(a)</span></h3>
-  <p><span class="lbl">Neden red?</span> De-Boğaziçi metin sadece lokal fastlane dosyalarında. Reviewer ASC'deki <b>canlı</b> alanları + <b>screenshot'ları</b> görür; bunlar hâlâ "BÜ/Boğaziçi" içeriyorsa 4.1(a)+2.3 tekrar tetiklenir.</p>
-  <p><span class="lbl">Kontrol:</span> 4 screenshot (<code>fastlane/screenshots/tr/</code>) "BÜ Klasik"/"Boğaziçi" gösteriyor mu? ASC Subtitle/Description/Promo güncel mi?</p>
+  <p><span class="lbl">Neden red?</span> De-üniversite metin sadece lokal fastlane dosyalarında. Reviewer ASC'deki <b>canlı</b> alanları + <b>screenshot'ları</b> görür; bunlar hâlâ "üniversite adı" içeriyorsa 4.1(a)+2.3 tekrar tetiklenir.</p>
+  <p><span class="lbl">Kontrol:</span> 4 screenshot (<code>fastlane/screenshots/tr/</code>) "Klasik"/"üniversite" gösteriyor mu? ASC Subtitle/Description/Promo güncel mi?</p>
   <p><span class="lbl">Düzeltme (SENDE):</span> <code>fastlane deliver</code> ile metadata'yı push et (veya ASC'de elle) + rename sonrası screenshot'ları yeniden üret (Maestro), üniversite adı/rozet olmadığını teyit et.</p>
 </div>
 
 <div class="risk high">
   <h3><span>R3 · Seed'i PROD'da çalıştır + yeni build gerekli</span><span class="gl">2.1 / 2.3</span></h3>
-  <p><span class="lbl">Neden red?</span> Seed lokal doğrulandı ama <b>prod DB'de çalışması senin adımın</b> (prod erişimi gerekli). Ayrıca app-içi de-Boğaziçi metin binary'de — build 12 hâlâ eski string taşıyor.</p>
+  <p><span class="lbl">Neden red?</span> Seed lokal doğrulandı ama <b>prod DB'de çalışması senin adımın</b> (prod erişimi gerekli). Ayrıca app-içi de-üniversite metin binary'de — build 12 hâlâ eski string taşıyor.</p>
   <p><span class="lbl">Düzeltme (SENDE):</span> (a) <code>scripts/seed-review-account-production.sql</code>'i Supabase SQL Editor'de çalıştır, verify çıktısını kontrol et. Ön koşul: reviewer bir kez OTP ile giriş yapmış olmalı. (b) EAS ile <b>yeni build (v1.1.0)</b> çıkar, onu submit et.</p>
 </div>
 
@@ -134,8 +134,8 @@
   <li class="u"><b>Demo video</b> çek (fiziksel iPhone, tam onboarding + start→score akışı) → ASC → App Review Information → Notes'a link koy (+ <code>notes.txt</code>'teki placeholder'ı doldur). <span class="badge b-crit">EN KRİTİK</span></li>
   <li class="u"><b>Review seed'i PROD'da çalıştır</b> — Supabase SQL Editor → <code>scripts/seed-review-account-production.sql</code>. Önce reviewer bir kez OTP ile giriş yapmış olmalı. Verify çıktısında ladder=9, matches=6, ready=1 gör.</li>
   <li class="u"><b>Metadata'yı ASC'ye push et</b> (<code>fastlane deliver</code> ya da elle) — Subtitle/Description/Promo/Release-notes/Review-notes.</li>
-  <li class="u"><b>Screenshot'ları yeniden üret</b> (rename sonrası) — hiçbirinde "BÜ/Boğaziçi" görünmesin, ASC'ye yükle.</li>
-  <li class="u"><b>Yeni build (v1.1.0)</b> çıkar (EAS) ve submit et — app-içi de-Boğaziçi metni bu build taşır.</li>
+  <li class="u"><b>Screenshot'ları yeniden üret</b> (rename sonrası) — hiçbirinde "üniversite adı" görünmesin, ASC'ye yükle.</li>
+  <li class="u"><b>Yeni build (v1.1.0)</b> çıkar (EAS) ve submit et — app-içi de-üniversite metni bu build taşır.</li>
   <li class="u"><b>ASC sürümünü 1.1.0</b> aç, build'i bağla (1.0.0 ↔ 1.1.0 tutarsızlığını gider).</li>
   <li class="u"><b>ASC App Privacy</b>'yi kodla eşle, "tracking = none" bırak.</li>
   <li class="u"><b>Apple'a mesajla yanıt ver</b> — her iki red kalemine: video linki + "no university affiliation; metadata revised" açıklaması.</li>

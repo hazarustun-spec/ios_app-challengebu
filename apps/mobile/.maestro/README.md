@@ -5,7 +5,7 @@ Mobile UI flow tests for the live-scoring journey (Maestro 2.6+, JDK 17+).
 ## App id reconciliation
 These flows target the CURRENT app id **`app.challengebu.ios`** (deep-link
 scheme `tennischallenger://`). The legacy `qa/maestro/*` flows targeted the old
-`tr.edu.boun.tennischallenger` id; the auto-login technique was carried over and
+`app.challengebu.ios` id; the auto-login technique was carried over and
 adapted here (Splash → Welcome was added in front of the email screen).
 
 ## Flows
@@ -55,7 +55,7 @@ seeding EXTERNALLY (e.g. a wrapper that interleaves `maestro test` segments with
 
 ```sh
 # Run the whole lifecycle on a booted simulator with the app installed:
-maestro test -e EMAIL=alice@std.bogazici.edu.tr .maestro/match-lifecycle.yaml
+maestro test -e EMAIL=alice@example.edu.tr .maestro/match-lifecycle.yaml
 ```
 
 ## Prerequisites
