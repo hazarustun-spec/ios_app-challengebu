@@ -4,5 +4,5 @@
 -- to a single institution.
 
 update public.badges
-   set description = '4-0 Klasik veya 6-0 set ile kazan'
- where key = 'bagel';
+   set description_tr = '4-0 Klasik veya 6-0 set ile kazan'
+ where code = 'bagel';
