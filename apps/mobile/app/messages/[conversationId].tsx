@@ -38,6 +38,8 @@ import {
 } from '../../hooks/use-messages';
 import { useBlockUser, useReportUser } from '../../hooks/use-moderation';
 import { useAuthStore } from '../../stores/auth-store';
+import { useToast } from '../../components/ui/ToastProvider';
+import { userMessage } from '../../lib/user-message';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -158,6 +160,7 @@ export default function ConversationScreen() {
 
   const myUserId = useAuthStore((s) => s.user?.id);
   const insets = useSafeAreaInsets();
+  const toast = useToast();
 
   // Hooks
   const { data: messages = [], isLoading } = useMessages(conversationId);
@@ -200,7 +203,13 @@ export default function ConversationScreen() {
     if (!trimmed || sendMessage.isPending) return;
     sendMessage.mutate(
       { conversationId: conversationId!, body: trimmed },
-      { onSuccess: () => setBody('') },
+      {
+        onSuccess: () => setBody(''),
+        // Blocked-user (`Messaging is blocked between these users`) and other
+        // backend rejections used to fail silently — the composer would clear
+        // on success but stay full-of-text on error with no explanation.
+        onError: (e) => toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error'),
+      },
     );
   }
 

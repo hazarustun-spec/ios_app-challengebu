@@ -23,12 +23,18 @@ import { usePushToStartRegistration } from '../hooks/use-push-to-start-registrat
 import { bootstrapAuth } from '../lib/auth-bootstrap';
 import { FONTS_MAP } from '../lib/fonts';
 import { queryClient } from '../lib/query-client';
+import { initSentry, wrap as wrapWithSentry } from '../lib/sentry';
 
 // Keep the native splash visible until our Google Fonts have loaded —
 // prevents a flash of system font (FOUC) on first frame.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+// Sentry has to be initialised before the first render so it can catch
+// startup crashes. `initSentry` no-ops when EXPO_PUBLIC_SENTRY_DSN is unset
+// (dev / opt-out builds), so this line is safe everywhere.
+initSentry();
+
+function RootLayout() {
   const [fontsLoaded] = useFonts(FONTS_MAP);
 
   useEffect(() => {
@@ -66,6 +72,7 @@ export default function RootLayout() {
               <Stack.Screen name="notifications" />
               <Stack.Screen name="messages" />
               <Stack.Screen name="settings" />
+              <Stack.Screen name="suspended" options={{ gestureEnabled: false }} />
               <Stack.Screen name="(admin)" />
               <Stack.Screen name="(dev)" />
             </Stack>
@@ -79,3 +86,7 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+// Sentry.wrap adds native crash + navigation instrumentation to the root
+// component. When Sentry is disabled (no DSN) the wrap is a no-op.
+export default wrapWithSentry(RootLayout);

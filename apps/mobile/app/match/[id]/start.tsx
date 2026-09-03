@@ -13,7 +13,7 @@
 //   • Both already confirmed on first load → play animation directly.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -24,6 +24,7 @@ import { FormatChip } from '../../../components/ui/FormatChip';
 import { MatchStartBurst } from '../../../components/matches/MatchStartBurst';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useStartMatch } from '../../../hooks/use-start-match';
+import { userMessage } from '../../../lib/user-message';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
 import { useAuthStore } from '../../../stores/auth-store';
@@ -167,6 +168,11 @@ export default function MatchStartLobby() {
       onSuccess: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       },
+      // Backend can reject with `pair_weekly_limit`, `too_early`,
+      // `wrong_participant`, etc. Without an onError handler the tap did
+      // nothing visible and the user tapped again in confusion.
+      onError: (e) =>
+        Alert.alert('Başlatılamadı', userMessage(e, 'Lütfen tekrar dene.')),
     });
   }
 

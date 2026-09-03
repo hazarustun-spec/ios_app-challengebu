@@ -125,6 +125,79 @@ seasons, leaderboard, badges, streaks, live score) already ships.
     is a URL builder). Blocked on: adding the permission string to
     `Info.plist` on the next EAS build.
 
+### Messaging redesign (v1.1 priority — users complain it feels slow and hard to use)
+
+Detailed brief for the messaging subsystem. Today's implementation is
+functional but every interaction goes network round-trip, there is no
+pagination, the inbox surface is thin, and the compose flow only kicks in
+after an accepted match offer.
+
+**A. Send path — instant feedback.**
+- Optimistic append: `useSendMessage` should insert a stub row into the
+  cache (`queryKeys.conversations.messages(id)`) BEFORE the mutation
+  fires; roll back on error. Today the input clears + the message sits
+  invisible until the round-trip returns → feels laggy on 4G.
+- Retry queue: keep a failed message in a "pending" state with a Retry
+  chip instead of a modal alert. iMessage-style red exclamation.
+- Delivery ticks: single tick (sent), double tick (delivered), blue
+  ticks (read) — read state already exists (`read_at`), just surface it.
+
+**B. Inbox (`app/messages/index.tsx`) — richer preview.**
+- Show last message preview + timestamp (relative — "2 dk", "dün")
+  instead of the current name-only rows.
+- Unread badge per thread + inbox-level unread count on the tab bar.
+- Swipe-to-archive / swipe-to-mute (long-term).
+- Empty state today just says "no messages"; replace with a "Match
+  teklifin olduğunda mesajlaşabilirsin" nudge + CTA to /(tabs)/matches.
+
+**C. Thread (`app/messages/[conversationId].tsx`) — perf + polish.**
+- **Pagination.** `useMessages` currently `SELECT * FROM messages
+  ORDER BY created_at ASC` — loads every message in the thread. Switch
+  to reverse-chronological + `limit(50)` + `keyset` on `created_at`;
+  render into an inverted `FlatList` (or the new @shopify/flash-list)
+  and load-older-on-scroll-top.
+- Typing indicator via a Postgres channel broadcast (Supabase realtime
+  supports broadcast, no DB rows needed).
+- Date separators between messages > 1h apart.
+- Message reactions (❤️👍😂). Small `reactions` table keyed on
+  `message_id` + `user_id`.
+- Long-press menu: Reply, Copy, Delete (own only), Report (other).
+- Deleted-message tombstone renders "Bu mesaj silindi" italic + faded,
+  not a blank row.
+
+**D. Composer.**
+- Grow the input up to 6 lines instead of a single-line field.
+- Attach button — start with sending a photo (expo-image-picker →
+  Supabase Storage bucket `message-attachments` → append URL to body OR
+  a proper `attachments` column). Voice notes deferred.
+- Send-on-return toggle (default off in TR — most Turkish users
+  paragraph-break intentionally).
+- Emoji picker (bottom-sheet, native OS emoji is fine — no custom).
+
+**E. Push + deep-link (partly fixed 2026-09-02).**
+- Fixed: in-app + system push tap routes to the thread by
+  `conversationId` (`d6da339`). Still TODO: preserve the notification
+  banner on iOS while the app is foregrounded on ANOTHER thread (today
+  we suppress it since setNotificationHandler returns
+  shouldShowBanner:true for every source).
+- Ensure the notification tap deep-link scrolls the thread to the NEW
+  message (append highlight animation) so the reason for the tap is
+  visible.
+
+**F. Reachability + safety.**
+- Blocked user: today the send silently fails; toast + disable composer
+  when the other participant is in `user_blocks`. (Audit finding #1
+  from `docs/audit-2026-09-daily-use.md` is the immediate patch — this
+  brief plans the full experience.)
+- Report flow already exists (in-thread ⋯); surface it in the
+  long-press menu (per D above).
+
+**Effort estimate:** 5-8 days for A–D, another 2-3 days for E–F. Split
+into 3 shipping milestones:
+  1. Optimistic send + inbox previews + pagination (biggest UX win).
+  2. Composer expansion + attachments + typing indicator.
+  3. Reactions + polish.
+
 ### Gamification
 - **Stars currency** — earn stars for **playing** a match (win OR lose → rewards
   participation, not just winning); spend stars on profile/app customizations.
