@@ -60,30 +60,78 @@ export function usePushRegistration() {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Deep-link from a tapped notification's data payload. */
+/** Read a uuid from either the camelCase or snake_case key of a payload. */
+function pickUuid(
+  data: Record<string, unknown>,
+  ...keys: string[]
+): string | null {
+  for (const k of keys) {
+    const v = data[k];
+    if (typeof v === 'string' && UUID_RE.test(v)) return v;
+  }
+  return null;
+}
+
+/**
+ * Deep-link from a tapped notification's data payload.
+ *
+ * Sender-side payload keys vary: Edge Functions use camelCase (matchId,
+ * conversationId), Postgres triggers use snake_case (match_id, request_id,
+ * season_id). The client must accept both so a "Yeni meydan okuma!" push
+ * or a season-finale reminder actually opens the right screen instead of
+ * dropping the user on the default tab — the bug real users hit on
+ * launch day.
+ */
 function routeFromNotification(response: Notifications.NotificationResponse) {
   const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
 
-  // Message deep-link: navigate to the specific conversation thread.
-  if (typeof data.conversationId === 'string' && UUID_RE.test(data.conversationId)) {
+  // Message → conversation thread.
+  const conversationId = pickUuid(data, 'conversationId', 'conversation_id');
+  if (conversationId) {
     router.push({
       pathname: '/messages/[conversationId]',
       params: {
-        conversationId: data.conversationId,
-        otherUserId: typeof data.otherUserId === 'string' && UUID_RE.test(data.otherUserId) ? data.otherUserId : '',
+        conversationId,
+        otherUserId: pickUuid(data, 'otherUserId', 'other_user_id') ?? '',
         name: typeof data.name === 'string' ? data.name : '',
       },
     } as never);
     return;
   }
 
-  // Match-related deep-links.
-  if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
-    router.push(`/match/${data.matchId}` as never);
+  // Confirmed match → match detail (score entry / confirmation).
+  const matchId = pickUuid(data, 'matchId', 'match_id');
+  if (matchId) {
+    router.push(`/match/${matchId}` as never);
     return;
   }
-  if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
-    router.push(`/tournament/${data.tournamentId}` as never);
+
+  // Tournament → bracket.
+  const tournamentId = pickUuid(data, 'tournamentId', 'tournament_id');
+  if (tournamentId) {
+    router.push(`/tournament/${tournamentId}` as never);
+    return;
+  }
+
+  // Match invitation OR open-call application. request_id addresses a
+  // match_request row; the right destination depends on the action so both
+  // creator (open-call applications) and target (direct challenge) land on
+  // an actionable screen instead of the generic Matches tab.
+  const requestId = pickUuid(data, 'matchRequestId', 'requestId', 'request_id');
+  if (requestId) {
+    const action = typeof data.action === 'string' ? data.action : '';
+    if (action === 'open_call_application') {
+      router.push(`/match/open-applicants/${requestId}` as never);
+    } else {
+      router.push('/(tabs)/matches' as never);
+    }
+    return;
+  }
+
+  // Season lifecycle (start_finale / close_season) → season screen.
+  const seasonId = pickUuid(data, 'seasonId', 'season_id');
+  if (seasonId) {
+    router.push('/season' as never);
     return;
   }
 }

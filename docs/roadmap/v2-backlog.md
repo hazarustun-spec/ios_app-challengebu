@@ -106,6 +106,24 @@ seasons, leaderboard, badges, streaks, live score) already ships.
   court reservation may affect your ELO; reserve a court first." (ELO integrity +
   logistics nudge; possibly integrate court booking.)
 - **In-app mascot** — a character for personality / onboarding / engagement.
+- **Add-to-Calendar** — when a match is scheduled (offer accepted or created),
+  offer a one-tap "Takvime ekle" that drops the event on the user's Apple
+  Calendar or Google Calendar. Title = "ChallengeBu · <opponent> · <format>",
+  location = the court, notes = link back into the app (`tennischallenger://
+  match/<id>`), alarms 24h + 1h before. Reduces no-shows and pulls the app
+  into a habit surface (calendar) users already open daily.
+  - **iOS Apple Calendar:** `expo-calendar` — request `WRITE_CALENDAR`
+    permission, `Calendar.createEventAsync` after user picks the target
+    calendar; add `NSCalendarsUsageDescription` to `app.json`.
+  - **Google Calendar:** open a pre-filled `https://calendar.google.com/
+    calendar/render?action=TEMPLATE&text=…&dates=…&location=…` URL — works
+    without OAuth and covers non-native clients (web, Android later).
+  - **Where in-app:** the match detail screen + the accept-confirmation toast
+    ("Kabul edildi — takvime ekle?"). Store `calendar_event_id` on the match
+    row for future updates/deletion if the match is voided or rescheduled.
+  - **Effort:** Low (Apple side is one hook + a bottom-sheet picker; Google
+    is a URL builder). Blocked on: adding the permission string to
+    `Info.plist` on the next EAS build.
 
 ### Gamification
 - **Stars currency** — earn stars for **playing** a match (win OR lose → rewards

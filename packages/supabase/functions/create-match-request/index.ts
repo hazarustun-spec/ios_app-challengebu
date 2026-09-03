@@ -118,7 +118,11 @@ Deno.serve(async (req) => {
             category: 'match_invitations',
             title: 'Yeni meydan okuma! ⚡',
             body: `${name} seni maça davet etti — kabul et ve sahaya çık! 🎾`,
-            data: { request_id: row!.id, action: 'match_invitation' },
+            data: {
+              matchRequestId: row!.id,
+              request_id: row!.id, // legacy key, kept until every device has the new client
+              action: 'match_invitation',
+            },
           })),
         );
       } catch (_e) {
