@@ -144,6 +144,9 @@ export function Button({
 
       {children !== undefined && children !== null && children !== false && (
         <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
           className={[
             'font-display font-extrabold',
             SIZE_TEXT_CLASSES[size],

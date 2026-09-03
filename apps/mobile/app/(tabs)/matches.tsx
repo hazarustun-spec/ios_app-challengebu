@@ -113,7 +113,9 @@ function formatMatchTime(iso: string): string {
 }
 
 /** Format a proposed_date ("YYYY-MM-DD") + proposed_time ("HH:MM") pair into
- *  a human label like "Cmt 14:00". */
+ *  a human label like "Per 11 Eyl · 18:00". Includes the calendar date so
+ *  "Per 18:00" is unambiguous — the previous format did not tell the user
+ *  WHICH Perşembe, which is the confusion real users reported. */
 function formatRequestDateTime(date: string, time: string): string {
   if (!date) return time ?? '';
   // proposed_time may arrive as 'HH:MM' or 'HH:MM:SS' — normalize to HH:MM.
@@ -121,8 +123,9 @@ function formatRequestDateTime(date: string, time: string): string {
   const d = new Date(`${date}T${t}:00`);
   if (Number.isNaN(d.getTime())) return (time || '').slice(0, 5);
   const dayStr = d.toLocaleDateString('tr-TR', { weekday: 'short' });
+  const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  return `${dayStr} ${timeStr}`;
+  return `${dayStr} ${dateStr} · ${timeStr}`;
 }
 
 /** Safely convert a db format string to a UI FormatKey (default 'klasik'). */

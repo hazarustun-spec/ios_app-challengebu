@@ -103,21 +103,60 @@ export default function NotificationsScreen() {
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+  const pickUuid = (obj: Record<string, unknown>, ...keys: string[]): string | null => {
+    for (const k of keys) {
+      const v = obj[k];
+      if (typeof v === 'string' && UUID_RE.test(v)) return v;
+    }
+    return null;
+  };
+
   const handlePress = (n: Row) => {
     if (n.read_at === null) markOne.mutate(n.id);
     const data = n.data ?? {};
 
     // Payload-driven navigation takes priority over the category fallback.
-    if (typeof data.matchId === 'string' && UUID_RE.test(data.matchId)) {
-      router.push(`/match/${data.matchId}`);
+    // Sender payloads mix camelCase (Edge Functions) and snake_case (Postgres
+    // triggers); accept both so nothing lands on the fallback silently.
+    const conversationId = pickUuid(data, 'conversationId', 'conversation_id');
+    if (conversationId) {
+      router.push({
+        pathname: '/messages/[conversationId]',
+        params: {
+          conversationId,
+          otherUserId: pickUuid(data, 'otherUserId', 'other_user_id') ?? '',
+          name: typeof data.name === 'string' ? data.name : '',
+        },
+      });
       return;
     }
-    if (typeof data.tournamentId === 'string' && UUID_RE.test(data.tournamentId)) {
-      router.push(`/tournament/${data.tournamentId}`);
+    const matchId = pickUuid(data, 'matchId', 'match_id');
+    if (matchId) {
+      router.push(`/match/${matchId}`);
       return;
     }
-    if (isAdmin && typeof data.disputeId === 'string' && UUID_RE.test(data.disputeId)) {
-      router.push({ pathname: '/(admin)/disputes/[id]', params: { id: data.disputeId } });
+    const tournamentId = pickUuid(data, 'tournamentId', 'tournament_id');
+    if (tournamentId) {
+      router.push(`/tournament/${tournamentId}`);
+      return;
+    }
+    const disputeId = pickUuid(data, 'disputeId', 'dispute_id');
+    if (isAdmin && disputeId) {
+      router.push({ pathname: '/(admin)/disputes/[id]', params: { id: disputeId } });
+      return;
+    }
+    const requestId = pickUuid(data, 'matchRequestId', 'requestId', 'request_id');
+    if (requestId) {
+      if (data.action === 'open_call_application') {
+        router.push({ pathname: '/match/open-applicants/[requestId]', params: { requestId } });
+      } else {
+        router.push('/(tabs)/matches');
+      }
+      return;
+    }
+    const seasonId = pickUuid(data, 'seasonId', 'season_id');
+    if (seasonId) {
+      router.push('/season');
       return;
     }
     if (data.action === 'open_admin_seasons' && isAdmin) {
@@ -141,6 +180,11 @@ export default function NotificationsScreen() {
       case 'match_score_pending':
       case 'open_listings':
         router.push('/(tabs)/matches');
+        return;
+      case 'message_received':
+        // Fallback for message pushes whose payload is missing conversationId.
+        // The messages inbox at least lets the user open the thread manually.
+        router.push('/messages');
         return;
       case 'community_announcements':
       default:
