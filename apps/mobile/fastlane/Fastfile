@@ -29,11 +29,19 @@ platform :ios do
   # notes/review notes) to App Store Connect. Deliberately skips screenshots and
   # the binary: screenshots must be regenerated after any UI copy rename and
   # uploaded separately, and the binary ships via EAS. No submission is made.
-  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane metadata
-  lane :metadata do
+  #
+  # PASS version: — `eas submit` only uploads the binary to TestFlight, it does
+  # NOT create the App Store version. Without an app_version deliver looks for
+  # an already-editable version, finds none once the previous one is live, and
+  # burns its whole retry ladder on "Cannot find edit app store version".
+  # Naming the version makes deliver create it.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 \
+  #     fastlane metadata version:1.1.1
+  lane :metadata do |options|
     asc_auth
     deliver(
       app_identifier: "app.challengebu.ios",
+      app_version: options[:version],
       metadata_path: "fastlane/metadata",
       skip_screenshots: true,
       skip_binary_upload: true,
@@ -46,12 +54,16 @@ platform :ios do
 
   # Upload ONLY screenshots (skipping text metadata and the binary). Reads
   # every PNG under fastlane/screenshots/<lang>/<Device>/ and overwrites the
-  # matching slot on the current in-review version.
-  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 fastlane screenshots
-  lane :screenshots do
+  # matching slot on the target version.
+  #
+  # Takes version: for the same reason `metadata` does — see the note there.
+  #   ASC_KEY_ID=... ASC_ISSUER_ID=... ASC_KEY_PATH=/path/AuthKey.p8 \
+  #     fastlane screenshots version:1.1.1
+  lane :screenshots do |options|
     asc_auth
     deliver(
       app_identifier: "app.challengebu.ios",
+      app_version: options[:version],
       screenshots_path: "fastlane/screenshots",
       skip_screenshots: false,
       overwrite_screenshots: true,
