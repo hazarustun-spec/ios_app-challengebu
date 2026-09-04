@@ -1,1 +1,9 @@
-İlk sürüm — kampüste tenisin rekabeti başlıyor. Rakibine meydan oku, ELO'nla tırman, sezonda şampiyonluğa oyna.
+Bu sürümde hız ve kararlılık iyileştirmeleri var:
+
+• Mesajlaşma çok daha hızlı — gönderdiğin mesaj anında görünüyor, uzun sohbetler parça parça yükleniyor.
+• Bildirime dokununca doğru ekrana gidiliyor: maç daveti tekliflere, mesaj bildirimi sohbete.
+• Maç tekliflerinde artık tam tarih görünüyor ("Per 11 Eyl · 18:00") — hangi gün olduğu net.
+• Sıralama listesi büyük listelerde çok daha akıcı.
+• Profil düzenlemede ad ve soyad ayrı alanlara bölündü.
+• Telefon numarası ve profil fotoğrafı yükleme sorunları giderildi.
+• Hata mesajları artık sessiz kalmıyor — bir şey ters gittiğinde bilgilendiriliyorsun.
