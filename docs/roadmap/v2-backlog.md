@@ -165,9 +165,10 @@ after an accepted match offer.
   keeps its old cursor, and the boundary message vanishes until remount.
   `lte` overlaps one row and the flattener dedupes by id. FlatList is
   `inverted`, which retired the `scrollToEnd` timer and the
-  flexGrow/justifyContent anchor trick. **Needs device QA:** keyboard
-  behaviour inside `KeyboardAvoidingView` on iOS, transform inversion
-  on Android.
+  flexGrow/justifyContent anchor trick. Verified on device (build 40,
+  TestFlight, iPhone): keyboard behaviour inside `KeyboardAvoidingView`
+  is correct and paging reads naturally. Android transform inversion is
+  still untested — it lands with the Android port.
 - Typing indicator via a Postgres channel broadcast (Supabase realtime
   supports broadcast, no DB rows needed).
 - Date separators between messages > 1h apart.

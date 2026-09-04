@@ -84,7 +84,7 @@ Kaynak: `docs/roadmap/v2-backlog.md` "Messaging redesign" section
 - [x] Optimistic send: onMutate append + onError rollback + pending bubble
 - [x] Thread pagination: useInfiniteQuery 50/sayfa + inverted FlatList
 - [x] Inbox previews — zaten varmış (brief yanlıştı); "dün" bucket + empty-state CTA eklendi
-- [ ] **Device QA gerekiyor:** inverted FlatList + klavye davranışı (iOS KeyboardAvoidingView, Android transform)
+- [x] **Device QA yapıldı** (build 40, TestFlight, iPhone): inverted FlatList + klavye davranışı sorunsuz, optimistic send çalışıyor, sıralama akıcı, review girişi çalışıyor. Android transform hâlâ test edilmedi (Android sürümü v2'de).
 
 **Milestone 2:**
 - [ ] Retry queue (M1'den ertelendi — kalıcı outbox gerekiyor, cache satırı refetch'te siliniyor)
