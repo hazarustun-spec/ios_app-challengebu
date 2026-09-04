@@ -43,6 +43,7 @@ import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestSt
 import { useActiveMatches } from '../../hooks/use-active-matches';
 import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
+import { useStartConversation } from '../../hooks/use-start-conversation';
 import {
   useIncomingMatchRequests,
   useOutgoingMatchRequests,
@@ -83,7 +84,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   open_tek: 'Open Tek',
   erkek_cift: 'Erkek Çift',
   kadin_cift: 'Kadın Çift',
-  karma_cift: 'Karma Çift',
+  // karma_cift was retired in migration 20260805000002 — nothing enforced the
+  // one-man-one-woman rule that would have distinguished it from Open Çift, so
+  // the two categories were the same ladder twice over. New matches can't be
+  // created here any more; the label is kept only so historical rows render.
+  karma_cift: 'Karma Çift (kapatıldı)',
   open_cift: 'Open Çift',
 };
 
@@ -291,13 +296,16 @@ function KindDot({ kind }: { kind: 'ranking' | 'friendly' }) {
 interface UpcomingCardActionsProps {
   fmtKey: FormatKey;
   swipeableMethods: SwipeableMethods;
+  onMesaj: () => void;
 }
 
-function UpcomingCardActions({ fmtKey, swipeableMethods }: UpcomingCardActionsProps) {
+function UpcomingCardActions({ fmtKey, swipeableMethods, onMesaj }: UpcomingCardActionsProps) {
   function handleMesaj() {
     haptics.tap();
     swipeableMethods.close();
-    router.push('/messages' as never);
+    // Delegated: the parent knows which opponent this card is for; sending the
+    // user to the inbox (as this used to) forced them to hunt for the thread.
+    onMesaj();
   }
 
   function handleKurallar() {
@@ -355,6 +363,24 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
   const matches: ActiveMatchRow[] = matchesQ.data ?? [];
   const [menuMatchId, setMenuMatchId] = useState<string | null>(null);
   const menuMatch = menuMatchId ? (matches.find((m) => m.id === menuMatchId) ?? null) : null;
+  const { start: startConversation } = useStartConversation();
+
+  /**
+   * Open (or resume) the DM with the primary opponent of a match, instead of
+   * dropping the user in the messages inbox. When the match row lacks a
+   * `match_request_id` (older matches without an originating request), fall
+   * back to the compose screen — it filters to messageable contacts on its own.
+   */
+  function openMessageWithOpponent(m: ActiveMatchRow) {
+    const opp = opponentNames.resolve(m);
+    const otherUserId = opp.primaryId;
+    const requestId = m.match_request_id;
+    if (otherUserId && requestId) {
+      void startConversation({ requestId, otherUserId, name: opp.name });
+    } else {
+      router.push('/messages/new' as never);
+    }
+  }
 
   function handleLongPress(m: ActiveMatchRow) {
     haptics.select();
@@ -374,7 +400,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
         },
         (buttonIndex) => {
           if (options[buttonIndex] === 'Detay') router.push(`/match/${m.id}` as never);
-          else if (options[buttonIndex] === 'Mesaj') router.push('/messages' as never);
+          else if (options[buttonIndex] === 'Mesaj') openMessageWithOpponent(m);
           else if (options[buttonIndex] === 'Kurallar') router.push(`/match/new/format-rules?format=${fmtKey}` as never);
           else if (options[buttonIndex] === 'İtiraz et') router.push(`/match/${m.id}/dispute` as never);
         },
@@ -426,6 +452,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
               <UpcomingCardActions
                 fmtKey={fmtKey}
                 swipeableMethods={swipeableMethods}
+                onMesaj={() => openMessageWithOpponent(m)}
               />
             )}
           >
@@ -592,7 +619,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
             <Pressable
               onPress={() => {
                 setMenuMatchId(null);
-                router.push('/messages' as never);
+                openMessageWithOpponent(menuMatch);
               }}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
             >

@@ -10,7 +10,7 @@
 // Submit runs on button press (not on mount). On error, the review phase is
 // re-shown with a retry button. The existing celebration UI is unchanged.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -146,19 +146,24 @@ export default function ObDone() {
     opacity: ballOpacity.value,
   }));
 
+  // Trigger the ball pop in a side effect keyed on `submitted` — mutating
+  // shared values in the render body (as this used to do) violates React's
+  // rules and can double-fire on strict-mode re-renders.
+  useEffect(() => {
+    if (!submitted) return;
+    ballOpacity.value = withTiming(1, { duration: 220 });
+    ballScale.value = withSequence(
+      withTiming(1.12, { duration: 250, easing: Easing.bezier(0.2, 0.9, 0.3, 1.1) }),
+      withTiming(1.0, { duration: 200 }),
+    );
+  }, [submitted]);
+
   // Cast: typed-routes file regenerates on `expo start`; until then `/(tabs)`
   // is not in the route union. Path is runtime-validated by Expo Router.
   const goHome = () => router.replace('/(tabs)' as never);
 
   // ── Phase 2: celebration ─────────────────────────────────────────────────
   if (submitted) {
-    // Trigger ball animation once the celebration is rendered.
-    ballOpacity.value = withTiming(1, { duration: 220 });
-    ballScale.value = withSequence(
-      withTiming(1.12, { duration: 250, easing: Easing.bezier(0.2, 0.9, 0.3, 1.1) }),
-      withTiming(1.0, { duration: 200 }),
-    );
-
     const level = levelForElo(INITIAL_ELO);
 
     return (

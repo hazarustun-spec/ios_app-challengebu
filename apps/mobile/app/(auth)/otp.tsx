@@ -24,7 +24,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { sanitizeOtp } from '../../lib/otp-code';
@@ -266,24 +265,24 @@ export default function OtpScreen() {
               : 'Kodu tekrar gönder'}
           </Text>
         </Pressable>
-      </View>
 
-      <View style={{ padding: 24, paddingTop: 8 }}>
-        <Button
-          full
-          size="lg"
-          variant="secondary"
-          icon={<Icon name="link" size={20} color={colors.text} />}
-          onPress={() =>
-            Alert.alert(
-              'Sihirli bağlantı',
-              "Mail'deki linke tıkla; uygulamaya geri dönünce devam edebilirsin.",
-            )
-          }
-          disabled={verifying}
+        {/* Magic-link hint — replaces the old "Sihirli bağlantıyı kullandım"
+            button, which only opened an Alert restating what the user could see
+            here already. The link auto-signs you in on tap, so there is nothing
+            for a button to do; a static note is honest about that. */}
+        <Text
+          className="font-sans text-text-3"
+          style={{
+            fontSize: 12.5,
+            lineHeight: 18,
+            textAlign: 'center',
+            marginTop: 20,
+            paddingHorizontal: 12,
+          }}
         >
-          Sihirli bağlantıyı kullandım
-        </Button>
+          E-postandaki sihirli bağlantıya tıkladıysan uygulamaya geri dön —
+          otomatik giriş yapılır.
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );

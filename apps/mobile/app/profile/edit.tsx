@@ -312,15 +312,21 @@ export default function ProfileEdit() {
         </View>
 
         <View style={{ gap: 18 }}>
+          {/* Ad + Soyad are two separate fields — the previous single "Ad Soyad"
+              input tried to split the string on whitespace on every keystroke,
+              which mangled multi-word names ("Emre Can Aydın" → first="Emre",
+              last="Can Aydın") and re-split as the user typed. */}
           <Field
-            label="Ad Soyad"
-            value={`${firstName} ${lastName}`.trim()}
-            onChange={(v) => {
-              const parts = v.trim().split(/\s+/);
-              setFirstName(parts[0] ?? '');
-              setLastName(parts.slice(1).join(' '));
-            }}
+            label="Ad"
+            value={firstName}
+            onChange={setFirstName}
           />
+          <Field
+            label="Soyad"
+            value={lastName}
+            onChange={setLastName}
+          />
+
 
           <View>
             <Text

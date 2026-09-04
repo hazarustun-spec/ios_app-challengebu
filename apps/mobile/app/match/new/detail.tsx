@@ -209,7 +209,24 @@ export default function NewMatchDetail() {
           </Text>
         </View>
       </View>
-      <View style={{ padding: 18 }}>
+      <View style={{ padding: 18, gap: 10 }}>
+        {/* When today is picked but no hourly slot is still ahead of "now",
+            the store's snap effect wipes `time`. The Devam button correctly
+            disables — but without this hint the user has no idea why. */}
+        {availableTimes.length === 0 && (
+          <View
+            className="flex-row bg-warn-soft rounded-md"
+            style={{ padding: 12, gap: 10 }}
+          >
+            <Icon name="info" size={16} color={colors.warn} />
+            <Text
+              className="font-sans text-text-2"
+              style={{ flex: 1, fontSize: 12.5, lineHeight: 18 }}
+            >
+              Bugün için uygun saat kalmadı — devam etmek için başka bir gün seç.
+            </Text>
+          </View>
+        )}
         <Button
           full
           size="lg"

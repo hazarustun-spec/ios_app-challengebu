@@ -76,7 +76,11 @@ const baseInitial: Omit<NewMatchState, 'setField' | 'reset' | 'date'> = {
   path: 'direct',
   category: 'erkek_tek',
   format: 'klasik',
-  time: '18:30',
+  // Snap to a slot the TIMES picker actually offers (09:00–20:00, hourly).
+  // An off-grid default (e.g. '18:30') got silently rewritten to whatever the
+  // first available slot was on the first render, sometimes to a slot other
+  // than what the user later saw preselected.
+  time: '18:00',
   court: '',
   opponent: null,
   partner: null,

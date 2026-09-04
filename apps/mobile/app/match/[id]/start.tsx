@@ -42,7 +42,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   open_tek: 'Open Tek',
   erkek_cift: 'Erkek Çift',
   kadin_cift: 'Kadın Çift',
-  karma_cift: 'Karma Çift',
+  // karma_cift retired in migration 20260805000002 — kept here only so any
+  // legacy match row still renders a label (new matches can't be karma_cift).
+  karma_cift: 'Karma Çift (kapatıldı)',
   open_cift: 'Open Çift',
 };
 

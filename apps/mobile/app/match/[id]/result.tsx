@@ -225,8 +225,21 @@ export default function MatchResult() {
   // Oriented conflict scores: "my games – opp games" perspective.
   // iAmTeamA was already derived above as myTeamSide === 'a'.
   const iAmTeamA = myTeamSide === 'a';
+  const isDoubles = match
+    ? match.team_a_player_ids.length > 1 || match.team_b_player_ids.length > 1
+    : false;
   const mySubmission = submissions.find((s) => s.submitted_by === userId);
-  const oppSubmission = submissions.find((s) => s.submitted_by !== userId);
+  // Pick a submission from the opposing team — not "any submitter that isn't
+  // me". In doubles, "not me" can land on my own partner, and we would then
+  // render "rakip X-Y girdi" citing my own team's score.
+  const opponentTeamIds = match
+    ? iAmTeamA
+      ? match.team_b_player_ids
+      : match.team_a_player_ids
+    : [];
+  const oppSubmission = submissions.find((s) =>
+    opponentTeamIds.includes(s.submitted_by),
+  );
 
   const conflictMyMine = mySubmission
     ? iAmTeamA
@@ -508,8 +521,8 @@ export default function MatchResult() {
                 ? `Sen ${conflictMyMine}-${conflictMyOpp} girdin`
                 : 'Senin skorun bilinmiyor'}
               {conflictOppMine !== null && conflictOppOpp !== null
-                ? `, rakibin ${conflictOppMine}-${conflictOppOpp} girdi.`
-                : ', rakibin skoru bilinmiyor.'}
+                ? `, ${isDoubles ? 'rakip takım' : 'rakibin'} ${conflictOppMine}-${conflictOppOpp} girdi.`
+                : `, ${isDoubles ? 'rakip takımın' : 'rakibin'} skoru bilinmiyor.`}
               {' '}Skoru düzelterek tekrar gönderebilirsin.
             </Text>
           </View>
@@ -523,7 +536,12 @@ export default function MatchResult() {
             style={{ fontSize: 12.5, textAlign: 'center', lineHeight: 18 }}
           >
             {!scoresSettled
-              ? 'Skorun gönderildi — rakibinin de skoru girmesi bekleniyor.'
+              ? mySubmission
+                ? 'Skorun gönderildi — rakibinin de skoru girmesi bekleniyor.'
+                : // Rakip skor girdi ama ben girmedim — the previous copy
+                  // claimed "Skorun gönderildi" here, misleading the user into
+                  // thinking they'd already acted.
+                  'Rakibin skoru girdi — senin de skoru girmen bekleniyor.'
               : myConfirmed
                 ? 'Onayın alındı — rakibinin onayı bekleniyor.'
                 : 'Skorlar eşleşti. Onaylayınca ELO güncellenir.'}
@@ -560,6 +578,17 @@ export default function MatchResult() {
                 onPress={() => router.replace(`/match/${id}/score` as never)}
               >
                 Skoru tekrar gir
+              </Button>
+            ) : !scoresSettled && !mySubmission ? (
+              // Rakip skoru girdi, ben girmedim → CTA'yı skor girmeye çevir.
+              // Aksi halde disabled "Rakip bekleniyor" düğmesi kalıyor ki bu,
+              // aslında bekleyen tarafın kullanıcı olduğu bir durumda yanlış.
+              <Button
+                size="lg"
+                full
+                onPress={() => router.replace(`/match/${id}/score` as never)}
+              >
+                Skoru gir
               </Button>
             ) : (
               <Button

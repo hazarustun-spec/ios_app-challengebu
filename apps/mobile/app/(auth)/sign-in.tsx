@@ -177,7 +177,14 @@ export default function SignIn() {
             accessibilityLabel="KVKK onayı"
             accessibilityState={{ checked: kvkkAccepted }}
           >
-            <CheckBox checked={kvkkAccepted} onChange={setKvkkAccepted} />
+            {/* CheckBox is itself a Pressable. Nesting Pressables lets a tap
+                be handled twice — once by CheckBox's onChange and once by the
+                outer toggle — which briefly flipped state back to its previous
+                value. `pointerEvents="none"` makes the CheckBox purely visual
+                and hands the tap entirely to the outer Pressable. */}
+            <View pointerEvents="none">
+              <CheckBox checked={kvkkAccepted} />
+            </View>
           </Pressable>
           <Text className="font-sans flex-1 text-text-2" style={{ fontSize: 13, lineHeight: 19 }}>
             <Text
