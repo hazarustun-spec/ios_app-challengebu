@@ -73,8 +73,9 @@
       [
         "@sentry/react-native/expo",
         {
-          "url": "https://sentry.io/",
-          "note": "DSN is set at runtime via EXPO_PUBLIC_SENTRY_DSN so it can differ per EAS environment; source-map upload uses SENTRY_AUTH_TOKEN + SENTRY_ORG + SENTRY_PROJECT set as EAS secrets."
+          "organization": "hazar-ustun",
+          "project": "challengebu-mobile",
+          "url": "https://sentry.io/"
         }
       ]
     ],
