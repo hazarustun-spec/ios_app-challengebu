@@ -14,27 +14,18 @@ Bugünkü + ertelenen işlerin merkezi. Öncelik sırasında. Bir iş bitince
 - [ ] v1.1.1 EAS build submit ederken beraber gönder → o zaman fastlane çalışacak
 - Blocker: v1.1.1 build (Sentry DSN ready olduğunda tetiklenir)
 
-### 2. OTA update push ✅ (1. tur atıldı — update group dbffec8e)
-- [x] Tur 1: push router, in-app notif handler, button overflow, date format, audit dalga 1, Sentry scaffold
-- [ ] **Tur 2 bekliyor:** audit dalga 2 + 3 + expo-push chunk
-  ```
-  cd apps/mobile && eas update --branch production --message "audit dalga 2+3 + push chunk"
-  ```
+### 2. OTA update push ✅
+- [x] Tur 1 (dbffec8e): push router, in-app notif handler, button overflow, date format, audit dalga 1, Sentry scaffold
+- [x] Tur 2 (6002eeb5): audit dalga 2 + 3 + expo-push chunk
 
 ### 3. Supabase edge function deploy ✅
-- [x] `create-match-request` deploy edildi (matchRequestId payload)
-- [ ] **Yeniden deploy gerekiyor:** `_shared/expo-push.ts` değişti → onu import eden 4 fonksiyon
-  ```
-  cd packages/supabase
-  supabase functions deploy publish-announcement --project-ref zbjkauljjdosyuwguuhv
-  supabase functions deploy dispatch-push --project-ref zbjkauljjdosyuwguuhv
-  supabase functions deploy send-push-notification --project-ref zbjkauljjdosyuwguuhv
-  supabase functions deploy send-message --project-ref zbjkauljjdosyuwguuhv
-  ```
+- [x] `create-match-request` (matchRequestId payload)
+- [x] `publish-announcement`, `dispatch-push`, `send-push-notification`, `send-message` (expo-push chunk)
 
 ### 4. Sentry.io project setup ✅
 - [x] Project açıldı: `hazar-ustun / challengebu-mobile`
 - [x] 4 EAS env prod'a girildi (DSN, ORG, PROJECT, AUTH_TOKEN)
+- [x] app.json plugin config'e organization + project yazıldı (2ce8a0b)
 - [ ] **Yeni EAS build al** — Sentry native init o zaman aktif (v1.1.1)
 
 ---
