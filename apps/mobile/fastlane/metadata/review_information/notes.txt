@@ -30,26 +30,34 @@ About the app:
   by, sponsored by, or a copy of any specific university; no university
   name, logo, colors, or branding is used in the app or its metadata.
 
-Pre-populated review data:
-  The demo account lands on a live, populated app after finishing the
-  onboarding wizard:
-    - A ranked leaderboard with 6 players (the demo account + 5 seeded
-      opponents): 2 in Erkek Tek (men's singles), 2 in Kadın Tek (women's
-      singles), everyone in Open Tek.
-    - Completed match history on the demo profile (3 matches: 2 won, 1 lost)
-      driving ELO history + form stats.
-    - ONE match already ready to score right now — no waiting required.
-    - ONE incoming pending challenge from a seeded opponent, so the accept
-      flow is exercisable.
+What the demo account sees:
+  The app is live with real players, so after finishing the onboarding
+  wizard the demo account lands on the real ladder — real names, real ELO
+  ratings, real standings across the Erkek Tek (men's singles), Kadın Tek
+  (women's singles) and Open Tek categories. Nothing is mocked.
 
-Demonstrating the FULL match flow (start → score → confirm):
-  1. Open the Maçlar (Matches) tab → the pre-seeded card shows "Maçı
-     Başlat".
-  2. Tap "Maçı Başlat" to start (it is already within the allowed start
-     window).
-  3. Enter points to complete the set, then submit the score.
-  You can also tap "+" to create a brand-new challenge against any seeded
-  opponent, or accept the incoming pending challenge shown in notifications.
+  The demo account itself starts fresh each sign-in (no match history), so
+  its own ELO chart and stats are empty until it plays. That is expected,
+  not a bug: we do not seed fake matches into a live production ladder.
+
+Match flow (create → play → score → confirm):
+  The full flow needs two real people, because a match is a handshake: one
+  player challenges, the other accepts, both start it, both submit the
+  score, and the ELO only moves once the two scores agree. A reviewer
+  cannot complete that alone.
+
+  What IS exercisable from the demo account:
+    - Tap "+" in the Maçlar (Matches) tab to create a challenge against any
+      player on the ladder — pick category, format, court, date and time,
+      and send it. The offer appears under "Gönderdiğim teklifler".
+    - Open a listing ("İlanlar") to see the open-call flow.
+    - Every other surface: Sıralama (ladder + category filters), Profil
+      (stats, ELO history, badges), notifications, settings including
+      account deletion, and messaging with block/report.
+
+  The complete match lifecycle — start, live score, submit, confirm, ELO
+  update — is recorded end to end in the demo video linked below, filmed on
+  a physical iPhone with two real accounts.
 
 Device notes:
   iPhone-first app (portrait). On iPad it runs in iPhone compatibility mode;
