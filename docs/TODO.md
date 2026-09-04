@@ -7,60 +7,75 @@ Bugünkü + ertelenen işlerin merkezi. Öncelik sırasında. Bir iş bitince
 
 ## 🔴 ŞİMDİ (bugün / bu oturum)
 
-### 1. Screenshot 6.3" fix + fastlane push
-- [ ] `iPhone 6.7 Display/` klasörüne 14 Plus ss'leri taşı
-- [ ] `sips` ile 1206×2622 kopya oluştur → `iPhone 6.3 Display/`
-- [ ] `fastlane screenshots` → 6.5" + 6.7" + 6.3" slotları overwrite
-- Kaynak: konuşma "kanka öyle işaret çıkmıyor"
-- Blocker: yok
+### 1. Screenshot 6.3" fix + fastlane push (v1.1.1 build ile birlikte)
+- [x] `iPhone 6.7 Display/` klasörüne 14 Plus ss'leri taşı
+- [x] `sips` ile 1206×2622 kopya oluştur → `iPhone 6.3 Display/`
+- [ ] ~~`fastlane screenshots` — v1.1.0 canlı, editable version yok~~
+- [ ] v1.1.1 EAS build submit ederken beraber gönder → o zaman fastlane çalışacak
+- Blocker: v1.1.1 build (Sentry DSN ready olduğunda tetiklenir)
 
-### 2. OTA update push (bugünkü tüm fix'ler canlıya)
-- [ ] `eas update --branch production --message "..."`
-- Girecek fix'ler: push router (matchRequestId/season), in-app notif handler (conversationId), button numberOfLines, match-request date format, audit dalga 1 (4 kritik silent-fail), Sentry scaffold
-- **Not:** Sentry native init için sadece OTA yetmez, DSN + build sonraki EAS build ile aktifleşir. OTA'da yalnızca JS scaffold gider (sessiz — DSN yoksa no-op).
+### 2. OTA update push ✅ (1. tur atıldı — update group dbffec8e)
+- [x] Tur 1: push router, in-app notif handler, button overflow, date format, audit dalga 1, Sentry scaffold
+- [ ] **Tur 2 bekliyor:** audit dalga 2 + 3 + expo-push chunk
+  ```
+  cd apps/mobile && eas update --branch production --message "audit dalga 2+3 + push chunk"
+  ```
 
-### 3. Supabase edge function deploy
-- [ ] `supabase functions deploy create-match-request --project-ref zbjkauljjdosyuwguuhv`
-- Sebep: `data.matchRequestId` alanı payload'a eklendi
+### 3. Supabase edge function deploy ✅
+- [x] `create-match-request` deploy edildi (matchRequestId payload)
+- [ ] **Yeniden deploy gerekiyor:** `_shared/expo-push.ts` değişti → onu import eden 4 fonksiyon
+  ```
+  cd packages/supabase
+  supabase functions deploy publish-announcement --project-ref zbjkauljjdosyuwguuhv
+  supabase functions deploy dispatch-push --project-ref zbjkauljjdosyuwguuhv
+  supabase functions deploy send-push-notification --project-ref zbjkauljjdosyuwguuhv
+  supabase functions deploy send-message --project-ref zbjkauljjdosyuwguuhv
+  ```
 
-### 4. Sentry.io project setup (senin yapman gereken)
-- [ ] sentry.io'da yeni project aç (React Native / Expo)
-- [ ] DSN kopyala
-- [ ] `eas env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --value <DSN>`
-- [ ] SENTRY_AUTH_TOKEN + SENTRY_ORG + SENTRY_PROJECT'i de EAS Secrets'a ekle (source-map upload için)
-- [ ] Yeni EAS build al — Sentry native init o zaman aktif
+### 4. Sentry.io project setup ✅
+- [x] Project açıldı: `hazar-ustun / challengebu-mobile`
+- [x] 4 EAS env prod'a girildi (DSN, ORG, PROJECT, AUTH_TOKEN)
+- [ ] **Yeni EAS build al** — Sentry native init o zaman aktif (v1.1.1)
 
 ---
 
 ## 🟡 BU HAFTA
 
-### 5. Audit Dalga 2 — veri koruma (5 item)
-Kaynak: `docs/audit-2026-09-daily-use.md`
-- [ ] #3 Retired kategori crash — `match/new/detail.tsx:135` non-null assertion fallback
-- [ ] #5 Phone format normalize — `+90` prepend, digit strip
-- [ ] #6 Avatar upload MIME + upsert — use-upload-avatar.ts pattern kopyala
-- [ ] #8 Kort seçilmeden submit engelle — Button disabled guard
-- [ ] #11 Avatar OOM — ImageManipulator ile 512x512 resize
+### 5. Audit Dalga 2 — veri koruma (5 item) ✅ e22d95a
+- [x] #3 Retired kategori crash — safe fallback + auto-heal
+- [x] #5 Phone format normalize — digit strip + toE164TR + null fallback
+- [x] #6 Avatar upload MIME + upsert — use-upload-avatar pattern reuse + captureException
+- [x] #8 Kort seçilmeden submit engelle — disabled guard
+- [x] #11 Avatar OOM — ImageManipulator 512×512 JPEG 0.7
 
-### 6. Audit Dalga 3 — UX polish (5 orta + 3 düşük)
-Kaynak: `docs/audit-2026-09-daily-use.md`
-- [ ] #9 "Mesaj" swipe action inbox yerine thread'e
-- [ ] #10 Doubles conflict UI takım gruplama
-- [ ] #12 Bugün + geç saat time boşa düşer — Devam disabled
-- [ ] #13 "Sihirli bağlantıyı kullandım" no-op button — kaldır veya Mail app aç
-- [ ] #14 Reanimated render body mutate → useEffect
-- [ ] #15 Profile edit tek input → 2 input
-- [ ] #16 Result screen "Skorun gönderildi" copy → `mySubmission` kontrolü
-- [ ] #17 Default time picker seçeneklerinde yok — 18:00'a al
-- [ ] #18 Retired karma_cift label kalıntısı
-- [ ] #19 KVKK checkbox double-tap — pointerEvents="none"
+### 6. Audit Dalga 3 — UX polish (10 item) ✅ d5c4d81
+- [x] #9 "Mesaj" swipe → useStartConversation + /messages/new fallback
+- [x] #10 Doubles conflict UI — rakip takım filtresi + copy
+- [x] #12 Uygun saat yoksa warn banner
+- [x] #13 Magic-link no-op button kaldırıldı → statik hint
+- [x] #14 Reanimated mutations → useEffect
+- [x] #15 Profile edit → ayrı Ad + Soyad Field
+- [x] #16 Result screen "Skoru gir" CTA + doğru copy
+- [x] #17 Default time '18:00'
+- [x] #18 karma_cift → "Karma Çift (kapatıldı)"
+- [x] #19 KVKK CheckBox pointerEvents="none"
 
-### 7. Kapasite analizi raporu
-- [ ] Leaderboard query pagination var mı?
-- [ ] Avatar upload boyut sınırı?
-- [ ] Realtime subscription cleanup?
-- [ ] Supabase Free tier limits kontrol
-- [ ] Tahmin: kaç user'a kadar rahat, ne zaman Pro tier?
+### 7. Kapasite analizi raporu ✅ 4d96006 + 316a78b
+Rapor: `docs/capacity-analysis-2026-09.md`
+- [x] Tarama tamam — ~500-800 aktif user'a kadar rahat
+- [x] İlk gerçek eşik: Realtime 200 concurrent (~150-200 anlık aktif user)
+- [x] `_shared/expo-push.ts` 100'lük chunk (defense in depth)
+- [x] Raporun "P0 Expo Push bugün bozuk" iddiası doğrulamada düştü — düzeltildi
+
+### 7b. Kapasite P1 — 500-1000 user hedefi
+- [ ] `hooks/use-ladder.ts:80-90` — `public_profiles.in('user_id', [...eloIds])` filter
+- [ ] `(tabs)/leaderboard.tsx:286+` — ScrollView → FlatList + getItemLayout
+- [ ] `hooks/use-messages.ts:76-88` — `.limit(50)` + reverse pagination (Task 8 M1 ile çakışıyor, birlikte yapılabilir)
+
+### 7c. Kapasite P2 — 2000 user hedefi
+- [ ] Messages retention cron (365 gün silinmiş / 730 gün hepsi)
+- [ ] Dead-code realtime hook'ları sil (`use-active-matches.ts:63`, `use-match-requests.ts:73`)
+- [ ] Supabase Pro tier ($25/ay) — Realtime 500 + DB 8GB + PITR
 
 ---
 
