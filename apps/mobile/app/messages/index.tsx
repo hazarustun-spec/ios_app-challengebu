@@ -29,7 +29,10 @@ import { colors } from '../../theme/colors';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Formats an ISO timestamp as a short relative label in Turkish. */
+/**
+ * Formats an ISO timestamp as a short relative label in Turkish:
+ * "şimdi" → "5 dk" → "3 sa" → "dün" → "4 gün" → "3 Eyl".
+ */
 function relativeTime(iso: string | null): string {
   if (!iso) return '';
   const now = Date.now();
@@ -37,11 +40,12 @@ function relativeTime(iso: string | null): string {
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60_000);
   if (diffMin < 1) return 'şimdi';
-  if (diffMin < 60) return `${diffMin}dk`;
+  if (diffMin < 60) return `${diffMin} dk`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}sa`;
+  if (diffHr < 24) return `${diffHr} sa`;
   const diffDays = Math.floor(diffHr / 24);
-  if (diffDays < 7) return `${diffDays}g`;
+  if (diffDays === 1) return 'dün';
+  if (diffDays < 7) return `${diffDays} gün`;
   const d = new Date(iso);
   return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
 }
@@ -83,8 +87,10 @@ export default function MessagesScreen() {
         {header}
         <EmptyState
           icon="mail"
-          title="Henüz mesajın yok"
-          body="Maç tekliflerinden başlayan konuşmalar burada görünecek."
+          title="Mesaj kutun boş"
+          body="Maç teklifin olduğunda rakibinle burada mesajlaşabilirsin. Maçlar sekmesinden bir teklif gönder ya da açık çağrılara katıl."
+          action="Maçlara git"
+          onAction={() => router.replace('/(tabs)/matches')}
         />
       </View>
     );

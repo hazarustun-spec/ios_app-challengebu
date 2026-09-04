@@ -16,9 +16,16 @@
 //   - My standing card (outlined, with avatar + ELO chip)
 //   - Top-3 podium strip (2nd left, 1st center elevated, 3rd right)
 //   - Rank rows for the rest of the ladder
+//
+// The ladder body is a FlatList: everything above the rank rows (countdown
+// hero, "Sen" standing card, podium, empty state) lives in
+// ListHeaderComponent, and rows 4+ are the virtualized data. The category chip
+// strip stays OUTSIDE the list — a horizontal ScrollView nested inside a
+// vertical FlatList is fine only as a sibling, never as a child cell.
 
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
+  FlatList,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -122,6 +129,113 @@ function seasonLabel(name: string, year: number): string {
   const label = SEASON_NAME_MAP[name] ?? name;
   return `${label} ${year} Sezonu`;
 }
+
+/**
+ * How many rows get the staggered entrance. With virtualization the rest mount
+ * lazily as the user scrolls, and an `index * 55ms` delay would leave a freshly
+ * mounted row blank on arrival. The first screenful animates exactly as before.
+ */
+const ROW_ANIM_COUNT = 10;
+
+/** Vertical space between rank rows (was the `gap: 8` on their old wrapper). */
+const ROW_GAP = 8;
+
+/**
+ * One rank row (4th place onward). Memoized so a scroll-driven re-render of the
+ * screen doesn't re-render every mounted cell.
+ *
+ * NOTE: no `getItemLayout` is provided for these rows on purpose — the height
+ * is not fixed. The name Text has no `numberOfLines`, so a long name wraps to a
+ * second line, and Dynamic Type scales the text block past the 42px avatar. A
+ * wrong getItemLayout breaks scroll offsets far worse than the measurement pass
+ * costs.
+ */
+const LadderRowItem = memo(function LadderRowItem({
+  row,
+  index,
+  isMe,
+}: {
+  row: LadderRow;
+  index: number;
+  isMe: boolean;
+}) {
+  const lv = levelForElo(row.rating);
+  const name = `${row.firstName} ${row.lastName}`.trim();
+  const content = (
+    <Pressable
+      onPress={() => router.push(`/user/${row.profileId}` as never)}
+      className="flex-row items-center rounded-md"
+      style={{
+        padding: 11,
+        paddingHorizontal: 12,
+        gap: 10,
+        borderWidth: 1,
+        borderColor: colors.borderStrong,
+        backgroundColor: isMe ? colors.claySofter : colors.surface,
+      }}
+    >
+      <Text
+        className="font-num"
+        style={{
+          fontSize: 16,
+          fontWeight: '700',
+          width: 22,
+          textAlign: 'center',
+          color: colors.text3,
+        }}
+      >
+        {row.rank}
+      </Text>
+      <Avatar name={name} size={42} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text
+          className="font-sans font-bold text-text"
+          style={{ fontSize: 14.5 }}
+        >
+          {name}
+        </Text>
+        <View
+          className="flex-row items-center"
+          style={{ gap: 5, marginTop: 3 }}
+        >
+          <LevelIcon level={lv} size={13} />
+          <Text
+            className="font-sans font-semibold"
+            style={{ fontSize: 12, color: colors.text3 }}
+          >
+            {lv.name}
+          </Text>
+          <Text
+            className="font-sans"
+            style={{ fontSize: 11.5, color: colors.text3 }}
+          >
+            · {row.matchesPlayed} maç
+          </Text>
+        </View>
+      </View>
+      <Text
+        className="font-num font-extrabold"
+        style={{
+          fontSize: 19,
+          color: colors.text,
+          minWidth: 44,
+          textAlign: 'right',
+        }}
+      >
+        {row.rating}
+      </Text>
+    </Pressable>
+  );
+
+  return index < ROW_ANIM_COUNT ? (
+    <FadeSlideIn index={index}>{content}</FadeSlideIn>
+  ) : (
+    content
+  );
+});
+
+/** 8px gutter between rank rows — replaces the old wrapper's `gap: 8`. */
+const RowSeparator = () => <View style={{ height: ROW_GAP }} />;
 
 export default function Leaderboard() {
   const params = useLocalSearchParams<{ cat?: string }>();
@@ -456,10 +570,30 @@ export default function Leaderboard() {
         </Pressable>
       )}
 
-      <ScrollView
+      {/* Ladder body. Everything above the rank rows is ListHeaderComponent so
+          the rows themselves stay virtualized — the old ScrollView + .map()
+          mounted every row up front, which cost ~1-2s on a 2000-row ladder.
+          The old container `gap: 14` is replaced by explicit marginBottom on
+          the header blocks (a contentContainer gap would also land between
+          every rank row, which need 8px, not 14px). */}
+      <FlatList
+        data={restRows}
+        keyExtractor={(item) => item.profileId}
+        renderItem={({ item, index }) => (
+          <LadderRowItem
+            row={item}
+            index={index}
+            isMe={item.profileId === userId}
+          />
+        )}
+        ItemSeparatorComponent={RowSeparator}
         onScroll={(e) => setStuck(e.nativeEvent.contentOffset.y > 210)}
         scrollEventThrottle={16}
-        contentContainerStyle={{ padding: 14, paddingTop: 14, gap: 14 }}
+        contentContainerStyle={{ padding: 14 }}
+        initialNumToRender={ROW_ANIM_COUNT}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        windowSize={11}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -467,361 +601,296 @@ export default function Leaderboard() {
             tintColor={colors.clay}
           />
         }
-      >
-        {/* Finale countdown hero — scrolls with content so the sticky "Sen" bar
-            has clear space to appear over (it used to be fixed above the scroll,
-            which the sticky bar overlapped). */}
-        <Pressable
-          onPress={() => router.push('/season' as never)}
-          style={{
-            borderRadius: 34,
-            paddingVertical: 22,
-            paddingHorizontal: 24,
-            backgroundColor: '#2270BC',
-          }}
-        >
-          {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-              <PulsingDot />
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
+        ListHeaderComponent={
+          <View>
+            {/* Finale countdown hero — scrolls with content so the sticky "Sen" bar
+                has clear space to appear over (it used to be fixed above the scroll,
+                which the sticky bar overlapped). */}
+            <Pressable
+              onPress={() => router.push('/season' as never)}
+              style={{
+                borderRadius: 34,
+                paddingVertical: 22,
+                paddingHorizontal: 24,
+                backgroundColor: '#2270BC',
+                marginBottom: 14,
+              }}
+            >
+              {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+                  <PulsingDot />
+                  <Text
+                    className="font-sans font-bold"
+                    style={{ fontSize: 12, letterSpacing: 1.92, color: '#FFFFFF' }}
+                  >
+                    FİNALE GERİ SAYIM
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 5 }}>
+                  {daysLeft !== null && (
+                    <Text
+                      className="font-num font-bold"
+                      style={{ fontSize: 13, color: '#FFFFFF' }}
+                    >
+                      {daysLeft} gün
+                    </Text>
+                  )}
+                  {meRow && meRow.rank <= 8 && (
+                    <View
+                      style={{
+                        borderWidth: 1.5,
+                        borderColor: 'rgba(255,255,255,0.55)',
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 9999,
+                      }}
+                    >
+                      <Text
+                        className="text-white font-extrabold"
+                        style={{ fontSize: 10, letterSpacing: 0.6 }}
+                      >
+                        İLK 8&apos;DESİN
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {/* Progress bar: track #13497F, white fill */}
+              <View
+                style={{
+                  marginTop: 16,
+                  height: 9,
+                  borderRadius: 5,
+                  backgroundColor: '#13497F',
+                  overflow: 'hidden',
+                }}
               >
-                FİNALE GERİ SAYIM
-              </Text>
-            </View>
-            <View style={{ alignItems: 'flex-end', gap: 5 }}>
-              {daysLeft !== null && (
-                <Text
-                  className="font-num font-bold"
-                  style={{ fontSize: 13, color: '#FFFFFF' }}
-                >
-                  {daysLeft} gün
-                </Text>
-              )}
-              {meRow && meRow.rank <= 8 && (
                 <View
                   style={{
-                    borderWidth: 1.5,
-                    borderColor: 'rgba(255,255,255,0.55)',
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 9999,
+                    width: `${Math.round(progressPct * 100)}%`,
+                    height: '100%',
+                    backgroundColor: '#FFFFFF',
                   }}
+                />
+              </View>
+
+              {/* Bottom row */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
+                <Text
+                  className="font-sans font-semibold"
+                  style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
                 >
-                  <Text
-                    className="text-white font-extrabold"
-                    style={{ fontSize: 10, letterSpacing: 0.6 }}
-                  >
-                    İLK 8&apos;DESİN
+                  {sezonLabel} · ladder
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
+                    Sezona git
                   </Text>
+                  <Icon name="chevR" size={13} color="#FFFFFF" />
                 </View>
-              )}
-            </View>
-          </View>
+              </View>
+            </Pressable>
 
-          {/* Progress bar: track #13497F, white fill */}
-          <View
-            style={{
-              marginTop: 16,
-              height: 9,
-              borderRadius: 5,
-              backgroundColor: '#13497F',
-              overflow: 'hidden',
-            }}
-          >
-            <View
-              style={{
-                width: `${Math.round(progressPct * 100)}%`,
-                height: '100%',
-                backgroundColor: '#FFFFFF',
-              }}
-            />
-          </View>
-
-          {/* Bottom row */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
-            <Text
-              className="font-sans font-semibold"
-              style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
-            >
-              {sezonLabel} · ladder
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <Text className="font-sans font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
-                Sezona git
-              </Text>
-              <Icon name="chevR" size={13} color="#FFFFFF" />
-            </View>
-          </View>
-        </Pressable>
-
-        {/* My standing card — only rendered if current user is in the ladder */}
-        {meRow ? (
-          <Pressable
-            onPress={() => router.push('/(tabs)/profile' as never)}
-            className="flex-row items-center bg-surface rounded-lg"
-            style={{
-              padding: 15,
-              gap: 13,
-              borderWidth: 1.5,
-              borderColor: colors.borderStrong,
-            }}
-          >
-            <View style={{ alignItems: 'center', minWidth: 30 }}>
-              <Text
-                className="font-sans font-extrabold"
+            {/* My standing card — only rendered if current user is in the ladder */}
+            {meRow ? (
+              <Pressable
+                onPress={() => router.push('/(tabs)/profile' as never)}
+                className="flex-row items-center bg-surface rounded-lg"
                 style={{
-                  fontSize: 9.5,
-                  letterSpacing: 1.14,
-                  color: colors.court,
+                  padding: 15,
+                  gap: 13,
+                  borderWidth: 1.5,
+                  borderColor: colors.borderStrong,
+                  marginBottom: 14,
                 }}
               >
-                SEN
-              </Text>
-              <Text
-                className="font-num font-extrabold text-text"
-                style={{ fontSize: 28, lineHeight: 28 }}
-              >
-                {meRow.rank}
-              </Text>
-            </View>
-            <Avatar name={meName} size={46} ring={colors.court} />
-            <View style={{ flex: 1 }}>
-              <Text
-                className="font-display font-bold text-text"
-                style={{ fontSize: 16 }}
-              >
-                {meName}
-              </Text>
-              <View className="flex-row" style={{ gap: 6, marginTop: 5 }}>
-                <View
-                  className="bg-court rounded-pill"
-                  style={{ paddingHorizontal: 9, paddingVertical: 3 }}
-                >
+                <View style={{ alignItems: 'center', minWidth: 30 }}>
                   <Text
-                    className="font-num font-extrabold text-white"
-                    style={{ fontSize: 11.5 }}
+                    className="font-sans font-extrabold"
+                    style={{
+                      fontSize: 9.5,
+                      letterSpacing: 1.14,
+                      color: colors.court,
+                    }}
                   >
-                    {meRow.rating} ELO
+                    SEN
+                  </Text>
+                  <Text
+                    className="font-num font-extrabold text-text"
+                    style={{ fontSize: 28, lineHeight: 28 }}
+                  >
+                    {meRow.rank}
+                  </Text>
+                </View>
+                <Avatar name={meName} size={46} ring={colors.court} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    className="font-display font-bold text-text"
+                    style={{ fontSize: 16 }}
+                  >
+                    {meName}
+                  </Text>
+                  <View className="flex-row" style={{ gap: 6, marginTop: 5 }}>
+                    <View
+                      className="bg-court rounded-pill"
+                      style={{ paddingHorizontal: 9, paddingVertical: 3 }}
+                    >
+                      <Text
+                        className="font-num font-extrabold text-white"
+                        style={{ fontSize: 11.5 }}
+                      >
+                        {meRow.rating} ELO
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <Icon name="chevR" size={18} color={colors.text3} />
+              </Pressable>
+            ) : (
+              // User not ranked in this category — show a muted placeholder
+              <View
+                className="flex-row items-center bg-surface rounded-lg"
+                style={{
+                  padding: 15,
+                  gap: 13,
+                  borderWidth: 1.5,
+                  borderColor: colors.borderStrong,
+                  marginBottom: 14,
+                }}
+              >
+                <View style={{ alignItems: 'center', minWidth: 30 }}>
+                  <Text
+                    className="font-sans font-extrabold"
+                    style={{
+                      fontSize: 9.5,
+                      letterSpacing: 1.14,
+                      color: colors.text3,
+                    }}
+                  >
+                    SEN
+                  </Text>
+                  <Text
+                    className="font-num font-extrabold"
+                    style={{ fontSize: 28, lineHeight: 28, color: colors.text3 }}
+                  >
+                    —
+                  </Text>
+                </View>
+                <Avatar name={meName} size={46} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    className="font-display font-bold text-text"
+                    style={{ fontSize: 16 }}
+                  >
+                    {meName}
+                  </Text>
+                  <Text
+                    className="font-sans text-text-3"
+                    style={{ fontSize: 12, marginTop: 4 }}
+                  >
+                    Bu kategoride sıralaman yok.
                   </Text>
                 </View>
               </View>
-            </View>
-            <Icon name="chevR" size={18} color={colors.text3} />
-          </Pressable>
-        ) : (
-          // User not ranked in this category — show a muted placeholder
-          <View
-            className="flex-row items-center bg-surface rounded-lg"
-            style={{
-              padding: 15,
-              gap: 13,
-              borderWidth: 1.5,
-              borderColor: colors.borderStrong,
-            }}
-          >
-            <View style={{ alignItems: 'center', minWidth: 30 }}>
-              <Text
-                className="font-sans font-extrabold"
-                style={{
-                  fontSize: 9.5,
-                  letterSpacing: 1.14,
-                  color: colors.text3,
-                }}
-              >
-                SEN
-              </Text>
-              <Text
-                className="font-num font-extrabold"
-                style={{ fontSize: 28, lineHeight: 28, color: colors.text3 }}
-              >
-                —
-              </Text>
-            </View>
-            <Avatar name={meName} size={46} />
-            <View style={{ flex: 1 }}>
-              <Text
-                className="font-display font-bold text-text"
-                style={{ fontSize: 16 }}
-              >
-                {meName}
-              </Text>
+            )}
+
+            {/* Empty state for the list (based on filtered count). It lives here
+                rather than in ListEmptyComponent because `data` is rows 4+ —
+                a 1-3 player ladder has empty data but is NOT an empty ladder. */}
+            {filtered.length === 0 ? (
               <Text
                 className="font-sans text-text-3"
-                style={{ fontSize: 12, marginTop: 4 }}
+                style={{ fontSize: 13, textAlign: 'center', paddingVertical: 24 }}
               >
-                Bu kategoride sıralaman yok.
+                Bu kategoride henüz sıralama yok.
               </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Empty state for the list (based on filtered count) */}
-        {filtered.length === 0 ? (
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 13, textAlign: 'center', paddingVertical: 24 }}
-          >
-            Bu kategoride henüz sıralama yok.
-          </Text>
-        ) : (
-          <>
-            {/* Top-3 podium — 2nd left, 1st center (elevated), 3rd right */}
-            {podiumRows.length >= 1 && (
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-                {([1, 0, 2] as const).map((order) => {
-                  const p = podiumRows[order];
-                  if (!p) return null;
-                  const lv = levelForElo(p.rating);
-                  const podiumIdx = order;
-                  const name = `${p.firstName} ${p.lastName}`.trim();
-                  return (
-                    <Pressable
-                      key={p.profileId}
-                      onPress={() => router.push(`/user/${p.profileId}` as never)}
-                      style={{
-                        flex: 1,
-                        backgroundColor: colors.surface,
-                        borderRadius: 18,
-                        padding: 12,
-                        paddingHorizontal: 8,
-                        alignItems: 'center',
-                        borderWidth: 1,
-                        borderColor: colors.borderStrong,
-                        marginTop: order === 0 ? 0 : 10,
-                        position: 'relative',
-                        ...shadows.md,
-                      }}
-                    >
-                      <View
+            ) : (
+              podiumRows.length >= 1 && (
+                /* Top-3 podium — 2nd left, 1st center (elevated), 3rd right */
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 8,
+                    alignItems: 'flex-end',
+                    marginBottom: restRows.length > 0 ? 14 : 0,
+                  }}
+                >
+                  {([1, 0, 2] as const).map((order) => {
+                    const p = podiumRows[order];
+                    if (!p) return null;
+                    const lv = levelForElo(p.rating);
+                    const podiumIdx = order;
+                    const name = `${p.firstName} ${p.lastName}`.trim();
+                    return (
+                      <Pressable
+                        key={p.profileId}
+                        onPress={() => router.push(`/user/${p.profileId}` as never)}
                         style={{
-                          position: 'absolute',
-                          top: -8,
-                          left: '50%',
-                          marginLeft: -11,
-                          width: 22,
-                          height: 22,
-                          borderRadius: 11,
-                          backgroundColor: PODIUM_COLORS[podiumIdx],
+                          flex: 1,
+                          backgroundColor: colors.surface,
+                          borderRadius: 18,
+                          padding: 12,
+                          paddingHorizontal: 8,
                           alignItems: 'center',
-                          justifyContent: 'center',
+                          borderWidth: 1,
+                          borderColor: colors.borderStrong,
+                          marginTop: order === 0 ? 0 : 10,
+                          position: 'relative',
+                          ...shadows.md,
                         }}
                       >
-                        <Text
-                          className="font-num font-extrabold text-white"
-                          style={{ fontSize: 11 }}
-                        >
-                          {podiumIdx + 1}
-                        </Text>
-                      </View>
-                      <View style={{ marginTop: 6, marginBottom: 6 }}>
-                        <Avatar
-                          name={name}
-                          size={order === 0 ? 52 : 44}
-                          ring={order === 0 ? PODIUM_COLORS[0] : undefined}
-                        />
-                      </View>
-                      <Text
-                        className="font-sans font-bold text-text"
-                        style={{ fontSize: 12.5 }}
-                        numberOfLines={1}
-                      >
-                        {p.firstName}
-                      </Text>
-                      <Text
-                        className="font-num font-bold"
-                        style={{ fontSize: 15, color: lv.color, marginTop: 2 }}
-                      >
-                        {p.rating}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Rest of ranks (4+) */}
-            {restRows.length > 0 && (
-              <View style={{ gap: 8 }}>
-                {restRows.map((p, i) => {
-                  const lv = levelForElo(p.rating);
-                  const isMe = p.profileId === userId;
-                  const name = `${p.firstName} ${p.lastName}`.trim();
-                  return (
-                    <FadeSlideIn key={p.profileId} index={i}>
-                    <Pressable
-                      onPress={() => router.push(`/user/${p.profileId}` as never)}
-                      className="flex-row items-center rounded-md"
-                      style={{
-                        padding: 11,
-                        paddingHorizontal: 12,
-                        gap: 10,
-                        borderWidth: 1,
-                        borderColor: colors.borderStrong,
-                        backgroundColor: isMe ? colors.claySofter : colors.surface,
-                      }}
-                    >
-                      <Text
-                        className="font-num"
-                        style={{
-                          fontSize: 16,
-                          fontWeight: '700',
-                          width: 22,
-                          textAlign: 'center',
-                          color: colors.text3,
-                        }}
-                      >
-                        {p.rank}
-                      </Text>
-                      <Avatar name={name} size={42} />
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text
-                          className="font-sans font-bold text-text"
-                          style={{ fontSize: 14.5 }}
-                        >
-                          {name}
-                        </Text>
                         <View
-                          className="flex-row items-center"
-                          style={{ gap: 5, marginTop: 3 }}
+                          style={{
+                            position: 'absolute',
+                            top: -8,
+                            left: '50%',
+                            marginLeft: -11,
+                            width: 22,
+                            height: 22,
+                            borderRadius: 11,
+                            backgroundColor: PODIUM_COLORS[podiumIdx],
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
                         >
-                          <LevelIcon level={lv} size={13} />
                           <Text
-                            className="font-sans font-semibold"
-                            style={{ fontSize: 12, color: colors.text3 }}
+                            className="font-num font-extrabold text-white"
+                            style={{ fontSize: 11 }}
                           >
-                            {lv.name}
-                          </Text>
-                          <Text
-                            className="font-sans"
-                            style={{ fontSize: 11.5, color: colors.text3 }}
-                          >
-                            · {p.matchesPlayed} maç
+                            {podiumIdx + 1}
                           </Text>
                         </View>
-                      </View>
-                      <Text
-                        className="font-num font-extrabold"
-                        style={{
-                          fontSize: 19,
-                          color: colors.text,
-                          minWidth: 44,
-                          textAlign: 'right',
-                        }}
-                      >
-                        {p.rating}
-                      </Text>
-                    </Pressable>
-                    </FadeSlideIn>
-                  );
-                })}
-              </View>
+                        <View style={{ marginTop: 6, marginBottom: 6 }}>
+                          <Avatar
+                            name={name}
+                            size={order === 0 ? 52 : 44}
+                            ring={order === 0 ? PODIUM_COLORS[0] : undefined}
+                          />
+                        </View>
+                        <Text
+                          className="font-sans font-bold text-text"
+                          style={{ fontSize: 12.5 }}
+                          numberOfLines={1}
+                        >
+                          {p.firstName}
+                        </Text>
+                        <Text
+                          className="font-num font-bold"
+                          style={{ fontSize: 15, color: lv.color, marginTop: 2 }}
+                        >
+                          {p.rating}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )
             )}
-          </>
-        )}
-      </ScrollView>
+          </View>
+        }
+      />
 
       <EloInfoSheet visible={eloInfoOpen} onClose={() => setEloInfoOpen(false)} />
     </ScreenEnter>

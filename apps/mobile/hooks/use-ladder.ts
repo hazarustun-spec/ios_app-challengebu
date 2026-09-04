@@ -16,6 +16,11 @@
 // 'anonymized' are excluded. Rank is computed over ALL elo_ratings rows first
 // (including excluded ones), so rank gaps appear where excluded players sit —
 // matching the real standing from get_user_rankings.
+//
+// Fetch order matters: `elo_ratings` is read first (category-filtered, indexed)
+// and only the profiles of the players it returns are then read from
+// `public_profiles`. The profile read used to be unfiltered, so a 20-player
+// ladder still pulled the entire profile table over the wire.
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -51,6 +56,14 @@ interface NameRow {
 /** Statuses that are visible on the leaderboard (rank gaps occur for others). */
 const VISIBLE_STATUSES = new Set(['active', 'frozen_30', 'hibernating_60']);
 
+/**
+ * Max ids per `public_profiles` `.in()` request. PostgREST puts the id list in
+ * the query string, so one giant `in.(...)` would blow the URL length cap on a
+ * big ladder. 200 uuids ≈ 7.6 KB of query string — comfortably under any proxy
+ * limit — and the chunks are fired in parallel.
+ */
+const PROFILE_CHUNK = 200;
+
 export function useLadder(category: string | undefined) {
   const query = useQuery<LadderRow[]>({
     queryKey: category
@@ -59,21 +72,36 @@ export function useLadder(category: string | undefined) {
     enabled: !!category,
     queryFn: async () => {
       if (!category) return [];
-      const [eloRes, nameRes] = await Promise.all([
-        supabase
-          .from('elo_ratings')
-          .select('profile_id, rating, matches_played')
-          .eq('category', category)
-          .order('rating', { ascending: false }),
-        supabase
-          .from('public_profiles')
-          .select('user_id, first_name, last_name, avatar_url, status, availability_windows'),
-      ]);
+      const eloRes = await supabase
+        .from('elo_ratings')
+        .select('profile_id, rating, matches_played')
+        .eq('category', category)
+        .order('rating', { ascending: false });
       if (eloRes.error) throw eloRes.error;
-      if (nameRes.error) throw nameRes.error;
+
+      const eloRows = (eloRes.data ?? []) as EloRow[];
+      if (eloRows.length === 0) return [];
+
+      // Only the players on this ladder — not the whole profile table.
+      const ids = eloRows.map((r) => r.profile_id);
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += PROFILE_CHUNK) {
+        chunks.push(ids.slice(i, i + PROFILE_CHUNK));
+      }
+      const nameResults = await Promise.all(
+        chunks.map((chunk) =>
+          supabase
+            .from('public_profiles')
+            .select('user_id, first_name, last_name, avatar_url, status, availability_windows')
+            .in('user_id', chunk),
+        ),
+      );
 
       const nameMap = new Map<string, NameRow>();
-      for (const n of (nameRes.data ?? []) as NameRow[]) nameMap.set(n.user_id, n);
+      for (const nameRes of nameResults) {
+        if (nameRes.error) throw nameRes.error;
+        for (const n of (nameRes.data ?? []) as NameRow[]) nameMap.set(n.user_id, n);
+      }
 
       const out: LadderRow[] = [];
       // Competition rank (1224 style) computed over ALL elo_ratings rows ordered
@@ -83,7 +111,7 @@ export function useLadder(category: string | undefined) {
       let rank = 0;
       let seen = 0;
       let prevRating: number | null = null;
-      for (const r of (eloRes.data ?? []) as EloRow[]) {
+      for (const r of eloRows) {
         seen += 1;
         if (r.rating !== prevRating) {
           rank = seen;

@@ -4,14 +4,14 @@
 // Params: conversationId (required), otherUserId + name (optional, passed by callers).
 //
 // Wires to:
-//   useMessages(conversationId)         — live FlatList of MessageRow[]
+//   useMessages(conversationId)         — paginated + live inverted FlatList
 //   useSendMessage()                    — mutate({ conversationId, body })
 //   useMarkConversationRead()           — mutate(conversationId) on mount
 //   useBlockUser()                      — mutate({ blockedId: otherUserId })
 //   useReportUser()                     — mutate({ reportedId: otherUserId, reason })
 //   useAuthStore(s => s.user?.id)       — determine mine vs theirs for bubble alignment
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -63,16 +63,20 @@ interface BubbleProps {
 
 function Bubble({ item, isMine, onLongPress }: BubbleProps) {
   const isDeleted = !!item.deleted_at;
+  const isPending = !!item.pending;
   return (
     <View
       style={{
         alignSelf: isMine ? 'flex-end' : 'flex-start',
         maxWidth: '78%',
         marginBottom: 6,
+        // Optimistic rows are faded until the server confirms them.
+        opacity: isPending ? 0.65 : 1,
       }}
     >
       <Pressable
-        onLongPress={isMine && !isDeleted ? onLongPress : undefined}
+        // An optimistic row has no server id yet, so it cannot be deleted.
+        onLongPress={isMine && !isDeleted && !isPending ? onLongPress : undefined}
         delayLongPress={300}
         style={{
           paddingHorizontal: 14,
@@ -126,7 +130,7 @@ function Bubble({ item, isMine, onLongPress }: BubbleProps) {
               color: item.read_at ? colors.win : colors.text3,
             }}
           >
-            {item.read_at ? 'Okundu' : 'İletildi'}
+            {isPending ? 'Gönderiliyor…' : item.read_at ? 'Okundu' : 'İletildi'}
           </Text>
         </View>
       ) : (
@@ -163,7 +167,13 @@ export default function ConversationScreen() {
   const toast = useToast();
 
   // Hooks
-  const { data: messages = [], isLoading } = useMessages(conversationId);
+  const {
+    messages,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useMessages(conversationId);
   const sendMessage = useSendMessage();
   const markRead = useMarkConversationRead();
   const deleteMessage = useDeleteMessage();
@@ -174,8 +184,6 @@ export default function ConversationScreen() {
   const [body, setBody] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const flatListRef = useRef<FlatList<MessageRow>>(null);
-
   // Mark conversation read on mount
   useEffect(() => {
     if (conversationId) {
@@ -184,16 +192,6 @@ export default function ConversationScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
-  // Scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messages.length > 0) {
-      // FlatList is NOT inverted — scroll to last item
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 80);
-    }
-  }, [messages.length]);
-
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
@@ -201,14 +199,23 @@ export default function ConversationScreen() {
   function handleSend() {
     const trimmed = body.trim();
     if (!trimmed || sendMessage.isPending) return;
+    // Clear the composer up-front. The hook's onMutate has already painted the
+    // optimistic bubble, so leaving the text in the input would show the same
+    // message twice. On failure the draft is restored below.
+    setBody('');
     sendMessage.mutate(
       { conversationId: conversationId!, body: trimmed },
       {
-        onSuccess: () => setBody(''),
         // Blocked-user (`Messaging is blocked between these users`) and other
         // backend rejections used to fail silently — the composer would clear
         // on success but stay full-of-text on error with no explanation.
-        onError: (e) => toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error'),
+        // The hook rolls the optimistic row out of the cache; this restores
+        // the draft (unless the user already started typing something else)
+        // and keeps the reason visible.
+        onError: (e) => {
+          setBody((current) => (current.length > 0 ? current : trimmed));
+          toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error');
+        },
       },
     );
   }
@@ -333,9 +340,14 @@ export default function ConversationScreen() {
         </View>
       ) : (
         <FlatList
-          ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
+          // Inverted: `messages` is newest-first, so index 0 paints at the
+          // bottom and the list sticks there on its own — no scrollToEnd
+          // timers and no flexGrow/justify-end trick to anchor a short thread.
+          // It also puts `onEndReached` at the TOP of the thread, which is
+          // where "load older messages" belongs.
+          inverted
           // flex:1 bounds the list to the space between the header and the
           // composer. Without it the list sizes to its content and, once there
           // are enough messages, grows past the screen bottom — pushing the
@@ -351,19 +363,21 @@ export default function ConversationScreen() {
           )}
           contentContainerStyle={{
             paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: 8,
-            // Anchor a short thread to the composer instead of the header.
-            // flexGrow lets the content box fill the list's height when the
-            // messages are shorter than the viewport; justifyContent then
-            // pushes them down. Once the thread overflows, flexGrow stops
-            // mattering and normal scrolling takes over.
-            flexGrow: 1,
-            justifyContent: 'flex-end',
+            paddingVertical: 12,
           }}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() =>
-            flatListRef.current?.scrollToEnd({ animated: false })
+          onEndReachedThreshold={0.4}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          // Inverted lists draw the footer at the top, which is exactly where
+          // the older page is loading in from.
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: 14, alignItems: 'center' }}>
+                <ActivityIndicator color={colors.clay} />
+              </View>
+            ) : null
           }
         />
       )}
