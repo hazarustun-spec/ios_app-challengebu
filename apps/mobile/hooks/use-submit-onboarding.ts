@@ -1,8 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { supabase } from '../lib/supabase';
 import { SLOT_TO_DB } from '../lib/availability';
 import { useAuthStore } from '../stores/auth-store';
+import { captureException } from '../lib/sentry';
 import type { OnboardingState } from '../stores/onboarding-store';
 
 type DraftSnapshot = Omit<OnboardingState, 'setField' | 'reset'>;
@@ -11,6 +13,19 @@ interface Args {
   draft: DraftSnapshot;
 }
 
+/**
+ * The onboarding wizard stores the phone as bare digits ("5XX XXX XX XX",
+ * see (onboarding)/phone.tsx). The server's phoneSchema wants E.164
+ * ("+90XXXXXXXXXX"), so glue the country prefix on before insert. Anything
+ * that doesn't look like a 10-digit Turkish mobile is dropped rather than
+ * sent as an invalid string — the field is optional server-side.
+ */
+function toE164TR(raw: string | null): string | null {
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length !== 10) return null;
+  return `+90${digits}`;
+}
 
 export function useSubmitOnboarding() {
   return useMutation({
@@ -18,25 +33,49 @@ export function useSubmitOnboarding() {
       const user = useAuthStore.getState().user;
       if (!user) throw new Error('Not signed in');
 
-      // 1. Upload avatar if present
+      // 1. Upload avatar if present. Mirrors use-upload-avatar.ts so both
+      //    paths behave the same:
+      //      - resize + JPEG-compress locally so the base64 blob is tiny
+      //        (avoids OOM on older phones with big HEIC captures)
+      //      - contentType is always image/jpeg (was `image/${ext}` which
+      //        produced invalid MIMEs like `image/HEIC` or query-tainted
+      //        `image/jpg?…`)
+      //      - upsert:true so re-onboarding after account deletion overwrites
+      //        instead of silently failing on duplicate
+      //      - errors go to Sentry instead of being swallowed by try/catch;
+      //        we still don't throw (avatar is optional) but the developer
+      //        finds out if uploads are broken in the wild.
       let avatarUrl: string | null = null;
       if (draft.photoUri) {
-        const ext = draft.photoUri.split('.').pop() ?? 'jpg';
-        const path = `${user.id}.${ext}`;
         try {
-          const fileData = await FileSystem.readAsStringAsync(draft.photoUri, {
+          const normalized = await ImageManipulator.manipulateAsync(
+            draft.photoUri,
+            [{ resize: { width: 512 } }],
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
+          );
+          const fileData = await FileSystem.readAsStringAsync(normalized.uri, {
             encoding: FileSystem.EncodingType.Base64,
           });
           const buffer = Uint8Array.from(atob(fileData), (c) => c.charCodeAt(0));
-          const { error: upErr } = await supabase.storage.from('avatars').upload(path, buffer, {
-            contentType: `image/${ext}`,
-          });
-          if (!upErr) {
-            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+          const fileName = `${user.id}.jpg`;
+          const { error: upErr } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, buffer, {
+              contentType: 'image/jpeg',
+              upsert: true,
+            });
+          if (upErr) {
+            captureException(upErr, { where: 'useSubmitOnboarding.avatarUpload' });
+          } else {
+            const { data: urlData } = supabase.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
             avatarUrl = urlData.publicUrl;
           }
-        } catch {
-          // Silently fail — avatar is optional
+        } catch (err) {
+          // Avatar is optional — don't block onboarding, but surface the
+          // failure so we can spot systemic breakage.
+          captureException(err, { where: 'useSubmitOnboarding.avatarUpload' });
         }
       }
 
@@ -58,7 +97,7 @@ export function useSubmitOnboarding() {
         email: user.email,
         first_name: draft.firstName,
         last_name: draft.lastName,
-        phone: draft.phone ?? null,
+        phone: toE164TR(draft.phone),
         pronoun: draft.pronoun,
         // No screen collects a custom pronoun — the wizard's "other" option is
         // "belirtmek istemiyorum". Sent explicitly so the UPDATE branch below

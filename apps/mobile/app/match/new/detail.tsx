@@ -132,8 +132,20 @@ export default function NewMatchDetail() {
     }
   }, [availableTimes, time, setField]);
 
-  const cat = CATEGORIES.find((c) => c.key === category)!;
-  const fmt = FORMATS.find((f) => f.key === format)!;
+  // Defensive lookups — a persisted wizard draft can hold a retired category
+  // (e.g. `karma_cift`, dropped in 20260805000002) or a format that no longer
+  // ships. Falling through to `!` used to crash the screen. Fall back to the
+  // first valid option and self-heal the store on the next tick.
+  const catFound = CATEGORIES.find((c) => c.key === category);
+  const cat = catFound ?? CATEGORIES[0]!;
+  const fmtFound = FORMATS.find((f) => f.key === format);
+  const fmt = fmtFound ?? FORMATS[0]!;
+  useEffect(() => {
+    if (!catFound) setField('category', CATEGORIES[0]!.key);
+  }, [catFound, setField]);
+  useEffect(() => {
+    if (!fmtFound) setField('format', FORMATS[0]!.key);
+  }, [fmtFound, setField]);
   const isDoubles = cat.group === 'cift';
   const courtName =
     courts.find((c) => c.id === court)?.name ?? 'Kort seç';
@@ -201,6 +213,7 @@ export default function NewMatchDetail() {
         <Button
           full
           size="lg"
+          disabled={!court || !time || !date}
           onPress={() => {
             if (path === 'open') {
               // Open calls have no specific target — clear any stale opponent/

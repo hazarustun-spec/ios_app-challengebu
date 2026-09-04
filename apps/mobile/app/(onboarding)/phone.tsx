@@ -24,7 +24,17 @@ export default function ObPhone() {
       <Field
         placeholder="5XX XXX XX XX"
         value={phone ?? ''}
-        onChange={(v) => setField('phone', v.length > 0 ? v : null)}
+        onChange={(v) => {
+          // Strip everything but digits and drop a leading country prefix
+          // ("+90…" or "0…") so what we store is always the 10-digit local
+          // form (5XX XXX XX XX). The submit hook re-attaches "+90" so the
+          // server ends up with the E.164 string phoneSchema requires.
+          let digits = v.replace(/\D/g, '');
+          if (digits.startsWith('90')) digits = digits.slice(2);
+          else if (digits.startsWith('0')) digits = digits.slice(1);
+          if (digits.length > 10) digits = digits.slice(0, 10);
+          setField('phone', digits.length > 0 ? digits : null);
+        }}
         keyboardType="phone-pad"
         big
         icon="phone"

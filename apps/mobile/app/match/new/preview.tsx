@@ -404,7 +404,7 @@ export default function MatchPreview() {
         <Button
           full
           size="lg"
-          disabled={gate === 'unread'}
+          disabled={gate === 'unread' || !nm.court || !nm.time || !nm.date}
           icon={
             submitting ? (
               <ActivityIndicator size="small" color={colors.onLime} />
