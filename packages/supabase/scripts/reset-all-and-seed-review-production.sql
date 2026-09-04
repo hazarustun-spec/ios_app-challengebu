@@ -1,3 +1,17 @@
+-- ⛔ DO NOT RUN — SUPERSEDED, DESTRUCTIVE AGAINST LIVE DATA (5 Sep 2026)
+--
+-- This script belongs to the pre-launch era, when production held nothing but
+-- the review account and seeded demo opponents. The app is live now and has
+-- real players; anything in here that wipes or re-seeds profiles will destroy
+-- their accounts, matches and ELO history.
+--
+-- The review account is permanent infrastructure as of migration
+-- 20260905000001_demo_account_visibility.sql: profiles.is_demo hides it from
+-- real players via RLS, and review-login calls reset_review_account() on every
+-- sign-in. Nothing needs seeding or cleaning up per release any more.
+--
+-- Kept only as a record of how the pre-launch review data was built.
+
 -- =============================================================================
 -- FULL WIPE + fresh 5-opponent review seed — PRODUCTION
 -- =============================================================================
