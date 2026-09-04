@@ -58,10 +58,15 @@ Rapor: `docs/capacity-analysis-2026-09.md`
 - [x] `_shared/expo-push.ts` 100'lük chunk (defense in depth)
 - [x] Raporun "P0 Expo Push bugün bozuk" iddiası doğrulamada düştü — düzeltildi
 
-### 7b. Kapasite P1 — 500-1000 user hedefi
-- [ ] `hooks/use-ladder.ts:80-90` — `public_profiles.in('user_id', [...eloIds])` filter
-- [ ] `(tabs)/leaderboard.tsx:286+` — ScrollView → FlatList + getItemLayout
-- [ ] `hooks/use-messages.ts:76-88` — `.limit(50)` + reverse pagination (Task 8 M1 ile çakışıyor, birlikte yapılabilir)
+### 7b. Kapasite P1 — 500-1000 user hedefi ✅ 6179ab6
+- [x] `use-ladder.ts` — `public_profiles` artık `.in('user_id', chunk)` (200'lük parça)
+- [x] `(tabs)/leaderboard.tsx` — ScrollView → FlatList + memoized row
+- [x] `use-messages.ts` — useInfiniteQuery, 50/sayfa, keyset cursor
+- [ ] **Açık karar:** `getItemLayout` konmadı — satır yüksekliği sabit değil (isim wrap ediyor). İstenirse isme `numberOfLines={1}` + yükseklik 66'ya sabitleme gerekir.
+- [ ] **Açık karar:** ladder'a sunucu tarafı limit konmadı — rank hesabı tüm satırlara dayanıyor. Doğru çözüm: window function'lı sayfalı RPC (ayrı iş).
+
+### 7d. Yeni bulgu — `usePlayerRatings` filtresiz
+- [ ] `hooks/use-ladder.ts:~160-190` — tüm kategorilerde filtresiz `select('profile_id, category, rating')`. Ladder'dan daha kötü ölçeklenir. Çağıran ekranları bul, gerektiği kadarını çek.
 
 ### 7c. Kapasite P2 — 2000 user hedefi
 - [ ] Messages retention cron (365 gün silinmiş / 730 gün hepsi)
@@ -75,15 +80,18 @@ Rapor: `docs/capacity-analysis-2026-09.md`
 ### 8. Messaging redesign — 3 milestone
 Kaynak: `docs/roadmap/v2-backlog.md` "Messaging redesign" section
 
-**Milestone 1 (biggest UX win):**
-- [ ] Optimistic send: cache append + retry chip
-- [ ] Inbox previews: last message + relative timestamp + unread badge
-- [ ] Thread pagination: reverse-chrono + limit(50) + FlatList inverted
+**Milestone 1 ✅ 6179ab6:**
+- [x] Optimistic send: onMutate append + onError rollback + pending bubble
+- [x] Thread pagination: useInfiniteQuery 50/sayfa + inverted FlatList
+- [x] Inbox previews — zaten varmış (brief yanlıştı); "dün" bucket + empty-state CTA eklendi
+- [ ] **Device QA gerekiyor:** inverted FlatList + klavye davranışı (iOS KeyboardAvoidingView, Android transform)
 
 **Milestone 2:**
+- [ ] Retry queue (M1'den ertelendi — kalıcı outbox gerekiyor, cache satırı refetch'te siliniyor)
 - [ ] Composer multi-line (6 lines max)
 - [ ] Attachment: photo (expo-image-picker → Storage)
 - [ ] Typing indicator via Postgres broadcast
+- [ ] Delivery ticks (read_at zaten var, sadece göster)
 
 **Milestone 3:**
 - [ ] Message reactions (❤️👍😂)

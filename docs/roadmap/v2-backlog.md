@@ -133,29 +133,41 @@ pagination, the inbox surface is thin, and the compose flow only kicks in
 after an accepted match offer.
 
 **A. Send path — instant feedback.**
-- Optimistic append: `useSendMessage` should insert a stub row into the
-  cache (`queryKeys.conversations.messages(id)`) BEFORE the mutation
-  fires; roll back on error. Today the input clears + the message sits
-  invisible until the round-trip returns → feels laggy on 4G.
-- Retry queue: keep a failed message in a "pending" state with a Retry
-  chip instead of a modal alert. iMessage-style red exclamation.
+- ✅ Optimistic append (M1, 6179ab6): `useSendMessage` prepends a stub
+  row with `pending: true` in `onMutate`, restores the snapshot in
+  `onError`, and invalidates in `onSettled` so the thread re-syncs after
+  failures too. The bubble renders pending at 0.65 opacity with
+  "Gönderiliyor…" and blocks long-press delete.
+- Retry queue: keep a failed message with a Retry chip. **Deferred from
+  M1 on purpose** — a failed row has to survive the `onSettled`
+  invalidate, which a refetch wipes, so this needs a persistent outbox
+  (local state or storage) merged over server data. M1 covers the actual
+  data-loss risk by restoring the composer draft on failure.
 - Delivery ticks: single tick (sent), double tick (delivered), blue
   ticks (read) — read state already exists (`read_at`), just surface it.
 
-**B. Inbox (`app/messages/index.tsx`) — richer preview.**
-- Show last message preview + timestamp (relative — "2 dk", "dün")
-  instead of the current name-only rows.
-- Unread badge per thread + inbox-level unread count on the tab bar.
+**B. Inbox (`app/messages/index.tsx`) — richer preview.** ✅ (M1, 6179ab6)
+- ~~Show last message preview + timestamp instead of name-only rows.~~
+  **This brief was wrong** — the inbox already had preview text
+  (`numberOfLines={1}`), a relative timestamp and an unread dot, with
+  `unreadCount` supplied by `use-conversations.ts`. What was actually
+  thin got fixed: `relativeTime` gained a "dün" bucket and proper
+  spacing, and the empty state now points at `/(tabs)/matches` instead
+  of dead-ending.
+- Inbox-level unread count on the tab bar — still open.
 - Swipe-to-archive / swipe-to-mute (long-term).
-- Empty state today just says "no messages"; replace with a "Match
-  teklifin olduğunda mesajlaşabilirsin" nudge + CTA to /(tabs)/matches.
 
 **C. Thread (`app/messages/[conversationId].tsx`) — perf + polish.**
-- **Pagination.** `useMessages` currently `SELECT * FROM messages
-  ORDER BY created_at ASC` — loads every message in the thread. Switch
-  to reverse-chronological + `limit(50)` + `keyset` on `created_at`;
-  render into an inverted `FlatList` (or the new @shopify/flash-list)
-  and load-older-on-scroll-top.
+- ✅ **Pagination** (M1, 6179ab6): `useMessages` is a `useInfiniteQuery`,
+  50 rows/page, newest-first, keyset cursor on `created_at`. The cursor
+  uses `lte` not `lt` — with `lt` a realtime invalidate refetches page 0
+  (now holding a newer message, dropping its oldest row) while page 1
+  keeps its old cursor, and the boundary message vanishes until remount.
+  `lte` overlaps one row and the flattener dedupes by id. FlatList is
+  `inverted`, which retired the `scrollToEnd` timer and the
+  flexGrow/justifyContent anchor trick. **Needs device QA:** keyboard
+  behaviour inside `KeyboardAvoidingView` on iOS, transform inversion
+  on Android.
 - Typing indicator via a Postgres channel broadcast (Supabase realtime
   supports broadcast, no DB rows needed).
 - Date separators between messages > 1h apart.
