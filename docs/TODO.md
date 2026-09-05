@@ -157,6 +157,44 @@ Kaynak: `docs/roadmap/v2-backlog.md` (tam liste)
 
 ---
 
+## ⚙️ Operasyon notları (kod değil, bilinmesi gerekenler)
+
+### Admin rolü sıfırdan kurulan ortamda gelmez
+`20260609000005_initial_admin_seed.sql` migration'ının hedef e-postası
+rebrand sırasında `CHANGE_ME_BEFORE_DEPLOY@example.com` placeholder'ına
+çevrildi (kişisel mail repoda durmasın diye) ve migration bu değeri
+görünce hiçbir şey yapmadan çıkıyor. Yani **yeni bir Supabase ortamı
+kurarsan admin hesabı olmayacak** — Ayarlar'da "Admin paneli" satırı
+hiç görünmez.
+
+Elle set et (Dashboard → SQL Editor). `profiles.email` yalnızca kayıt
+INSERT'inde yazılıyor (RLS o kolonda UPDATE'i revoke ediyor), o yüzden
+eşleşmeyi `auth.users` üzerinden yap — `profiles.email` üzerinden yapmak
+sessizce 0 satır güncelleyebilir:
+
+```sql
+update public.profiles p
+   set role = 'admin'
+  from auth.users u
+ where u.id = p.user_id
+   and lower(u.email) = lower('senin@mailin.edu.tr')
+returning p.user_id, u.email, p.role;
+```
+
+Bir satır dönmeli. Sonra uygulamada çıkış yap → tekrar gir (rol profil
+yüklenirken okunuyor).
+
+Kalıcı çözüm istenirse: migration hedef maili bir Supabase secret'ından
+okusun. Prod ayakta olduğu sürece gerekmiyor.
+
+### Prod'da admin rolü nasıl kaybolmuştu (5 Eyl 2026)
+2 Eylül'de çalıştırılan `reset-all-and-seed-review-production.sql`
+reviewer dışındaki bütün profilleri sildi. Operatör tekrar kayıt olunca
+profil `role = 'player'` varsayılanıyla yeniden oluştu. O script artık
+⛔ DO-NOT-RUN başlığıyla arşivde; canlı veriye karşı çalıştırılmamalı.
+
+---
+
 ## ✅ TAMAMLANANLAR (referans için)
 
 ### Bu oturum (2 Eyl 2026)
