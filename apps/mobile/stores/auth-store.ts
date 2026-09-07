@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
 import { useCelebrationStore } from './post-match-celebration-store';
+import { useMessageOutboxStore } from './message-outbox-store';
 
 interface ProfileSummary {
   userId: string;
@@ -49,6 +50,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading) => set({ loading }),
   signOut: () => {
     useCelebrationStore.getState().clear();
+    // Unsent messages are persisted, so without this the next account signing
+    // in on this device would inherit the previous one's failed bubbles.
+    useMessageOutboxStore.getState().clear();
     set({ session: null, user: null, profile: null, profileError: false });
   },
 }));

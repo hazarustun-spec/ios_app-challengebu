@@ -10,6 +10,11 @@ import { queryKeys } from '../lib/query-keys';
 import { useAuthStore } from '../stores/auth-store';
 import { invokeFunction } from '../lib/invoke-function';
 import { useRealtimeChannel } from './use-realtime-channel';
+import {
+  useMessageOutboxStore,
+  type OutboxMessage,
+  type OutboxStatus,
+} from '../stores/message-outbox-store';
 
 export interface MessageRow {
   id: string;
@@ -24,6 +29,13 @@ export interface MessageRow {
    * never present on rows that came back from the server.
    */
   pending?: boolean;
+  /**
+   * Client-only. Set on rows that come from the outbox store rather than the
+   * server: `sending` is in flight, `failed` is waiting for a retry tap.
+   * Absent on every server row, so `!row.outboxStatus` means "has an id the
+   * backend knows about".
+   */
+  outboxStatus?: OutboxStatus;
 }
 
 interface SendMessageResponse {
@@ -61,12 +73,96 @@ function flattenPages(data: MessagesCache | undefined): MessageRow[] {
   return out;
 }
 
+function outboxToRow(entry: OutboxMessage): MessageRow {
+  return {
+    id: entry.id,
+    conversation_id: entry.conversationId,
+    sender_id: entry.senderId,
+    body: entry.body,
+    created_at: entry.createdAt,
+    read_at: null,
+    deleted_at: null,
+    pending: entry.status === 'sending',
+    outboxStatus: entry.status,
+  };
+}
+
+/**
+ * Overlays the outbox on top of a server page, newest-first.
+ *
+ * The tricky part is the send round-trip: a realtime INSERT can invalidate and
+ * refetch page 0 *before* the `send-message` response comes back, so for a beat
+ * the real row and its still-`sending` outbox row are both in hand. Matching
+ * them one-for-one (each server row can absorb at most one outbox row) hides
+ * that flicker without collapsing the legitimate case of the same text sent
+ * twice in a row. `failed` rows are never matched — they never reached the
+ * server, so nothing on the server can stand in for them.
+ */
+function mergeOutbox(
+  server: MessageRow[],
+  outbox: OutboxMessage[],
+): MessageRow[] {
+  if (outbox.length === 0) return server;
+
+  const absorbed = new Set<string>();
+  const surviving: OutboxMessage[] = [];
+  for (const entry of outbox) {
+    if (entry.status !== 'sending') {
+      surviving.push(entry);
+      continue;
+    }
+    // The client clock can run slightly ahead of the DB's `now()`, so allow a
+    // few seconds of slack on either side of the optimistic timestamp.
+    const enqueuedAt = Date.parse(entry.createdAt);
+    const twin = server.find(
+      (row) =>
+        !absorbed.has(row.id) &&
+        row.sender_id === entry.senderId &&
+        row.body === entry.body &&
+        Date.parse(row.created_at) >= enqueuedAt - 5_000,
+    );
+    if (twin) {
+      absorbed.add(twin.id);
+      continue;
+    }
+    surviving.push(entry);
+  }
+  if (surviving.length === 0) return server;
+
+  const pendingRows = surviving
+    .map(outboxToRow)
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+
+  // Both sides are newest-first already; a linear merge keeps it that way
+  // without re-sorting the whole (potentially long) server list every render.
+  const out: MessageRow[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < pendingRows.length && j < server.length) {
+    if (
+      Date.parse(pendingRows[i]!.created_at) >=
+      Date.parse(server[j]!.created_at)
+    ) {
+      out.push(pendingRows[i++]!);
+    } else {
+      out.push(server[j++]!);
+    }
+  }
+  while (i < pendingRows.length) out.push(pendingRows[i++]!);
+  while (j < server.length) out.push(server[j++]!);
+  return out;
+}
+
 /**
  * Paginated + realtime thread reader.
  *
  * Returns the raw infinite-query result plus `messages`: the flattened,
- * de-duplicated, NEWEST-FIRST list. That ordering is what an `inverted`
- * FlatList wants — index 0 renders at the bottom of the screen.
+ * de-duplicated, NEWEST-FIRST list with the conversation's outbox rows merged
+ * in. That ordering is what an `inverted` FlatList wants — index 0 renders at
+ * the bottom of the screen.
+ *
+ * The outbox rows are deliberately NOT in the query cache: that is the whole
+ * reason a failed send now survives the `onSettled` invalidate.
  */
 export function useMessages(conversationId: string | undefined) {
   const myUserId = useAuthStore((s) => s.user?.id);
@@ -124,38 +220,57 @@ export function useMessages(conversationId: string | undefined) {
     },
   });
 
+  // Subscribe to the whole array (a stable reference) and narrow in a memo.
+  // Returning `s.items.filter(...)` straight out of the selector would hand
+  // zustand v5 a fresh array on every store read and loop the snapshot check.
+  const outboxItems = useMessageOutboxStore((s) => s.items);
+  const outboxForThread = useMemo(
+    () =>
+      conversationId
+        ? outboxItems.filter((i) => i.conversationId === conversationId)
+        : [],
+    [outboxItems, conversationId],
+  );
+
   const messages = useMemo(
-    () => flattenPages(query.data as MessagesCache | undefined),
-    [query.data],
+    () =>
+      mergeOutbox(
+        flattenPages(query.data as MessagesCache | undefined),
+        outboxForThread,
+      ),
+    [query.data, outboxForThread],
   );
 
   return { ...query, messages };
 }
 
-function makeOptimisticId(): string {
-  return `optimistic-${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(2, 10)}`;
-}
-
 interface SendMessageVars {
   conversationId: string;
   body: string;
+  /**
+   * Set when re-sending a row that is already in the outbox. Omitted for a
+   * fresh send, which enqueues its own row.
+   */
+  outboxId?: string;
 }
 
 interface SendMessageContext {
-  previous: MessagesCache | undefined;
-  optimisticId: string;
+  outboxId: string;
 }
 
 /**
  * Sends a message and paints it in the thread immediately.
  *
- * `onMutate` prepends an optimistic row so the bubble appears before the
- * round-trip completes (the whole point — on 4G the old behaviour felt like
- * the tap did nothing). `onError` rolls the cache back, which is what the
- * blocked-user case hits: `send-message` returns 400, the stub disappears and
- * the caller's toast explains why. `onSettled` re-syncs either way.
+ * The bubble comes from the outbox store, not from the query cache. `onMutate`
+ * enqueues (or, on a retry, re-arms) the row so it appears before the
+ * round-trip completes — on 4G the old, non-optimistic behaviour felt like the
+ * tap had done nothing. On failure the row is flipped to `failed` and STAYS
+ * there: that is the M2 change. M1 rolled the cache back and the bubble
+ * vanished, and no cache-resident row could have survived `onSettled`'s
+ * invalidate anyway. `onSuccess` drops the row once the real one exists.
+ *
+ * Pass `outboxId` to re-send an existing failed row instead of enqueueing a
+ * second one.
  */
 export function useSendMessage() {
   const qc = useQueryClient();
@@ -175,56 +290,30 @@ export function useSendMessage() {
         token,
       );
     },
-    onMutate: async ({ conversationId, body }) => {
-      const key = queryKeys.conversations.messages(conversationId);
-      // Stop any in-flight refetch from overwriting the row we are about to
-      // write into the cache.
-      await qc.cancelQueries({ queryKey: key });
-
-      const previous = qc.getQueryData<MessagesCache>(key);
-      const optimisticId = makeOptimisticId();
-      const row: MessageRow = {
-        id: optimisticId,
-        conversation_id: conversationId,
-        sender_id: useAuthStore.getState().user?.id ?? '',
-        body,
-        created_at: new Date().toISOString(),
-        read_at: null,
-        deleted_at: null,
-        pending: true,
-      };
-
-      qc.setQueryData<MessagesCache>(key, (old) => {
-        // Pages are newest-first and so are the rows inside each page, so the
-        // newest message in the whole thread is pages[0][0].
-        if (!old || old.pages.length === 0) {
-          return { pages: [[row]], pageParams: [null] };
-        }
-        const pages = old.pages.slice();
-        pages[0] = [row, ...pages[0]];
-        return { ...old, pages };
-      });
-
-      return { previous, optimisticId };
-    },
-    onError: (_error, variables, context) => {
-      if (!context) return;
-      const key = queryKeys.conversations.messages(variables.conversationId);
-      if (context.previous) {
-        qc.setQueryData<MessagesCache>(key, context.previous);
-        return;
+    onMutate: ({ conversationId, body, outboxId }) => {
+      const outbox = useMessageOutboxStore.getState();
+      if (outboxId) {
+        outbox.markSending(outboxId);
+        return { outboxId };
       }
-      // No snapshot to restore (first message in a thread that had never been
-      // fetched): drop just the stub instead.
-      qc.setQueryData<MessagesCache>(key, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) =>
-            page.filter((m) => m.id !== context.optimisticId),
-          ),
-        };
-      });
+      return {
+        outboxId: outbox.enqueue({
+          conversationId,
+          senderId: useAuthStore.getState().user?.id ?? '',
+          body,
+        }),
+      };
+    },
+    onError: (error, _variables, context) => {
+      if (!context) return;
+      // The row stays on screen, faded, with a retry affordance. Nothing to
+      // roll back in the cache — it was never written there.
+      useMessageOutboxStore.getState().markFailed(context.outboxId, error.message);
+    },
+    onSuccess: (_data, _variables, context) => {
+      // The real row is on its way in via the invalidate below (and usually
+      // via realtime first). Drop the stand-in.
+      if (context) useMessageOutboxStore.getState().remove(context.outboxId);
     },
     // Moved off onSuccess so the thread, the inbox and the unread badge
     // re-sync after a failure too, not only after a success.

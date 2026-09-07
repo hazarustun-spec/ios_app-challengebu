@@ -38,6 +38,7 @@ import {
 } from '../../hooks/use-messages';
 import { useBlockUser, useReportUser } from '../../hooks/use-moderation';
 import { useAuthStore } from '../../stores/auth-store';
+import { useMessageOutboxStore } from '../../stores/message-outbox-store';
 import { useToast } from '../../components/ui/ToastProvider';
 import { userMessage } from '../../lib/user-message';
 import { colors } from '../../theme/colors';
@@ -59,25 +60,36 @@ interface BubbleProps {
   item: MessageRow;
   isMine: boolean;
   onLongPress?: () => void;
+  /** Retry tap — only wired for rows sitting in the outbox as `failed`. */
+  onPress?: () => void;
 }
 
-function Bubble({ item, isMine, onLongPress }: BubbleProps) {
+function Bubble({ item, isMine, onLongPress, onPress }: BubbleProps) {
   const isDeleted = !!item.deleted_at;
   const isPending = !!item.pending;
+  const isFailed = item.outboxStatus === 'failed';
   return (
     <View
       style={{
         alignSelf: isMine ? 'flex-end' : 'flex-start',
         maxWidth: '78%',
         marginBottom: 6,
-        // Optimistic rows are faded until the server confirms them.
-        opacity: isPending ? 0.65 : 1,
+        // In-flight rows fade until the server confirms them; a failed row
+        // stays a touch faded too, so an unsent bubble never reads as sent.
+        opacity: isPending ? 0.65 : isFailed ? 0.8 : 1,
       }}
     >
       <Pressable
-        // An optimistic row has no server id yet, so it cannot be deleted.
+        // Long-press deletes for everyone, so it needs a server id: an outbox
+        // row (sending OR failed) is discarded locally instead — see the
+        // screen's handlers.
         onLongPress={isMine && !isDeleted && !isPending ? onLongPress : undefined}
+        onPress={isFailed ? onPress : undefined}
         delayLongPress={300}
+        accessibilityRole={isFailed ? 'button' : undefined}
+        accessibilityLabel={
+          isFailed ? 'Gönderilemedi. Yeniden göndermek için dokun' : undefined
+        }
         style={{
           paddingHorizontal: 14,
           paddingVertical: 9,
@@ -89,9 +101,10 @@ function Bubble({ item, isMine, onLongPress }: BubbleProps) {
             : isMine
             ? colors.clay
             : colors.surface2,
-          // Subtle border for theirs
-          borderWidth: isMine && !isDeleted ? 0 : 1,
-          borderColor: colors.surface3,
+          // Subtle border for theirs; a failed row gets a loss-coloured one so
+          // the state is carried by more than the footer text alone.
+          borderWidth: isFailed ? 1.5 : isMine && !isDeleted ? 0 : 1,
+          borderColor: isFailed ? colors.loss : colors.surface3,
         }}
       >
         <Text
@@ -115,22 +128,35 @@ function Bubble({ item, isMine, onLongPress }: BubbleProps) {
         <View
           style={{
             flexDirection: 'row',
+            alignItems: 'center',
             alignSelf: 'flex-end',
             gap: 5,
             marginTop: 3,
             paddingHorizontal: 4,
           }}
         >
+          {isFailed ? <Icon name="warn" size={12} color={colors.loss} /> : null}
           <Text style={{ fontSize: 11, color: colors.text3 }}>
             {formatBubbleTime(item.created_at)}
           </Text>
           <Text
             style={{
               fontSize: 11,
-              color: item.read_at ? colors.win : colors.text3,
+              fontWeight: isFailed ? '600' : '400',
+              color: isFailed
+                ? colors.loss
+                : item.read_at
+                ? colors.win
+                : colors.text3,
             }}
           >
-            {isPending ? 'Gönderiliyor…' : item.read_at ? 'Okundu' : 'İletildi'}
+            {isFailed
+              ? 'Gönderilemedi'
+              : isPending
+              ? 'Gönderiliyor…'
+              : item.read_at
+              ? 'Okundu'
+              : 'İletildi'}
           </Text>
         </View>
       ) : (
@@ -146,6 +172,22 @@ function Bubble({ item, isMine, onLongPress }: BubbleProps) {
           {formatBubbleTime(item.created_at)}
         </Text>
       )}
+      {isFailed ? (
+        // Second line so the hint can't push the timestamp row out of the
+        // bubble's 78% width.
+        <Text
+          style={{
+            fontSize: 11,
+            color: colors.text2,
+            marginTop: 1,
+            alignSelf: 'flex-end',
+            paddingHorizontal: 4,
+            textAlign: 'right',
+          }}
+        >
+          Yeniden göndermek için dokun
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -175,6 +217,10 @@ export default function ConversationScreen() {
     fetchNextPage,
   } = useMessages(conversationId);
   const sendMessage = useSendMessage();
+  // A second instance so a retry in flight does not disable the composer's
+  // send button (`canSend` watches `sendMessage.isPending`).
+  const retryMessage = useSendMessage();
+  const removeFromOutbox = useMessageOutboxStore((s) => s.remove);
   const markRead = useMarkConversationRead();
   const deleteMessage = useDeleteMessage();
   const blockUser = useBlockUser();
@@ -200,23 +246,56 @@ export default function ConversationScreen() {
     const trimmed = body.trim();
     if (!trimmed || sendMessage.isPending) return;
     // Clear the composer up-front. The hook's onMutate has already painted the
-    // optimistic bubble, so leaving the text in the input would show the same
-    // message twice. On failure the draft is restored below.
+    // outbox bubble, so leaving the text in the input would show the same
+    // message twice.
     setBody('');
     sendMessage.mutate(
       { conversationId: conversationId!, body: trimmed },
       {
         // Blocked-user (`Messaging is blocked between these users`) and other
-        // backend rejections used to fail silently — the composer would clear
-        // on success but stay full-of-text on error with no explanation.
-        // The hook rolls the optimistic row out of the cache; this restores
-        // the draft (unless the user already started typing something else)
-        // and keeps the reason visible.
+        // backend rejections used to fail silently. The toast still explains
+        // why; the draft is NOT pushed back into the composer any more —
+        // the failed bubble now holds the text and offers a retry tap, and
+        // restoring it here would show the same message in two places.
         onError: (e) => {
-          setBody((current) => (current.length > 0 ? current : trimmed));
           toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error');
         },
       },
+    );
+  }
+
+  /** Re-sends a row that is sitting in the outbox as `failed`. */
+  function handleRetry(item: MessageRow) {
+    if (item.outboxStatus !== 'failed') return;
+    retryMessage.mutate(
+      {
+        conversationId: conversationId!,
+        body: item.body,
+        outboxId: item.id,
+      },
+      {
+        onError: (e) =>
+          toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error'),
+      },
+    );
+  }
+
+  /**
+   * Long-press on an unsent row. There is no server row to tombstone, so this
+   * must never reach `delete_message` — it just drops the outbox entry.
+   */
+  function handleDiscardOutbox(item: MessageRow) {
+    Alert.alert(
+      'Gönderilmemiş mesaj',
+      'Bu mesaj hiç gönderilemedi. Silmek istiyor musun?',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Sil',
+          style: 'destructive',
+          onPress: () => removeFromOutbox(item.id),
+        },
+      ],
     );
   }
 
@@ -358,7 +437,14 @@ export default function ConversationScreen() {
             <Bubble
               item={item}
               isMine={item.sender_id === myUserId}
-              onLongPress={() => handleDeleteMessage(item.id)}
+              onLongPress={() =>
+                // Outbox rows have no server id — discarding one locally is the
+                // only thing "delete" can mean for them.
+                item.outboxStatus
+                  ? handleDiscardOutbox(item)
+                  : handleDeleteMessage(item.id)
+              }
+              onPress={() => handleRetry(item)}
             />
           )}
           contentContainerStyle={{
