@@ -5,28 +5,20 @@ Bugünkü + ertelenen işlerin merkezi. Öncelik sırasında. Bir iş bitince
 
 ---
 
-## 🔴 ŞİMDİ (bugün / bu oturum)
+## ✅ v1.1.1 YAYINDA (5 Eyl 2026)
 
-### 1. Screenshot 6.3" fix + fastlane push (v1.1.1 build ile birlikte)
-- [x] `iPhone 6.7 Display/` klasörüne 14 Plus ss'leri taşı
-- [x] `sips` ile 1206×2622 kopya oluştur → `iPhone 6.3 Display/`
-- [ ] ~~`fastlane screenshots` — v1.1.0 canlı, editable version yok~~
-- [ ] v1.1.1 EAS build submit ederken beraber gönder → o zaman fastlane çalışacak
-- Blocker: v1.1.1 build (Sentry DSN ready olduğunda tetiklenir)
+Build 40. Apple onayladı, App Store'da canlı.
 
-### 2. OTA update push ✅
-- [x] Tur 1 (dbffec8e): push router, in-app notif handler, button overflow, date format, audit dalga 1, Sentry scaffold
-- [x] Tur 2 (6002eeb5): audit dalga 2 + 3 + expo-push chunk
+- [x] Screenshots 6.7" + 6.3" slotlarına yüklendi (fastlane, version:1.1.1)
+- [x] OTA tur 1 (dbffec8e) + tur 2 (6002eeb5)
+- [x] 5 edge function deploy (create-match-request + expo-push chunk'ı import eden 4'ü)
+- [x] Sentry kuruldu ve **build 40 ile native init aktif** — artık crash topluyor
+- [x] Kalıcı review altyapısı (`is_demo` + RLS, migration 20260905000001)
+- [x] Device QA: mesajlaşma, sıralama, review girişi — hepsi temiz
 
-### 3. Supabase edge function deploy ✅
-- [x] `create-match-request` (matchRequestId payload)
-- [x] `publish-announcement`, `dispatch-push`, `send-push-notification`, `send-message` (expo-push chunk)
-
-### 4. Sentry.io project setup ✅
-- [x] Project açıldı: `hazar-ustun / challengebu-mobile`
-- [x] 4 EAS env prod'a girildi (DSN, ORG, PROJECT, AUTH_TOKEN)
-- [x] app.json plugin config'e organization + project yazıldı (2ce8a0b)
-- [ ] **Yeni EAS build al** — Sentry native init o zaman aktif (v1.1.1)
+### İlk hafta izlenecekler
+- [ ] **Sentry'yi kontrol et** — sentry.io/hazar-ustun/challengebu-mobile. İlk gerçek crash'ler burada görünecek. Source-map yüklendiyse stack trace okunabilir olmalı; değilse `SENTRY_AUTH_TOKEN` scope'unu kontrol et.
+- [ ] Kullanıcı geri bildirimi topla (hello@shimal.app)
 
 ---
 
