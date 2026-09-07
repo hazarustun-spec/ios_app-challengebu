@@ -18,8 +18,9 @@
 //   - useMatchApplications(requestId) — applicant list (names embedded)
 //   - useAcceptApplication() — accept one applicant (closes the listing)
 //   - useMatchRequestDetail(requestId) — request metadata for subtitle + category
-//   - usePlayerRatings() — per-applicant ELO lookup for the request's category
+//   - usePlayerRatings(applicantIds) — ELO lookup scoped to the applicants listed
 
+import { useMemo } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../../components/ui/NavHeader';
@@ -55,10 +56,13 @@ export default function OpenApplicants() {
   const applications = useMatchApplications(requestId);
   const requestDetail = useMatchRequestDetail(requestId);
   const acceptMutation = useAcceptApplication();
-  const playerRatings = usePlayerRatings();
   const { start: startConversation } = useStartConversation();
 
   const apps = applications.data ?? [];
+
+  // Only the applicants listed on this screen need an ELO lookup.
+  const applicantIds = useMemo(() => apps.map((a) => a.applicant_id), [apps]);
+  const playerRatings = usePlayerRatings(applicantIds);
 
   // Build subtitle from request detail
   const req = requestDetail.data;

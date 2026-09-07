@@ -23,7 +23,8 @@
 //   - useRejectMatchRequest    → Reddet button
 //   - useOpenCallsFeed         → İlanlar tab
 //   - useApplyToOpenCall       → İlana başvur button
-//   - usePlayerRatings         → per-player ELO badge on Teklifler + İlanlar cards
+//   - usePlayerRatings(ids)    → per-player ELO badge on Teklifler + İlanlar cards
+//                                (scoped to the creators rendered on screen)
 
 import { useMemo, useState } from 'react';
 import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
@@ -169,7 +170,19 @@ export default function MatchesTab() {
     () => new Set((myAppsQ.data ?? []).map((a) => a.request_id)),
     [myAppsQ.data],
   );
-  const playerRatings = usePlayerRatings();
+  // Only the creators actually rendered on this screen need an ELO badge:
+  // incoming offers (OffersList) plus the open-call feed and the user's own
+  // listings (FeedList). Scoping this keeps the elo_ratings read proportional
+  // to the screen instead of to the whole community.
+  const ratingProfileIds = useMemo(
+    () => [
+      ...(requestsQ.data ?? []).map((m) => m.creator_id),
+      ...(feedQ.data ?? []).map((m) => m.creator_id),
+      ...(myOpenQ.data ?? []).map((m) => m.creator_id),
+    ],
+    [requestsQ.data, feedQ.data, myOpenQ.data],
+  );
+  const playerRatings = usePlayerRatings(ratingProfileIds);
 
   const isRefetching =
     (view === 'upcoming' && matchesQ.isRefetching) ||

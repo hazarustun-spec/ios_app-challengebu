@@ -157,25 +157,55 @@ export function useLadder(category: string | undefined) {
 }
 
 /**
- * All-categories ELO lookup, for lists that mix categories (e.g. the match
- * offers/listings feed or open-call applicants). One query, cached; resolve
- * any player's rating in any category via `ratingOf(profileId, category)`.
+ * ELO lookup for a *bounded* set of players, across whatever categories those
+ * players are rated in. Used by lists that mix categories (the match
+ * offers/listings feed, open-call applicants) where every row resolves one
+ * player's rating in that row's own category.
+ *
+ * `profileIds` scopes the read to the players the screen actually renders.
+ * This used to `select()` the whole `elo_ratings` table — every player in
+ * every category — so the payload grew with the community instead of with the
+ * list on screen. An empty/undefined list disables the query outright.
+ *
+ * Ids are chunked exactly like `useLadder`: PostgREST puts the `in.(...)` list
+ * in the query string, so one long list would blow the URL length cap.
  */
-export function usePlayerRatings() {
+export function usePlayerRatings(profileIds: string[] | undefined) {
+  // De-duplicated and sorted so the query key stays stable no matter what
+  // order the caller's rows happened to arrive in.
+  const ids = useMemo(
+    () => Array.from(new Set((profileIds ?? []).filter(Boolean))).sort(),
+    [profileIds],
+  );
+
   const query = useQuery<Map<string, number>>({
-    queryKey: [...queryKeys.ladder.all, 'all-ratings'],
+    queryKey: [...queryKeys.ladder.all, 'ratings', ids],
+    enabled: ids.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('elo_ratings')
-        .select('profile_id, category, rating');
-      if (error) throw error;
       const m = new Map<string, number>();
-      for (const r of (data ?? []) as {
-        profile_id: string;
-        category: string;
-        rating: number;
-      }[]) {
-        m.set(`${r.profile_id}:${r.category}`, r.rating);
+      if (ids.length === 0) return m;
+
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += PROFILE_CHUNK) {
+        chunks.push(ids.slice(i, i + PROFILE_CHUNK));
+      }
+      const results = await Promise.all(
+        chunks.map((chunk) =>
+          supabase
+            .from('elo_ratings')
+            .select('profile_id, category, rating')
+            .in('profile_id', chunk),
+        ),
+      );
+      for (const res of results) {
+        if (res.error) throw res.error;
+        for (const r of (res.data ?? []) as {
+          profile_id: string;
+          category: string;
+          rating: number;
+        }[]) {
+          m.set(`${r.profile_id}:${r.category}`, r.rating);
+        }
       }
       return m;
     },

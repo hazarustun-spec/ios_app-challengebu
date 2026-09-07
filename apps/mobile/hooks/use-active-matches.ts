@@ -57,22 +57,3 @@ export function useActiveMatches() {
     enabled: !!userId,
   });
 }
-
-import { useRealtimeChannel } from './use-realtime-channel';
-
-export function useActiveMatchesRealtime() {
-  const userId = useAuthStore((s) => s.user?.id);
-  useRealtimeChannel({
-    channelName: userId ? `matches:active:${userId}` : 'matches:active:none',
-    enabled: !!userId,
-    // INSERT covers freshly accepted match requests (accept-match-request only
-    // invalidates matchRequests.all, not activeMatches.all, so we depend on
-    // realtime to surface the new row). UPDATE covers status / score / confirm
-    // transitions.
-    configs: [
-      { event: 'INSERT', table: 'matches' },
-      { event: 'UPDATE', table: 'matches' },
-    ],
-    invalidateKeys: [queryKeys.activeMatches.all],
-  });
-}
