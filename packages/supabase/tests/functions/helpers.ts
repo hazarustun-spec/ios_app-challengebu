@@ -88,25 +88,53 @@ export async function createTestUser(opts: {
   return { userId: created.user.id, accessToken: signIn.session.access_token };
 }
 
+/**
+ * 502/503 from the local stack is the edge runtime being unavailable, never an
+ * answer from a function: every function in this repo returns 200 or a 4xx it
+ * chose. `supabase functions serve` runs the runtime in watch mode and restarts
+ * it whenever anything under functions/ changes — the first request writes
+ * deno.lock, which is exactly how accept-match-request's first test kept dying
+ * with a 502 while all 168 others passed. Retrying a gateway error cannot hide a
+ * real failure: a function that is genuinely broken still fails after the last
+ * attempt.
+ */
+const GATEWAY_STATUSES = new Set([502, 503]);
+const INVOKE_ATTEMPTS = 4;
+const INVOKE_BACKOFF_MS = 600;
+
 export async function invokeFunction(
   name: string,
   body: unknown,
   accessToken?: string,
 ): Promise<{ status: number; body: unknown }> {
-  const res = await fetch(`${FUNCTIONS_URL}/${name}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      apikey: ANON_KEY,
-    },
-    body: JSON.stringify(body),
-  });
-  const contentType = res.headers.get('content-type') ?? '';
-  const responseBody = contentType.includes('application/json')
-    ? await res.json()
-    : await res.text();
-  return { status: res.status, body: responseBody };
+  let last: { status: number; body: unknown } | null = null;
+
+  for (let attempt = 1; attempt <= INVOKE_ATTEMPTS; attempt++) {
+    const res = await fetch(`${FUNCTIONS_URL}/${name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        apikey: ANON_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+    const contentType = res.headers.get('content-type') ?? '';
+    const responseBody = contentType.includes('application/json')
+      ? await res.json()
+      : await res.text();
+    last = { status: res.status, body: responseBody };
+
+    if (!GATEWAY_STATUSES.has(res.status)) return last;
+    if (attempt < INVOKE_ATTEMPTS) {
+      console.warn(
+        `invokeFunction(${name}): ${res.status} from the edge runtime, retrying (${attempt}/${INVOKE_ATTEMPTS - 1})`,
+      );
+      await new Promise((r) => setTimeout(r, INVOKE_BACKOFF_MS * attempt));
+    }
+  }
+
+  return last as { status: number; body: unknown };
 }
 
 /**

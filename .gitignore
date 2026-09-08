@@ -15,7 +15,10 @@ build/
 bun.lockb
 
 # Deno (Supabase Edge Functions)
-packages/supabase/functions/deno.lock
+# Deno lockfile. Lives beside packages/supabase/ rather than inside
+# functions/, because the supabase functions-serve watcher restarts the
+# runtime when anything in that directory changes.
+packages/supabase/deno.lock
 
 # Environment
 .env
