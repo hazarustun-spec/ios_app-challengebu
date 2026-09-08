@@ -31,7 +31,16 @@ bekçiliği yapmıyordu. Hepsi düzeldi.
 | `shared-tests` | ✅ yeşil |
 | `mobile-tests` | ✅ yeşil |
 | `supabase-integration` | ✅ yeşil (169 deno testi) |
-| `maestro-e2e` | ⏭ manuel — **maliyet tercihi**, artık çalışabiliyor |
+| `maestro-e2e` | ⏭ manuel — ⚠️ aşağıya bak |
+
+**maestro-e2e nerede kaldı:** macOS runner'larında container runtime yok, o
+yüzden `supabase start` üçüncü adımda `docker: command not found` ile ölüyordu.
+colima kuruldu ve **kalkıyor** (varsayılan `vz` sürücüsü runner'da VM
+başlatamıyor — `qemu` sürücüsü + `brew install qemu` gerekti). Ama QEMU içinde
+Supabase imajlarını çekmek çok yavaş: manuel koşuda "Start Supabase + reset DB"
+adımı 20+ dakikadır sürüyor. Job'ın 90 dk limiti var; yetişip yetişmediği
+görülecek. Yetişmezse gerçek çözüm self-hosted runner ya da imaj önbelleği.
+Her push'ta koşmuyor — macOS dakikaları 10x faturalanıyor.
 
 **Lint: 1999 → 0 hata.** Kapsam düzeltildi (`.claude/worktrees/` repo'nun
 kopyasıydı, `website/` deploy içeriği — formatter'a oynatılmaz), 391 dosya
