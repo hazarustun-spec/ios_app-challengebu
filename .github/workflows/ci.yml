@@ -150,17 +150,18 @@ jobs:
   # Maestro E2E — macOS runner + iOS Simulator. Runs review-login (no Mailpit).
   # Full ci-suite needs a simulator build installed first (see apps/mobile/scripts/maestro-ci.sh).
   #
-  # MANUAL ONLY (workflow_dispatch). GitHub's macOS runners no longer ship
-  # Docker, so `supabase start` dies immediately:
+  # MANUAL ONLY (workflow_dispatch), by choice rather than by breakage.
   #
-  #   failed to inspect container health: docker: command not found
-  #   (podman also not found)
+  # GitHub's macOS runners ship no container runtime, so `supabase start` used
+  # to die at step three with `docker: command not found` — on every push, after
+  # booting a simulator, for up to 90 minutes of macOS runner time, and it kept
+  # the whole workflow red, which hid the three failures that were real. The
+  # colima step below fixes that.
   #
-  # There is no fix inside this job — it needs a container runtime installed
-  # first (colima, and it is slow and flaky on these runners). Until that is
-  # built out (docs/TODO.md, "CI Maestro lane"), running it on every push only
-  # burned up to 90 minutes of macOS runner time to fail at step three and
-  # kept the whole workflow red, which hid the three failures that were real.
+  # It stays on workflow_dispatch because of cost, not capability: macOS minutes
+  # bill at 10x, and this lane boots colima, pulls the Supabase images, builds
+  # the app for the simulator and drives it. Run it before a release, or when
+  # touching an onboarding/auth flow — not on every commit.
   maestro-e2e:
     if: github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
@@ -177,6 +178,17 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
+
+      # GitHub's macOS runners ship no container runtime (Docker Desktop's
+      # licence keeps it off the image), and `supabase start` needs one:
+      #   failed to inspect container health: docker: command not found
+      # colima is the runnable substitute. It is slow to come up — several
+      # minutes — which is a large part of why this job stays manual.
+      - name: Install a container runtime (colima)
+        run: |
+          brew install docker colima
+          colima start --cpu 3 --memory 8 --disk 30
+          docker info
 
       - name: Setup Java 17 (Maestro)
         uses: actions/setup-java@v4
