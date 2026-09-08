@@ -21,7 +21,35 @@ Build 40. Apple onayladı, App Store'da canlı.
 - [x] `onboardingSchema` artık gerçekten çalışıyor — `use-submit-onboarding.ts` insert'ten önce parse ediyor. Şema Plan 8'den beri hiç koşmuyordu; `class_year` enum'u Temmuz'da 'mezun' kazandı, şema iki ay sessizce geride kaldı. Bir daha kaydığında yüksek sesle patlayacak.
 - [x] NativeWind function-style bug'ı için kalıcı guard: `tests/lint/no-function-style-prop.test.ts`. Biome 1.9'da özel kural yok (GritQL v2'de geldi), o yüzden `bun test` içinde kaynak taraması — `turbo test`'te zaten koşuyor. Enjekte edilmiş örnekle yakaladığı doğrulandı.
 
-### 🔴 CI aylardır kırmızı (8 Eyl'de bulundu)
+### 🟡 CI — 4 kırmızı job'dan 1'i yeşil, 1'i manuel, 2'si kaldı
+
+**Şu anki durum (8 Eyl, son koşu):**
+
+| job | durum |
+|---|---|
+| `mobile-tests` | ✅ **yeşil** |
+| `maestro-e2e` | ⏭ manuel (`workflow_dispatch`) |
+| `shared-tests` | ❌ lint: 150 hata |
+| `supabase-integration` | ❌ Deno edge testleri |
+
+- [ ] **`supabase-integration` — Deno edge fonksiyon testleri.** Schema
+      verification ve pgTAP artık geçiyor; sıradaki katman düştü. ~15 test
+      beklenen 200 yerine **503** alıyor (`accept-match-request`,
+      `admin_reorder_bracket_seeds`, `advance-tournament-bracket`,
+      `close-season`, …). 503 = edge runtime worker'ı o istekte kalkamıyor.
+      CI'ın döktüğü fonksiyon logunda yalnızca `review-login: REVIEW_OTP_CODE
+      is not set` görünüyor (o ayrı ve zararsız — `.env.test` yalnızca maestro
+      lane'inde veriliyor); 503'lerin sebebi logda yok. Teşhis için yerelde
+      `supabase start` + `functions serve` gerekiyor → **Docker lazım.**
+- [ ] **`shared-tests` — 150 lint hatası.** `useExhaustiveDependencies` (72,
+      bir kısmı bilerek — dosyalarda `eslint-disable` yorumları var, biome
+      onları görmüyor), `useTemplate` (44, çoğu `lib/badge-art.ts`'te SVG
+      string builder), `noArrayIndexKey` (16), `noExplicitAny` (15). Hepsi
+      "unsafe fix" ya da elle karar; toplu uygulamak davranış değiştirir.
+      Karar gerekiyor: tek tek düzelt mi, yoksa bilerek kabul edilenleri
+      biome.json'da kurala mı bağla.
+
+### Çözülenler (8 Eyl)
 
 Son 6 push'un hepsi başarısız — dört job'ın **dördü de**. Yani eklediğimiz
 hiçbir test aslında kapı bekçiliği yapmıyordu. Dört ayrı sebep vardı:
