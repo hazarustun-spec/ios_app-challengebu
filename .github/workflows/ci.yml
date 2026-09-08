@@ -187,7 +187,11 @@ jobs:
       - name: Install a container runtime (colima)
         run: |
           brew install docker colima
-          colima start --cpu 3 --memory 8 --disk 30
+          # --vm-type qemu, not the default vz: Virtualization.framework fails
+          # to start a VM on these runners —
+          #   error starting vm: error at 'creating and starting': exit status 1
+          # — right after the disk resize. qemu is slower but boots.
+          colima start --vm-type qemu --cpu 3 --memory 8 --disk 20
           docker info
 
       - name: Setup Java 17 (Maestro)
