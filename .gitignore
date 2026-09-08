@@ -43,3 +43,9 @@ npm-debug.log*
 
 # APNs auth keys — never commit
 *.p8
+
+# Local archive of the pre-rebrand tree — an embedded git repo, not a submodule.
+\[archive\]tennis-challenger/
+
+# Supabase CLI local link state (project ref, machine-specific).
+supabase/.temp/

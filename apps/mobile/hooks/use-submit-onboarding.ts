@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { onboardingSchema } from '@tennis/shared/schemas';
 import { supabase } from '../lib/supabase';
 import { SLOT_TO_DB } from '../lib/availability';
 import { useAuthStore } from '../stores/auth-store';
@@ -27,11 +28,58 @@ function toE164TR(raw: string | null): string | null {
   return `+90${digits}`;
 }
 
+/**
+ * Last gate before the draft becomes a `profiles` row.
+ *
+ * `onboardingSchema` existed since Plan 8 but nothing ever ran it — the wizard
+ * writes to Supabase directly, so the schema was documentation that could (and
+ * did) drift: `class_year` gained 'mezun' in migration 20260714000002 and the
+ * schema stayed behind for two months without a single failing test.
+ *
+ * Running it here makes the drift loud. Every field below is already gated by
+ * `firstIncompleteStep` (onboarding-store.ts), which refuses to route to /done
+ * until each one is set, so this can only fire on a genuinely corrupt draft —
+ * or on the next time the DB enum moves and the shared schema doesn't. That is
+ * exactly when we want to hear about it.
+ */
+function validateDraft(draft: DraftSnapshot, phone: string | null) {
+  const result = onboardingSchema.safeParse({
+    firstName: draft.firstName,
+    lastName: draft.lastName,
+    // phoneSchema is `.optional()`, not `.nullable()` — toE164TR returns null
+    // for anything that isn't a 10-digit Turkish mobile, so map it across.
+    phone: phone ?? undefined,
+    pronoun: draft.pronoun,
+    pronounCustom: undefined,
+    genderCategory: draft.category,
+    departmentId: draft.departmentId,
+    classYear: draft.classYear,
+    skillSelfAssessment: draft.level,
+    dominantHand: draft.hand,
+    availabilityWindows: draft.availability.map((s) => SLOT_TO_DB[s]),
+    showDepartment: draft.showDepartment,
+    showClassYear: draft.showClassYear,
+  });
+  if (result.success) return;
+
+  const fields = result.error.issues.map((i) => i.path.join('.')).join(', ');
+  captureException(result.error, {
+    where: 'useSubmitOnboarding.validateDraft',
+    fields,
+  });
+  throw new Error(
+    'Profil bilgilerinde eksik ya da geçersiz alan var. Adımlara dönüp kontrol et.',
+  );
+}
+
 export function useSubmitOnboarding() {
   return useMutation({
     mutationFn: async ({ draft }: Args) => {
       const user = useAuthStore.getState().user;
       if (!user) throw new Error('Not signed in');
+
+      const phone = toE164TR(draft.phone);
+      validateDraft(draft, phone);
 
       // 1. Upload avatar if present. Mirrors use-upload-avatar.ts so both
       //    paths behave the same:
@@ -97,7 +145,7 @@ export function useSubmitOnboarding() {
         email: user.email,
         first_name: draft.firstName,
         last_name: draft.lastName,
-        phone: toE164TR(draft.phone),
+        phone,
         pronoun: draft.pronoun,
         // No screen collects a custom pronoun — the wizard's "other" option is
         // "belirtmek istemiyorum". Sent explicitly so the UPDATE branch below

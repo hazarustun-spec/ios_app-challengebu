@@ -118,6 +118,14 @@ const ICONS = {
 
   // ---------------- actions / status ----------------
   check: (c, f) => <Path key="0" d="M4 12l5 5L20 6" stroke={c} fill={f} />,
+  // Read receipt. Two offset checks, the messaging convention for "seen" —
+  // paired with `check` for "delivered" in the sent-bubble footer.
+  checkDouble: (c, f) => (
+    <>
+      <Path key="0" d="M1.5 12.5l4.5 4.5L15 8.5" stroke={c} fill={f} />
+      <Path key="1" d="M8 12.5l4.5 4.5L21.5 8.5" stroke={c} fill={f} />
+    </>
+  ),
   checkCircle: (c, f) => (
     <>
       <Circle key="0" cx={12} cy={12} r={9} stroke={c} fill={f} />
@@ -464,6 +472,13 @@ export interface IconProps {
    */
   fill?: string;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Set when the icon carries meaning no neighbouring text repeats — a bare
+   * status glyph, say. Icons are decorative by default, so leaving this unset
+   * correctly hides them from screen readers; setting it makes the icon an
+   * announced `image` instead.
+   */
+  accessibilityLabel?: string;
 }
 
 export function Icon({
@@ -473,6 +488,7 @@ export function Icon({
   stroke = 2,
   fill = 'none',
   style,
+  accessibilityLabel,
 }: IconProps) {
   const render = ICONS[name];
   return (
@@ -486,6 +502,9 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       style={style}
+      accessible={accessibilityLabel !== undefined}
+      accessibilityRole={accessibilityLabel !== undefined ? 'image' : undefined}
+      accessibilityLabel={accessibilityLabel}
     >
       {render(color, fill)}
     </Svg>

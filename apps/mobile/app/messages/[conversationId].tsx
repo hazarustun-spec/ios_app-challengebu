@@ -37,6 +37,7 @@ import {
   type MessageRow,
 } from '../../hooks/use-messages';
 import { useBlockUser, useReportUser } from '../../hooks/use-moderation';
+import { useTypingIndicator } from '../../hooks/use-typing-indicator';
 import { useAuthStore } from '../../stores/auth-store';
 import { useMessageOutboxStore } from '../../stores/message-outbox-store';
 import { useToast } from '../../components/ui/ToastProvider';
@@ -139,25 +140,33 @@ function Bubble({ item, isMine, onLongPress, onPress }: BubbleProps) {
           <Text style={{ fontSize: 11, color: colors.text3 }}>
             {formatBubbleTime(item.created_at)}
           </Text>
-          <Text
-            style={{
-              fontSize: 11,
-              fontWeight: isFailed ? '600' : '400',
-              color: isFailed
-                ? colors.loss
-                : item.read_at
-                ? colors.win
-                : colors.text3,
-            }}
-          >
-            {isFailed
-              ? 'Gönderilemedi'
-              : isPending
-              ? 'Gönderiliyor…'
-              : item.read_at
-              ? 'Okundu'
-              : 'İletildi'}
-          </Text>
+          {/* Delivered / read state.
+              Failed and in-flight rows keep words: those two states are
+              actionable (one wants a retry tap, the other says "wait") and a
+              glyph alone would not say so. Once the server has the message the
+              distinction is routine, so it becomes a tick — one for delivered,
+              two for read — which is the convention every messenger uses and
+              costs no width in a 78%-wide bubble.
+              `accessibilityLabel` carries the old wording so the meaning
+              survives for screen readers. */}
+          {isFailed || isPending ? (
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: isFailed ? '600' : '400',
+                color: isFailed ? colors.loss : colors.text3,
+              }}
+            >
+              {isFailed ? 'Gönderilemedi' : 'Gönderiliyor…'}
+            </Text>
+          ) : (
+            <Icon
+              name={item.read_at ? 'checkDouble' : 'check'}
+              size={13}
+              color={item.read_at ? colors.win : colors.text3}
+              accessibilityLabel={item.read_at ? 'Okundu' : 'İletildi'}
+            />
+          )}
         </View>
       ) : (
         <Text
@@ -188,6 +197,42 @@ function Bubble({ item, isMine, onLongPress, onPress }: BubbleProps) {
           Yeniden göndermek için dokun
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Typing indicator
+// ---------------------------------------------------------------------------
+
+/**
+ * Shaped like a received bubble so it reads as "their side is doing something"
+ * without any animation — three static dots. A pulsing animation would need a
+ * Reanimated loop mounted and unmounted on every keystroke burst, which is a
+ * lot of machinery for a hint that is on screen for two seconds at a time.
+ */
+function TypingBubble({ name }: { name?: string }) {
+  return (
+    <View
+      style={{ alignSelf: 'flex-start', maxWidth: '78%', marginBottom: 6 }}
+      accessibilityRole="text"
+      accessibilityLabel={`${name ?? 'Karşı taraf'} yazıyor`}
+    >
+      <View
+        style={{
+          paddingHorizontal: 14,
+          paddingVertical: 9,
+          borderRadius: 18,
+          borderBottomLeftRadius: 4,
+          backgroundColor: colors.surface2,
+          borderWidth: 1,
+          borderColor: colors.surface3,
+        }}
+      >
+        <Text style={{ fontSize: 15, lineHeight: 21, color: colors.text3 }}>
+          yazıyor…
+        </Text>
+      </View>
     </View>
   );
 }
@@ -225,6 +270,10 @@ export default function ConversationScreen() {
   const deleteMessage = useDeleteMessage();
   const blockUser = useBlockUser();
   const reportUser = useReportUser();
+  const { isOtherTyping, notifyTyping, notifyStopped } = useTypingIndicator(
+    conversationId,
+    myUserId,
+  );
 
   // Local state
   const [body, setBody] = useState('');
@@ -249,6 +298,7 @@ export default function ConversationScreen() {
     // outbox bubble, so leaving the text in the input would show the same
     // message twice.
     setBody('');
+    notifyStopped();
     sendMessage.mutate(
       { conversationId: conversationId!, body: trimmed },
       {
@@ -406,16 +456,26 @@ export default function ConversationScreen() {
           <ActivityIndicator color={colors.clay} />
         </View>
       ) : messages.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        // The FlatList (and with it the typing bubble in its header) is not
+        // mounted on an empty thread, so carry the indicator here too — a
+        // brand-new conversation is exactly when the other side typing first
+        // is worth seeing.
+        <View style={{ flex: 1, justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 14,
               color: colors.text3,
               fontStyle: 'italic',
+              textAlign: 'center',
             }}
           >
             İlk mesajı sen at
           </Text>
+          {isOtherTyping ? (
+            <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
+              <TypingBubble name={name} />
+            </View>
+          ) : null}
         </View>
       ) : (
         <FlatList
@@ -451,6 +511,12 @@ export default function ConversationScreen() {
             paddingHorizontal: 16,
             paddingVertical: 12,
           }}
+          // Inverted, so the header paints at the BOTTOM of the thread —
+          // directly above the composer, which is where a typing indicator
+          // belongs, and it rides the scroll instead of floating over it.
+          ListHeaderComponent={
+            isOtherTyping ? <TypingBubble name={name} /> : null
+          }
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
@@ -484,7 +550,13 @@ export default function ConversationScreen() {
       >
         <TextInput
           value={body}
-          onChangeText={setBody}
+          onChangeText={(next) => {
+            setBody(next);
+            // An empty box is not "typing" — clearing the draft by backspace
+            // should retract the indicator, not keep broadcasting.
+            if (next.trim()) notifyTyping();
+            else notifyStopped();
+          }}
           placeholder="Mesaj yaz…"
           placeholderTextColor={colors.text3}
           multiline
@@ -492,7 +564,9 @@ export default function ConversationScreen() {
           style={{
             flex: 1,
             minHeight: 42,
-            maxHeight: 120,
+            // Six lines before the input starts scrolling:
+            // 6 × lineHeight 20 + paddingVertical 10 × 2 + borderWidth 1 × 2.
+            maxHeight: 142,
             paddingHorizontal: 14,
             paddingVertical: 10,
             borderRadius: 21,

@@ -16,6 +16,11 @@ Build 40. Apple onayladı, App Store'da canlı.
 - [x] Kalıcı review altyapısı (`is_demo` + RLS, migration 20260905000001)
 - [x] Device QA: mesajlaşma, sıralama, review girişi — hepsi temiz
 
+### Kod hijyeni (8 Eyl) ✅
+- [x] Ölü kod silindi: `components/profile/MatchesTab.tsx` + `ProfileTabs.tsx` (hiçbir yerden import edilmiyordu; MatchesTab yeni `RecentMatches.tsx` ile üçüncü kopyaydı).
+- [x] `onboardingSchema` artık gerçekten çalışıyor — `use-submit-onboarding.ts` insert'ten önce parse ediyor. Şema Plan 8'den beri hiç koşmuyordu; `class_year` enum'u Temmuz'da 'mezun' kazandı, şema iki ay sessizce geride kaldı. Bir daha kaydığında yüksek sesle patlayacak.
+- [x] NativeWind function-style bug'ı için kalıcı guard: `tests/lint/no-function-style-prop.test.ts`. Biome 1.9'da özel kural yok (GritQL v2'de geldi), o yüzden `bun test` içinde kaynak taraması — `turbo test`'te zaten koşuyor. Enjekte edilmiş örnekle yakaladığı doğrulandı.
+
 ### İlk hafta izlenecekler
 - [ ] **Sentry'yi kontrol et** — sentry.io/hazar-ustun/challengebu-mobile. İlk gerçek crash'ler burada görünecek. Source-map yüklendiyse stack trace okunabilir olmalı; değilse `SENTRY_AUTH_TOKEN` scope'unu kontrol et.
 - [ ] Kullanıcı geri bildirimi topla (hello@shimal.app)
@@ -31,18 +36,18 @@ Operatörün kendi kullanımından + kullanıcı geri bildirimlerinden çıkan 1
   - ⚠️ Cihazda doğrulanmalı: uygulamayı 1+ saat arka planda bırak, geri dön, oturum durmalı.
 
 ### B. UI bug'ları (JS-only)
-- [ ] **#3 Avatar dairelerinin altındaki isimler ortalı değil.** Ana sayfa "sana uygun rakipler", Maçlar → aynı bölüm, Teklifler, İlanlar — hepsinde.
-- [ ] **#5 "Reddedildi" yazısı ekran dışına taşıyor** — Gönderdiğim teklifler bölümü.
-- [ ] **#9 "Finale bracket'ini gör"** — Yaz 2026 Sezonu sayfası. "Finale" diye bir kelime yok; Türkçesi "final".
+- [x] **#3 Avatar dairelerinin altındaki isimler ortalı değil.** Ana sayfa "sana uygun rakipler", Maçlar → aynı bölüm, Teklifler, İlanlar — hepsinde. Kök sebep NativeWind function-style yutması; 4 dosyada daha aynı bug vardı, hepsi süpürüldü. ✅ b39e7fb
+- [x] **#5 "Reddedildi" yazısı ekran dışına taşıyor** — Gönderdiğim teklifler bölümü. Aynı kök sebep. Chip artık daralıyor, etiket tek satır. ✅ b39e7fb
+- [x] **#9 "Finale bracket'ini gör"** — Yaz 2026 Sezonu sayfası. "Finale" diye bir kelime yok; Türkçesi "final". İsim halleri "final" oldu, datif "finale" (FİNALE GERİ SAYIM) doğru olduğu için kaldı. "bracket" → "eşleşmeler". ✅ b39e7fb
 
 ### C. Eksik özellikler (JS-only)
-- [ ] **#7 "Sana uygun rakipler" 3 slotla sınırlı** — kaydırılabilir olsun, olabildiğince oyuncu göstersin.
-- [ ] **#8 Teklifler/İlanlar sekmelerine kırmızı bildirim noktası** — bekleyen teklif veya açık ilan varsa.
-- [ ] **#10 Profilde son maçlar görünsün** — rakip adı, skor, tarih.
-- [ ] **#11 Onboarding sınıf seçeneklerine "4+"** (okulu uzayanlar). DB enum değişikliği de gerekiyor (`class_year`).
+- [x] **#7 "Sana uygun rakipler" 3 slotla sınırlı** — kaydırılabilir olsun, olabildiğince oyuncu göstersin. 24 öneriye çıktı, yatay FlatList. ✅ b39e7fb
+- [x] **#8 Teklifler/İlanlar sekmelerine kırmızı bildirim noktası** — bekleyen teklif veya açık ilan varsa. Segmented `badge` prop'u + matches.tsx bağlantısı. Aktif sekmede sönük. ✅ b39e7fb
+- [x] **#10 Profilde son maçlar görünsün** — rakip adı, skor, tarih. Yeni RecentMatches bileşeni, iki profilde de. Yanlış rakip çözümü + "Rakip" görünen kendi adı bug'ları da düzeldi. ✅ b39e7fb
+- [x] **#11 Onboarding sınıf seçeneklerine "4+"** (okulu uzayanlar). DB enum değişikliği de gerekiyor (`class_year`). `4_plus` slug'ı, migration 20260908000001 (UYGULANMADI). ✅ b39e7fb
 
 ### D. Backend
-- [ ] **#4 İlan açılınca uygun kategorideki herkese bildirim.** Erkek Tek ilanı → erkek kategorisindekilere, Open Çift → open'dakilere. Şu an yalnızca direkt meydan okumada bildirim gidiyor; açık ilanlar sessiz.
+- [x] **#4 İlan açılınca uygun kategorideki herkese bildirim.** Erkek Tek ilanı → erkek kategorisindekilere, Open Çift → open'dakilere. Şu an yalnızca direkt meydan okumada bildirim gidiyor; açık ilanlar sessiz. Uygunluk elo-seeding kuralından türetildi. 6 saatlik duyuru cooldown'u eklendi. DEPLOY EDİLMEDİ. ✅ b39e7fb
 
 ### E. Tasarım
 - [ ] **#2 Açılış ekranı animasyonu.** Mevcut `(auth)/splash.tsx` var (ball mark + üç nabız atan nokta). Daha iyisi isteniyor — ne yönde olacağı konuşulmalı.
@@ -112,15 +117,15 @@ Kaynak: `docs/roadmap/v2-backlog.md` "Messaging redesign" section
 - [x] Retry queue ✅ 8ef5eaa — kalıcı outbox (zustand + expo-secure-store), başarısız mesaj kırmızı baloncuk olarak kalıyor, dokununca yeniden gönderiliyor, uzun basınca atılıyor.
   - ⚠️ **CANLIDA DEĞİL.** Commit'te duruyor, OTA atılmadı (5 Eyl kararı). Cihazda hiç test edilmedi: hata baloncuğu, dokunma, cold-start rehydrate, realtime dedupe penceresi — hiçbiri doğrulanmadı. Bir sonraki OTA/build'den önce TestFlight'ta denenmeli.
   - Bilinen açık: `send-message` satırı yazıp yanıtı kaybederse retry mesajı çoğaltır (edge function idempotent değil).
-- [ ] Composer multi-line (6 lines max)
-- [ ] Attachment: photo (expo-image-picker → Storage)
-- [ ] Typing indicator via Postgres broadcast
-- [ ] Delivery ticks (read_at zaten var, sadece göster)
+- [x] Composer multi-line (6 lines max) — `multiline` zaten vardı, `maxHeight` 120→142 (6×20 satır + padding + border).
+- [x] Typing indicator — `use-typing-indicator.ts`, Realtime **broadcast** (DB'ye yazmıyor). 2 sn throttle, 5 sn expiry (peer çökerse "yazıyor…" takılı kalmasın). Ters FlatList'in `ListHeaderComponent`'i composer'ın hemen üstüne düşüyor; boş sohbette ayrıca elle basılıyor. Maliyet: açık sohbet başına 1 ek kanal, kullanıcı başına değil.
+- [x] Delivery ticks — tek tik = iletildi, çift tik = okundu (`checkDouble` ikonu eklendi). "Gönderiliyor…"/"Gönderilemedi" yazı olarak kaldı: o ikisi eylem gerektiriyor, glif tek başına bunu söylemiyor. Eski metinler `accessibilityLabel`'a taşındı.
+- [ ] Attachment: photo (expo-image-picker → Storage) — **migration gerekiyor** (`messages.image_url` + storage bucket + `send-message` edge function). OTA ile gitmez, ayrı iş.
 
 **Milestone 3:**
-- [ ] Message reactions (❤️👍😂)
-- [ ] Long-press menu (Reply/Copy/Delete/Report)
-- [ ] Deleted-message tombstone
+- [x] Deleted-message tombstone — zaten vardı ("Bu mesaj silindi", italik, `deleted_at` üzerinden; migration 20260714000003).
+- [ ] Message reactions (❤️👍😂) — **migration gerekiyor** (`message_reactions` tablosu + RLS + realtime).
+- [ ] Long-press menu (Reply/Copy/Delete/Report) — Sil zaten uzun basmada. Kopyala `expo-clipboard` istiyor (native modül → yeni build), Yanıtla `messages.reply_to_id` istiyor (migration). Üçü de OTA dışı.
 
 ### 9. Add-to-Calendar
 Kaynak: `docs/roadmap/v2-backlog.md` "Add-to-Calendar"
