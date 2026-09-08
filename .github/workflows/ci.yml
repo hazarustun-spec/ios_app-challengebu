@@ -186,7 +186,7 @@ jobs:
       # minutes — which is a large part of why this job stays manual.
       - name: Install a container runtime (colima)
         run: |
-          brew install docker colima
+          brew install docker colima qemu
           # --vm-type qemu, not the default vz: Virtualization.framework fails
           # to start a VM on these runners —
           #   error starting vm: error at 'creating and starting': exit status 1
