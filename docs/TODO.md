@@ -54,16 +54,16 @@ Rapor: `docs/capacity-analysis-2026-09.md`
 - [x] `use-ladder.ts` — `public_profiles` artık `.in('user_id', chunk)` (200'lük parça)
 - [x] `(tabs)/leaderboard.tsx` — ScrollView → FlatList + memoized row
 - [x] `use-messages.ts` — useInfiniteQuery, 50/sayfa, keyset cursor
-- [ ] **Açık karar:** `getItemLayout` konmadı — satır yüksekliği sabit değil (isim wrap ediyor). İstenirse isme `numberOfLines={1}` + yükseklik 66'ya sabitleme gerekir.
-- [ ] **Açık karar:** ladder'a sunucu tarafı limit konmadı — rank hesabı tüm satırlara dayanıyor. Doğru çözüm: window function'lı sayfalı RPC (ayrı iş).
+- [ ] **200+ kullanıcıda dön:** `getItemLayout` konmadı — satır yüksekliği sabit değil (isim wrap ediyor). Gerekirse isme `numberOfLines={1}` + yükseklik 66'ya sabitleme.
+- [ ] **200+ kullanıcıda dön:** ladder'a sunucu tarafı limit konmadı — rank hesabı tüm satırlara dayanıyor. Doğru çözüm: window function'lı sayfalı RPC (ayrı iş).
 
-### 7d. Yeni bulgu — `usePlayerRatings` filtresiz
-- [ ] `hooks/use-ladder.ts:~160-190` — tüm kategorilerde filtresiz `select('profile_id, category, rating')`. Ladder'dan daha kötü ölçeklenir. Çağıran ekranları bul, gerektiği kadarını çek.
+### 7d. `usePlayerRatings` filtresiz ✅ 029c38f
+- [x] `profileIds` parametresi aldı, `.in(...)` 200'lük parça. İki çağıran (matches.tsx teklif/ilan sahipleri, open-applicants başvuranlar) yalnızca ekrandaki kişileri çekiyor.
 
-### 7c. Kapasite P2 — 2000 user hedefi
-- [ ] Messages retention cron (365 gün silinmiş / 730 gün hepsi)
-- [ ] Dead-code realtime hook'ları sil (`use-active-matches.ts:63`, `use-match-requests.ts:73`)
-- [ ] Supabase Pro tier ($25/ay) — Realtime 500 + DB 8GB + PITR
+### 7c. Kapasite P2 — 2000 user hedefi ✅ 029c38f (Pro hariç)
+- [x] Messages retention cron — 730 gün, günlük 02:00 UTC. Migration `20260906000001`, **prod'a uygulandı**.
+- [x] Dead-code realtime hook'ları silindi (52 satır). Not: `useMatchRequestsRealtime` tek başına 2 kanal açıyormuş — wire edilseydi maliyet kullanıcı başına 3 kanal olacaktı, rapor 2 demişti.
+- [ ] Supabase Pro tier ($25/ay) — Realtime 500 + DB 8GB + PITR. **~200-300 aktif kullanıcıda gerekli.**
 
 ---
 
@@ -79,7 +79,9 @@ Kaynak: `docs/roadmap/v2-backlog.md` "Messaging redesign" section
 - [x] **Device QA yapıldı** (build 40, TestFlight, iPhone): inverted FlatList + klavye davranışı sorunsuz, optimistic send çalışıyor, sıralama akıcı, review girişi çalışıyor. Android transform hâlâ test edilmedi (Android sürümü v2'de).
 
 **Milestone 2:**
-- [ ] Retry queue (M1'den ertelendi — kalıcı outbox gerekiyor, cache satırı refetch'te siliniyor)
+- [x] Retry queue ✅ 8ef5eaa — kalıcı outbox (zustand + expo-secure-store), başarısız mesaj kırmızı baloncuk olarak kalıyor, dokununca yeniden gönderiliyor, uzun basınca atılıyor.
+  - ⚠️ **CANLIDA DEĞİL.** Commit'te duruyor, OTA atılmadı (5 Eyl kararı). Cihazda hiç test edilmedi: hata baloncuğu, dokunma, cold-start rehydrate, realtime dedupe penceresi — hiçbiri doğrulanmadı. Bir sonraki OTA/build'den önce TestFlight'ta denenmeli.
+  - Bilinen açık: `send-message` satırı yazıp yanıtı kaybederse retry mesajı çoğaltır (edge function idempotent değil).
 - [ ] Composer multi-line (6 lines max)
 - [ ] Attachment: photo (expo-image-picker → Storage)
 - [ ] Typing indicator via Postgres broadcast
