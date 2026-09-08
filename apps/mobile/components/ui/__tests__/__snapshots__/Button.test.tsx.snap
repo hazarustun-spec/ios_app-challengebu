@@ -36,7 +36,7 @@ exports[`Button renders text in primary variant md size 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -76,7 +76,7 @@ exports[`Button renders disabled state 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -124,7 +124,7 @@ exports[`Button renders loading state with ActivityIndicator 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -164,7 +164,7 @@ exports[`Button renders primary variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -204,7 +204,7 @@ exports[`Button renders secondary variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -244,7 +244,7 @@ exports[`Button renders danger variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -284,7 +284,7 @@ exports[`Button renders dark variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -324,7 +324,7 @@ exports[`Button renders ghost variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -364,7 +364,7 @@ exports[`Button renders tonal variant 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -404,7 +404,7 @@ exports[`Button renders sm size 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -444,7 +444,7 @@ exports[`Button renders md size 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -484,7 +484,7 @@ exports[`Button renders lg size 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -524,7 +524,7 @@ exports[`Button full width prop applies w-full 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;
 
@@ -573,6 +573,6 @@ exports[`Button arrow prop renders the chevron after children 1`] = `
       ],
     },
   },
-  "type": "Animated.View",
+  "type": "Pressable",
 }
 `;

@@ -21,6 +21,12 @@
 // keeps the test focused on MatchCard's contract.
 
 import { describe, expect, mock, test } from 'bun:test';
+import { installHookShim } from '../../../tests/react-hook-shim';
+
+// Sparkline calls React hooks, and this suite invokes components as plain
+// functions, so React's dispatcher is null. Must run before the component
+// import below.
+installHookShim();
 import type { ReactElement } from 'react';
 
 function makeTag(displayName: string) {

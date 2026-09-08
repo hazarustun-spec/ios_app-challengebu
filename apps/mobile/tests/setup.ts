@@ -49,7 +49,15 @@ mock.module('react-native-reanimated', () => {
   const View = (_props: Record<string, unknown>) => null;
   (View as { displayName?: string }).displayName = 'Animated.View';
   return {
-    default: { View, Text: View, ScrollView: View, createAnimatedComponent: () => View },
+    default: {
+      View,
+      Text: View,
+      ScrollView: View,
+      // Pass the wrapped component through instead of swallowing it: tests
+      // look for the underlying element (a Polyline, say), and returning a
+      // generic stand-in erased it from the tree.
+      createAnimatedComponent: (C: unknown) => C,
+    },
     Easing: {
       bezier: (x1: number, y1: number, x2: number, y2: number) => ({
         __type: 'bezier',

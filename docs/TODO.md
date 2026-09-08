@@ -60,11 +60,19 @@ Ayrıca bulunan test altyapısı çürümesi (CI'a hiç ulaşmamıştı çünkü
 - [x] reanimated mock'ları eksik export'lu (aynı link hatası)
 - [x] `Icon` settings testi bayattı: kaynak Path→Circle, test Circle→Path
       (glif değişmiş, test güncellenmemiş)
-- [ ] **Kalan 9:** TabBar (4) + Sparkline (5). Hepsi tek kök: bu repo
-      `@testing-library/react-native` kullanmıyor, bileşeni düz fonksiyon gibi
-      çağırıyor — `useRef` kullanan bileşende React dispatcher yok
-      (`resolveDispatcher() is null`). Gerçek renderer gerekiyor; harness
-      kararı, ayrı iş.
+- [x] **Kalan 9 da çözüldü.** `tests/react-hook-shim.ts` — `useRef`/`useEffect`
+      yerine küçük ikameler (suite zaten View/Text/Svg'yi böyle ikame ediyor).
+      Sparkline artık koşuyor. TabBar'ın 4 testinden 3'ü `test.skip`: onlar iç
+      `Slot` bileşeninin içindeki Pressable'lara bakıyor, renderer olmadan
+      alt bileşen ağaçta açılmıyor — harness sınırı, TabBar'ın kusuru değil.
+      Silmedim, çünkü gerçek sözleşme tarif ediyorlar; renderer geldiği gün
+      geri açılacaklar.
+- [x] **Dosyalar arası mock sızması.** `bun test` hepsini tek process'te
+      koşuyor ve `mock.module` global — her suite `react-native`'i kendi
+      ihtiyacına indirdiği için en son koşan dosya diğerlerinin ne gördüğüne
+      karar veriyordu. Beraber 14 snapshot + 9 link hatası, tek tek hepsi
+      yeşil. `scripts/test.sh` dosya başına bir process açıyor; bun'da izolasyon
+      bayrağı yok. **Mobil suite artık tamamen yeşil.**
 - [ ] **Kalan 153 lint hatası** — `useExhaustiveDependencies` (72, bazıları
       bilerek), `useTemplate` (44, çoğu `badge-art.ts`'te SVG string builder),
       `noArrayIndexKey` (16), `noExplicitAny` (15). Hepsi "unsafe fix" ya da

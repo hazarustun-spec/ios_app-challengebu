@@ -529,3 +529,142 @@ exports[`Avatar with level badge renders the supplied icon + color 1`] = `
   "type": "View",
 }
 `;
+
+exports[`TabBar renders 5 slots with index active 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "pointerEvents": "none",
+                "style": [
+                  {
+                    "backgroundColor": "#2270BC",
+                    "borderRadius": 24,
+                    "height": 48,
+                    "left": 0,
+                    "position": "absolute",
+                    "top": 0,
+                    "width": 48,
+                  },
+                  {
+                    "opacity": 0,
+                    "transform": [
+                      {
+                        "translateX": 0,
+                      },
+                      {
+                        "translateY": 0,
+                      },
+                    ],
+                  },
+                ],
+              },
+              "type": "Animated.View",
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "props": {
+                    "isActive": true,
+                    "onLayout": [Function],
+                    "onPress": "[Function]",
+                    "slot": {
+                      "icon": "home",
+                      "label": "Anasayfa",
+                      "name": "index",
+                    },
+                  },
+                  "type": "TabSlot",
+                },
+                {
+                  "children": [],
+                  "props": {
+                    "isActive": false,
+                    "onLayout": [Function],
+                    "onPress": "[Function]",
+                    "slot": {
+                      "icon": "calendar",
+                      "label": "Maçlar",
+                      "name": "matches",
+                    },
+                  },
+                  "type": "TabSlot",
+                },
+                {
+                  "children": [],
+                  "props": {
+                    "isActive": false,
+                    "onLayout": [Function],
+                    "onPress": "[Function]",
+                    "slot": {
+                      "isCenter": true,
+                      "label": "Yeni maç",
+                      "name": "new-match",
+                    },
+                  },
+                  "type": "TabSlot",
+                },
+                {
+                  "children": [],
+                  "props": {
+                    "isActive": false,
+                    "onLayout": [Function],
+                    "onPress": "[Function]",
+                    "slot": {
+                      "icon": "ranking",
+                      "label": "Sıralama",
+                      "name": "leaderboard",
+                    },
+                  },
+                  "type": "TabSlot",
+                },
+                {
+                  "children": [],
+                  "props": {
+                    "isActive": false,
+                    "onLayout": [Function],
+                    "onPress": "[Function]",
+                    "slot": {
+                      "icon": "user",
+                      "label": "Profil",
+                      "name": "profile",
+                    },
+                  },
+                  "type": "TabSlot",
+                },
+              ],
+              "props": {},
+              "type": "Fragment",
+            },
+          ],
+          "props": {
+            "className": "flex-row items-center justify-between",
+            "style": {
+              "flex": 1,
+              "position": "relative",
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": {
+        "className": "h-16 flex-row items-center rounded-pill border-base border-white bg-lime px-2",
+      },
+      "type": "View",
+    },
+  ],
+  "props": {
+    "className": "bg-bg px-4 pt-2",
+    "style": {
+      "paddingBottom": 42,
+    },
+  },
+  "type": "View",
+}
+`;

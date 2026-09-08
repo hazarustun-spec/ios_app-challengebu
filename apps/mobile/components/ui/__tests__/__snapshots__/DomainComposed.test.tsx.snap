@@ -1,5 +1,100 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`Sparkline upward trend with auto color routes to win: upward 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "animatedProps": {
+          "strokeDashoffset": 80.51114693526611,
+        },
+        "fill": "none",
+        "points": "0.00,20.00 20.00,16.43 40.00,12.86 60.00,0.00",
+        "stroke": "#5C8C1E",
+        "strokeDasharray": 80.51114693526611,
+        "strokeLinecap": "round",
+        "strokeLinejoin": "round",
+        "strokeWidth": 2,
+      },
+      "type": "Polyline",
+    },
+  ],
+  "props": {
+    "height": 20,
+    "width": 60,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Sparkline downward trend with auto color routes to loss: downward 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "animatedProps": {
+          "strokeDashoffset": 79.16987649341297,
+        },
+        "fill": "none",
+        "points": "0.00,0.00 20.00,5.12 40.00,13.12 60.00,20.00",
+        "stroke": "#E0463C",
+        "strokeDasharray": 79.16987649341297,
+        "strokeLinecap": "round",
+        "strokeLinejoin": "round",
+        "strokeWidth": 2,
+      },
+      "type": "Polyline",
+    },
+  ],
+  "props": {
+    "height": 20,
+    "width": 60,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Sparkline renders with explicit color: explicit-color 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "animatedProps": {
+          "strokeDashoffset": 85.45812699680864,
+        },
+        "fill": "none",
+        "points": "0.00,20.00 30.00,0.00 60.00,12.00",
+        "stroke": "#8FD43B",
+        "strokeDasharray": 85.45812699680864,
+        "strokeLinecap": "round",
+        "strokeLinejoin": "round",
+        "strokeWidth": 2,
+      },
+      "type": "Polyline",
+    },
+  ],
+  "props": {
+    "height": 20,
+    "width": 60,
+  },
+  "type": "Svg",
+}
+`;
+
+exports[`Sparkline handles single point gracefully — no polyline, just an empty Svg: single-point 1`] = `
+{
+  "children": [],
+  "props": {
+    "height": 20,
+    "width": 60,
+  },
+  "type": "Svg",
+}
+`;
+
 exports[`PlayerChip with name + elo + sub renders all three text leaves: with-sub 1`] = `
 {
   "children": [
