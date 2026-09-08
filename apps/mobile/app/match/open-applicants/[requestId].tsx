@@ -20,25 +20,22 @@
 //   - useMatchRequestDetail(requestId) — request metadata for subtitle + category
 //   - usePlayerRatings(applicantIds) — ELO lookup scoped to the applicants listed
 
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { Icon } from '../../../components/ui/Icon';
 import { LevelIcon } from '../../../components/ui/LevelIcon';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import {
-  useMatchApplications,
-  useAcceptApplication,
-} from '../../../hooks/use-match-applications';
-import { useMatchRequestDetail } from '../../../hooks/use-match-request-detail';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { usePlayerRatings } from '../../../hooks/use-ladder';
+import { useAcceptApplication, useMatchApplications } from '../../../hooks/use-match-applications';
+import { useMatchRequestDetail } from '../../../hooks/use-match-request-detail';
 import { useStartConversation } from '../../../hooks/use-start-conversation';
 import { levelForElo } from '../../../lib/levels';
-import { colors } from '../../../theme/colors';
 import { userMessage } from '../../../lib/user-message';
+import { colors } from '../../../theme/colors';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -67,11 +64,7 @@ export default function OpenApplicants() {
   // Build subtitle from request detail
   const req = requestDetail.data;
   const subtitle = req
-    ? [
-        'İlanın',
-        CATEGORY_LABELS[req.category] ?? req.category,
-        req.court?.name ?? null,
-      ]
+    ? ['İlanın', CATEGORY_LABELS[req.category] ?? req.category, req.court?.name ?? null]
         .filter(Boolean)
         .join(' · ')
     : 'İlanın';
@@ -94,10 +87,7 @@ export default function OpenApplicants() {
                   router.back();
                 },
                 onError: (err) => {
-                  Alert.alert(
-                    'Hata',
-                    userMessage(err, 'Bir hata oluştu.'),
-                  );
+                  Alert.alert('Hata', userMessage(err, 'Bir hata oluştu.'));
                 },
               },
             );
@@ -107,13 +97,7 @@ export default function OpenApplicants() {
     );
   }
 
-  const header = (
-    <NavHeader
-      title="Başvuranlar"
-      subtitle={subtitle}
-      onBack={() => router.back()}
-    />
-  );
+  const header = <NavHeader title="Başvuranlar" subtitle={subtitle} onBack={() => router.back()} />;
 
   if (applications.isLoading) {
     return (
@@ -177,12 +161,8 @@ export default function OpenApplicants() {
           }}
         >
           <Icon name="info" size={18} color={colors.clay} />
-          <Text
-            className="font-sans text-text-2"
-            style={{ flex: 1, fontSize: 13, lineHeight: 19 }}
-          >
-            Birini kabul ettiğinde ilan kapanır ve maç oluşturulur.{' '}
-            {apps.length} kişi başvurdu.
+          <Text className="font-sans text-text-2" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
+            Birini kabul ettiğinde ilan kapanır ve maç oluşturulur. {apps.length} kişi başvurdu.
           </Text>
         </View>
         <View style={{ gap: 10 }}>
@@ -196,23 +176,14 @@ export default function OpenApplicants() {
                 className="bg-surface rounded-lg border-base border-border-strong"
                 style={{ padding: 14 }}
               >
-                <View
-                  className="flex-row items-center"
-                  style={{ gap: 12, marginBottom: 10 }}
-                >
+                <View className="flex-row items-center" style={{ gap: 12, marginBottom: 10 }}>
                   <Avatar name={fullName} size={44} />
                   <View style={{ flex: 1 }}>
-                    <Text
-                      className="font-sans font-bold text-text"
-                      style={{ fontSize: 15 }}
-                    >
+                    <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
                       {fullName}
                     </Text>
                     {elo !== null && lv !== null && (
-                      <View
-                        className="flex-row items-center"
-                        style={{ gap: 5, marginTop: 3 }}
-                      >
+                      <View className="flex-row items-center" style={{ gap: 5, marginTop: 3 }}>
                         <LevelIcon level={lv} size={13} />
                         <Text
                           className="font-sans font-semibold"
@@ -253,11 +224,7 @@ export default function OpenApplicants() {
                       size="sm"
                       variant="secondary"
                       full
-                      onPress={() =>
-                        router.push(
-                          `/user/${a.applicant_id}` as never,
-                        )
-                      }
+                      onPress={() => router.push(`/user/${a.applicant_id}` as never)}
                     >
                       Profil
                     </Button>
@@ -268,13 +235,7 @@ export default function OpenApplicants() {
                         size="sm"
                         variant="secondary"
                         full
-                        icon={
-                          <Icon
-                            name="mail"
-                            size={14}
-                            color={colors.text}
-                          />
-                        }
+                        icon={<Icon name="mail" size={14} color={colors.text} />}
                         onPress={() =>
                           startConversation({
                             requestId,
@@ -291,14 +252,7 @@ export default function OpenApplicants() {
                     <Button
                       size="sm"
                       full
-                      icon={
-                        <Icon
-                          name="check"
-                          size={15}
-                          color={colors.onLime}
-                          stroke={3}
-                        />
-                      }
+                      icon={<Icon name="check" size={15} color={colors.onLime} stroke={3} />}
                       onPress={() => handleAccept(a.applicant_id, fullName)}
                       disabled={acceptMutation.isPending}
                     >

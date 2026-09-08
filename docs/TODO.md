@@ -21,6 +21,51 @@ Build 40. Apple onayladı, App Store'da canlı.
 - [x] `onboardingSchema` artık gerçekten çalışıyor — `use-submit-onboarding.ts` insert'ten önce parse ediyor. Şema Plan 8'den beri hiç koşmuyordu; `class_year` enum'u Temmuz'da 'mezun' kazandı, şema iki ay sessizce geride kaldı. Bir daha kaydığında yüksek sesle patlayacak.
 - [x] NativeWind function-style bug'ı için kalıcı guard: `tests/lint/no-function-style-prop.test.ts`. Biome 1.9'da özel kural yok (GritQL v2'de geldi), o yüzden `bun test` içinde kaynak taraması — `turbo test`'te zaten koşuyor. Enjekte edilmiş örnekle yakaladığı doğrulandı.
 
+### 🔴 CI aylardır kırmızı (8 Eyl'de bulundu)
+
+Son 6 push'un hepsi başarısız — dört job'ın **dördü de**. Yani eklediğimiz
+hiçbir test aslında kapı bekçiliği yapmıyordu. Dört ayrı sebep vardı:
+
+- [x] **shared-tests / Lint** — `biome check .` 1999 hata. İki sorun: biome
+      `.claude/worktrees/` (repo'nun tam kopyası) ve design bundle'ı da
+      tarıyordu, ve 391 dosya formatter'la uyumsuzdu. Kapsam daraltıldı,
+      `--write` ile güvenli düzeltmeler uygulandı, `**/maestro/**/*.js` için
+      override (Maestro'nun kendi ES5-ish motoru — `var`/string concat orada
+      doğru). **1999 → 153.**
+- [x] **mobile-tests / Typecheck** — `TS2882: Cannot find module '../global.css'`.
+      `expo-env.d.ts`'i Expo CLI üretiyor ve gitignore'da; CI hiç Expo
+      başlatmıyor, dosya orada yok. Takip edilen `expo-types.d.ts` eklendi
+      (aynı triple-slash reference, idempotent).
+- [x] **supabase-integration / Verify schema** — `Expected 22 public tables, got 32`.
+      Eşitlik assert'iydi; tablo ekleyen her migration doğru şemayı kırıyordu.
+      Alt sınıra çevrildi. Yeni tabloyu asıl koruyan RLS taraması zaten altında
+      ve sayı istemiyor.
+- [x] **maestro-e2e** — `docker: command not found`. GitHub'ın macOS runner'ları
+      artık Docker göndermiyor, `supabase start` üçüncü adımda ölüyor. Job
+      içinden çözümü yok (colima gerekiyor, yavaş + kırılgan). `workflow_dispatch`
+      ile manuel'e alındı — her push'ta 90 dk macOS runner yakıp başarısız
+      olması, gerçek olan diğer üç hatayı da gizliyordu.
+
+Ayrıca bulunan test altyapısı çürümesi (CI'a hiç ulaşmamıştı çünkü typecheck
+önce ölüyordu): **20 hata → 9.**
+- [x] `__DEV__` tanımsız (Metro bundle-time inject ediyor, bun:test'te yok)
+- [x] `react-native-safe-area-context` gerçek RN Flow kaynağına giriyor
+- [x] `expo-haptics` `TurboModuleRegistry` import ediyor; testler RN'i 2-3
+      bileşene indirdiği için **link** hatası — hiçbir test gövdesi çalışmadan
+      dosya ölüyordu
+- [x] reanimated mock'ları eksik export'lu (aynı link hatası)
+- [x] `Icon` settings testi bayattı: kaynak Path→Circle, test Circle→Path
+      (glif değişmiş, test güncellenmemiş)
+- [ ] **Kalan 9:** TabBar (4) + Sparkline (5). Hepsi tek kök: bu repo
+      `@testing-library/react-native` kullanmıyor, bileşeni düz fonksiyon gibi
+      çağırıyor — `useRef` kullanan bileşende React dispatcher yok
+      (`resolveDispatcher() is null`). Gerçek renderer gerekiyor; harness
+      kararı, ayrı iş.
+- [ ] **Kalan 153 lint hatası** — `useExhaustiveDependencies` (72, bazıları
+      bilerek), `useTemplate` (44, çoğu `badge-art.ts`'te SVG string builder),
+      `noArrayIndexKey` (16), `noExplicitAny` (15). Hepsi "unsafe fix" ya da
+      elle karar; otomatik uygulamak davranış değiştirebilir.
+
 ### İlk hafta izlenecekler
 - [ ] **Sentry'yi kontrol et** — sentry.io/hazar-ustun/challengebu-mobile. İlk gerçek crash'ler burada görünecek. Source-map yüklendiyse stack trace okunabilir olmalı; değilse `SENTRY_AUTH_TOKEN` scope'unu kontrol et.
 - [ ] Kullanıcı geri bildirimi topla (hello@shimal.app)
@@ -136,7 +181,8 @@ Kaynak: `docs/roadmap/v2-backlog.md` "Add-to-Calendar"
 - [ ] `calendar_event_id` matches tablosuna ekle (migration)
 
 ### 10. Website deploy
-- [ ] `shimal.app/challengebu/*.html` güncellenmiş (canlı) → doğrula: `curl -sI https://shimal.app/challengebu/gizlilik.html`
+- [x] Canlı doğrulandı (8 Eyl): `index.html`, `gizlilik.html`, `kosullar.html` üçü de 200 **ve repo ile SHA-256 birebir aynı**. Sürüklenme yok. Host GitHub Pages.
+  - ⚠️ `challengebu/kvkk.html` canlıda 200 dönüyor ama repoda karşılığı yok ve hiçbir sayfa ona link vermiyor — eski bir deploy'dan kalma öksüz dosya. İçeriğini kimse kontrol etmiyor. Silinmeli ya da kaynağı repoya alınmalı.
 - [ ] Yeni değişiklikler (post-launch) için otomatik sync — GH Actions?
 
 ---

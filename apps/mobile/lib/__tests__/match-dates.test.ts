@@ -36,11 +36,7 @@ describe('nextDays', () => {
 
   test('rolls across a month boundary', () => {
     const days = nextDays(3, new Date(2026, 5, 30)); // 30 Haz
-    expect(days.map((d) => d.iso)).toEqual([
-      '2026-06-30',
-      '2026-07-01',
-      '2026-07-02',
-    ]);
+    expect(days.map((d) => d.iso)).toEqual(['2026-06-30', '2026-07-01', '2026-07-02']);
   });
 });
 

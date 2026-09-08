@@ -14,11 +14,10 @@ import { useAuthStore } from '../stores/auth-store';
  *     `readAsStringAsync` from OOMing on older devices.
  */
 async function normalizeAvatar(localUri: string): Promise<string> {
-  const out = await ImageManipulator.manipulateAsync(
-    localUri,
-    [{ resize: { width: 512 } }],
-    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
-  );
+  const out = await ImageManipulator.manipulateAsync(localUri, [{ resize: { width: 512 } }], {
+    compress: 0.7,
+    format: ImageManipulator.SaveFormat.JPEG,
+  });
   return out.uri;
 }
 
@@ -34,12 +33,10 @@ export function useUploadAvatar() {
         encoding: FileSystem.EncodingType.Base64,
       });
       const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-      const { error: uploadErr } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, bytes, {
-          contentType: 'image/jpeg',
-          upsert: true,
-        });
+      const { error: uploadErr } = await supabase.storage.from('avatars').upload(fileName, bytes, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      });
       if (uploadErr) throw uploadErr;
       const { data: pub } = supabase.storage.from('avatars').getPublicUrl(fileName);
       const cacheBustedUrl = `${pub.publicUrl}?t=${Date.now()}`;

@@ -33,7 +33,7 @@ export const FONTS_MAP = {
   'BricolageGrotesque-ExtraBold': BricolageGrotesque_800ExtraBold,
 
   // Sans — Plus Jakarta Sans (5 weights)
-  'PlusJakartaSans': PlusJakartaSans_500Medium,
+  PlusJakartaSans: PlusJakartaSans_500Medium,
   'PlusJakartaSans-Regular': PlusJakartaSans_400Regular,
   'PlusJakartaSans-SemiBold': PlusJakartaSans_600SemiBold,
   'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,

@@ -21,12 +21,8 @@
 // çarpan tablosu, etc.
 
 import type { ReactNode } from 'react';
-import { Modal as RNModal, Pressable, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Pressable, Modal as RNModal, View } from 'react-native';
+import Animated, { useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 
 import { curves, durations } from '../../theme/motion';
 
@@ -42,12 +38,7 @@ export interface ModalProps {
   children?: ReactNode;
 }
 
-export function Modal({
-  visible,
-  onClose,
-  dismissible = true,
-  children,
-}: ModalProps) {
+export function Modal({ visible, onClose, dismissible = true, children }: ModalProps) {
   // useDerivedValue re-targets the animation on the UI thread whenever
   // `visible` flips on the JS thread — no useEffect needed, which keeps the
   // component snapshot-testable without faking React's hook dispatcher.

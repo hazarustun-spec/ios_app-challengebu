@@ -53,9 +53,7 @@ export function ToastView({ variant = 'success', message }: ToastViewProps) {
       style={{ backgroundColor: colors.text }}
     >
       <Icon name={iconName} size={18} color={iconColor} stroke={3} />
-      <Text className="font-sans text-[13.5px] font-bold text-white">
-        {message}
-      </Text>
+      <Text className="font-sans text-[13.5px] font-bold text-white">{message}</Text>
     </View>
   );
 }

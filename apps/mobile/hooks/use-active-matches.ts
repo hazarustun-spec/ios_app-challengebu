@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { queryKeys } from '../lib/query-keys';
-import { useAuthStore } from '../stores/auth-store';
 import type { MatchFormat } from '../components/matches/FormatPicker';
+import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../stores/auth-store';
 
 export type MatchStatus = 'awaiting_confirmation' | 'confirmed' | 'disputed' | 'voided';
 

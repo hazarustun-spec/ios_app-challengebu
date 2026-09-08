@@ -13,10 +13,10 @@ import { invokeFunction } from './invoke-function';
 import { supabase } from './supabase';
 
 export async function reviewLogin(email: string, code: string): Promise<Session> {
-  const { tokenHash } = await invokeFunction<{ tokenHash: string }>(
-    'review-login',
-    { email, code },
-  );
+  const { tokenHash } = await invokeFunction<{ tokenHash: string }>('review-login', {
+    email,
+    code,
+  });
   const { data, error } = await supabase.auth.verifyOtp({
     token_hash: tokenHash,
     type: 'magiclink',

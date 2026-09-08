@@ -1,6 +1,6 @@
 import { ActivityIndicator, View } from 'react-native';
-import { RadioGroup } from '../ui/RadioGroup';
 import { useCourts } from '../../hooks/use-courts';
+import { RadioGroup } from '../ui/RadioGroup';
 
 interface Props {
   value: string | undefined;

@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
-import { Icon } from '../ui/Icon';
-import { colors } from '../../theme/colors';
 import type { PastChampion } from '../../hooks/use-past-champion';
+import { colors } from '../../theme/colors';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   champion: PastChampion;

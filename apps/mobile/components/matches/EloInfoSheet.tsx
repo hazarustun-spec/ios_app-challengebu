@@ -4,9 +4,9 @@
 // player is worth more.
 
 import { ScrollView, Text, View } from 'react-native';
-import { Sheet } from '../ui/Sheet';
-import { Icon, type IconName } from '../ui/Icon';
 import { colors } from '../../theme/colors';
+import { Icon, type IconName } from '../ui/Icon';
+import { Sheet } from '../ui/Sheet';
 
 interface Props {
   visible: boolean;
@@ -48,12 +48,9 @@ export function EloInfoSheet({ visible, onClose }: Props) {
         contentContainerStyle={{ gap: 12, paddingBottom: 8 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          className="font-sans text-text-2"
-          style={{ fontSize: 13.5, lineHeight: 20 }}
-        >
-          ELO, oyuncuların gücünü tek bir puanda toplayan bir sıralama
-          sistemidir. Herkes 1200 ile başlar.
+        <Text className="font-sans text-text-2" style={{ fontSize: 13.5, lineHeight: 20 }}>
+          ELO, oyuncuların gücünü tek bir puanda toplayan bir sıralama sistemidir. Herkes 1200 ile
+          başlar.
         </Text>
 
         {ROWS.map((r) => (
@@ -81,10 +78,7 @@ export function EloInfoSheet({ visible, onClose }: Props) {
               <Icon name={r.icon} size={19} color={r.color} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 14.5 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                 {r.title}
               </Text>
               <Text

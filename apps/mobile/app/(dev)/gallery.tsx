@@ -45,10 +45,10 @@ import { Sheet } from '../../components/ui/Sheet';
 import { Skel } from '../../components/ui/Skel';
 import { Sparkline } from '../../components/ui/Sparkline';
 import { TabBar } from '../../components/ui/TabBar';
-import { Toggle } from '../../components/ui/Toggle';
 import { useToast } from '../../components/ui/ToastProvider';
-import { LEVELS } from '../../lib/levels';
+import { Toggle } from '../../components/ui/Toggle';
 import type { FormatKey } from '../../lib/formats';
+import { LEVELS } from '../../lib/levels';
 
 // ---------------------------------------------------------------------------
 // Section wrapper
@@ -57,9 +57,7 @@ import type { FormatKey } from '../../lib/formats';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mb-8">
-      <Text className="mb-3 font-display text-[18px] font-extrabold text-text">
-        {title}
-      </Text>
+      <Text className="mb-3 font-display text-[18px] font-extrabold text-text">{title}</Text>
       <View className="gap-3">{children}</View>
     </View>
   );
@@ -128,10 +126,7 @@ export default function Gallery() {
 
   return (
     <View className="flex-1 bg-bg">
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
-      >
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         {/* ---------- 1. Tab bar ---------- */}
         <Section title="1. Tab bar">
           <Text className="text-[12px] text-text-3">
@@ -188,11 +183,7 @@ export default function Gallery() {
             onSuffixPress={() => setShowPassword((p) => !p)}
             type={showPassword ? 'text' : 'password'}
           />
-          <SearchBar
-            value={searchValue}
-            onChange={setSearchValue}
-            placeholder="Oyuncu ara…"
-          />
+          <SearchBar value={searchValue} onChange={setSearchValue} placeholder="Oyuncu ara…" />
           <Field big value={bigValue} onChange={setBigValue} placeholder="Adın ne?" />
           <Field
             label="Doğrulama kodu"
@@ -239,9 +230,7 @@ export default function Gallery() {
         {/* ---------- 5. Cards & ListRows ---------- */}
         <Section title="5. Cards & ListRows">
           <Card>
-            <Text className="font-display text-[15px] font-extrabold text-text">
-              Güz Sezonu
-            </Text>
+            <Text className="font-display text-[15px] font-extrabold text-text">Güz Sezonu</Text>
             <Text className="mt-1 text-[12.5px] font-semibold text-text-3">
               1 Eyl – 15 Oca · Aktif ladder
             </Text>
@@ -257,9 +246,7 @@ export default function Gallery() {
             <Text className="mt-1 font-display text-[22px] font-extrabold text-white">
               Kaan Demir
             </Text>
-            <Text className="mt-1 font-num text-[28px] font-extrabold text-white">
-              1924
-            </Text>
+            <Text className="mt-1 font-num text-[28px] font-extrabold text-white">1924</Text>
           </Card>
 
           <Card className="p-0">
@@ -271,20 +258,9 @@ export default function Gallery() {
               onPress={() => {}}
             />
             <View className="h-px bg-surface-2" />
-            <ListRow
-              icon="bell"
-              title="Bildirimler"
-              subtitle="3 yeni"
-              chevron
-              onPress={() => {}}
-            />
+            <ListRow icon="bell" title="Bildirimler" subtitle="3 yeni" chevron onPress={() => {}} />
             <View className="h-px bg-surface-2" />
-            <ListRow
-              icon="trash"
-              title="Hesabı sil"
-              danger
-              onPress={() => {}}
-            />
+            <ListRow icon="trash" title="Hesabı sil" danger onPress={() => {}} />
           </Card>
         </Section>
 
@@ -307,29 +283,18 @@ export default function Gallery() {
             title="Sezon finali yaklaşıyor"
             body="İlk 8'e girmek için 41 günün var."
           />
-          <Banner
-            tone="success"
-            title="Skor onaylandı"
-            body="ELO 1590 → 1612."
-          />
+          <Banner tone="success" title="Skor onaylandı" body="ELO 1590 → 1612." />
           <Banner
             tone="warning"
             title="Skor onayı bekliyor"
             body="Berk Aydın'ın onayı bekleniyor."
           />
-          <Banner
-            tone="error"
-            title="Skorlar uyuşmuyor"
-            body="İtiraz açıldı."
-          />
+          <Banner tone="error" title="Skorlar uyuşmuyor" body="İtiraz açıldı." />
         </Section>
 
         {/* ---------- 8. Toast ---------- */}
         <Section title="8. Toast">
-          <Button
-            variant="primary"
-            onPress={() => toast.show('Meydan okuma gönderildi')}
-          >
+          <Button variant="primary" onPress={() => toast.show('Meydan okuma gönderildi')}>
             Toast göster
           </Button>
         </Section>
@@ -358,9 +323,7 @@ export default function Gallery() {
             {LEVELS.map((lv) => (
               <View key={lv.key} className="items-center" style={{ gap: 4 }}>
                 <LevelIcon level={lv} size={20} />
-                <Text className="text-[10px] font-semibold text-text-3">
-                  {lv.name}
-                </Text>
+                <Text className="text-[10px] font-semibold text-text-3">{lv.name}</Text>
               </View>
             ))}
           </Row>
@@ -395,11 +358,7 @@ export default function Gallery() {
         {/* ---------- 12. Composed ---------- */}
         <Section title="12. Composed">
           <Row>
-            <PlayerChip
-              name="Aleyna Kaya"
-              elo={1487}
-              sub="Amatör · 2. sınıf"
-            />
+            <PlayerChip name="Aleyna Kaya" elo={1487} sub="Amatör · 2. sınıf" />
           </Row>
           <MatchCard
             kind="planned"
@@ -438,12 +397,8 @@ export default function Gallery() {
           <Row gap={16}>
             <LevelRing name="Mert Şahin" elo={1612} size={82} />
             <View style={{ gap: 6 }}>
-              <Text className="font-display text-[15px] font-extrabold text-text">
-                Mert Şahin
-              </Text>
-              <Text className="text-[12.5px] font-semibold text-text-3">
-                Rekabetçi · 1612
-              </Text>
+              <Text className="font-display text-[15px] font-extrabold text-text">Mert Şahin</Text>
+              <Text className="text-[12.5px] font-semibold text-text-3">Rekabetçi · 1612</Text>
             </View>
           </Row>
 
@@ -479,9 +434,7 @@ export default function Gallery() {
 
       {/* Overlays mounted at root of the screen so they cover the scroll view. */}
       <Modal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <Text className="mb-2 font-display text-[18px] font-extrabold text-text">
-          Hesabını sil
-        </Text>
+        <Text className="mb-2 font-display text-[18px] font-extrabold text-text">Hesabını sil</Text>
         <Text className="mb-4 text-[14px] text-text-2">
           Bu işlem geri alınamaz. ELO geçmişin ve maçların kaybolur.
         </Text>
@@ -495,11 +448,7 @@ export default function Gallery() {
         </Row>
       </Modal>
 
-      <Sheet
-        visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
-        title="Format seç"
-      >
+      <Sheet visible={sheetVisible} onClose={() => setSheetVisible(false)} title="Format seç">
         <View style={{ gap: 8 }}>
           {formats.map((f) => (
             <View
@@ -510,11 +459,7 @@ export default function Gallery() {
               <Text className="text-[12.5px] font-semibold text-text-3">Seç</Text>
             </View>
           ))}
-          <Button
-            variant="secondary"
-            full
-            onPress={() => setSheetVisible(false)}
-          >
+          <Button variant="secondary" full onPress={() => setSheetVisible(false)}>
             Kapat
           </Button>
         </View>

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { invokeFunction } from '../lib/invoke-function';
 import { supabase } from '../lib/supabase';

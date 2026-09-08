@@ -134,7 +134,20 @@ jobs:
 
   # Maestro E2E — macOS runner + iOS Simulator. Runs review-login (no Mailpit).
   # Full ci-suite needs a simulator build installed first (see apps/mobile/scripts/maestro-ci.sh).
+  #
+  # MANUAL ONLY (workflow_dispatch). GitHub's macOS runners no longer ship
+  # Docker, so `supabase start` dies immediately:
+  #
+  #   failed to inspect container health: docker: command not found
+  #   (podman also not found)
+  #
+  # There is no fix inside this job — it needs a container runtime installed
+  # first (colima, and it is slow and flaky on these runners). Until that is
+  # built out (docs/TODO.md, "CI Maestro lane"), running it on every push only
+  # burned up to 90 minutes of macOS runner time to fail at step three and
+  # kept the whole workflow red, which hid the three failures that were real.
   maestro-e2e:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     timeout-minutes: 90
     steps:

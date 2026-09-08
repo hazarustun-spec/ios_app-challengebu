@@ -1,10 +1,10 @@
 import { assertEquals } from 'jsr:@std/assert';
 import {
+  SERVICE_ROLE_KEY,
   adminClient,
   createTestUser,
   invokeFunction,
   teardownUsers,
-  SERVICE_ROLE_KEY,
 } from './helpers.ts';
 
 // award-badges is gated by requireInternalOrAdmin: an internal caller passes the
@@ -31,20 +31,30 @@ async function insertMatch(opts: {
   const { data, error } = await supa
     .from('matches')
     .insert({
-      category: 'erkek_tek', format: 'bu_klasik', court_id: court.id,
-      played_at: '2026-06-01T19:00:00Z', is_rated: opts.isRated ?? true,
-      team_a_player_ids: opts.teamA, team_b_player_ids: opts.teamB,
-      score_team_a: opts.scoreA ?? 2, score_team_b: opts.scoreB ?? 1,
-      winner_team: opts.winnerTeam ?? null, status: opts.status,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      court_id: court.id,
+      played_at: '2026-06-01T19:00:00Z',
+      is_rated: opts.isRated ?? true,
+      team_a_player_ids: opts.teamA,
+      team_b_player_ids: opts.teamB,
+      score_team_a: opts.scoreA ?? 2,
+      score_team_b: opts.scoreB ?? 1,
+      winner_team: opts.winnerTeam ?? null,
+      status: opts.status,
     })
-    .select('id').single();
+    .select('id')
+    .single();
   if (error || !data) throw new Error(`insert match: ${error?.message}`);
   return data.id;
 }
 
 Deno.test('award-badges: non-admin player is forbidden (403)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-ab-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-ab-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const { status } = await invokeFunction(
       'award-badges',
@@ -58,7 +68,11 @@ Deno.test('award-badges: non-admin player is forbidden (403)', async () => {
 });
 
 Deno.test('award-badges: invalid input → 400 (after internal auth passes)', async () => {
-  const { status } = await invokeFunction('award-badges', { matchId: 'not-a-uuid' }, SERVICE_ROLE_KEY);
+  const { status } = await invokeFunction(
+    'award-badges',
+    { matchId: 'not-a-uuid' },
+    SERVICE_ROLE_KEY,
+  );
   assertEquals(status, 400);
 });
 
@@ -73,11 +87,16 @@ Deno.test('award-badges: unknown match → 404', async () => {
 
 Deno.test('award-badges: non-confirmed match awards nothing', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-ab-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-ab-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-ab-${s}@test.local`, genderCategory: 'erkek' });
   const matchId = await insertMatch({
-    teamA: [alice.userId], teamB: [bob.userId],
-    status: 'awaiting_confirmation', winnerTeam: 'a',
+    teamA: [alice.userId],
+    teamB: [bob.userId],
+    status: 'awaiting_confirmation',
+    winnerTeam: 'a',
   });
   try {
     const { status, body } = await invokeFunction('award-badges', { matchId }, SERVICE_ROLE_KEY);
@@ -90,11 +109,19 @@ Deno.test('award-badges: non-confirmed match awards nothing', async () => {
 
 Deno.test('award-badges: confirmed match awards milestone + win badges to a qualifying user', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-ab-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-ab-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-ab-${s}@test.local`, genderCategory: 'erkek' });
   const matchId = await insertMatch({
-    teamA: [alice.userId], teamB: [bob.userId],
-    status: 'confirmed', winnerTeam: 'a', isRated: true, scoreA: 2, scoreB: 1,
+    teamA: [alice.userId],
+    teamB: [bob.userId],
+    status: 'confirmed',
+    winnerTeam: 'a',
+    isRated: true,
+    scoreA: 2,
+    scoreB: 1,
   });
   try {
     const { status, body } = await invokeFunction('award-badges', { matchId }, SERVICE_ROLE_KEY);

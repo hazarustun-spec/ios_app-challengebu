@@ -12,14 +12,7 @@
 
 import type { IconName } from '../components/ui/Icon';
 
-export type LevelKey =
-  | 'cekirge'
-  | 'caylak'
-  | 'amator'
-  | 'rekabet'
-  | 'usta'
-  | 'elit'
-  | 'sampiyon';
+export type LevelKey = 'cekirge' | 'caylak' | 'amator' | 'rekabet' | 'usta' | 'elit' | 'sampiyon';
 
 export interface LevelDef {
   key: LevelKey;
@@ -33,13 +26,13 @@ export interface LevelDef {
 }
 
 export const LEVELS: LevelDef[] = [
-  { key: 'cekirge',  name: 'Çekirge',   color: '#5E8B39', icon: 'spark',  minElo: 0 },
-  { key: 'caylak',   name: 'Çaylak',    color: '#6F8B47', icon: 'bolt',   minElo: 1100 },
-  { key: 'amator',   name: 'Amatör',    color: '#2E63B8', icon: 'shield', minElo: 1300 },
-  { key: 'rekabet',  name: 'Rekabetçi', color: '#2742A0', icon: 'flame',  minElo: 1500 },
-  { key: 'usta',     name: 'Usta',      color: '#2A3A8E', icon: 'crown',  minElo: 1700 },
-  { key: 'elit',     name: 'Elit',      color: '#2B357A', icon: 'crown',  minElo: 1900 },
-  { key: 'sampiyon', name: 'Şampiyon',  color: '#B98A1E', icon: 'trophy', minElo: 2100 },
+  { key: 'cekirge', name: 'Çekirge', color: '#5E8B39', icon: 'spark', minElo: 0 },
+  { key: 'caylak', name: 'Çaylak', color: '#6F8B47', icon: 'bolt', minElo: 1100 },
+  { key: 'amator', name: 'Amatör', color: '#2E63B8', icon: 'shield', minElo: 1300 },
+  { key: 'rekabet', name: 'Rekabetçi', color: '#2742A0', icon: 'flame', minElo: 1500 },
+  { key: 'usta', name: 'Usta', color: '#2A3A8E', icon: 'crown', minElo: 1700 },
+  { key: 'elit', name: 'Elit', color: '#2B357A', icon: 'crown', minElo: 1900 },
+  { key: 'sampiyon', name: 'Şampiyon', color: '#B98A1E', icon: 'trophy', minElo: 2100 },
 ];
 
 /**

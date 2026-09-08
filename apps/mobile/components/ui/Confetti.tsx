@@ -5,7 +5,7 @@
 // since result.tsx is unmounted when navigating away.
 
 import React, { useEffect, useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -51,10 +51,7 @@ function ConfettiPiece({
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withDelay(
-      delay,
-      withTiming(1, { duration, easing: Easing.linear }),
-    );
+    progress.value = withDelay(delay, withTiming(1, { duration, easing: Easing.linear }));
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -66,11 +63,7 @@ function ConfettiPiece({
     const opacity = interpolate(p, [0, 0.85, 1], [1, 1, 0]);
 
     return {
-      transform: [
-        { translateX },
-        { translateY },
-        { rotate: `${rotate}deg` },
-      ],
+      transform: [{ translateX }, { translateY }, { rotate: `${rotate}deg` }],
       opacity,
     };
   });

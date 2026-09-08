@@ -16,29 +16,29 @@
 //   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
 //   • Wired to live data — no mock constants remain.
 
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
-import { Button } from '../../../components/ui/Button';
 import { Avatar } from '../../../components/ui/Avatar';
+import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { ScoreInput } from '../../../components/ui/ScoreInput';
+import { useToast } from '../../../components/ui/ToastProvider';
+import { useLiveScore } from '../../../hooks/use-live-score';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useSubmitMatchScore } from '../../../hooks/use-submit-match-score';
-import { useLiveScore } from '../../../hooks/use-live-score';
+import { env } from '../../../lib/env';
 import {
-  startMatchActivity,
-  updateMatchActivity,
   endMatchActivity,
   registerActivityPushToken,
+  startMatchActivity,
+  updateMatchActivity,
 } from '../../../lib/live-match-activity';
-import { useToast } from '../../../components/ui/ToastProvider';
-import { useAuthStore } from '../../../stores/auth-store';
-import { env } from '../../../lib/env';
-import { colors } from '../../../theme/colors';
 import { userMessage } from '../../../lib/user-message';
+import { useAuthStore } from '../../../stores/auth-store';
+import { colors } from '../../../theme/colors';
 
 const PTS = ['0', '15', '30', '40', 'Ad'];
 
@@ -52,8 +52,10 @@ export default function ActiveMatch() {
   const submitScore = useSubmitMatchScore();
   const toast = useToast();
   const { score, error: liveScoreError, awardPoint, undoPoint } = useLiveScore(id);
-  const gA = score?.gamesA ?? 0, gB = score?.gamesB ?? 0;
-  const pA = score?.pointsA ?? 0, pB = score?.pointsB ?? 0;
+  const gA = score?.gamesA ?? 0,
+    gB = score?.gamesB ?? 0;
+  const pA = score?.pointsA ?? 0,
+    pB = score?.pointsB ?? 0;
   const isVoid = score?.phase === 'void';
   const someoneWon = score?.phase === 'finished';
 
@@ -67,9 +69,7 @@ export default function ActiveMatch() {
   const total = gA + gB;
 
   // Live Activity — mirror the live score to the Dynamic Island + Lock Screen.
-  const youSide: 'a' | 'b' = match?.team_a_player_ids?.includes(userId ?? '')
-    ? 'a'
-    : 'b';
+  const youSide: 'a' | 'b' = match?.team_a_player_ids?.includes(userId ?? '') ? 'a' : 'b';
   const nameA = youSide === 'a' ? 'Sen' : oppFirstName;
   const nameB = youSide === 'a' ? oppFirstName : 'Sen';
 
@@ -154,8 +154,7 @@ export default function ActiveMatch() {
 
   // Point label: when one side has Advantage (4) but the other is still ≤ 2,
   // render 'Ad'; otherwise look up the standard label table.
-  const ptLabel = (p: number, other: number) =>
-    p === 4 && other < 3 ? 'Ad' : PTS[Math.min(p, 4)];
+  const ptLabel = (p: number, other: number) => (p === 4 && other < 3 ? 'Ad' : PTS[Math.min(p, 4)]);
 
   const finish = () => {
     if (!id || submitScore.isPending) return;
@@ -166,20 +165,12 @@ export default function ActiveMatch() {
     const iAmTeamA = userId ? (match?.team_a_player_ids.includes(userId) ?? true) : true;
     const scoreTeamA = iAmTeamA ? gA : gB;
     const scoreTeamB = iAmTeamA ? gB : gA;
-    const winnerTeam: 'a' | 'b' | 'void' = isVoid
-      ? 'void'
-      : scoreTeamA > scoreTeamB
-        ? 'a'
-        : 'b';
+    const winnerTeam: 'a' | 'b' | 'void' = isVoid ? 'void' : scoreTeamA > scoreTeamB ? 'a' : 'b';
     submitScore.mutate(
       { matchId: id, scoreTeamA, scoreTeamB, winnerTeam },
       {
         onSuccess: () => router.replace(`/match/${id}/result` as never),
-        onError: (e) =>
-          Alert.alert(
-            'Skor gönderilemedi',
-            userMessage(e, 'Lütfen tekrar dene.'),
-          ),
+        onError: (e) => Alert.alert('Skor gönderilemedi', userMessage(e, 'Lütfen tekrar dene.')),
       },
     );
   };
@@ -219,11 +210,7 @@ export default function ActiveMatch() {
 
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader
-        title="Canlı Maç"
-        subtitle={navSubtitle}
-        onBack={() => router.back()}
-      />
+      <NavHeader title="Canlı Maç" subtitle={navSubtitle} onBack={() => router.back()} />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -239,51 +226,47 @@ export default function ActiveMatch() {
           style={{ borderWidth: 1, borderColor: colors.borderStrong }}
         >
           {score == null && !liveScoreError ? (
-            <View
-              className="items-center justify-center"
-              style={{ paddingVertical: 40 }}
-            >
+            <View className="items-center justify-center" style={{ paddingVertical: 40 }}>
               <ActivityIndicator color={colors.clay} />
             </View>
-          ) : rows.map((r, i) => (
-            <View
-              key={r.name}
-              className="flex-row items-center"
-              style={{
-                padding: 14,
-                paddingHorizontal: 16,
-                gap: 12,
-                borderTopWidth: i ? 1 : 0,
-                borderColor: colors.surface3,
-                backgroundColor: r.me ? colors.claySofter : 'transparent',
-              }}
-            >
-              <Avatar name={r.name} size={42} />
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ flex: 1, fontSize: 15.5 }}
-              >
-                {r.me ? 'Sen' : r.name}
-              </Text>
-              <Text
-                className="font-num font-bold text-text-3"
-                style={{ width: 38, textAlign: 'center', fontSize: 16 }}
-              >
-                {r.p}
-              </Text>
-              <Text
-                className="font-num font-extrabold"
+          ) : (
+            rows.map((r, i) => (
+              <View
+                key={r.name}
+                className="flex-row items-center"
                 style={{
-                  width: 40,
-                  textAlign: 'center',
-                  fontSize: 36,
-                  color: r.g === 4 ? colors.win : colors.text,
+                  padding: 14,
+                  paddingHorizontal: 16,
+                  gap: 12,
+                  borderTopWidth: i ? 1 : 0,
+                  borderColor: colors.surface3,
+                  backgroundColor: r.me ? colors.claySofter : 'transparent',
                 }}
               >
-                {r.g}
-              </Text>
-            </View>
-          ))}
+                <Avatar name={r.name} size={42} />
+                <Text className="font-sans font-bold text-text" style={{ flex: 1, fontSize: 15.5 }}>
+                  {r.me ? 'Sen' : r.name}
+                </Text>
+                <Text
+                  className="font-num font-bold text-text-3"
+                  style={{ width: 38, textAlign: 'center', fontSize: 16 }}
+                >
+                  {r.p}
+                </Text>
+                <Text
+                  className="font-num font-extrabold"
+                  style={{
+                    width: 40,
+                    textAlign: 'center',
+                    fontSize: 36,
+                    color: r.g === 4 ? colors.win : colors.text,
+                  }}
+                >
+                  {r.g}
+                </Text>
+              </View>
+            ))
+          )}
         </View>
 
         <Text
@@ -309,15 +292,8 @@ export default function ActiveMatch() {
               </Text>
             </View>
             <View className="flex-row" style={{ gap: 12, marginTop: 6 }}>
-              <ScoreInput
-                label="Sana sayı"
-                tint={colors.court}
-                onPress={() => handleAward('a')}
-              />
-              <ScoreInput
-                label={`${oppFirstName} sayı`}
-                onPress={() => handleAward('b')}
-              />
+              <ScoreInput label="Sana sayı" tint={colors.court} onPress={() => handleAward('a')} />
+              <ScoreInput label={`${oppFirstName} sayı`} onPress={() => handleAward('b')} />
             </View>
           </>
         )}

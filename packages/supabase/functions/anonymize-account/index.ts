@@ -1,7 +1,7 @@
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, forbidden, internalError } from '../_shared/errors.ts';
+import { errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAuth, AuthError } from '../_shared/auth-guard.ts';
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);

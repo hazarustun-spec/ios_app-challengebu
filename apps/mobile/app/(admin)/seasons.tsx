@@ -5,22 +5,22 @@
 // + dual-button row, an info banner explaining the soft-reset formula, and
 // a "Geçmiş sezonlar" list rendered as `ListRow`s with a crown icon.
 
+import { seasonDisplayName } from '@tennis/shared';
 import { router } from 'expo-router';
 import { Alert, FlatList, RefreshControl, Text, View } from 'react-native';
-import { seasonDisplayName } from '@tennis/shared';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Button } from '../../components/ui/Button';
 import { Banner } from '../../components/ui/Banner';
+import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import {
+  type AdminSeason,
+  type SeasonStatus,
   useAdminSeasons,
   useCloseSeason,
   useStartSeasonFinale,
-  type AdminSeason,
-  type SeasonStatus,
 } from '../../hooks/use-admin-seasons';
-import { colors } from '../../theme/colors';
 import { userMessage } from '../../lib/user-message';
+import { colors } from '../../theme/colors';
 
 const STATUS_LABEL: Record<SeasonStatus, string> = {
   upcoming: 'Yaklaşan',

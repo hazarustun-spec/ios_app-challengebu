@@ -21,8 +21,8 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon, type IconName } from './Icon';
 import { colors } from '../../theme/colors';
+import { Icon, type IconName } from './Icon';
 
 export interface NavHeaderProps {
   title?: string;
@@ -80,12 +80,7 @@ export function NavHeader({
 
         {/* Standard title (centered when no back, left-aligned when back present) */}
         {!large && (
-          <View
-            className={[
-              'flex-1',
-              onBack ? 'items-start' : 'items-center',
-            ].join(' ')}
-          >
+          <View className={['flex-1', onBack ? 'items-start' : 'items-center'].join(' ')}>
             {title && onPressTitle ? (
               <Pressable
                 onPress={onPressTitle}
@@ -100,18 +95,12 @@ export function NavHeader({
                 </Text>
               </Pressable>
             ) : title ? (
-              <Text
-                className="font-display font-extrabold text-[16px] text-text"
-                numberOfLines={1}
-              >
+              <Text className="font-display font-extrabold text-[16px] text-text" numberOfLines={1}>
                 {title}
               </Text>
             ) : null}
             {subtitle && (
-              <Text
-                className="text-text-3 text-[12px] font-semibold"
-                numberOfLines={1}
-              >
+              <Text className="text-text-3 text-[12px] font-semibold" numberOfLines={1}>
                 {subtitle}
               </Text>
             )}
@@ -127,23 +116,15 @@ export function NavHeader({
               </Text>
             )}
             {subtitle && (
-              <Text className="text-text-3 text-[13.5px] font-semibold mt-1">
-                {subtitle}
-              </Text>
+              <Text className="text-text-3 text-[13.5px] font-semibold mt-1">{subtitle}</Text>
             )}
           </View>
         )}
 
         {/* Trailing action — text label OR icon chip */}
         {action && (
-          <Pressable
-            onPress={onAction}
-            accessibilityRole="button"
-            className="active:opacity-80"
-          >
-            <Text className="font-sans font-bold text-[15px] text-clay">
-              {action}
-            </Text>
+          <Pressable onPress={onAction} accessibilityRole="button" className="active:opacity-80">
+            <Text className="font-sans font-bold text-[15px] text-clay">{action}</Text>
           </Pressable>
         )}
         {rightSlot}
@@ -157,19 +138,13 @@ export function NavHeader({
                 : 'w-9 h-9 rounded-sm bg-surface-2 items-center justify-center'
             }
           >
-            <Icon
-              name={actionIcon}
-              size={large ? 21 : 20}
-              color={colors.text}
-            />
+            <Icon name={actionIcon} size={large ? 21 : 20} color={colors.text} />
           </Pressable>
         )}
 
         {/* Spacer to balance the row when there's nothing on the right and
             no back button on the left — keeps the centered title centered. */}
-        {!onBack && !large && !action && !actionIcon && !rightSlot && (
-          <View className="w-9 h-9" />
-        )}
+        {!onBack && !large && !action && !actionIcon && !rightSlot && <View className="w-9 h-9" />}
       </View>
     </View>
   );

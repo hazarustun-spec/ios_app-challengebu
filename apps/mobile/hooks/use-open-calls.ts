@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 import type { MatchRequestRow } from './use-match-requests';
 

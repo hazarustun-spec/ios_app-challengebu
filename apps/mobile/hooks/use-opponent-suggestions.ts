@@ -9,16 +9,16 @@
 //   - Days since last match vs each     → useMyMatchHistory()
 //   - Blocked users                     → empty set for now (table ships later)
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { queryKeys } from '../lib/query-keys';
-import { useAuthStore } from '../stores/auth-store';
-import { useMyRankings } from './use-my-rankings';
-import { useLadder } from './use-ladder';
-import { useMyMatchHistory } from './use-match-history';
+import { useMemo } from 'react';
 import { opponentIds } from '../lib/match-opponent';
 import { scoreCandidates } from '../lib/opponent-suggest';
+import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../stores/auth-store';
+import { useLadder } from './use-ladder';
+import { useMyMatchHistory } from './use-match-history';
+import { useMyRankings } from './use-my-rankings';
 
 // ─── Category → gender filter ──────────────────────────────────────────────
 // Mirrors categoryToGender() in app/match/new/opponent.tsx. Replicated here
@@ -100,11 +100,7 @@ export function useOpponentSuggestions(category: string): {
     enabled: !!category,
   });
 
-  const isLoading =
-    rankingsLoading ||
-    ladderLoading ||
-    historyLoading ||
-    profilesQuery.isLoading;
+  const isLoading = rankingsLoading || ladderLoading || historyLoading || profilesQuery.isLoading;
 
   const suggestions = useMemo<SuggestionItem[]>(() => {
     // Guard: wait until all data sources are ready.
@@ -113,8 +109,7 @@ export function useOpponentSuggestions(category: string): {
     }
 
     // ── My ELO for this category ────────────────────────────────────────
-    const myRankingRow =
-      rankingRows.find((r) => r.category === category) ?? rankingRows[0];
+    const myRankingRow = rankingRows.find((r) => r.category === category) ?? rankingRows[0];
     if (!myRankingRow) return []; // No ranking at all yet — nothing meaningful to suggest.
     const myRating = myRankingRow.rating;
 
@@ -134,9 +129,7 @@ export function useOpponentSuggestions(category: string): {
       const opponents = opponentIds(match, myUserId);
       for (const oppId of opponents) {
         if (!lastPlayedMap.has(oppId) && match.played_at) {
-          const daysAgo = Math.floor(
-            (now - new Date(match.played_at).getTime()) / 86_400_000,
-          );
+          const daysAgo = Math.floor((now - new Date(match.played_at).getTime()) / 86_400_000);
           lastPlayedMap.set(oppId, daysAgo);
         }
       }

@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { useAllBadges, type BadgeCatalogRow } from '../../hooks/use-all-badges';
+import { type BadgeCatalogRow, useAllBadges } from '../../hooks/use-all-badges';
 import { useUserBadges } from '../../hooks/use-my-badges';
 import { BadgeCard } from './BadgeCard';
 
@@ -13,7 +13,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   loyalty: 'Sadakat',
 };
 
-const CATEGORY_ORDER = ['milestone', 'win', 'social', 'season', 'yearly', 'fun', 'loyalty'] as const;
+const CATEGORY_ORDER = [
+  'milestone',
+  'win',
+  'social',
+  'season',
+  'yearly',
+  'fun',
+  'loyalty',
+] as const;
 
 interface Props {
   userId: string;

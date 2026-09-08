@@ -19,11 +19,7 @@
 
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { haptics } from '../../lib/haptics';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -136,11 +132,7 @@ export function Button({
       className={className}
       style={animatedStyle}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={SPINNER_COLOR[variant]} />
-      ) : (
-        icon
-      )}
+      {loading ? <ActivityIndicator size="small" color={SPINNER_COLOR[variant]} /> : icon}
 
       {children !== undefined && children !== null && children !== false && (
         <Text
@@ -160,11 +152,7 @@ export function Button({
       {iconRight}
 
       {/* Phase C8 will replace this glyph with the real Icon component. */}
-      {arrow && (
-        <Text className={`${TEXT_COLOR[variant]} ${SIZE_TEXT_CLASSES[size]}`}>
-          {'›'}
-        </Text>
-      )}
+      {arrow && <Text className={`${TEXT_COLOR[variant]} ${SIZE_TEXT_CLASSES[size]}`}>{'›'}</Text>}
     </AnimatedPressable>
   );
 }

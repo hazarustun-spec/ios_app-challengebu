@@ -8,7 +8,10 @@ Deno.test('register-push-to-start-token: missing auth → 401', async () => {
 
 Deno.test('register-push-to-start-token: valid call → 200 + row upserted (user-keyed)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-rpst-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-rpst-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const r = await invokeFunction(
       'register-push-to-start-token',
@@ -47,9 +50,16 @@ Deno.test('register-push-to-start-token: valid call → 200 + row upserted (user
 
 Deno.test('register-push-to-start-token: invalid input (empty token) → 400', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-rpst-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-rpst-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
-    const r = await invokeFunction('register-push-to-start-token', { token: '' }, alice.accessToken);
+    const r = await invokeFunction(
+      'register-push-to-start-token',
+      { token: '' },
+      alice.accessToken,
+    );
     assertEquals(r.status, 400);
   } finally {
     await teardownUsers([alice.userId]);

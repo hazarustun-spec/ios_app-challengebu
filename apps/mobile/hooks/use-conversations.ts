@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 
 export interface ConversationListItem {
@@ -45,7 +45,9 @@ export function useConversations() {
       // 1. Fetch all conversations where I am a participant
       const { data: convRows, error: convError } = await supabase
         .from('conversations')
-        .select('id, request_id, participant_low, participant_high, last_message_at, last_message_preview')
+        .select(
+          'id, request_id, participant_low, participant_high, last_message_at, last_message_preview',
+        )
         .or(`participant_low.eq.${myUserId},participant_high.eq.${myUserId}`)
         .order('last_message_at', { ascending: false, nullsFirst: false });
 
@@ -93,9 +95,7 @@ export function useConversations() {
       return conversations.map((c, idx) => {
         const otherId = otherUserIds[idx];
         const profile = profileMap.get(otherId);
-        const otherName = profile
-          ? `${profile.first_name} ${profile.last_name}`.trim()
-          : otherId;
+        const otherName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : otherId;
         return {
           id: c.id,
           otherUserId: otherId,

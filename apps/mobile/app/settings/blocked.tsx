@@ -4,12 +4,12 @@
 // in-thread Block action for App Store Guideline 1.2 (user-to-user messaging
 // must offer block AND a way to reverse it).
 
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useBlockedUsers, useUnblockUser } from '../../hooks/use-moderation';
 import { colors } from '../../theme/colors';
 

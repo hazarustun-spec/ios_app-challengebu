@@ -20,7 +20,7 @@ export interface FormGuideProps {
 }
 
 const CONFIG: Record<FormResult, { bg: string; letter: string; textColor: string }> = {
-  W: { bg: colors.win,  letter: 'G', textColor: '#FFFFFF' },
+  W: { bg: colors.win, letter: 'G', textColor: '#FFFFFF' },
   L: { bg: colors.loss, letter: 'M', textColor: '#FFFFFF' },
   V: { bg: colors.warn, letter: 'B', textColor: colors.text },
 };

@@ -8,6 +8,7 @@
 // Live data: useMyProfile() for prefill; useUpdateProfile() to save;
 // useUploadAvatar() + pickAvatar() for avatar replacement.
 
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,28 +22,23 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Field } from '../../components/ui/Field';
+import { PickList } from '../../components/onboarding/PickList';
+import { pickAvatar } from '../../components/profile/AvatarPicker';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
+import { Field } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { Segmented } from '../../components/ui/Segmented';
 import { Sheet } from '../../components/ui/Sheet';
 import { Toggle } from '../../components/ui/Toggle';
-import { Icon } from '../../components/ui/Icon';
-import { PickList } from '../../components/onboarding/PickList';
-import { pickAvatar } from '../../components/profile/AvatarPicker';
+import { type Department, type ProgramLevel, useDepartments } from '../../hooks/use-departments';
 import { useMyProfile } from '../../hooks/use-profile';
-import { useUpdateProfile, type UpdateProfileInput } from '../../hooks/use-update-profile';
+import { type UpdateProfileInput, useUpdateProfile } from '../../hooks/use-update-profile';
 import { useUploadAvatar } from '../../hooks/use-upload-avatar';
-import {
-  useDepartments,
-  type Department,
-  type ProgramLevel,
-} from '../../hooks/use-departments';
-import { colors } from '../../theme/colors';
 import { userMessage } from '../../lib/user-message';
+import { colors } from '../../theme/colors';
 
 const PRONOUNS = ['he/him', 'she/her', 'they/them'] as const;
 type Pronoun = (typeof PRONOUNS)[number];
@@ -133,9 +129,7 @@ export default function ProfileEdit() {
 
   // Group + filter departments for the SectionList.
   const deptSections = useMemo(() => {
-    const filtered = (deps ?? []).filter((d) =>
-      d.name.toLowerCase().includes(deptQ.toLowerCase()),
-    );
+    const filtered = (deps ?? []).filter((d) => d.name.toLowerCase().includes(deptQ.toLowerCase()));
     const byFaculty = new Map<string, Department[]>();
     for (const d of filtered) {
       const key = d.faculty ?? 'Diğer';
@@ -226,10 +220,7 @@ export default function ProfileEdit() {
       <View className="flex-1 bg-bg">
         <NavHeader title="Profili düzenle" onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
-          <Text
-            className="font-sans text-text-2"
-            style={{ fontSize: 14, textAlign: 'center' }}
-          >
+          <Text className="font-sans text-text-2" style={{ fontSize: 14, textAlign: 'center' }}>
             Profil bilgileri yüklenemedi. Tekrar dene.
           </Text>
         </View>
@@ -304,10 +295,7 @@ export default function ProfileEdit() {
             )}
           </View>
           <Pressable onPress={handlePickAvatar} disabled={uploadAvatar.isPending}>
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 13, color: colors.court }}
-            >
+            <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.court }}>
               Fotoğrafı değiştir
             </Text>
           </Pressable>
@@ -318,17 +306,8 @@ export default function ProfileEdit() {
               input tried to split the string on whitespace on every keystroke,
               which mangled multi-word names ("Emre Can Aydın" → first="Emre",
               last="Can Aydın") and re-split as the user typed. */}
-          <Field
-            label="Ad"
-            value={firstName}
-            onChange={setFirstName}
-          />
-          <Field
-            label="Soyad"
-            value={lastName}
-            onChange={setLastName}
-          />
-
+          <Field label="Ad" value={firstName} onChange={setFirstName} />
+          <Field label="Soyad" value={lastName} onChange={setLastName} />
 
           <View>
             <Text
@@ -447,10 +426,7 @@ export default function ProfileEdit() {
               }}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14.5 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                   Bölümü profilimde göster
                 </Text>
                 <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
@@ -511,10 +487,7 @@ export default function ProfileEdit() {
               }}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14.5 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                   Sınıfı profilimde göster
                 </Text>
               </View>
@@ -564,9 +537,7 @@ export default function ProfileEdit() {
             >
               MÜSAİTLİK
             </Text>
-            <View
-              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
-            >
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               {SLOTS.map((s) => {
                 const on = avail.includes(s.key);
                 return (
@@ -585,10 +556,7 @@ export default function ProfileEdit() {
                     }}
                   >
                     <CheckBox checked={on} onChange={() => toggle(s.key)} />
-                    <Text
-                      className="font-sans font-bold text-text"
-                      style={{ fontSize: 12.5 }}
-                    >
+                    <Text className="font-sans font-bold text-text" style={{ fontSize: 12.5 }}>
                       {s.label}
                     </Text>
                   </Pressable>
@@ -624,12 +592,7 @@ export default function ProfileEdit() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ height: 520 }}
         >
-          <Field
-            icon="search"
-            placeholder="Bölüm ara…"
-            value={deptQ}
-            onChange={setDeptQ}
-          />
+          <Field icon="search" placeholder="Bölüm ara…" value={deptQ} onChange={setDeptQ} />
           <SectionList
             style={{ marginTop: 12, flex: 1 }}
             sections={deptSections}

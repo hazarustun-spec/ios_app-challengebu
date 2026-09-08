@@ -1,12 +1,12 @@
 // Onboarding · Yarışma kategorisi (D8)
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObCategory
 
-import { Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { Text, View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { PickList } from '../../components/onboarding/PickList';
 import { Icon } from '../../components/ui/Icon';
-import { useOnboardingStore, type GenderCategory } from '../../stores/onboarding-store';
+import { type GenderCategory, useOnboardingStore } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
 
 export default function ObCategory() {
@@ -56,10 +56,7 @@ export default function ObCategory() {
         }}
       >
         <Icon name="info" size={18} color={colors.info} />
-        <Text
-          className="font-sans text-text-2"
-          style={{ fontSize: 13, lineHeight: 19, flex: 1 }}
-        >
+        <Text className="font-sans text-text-2" style={{ fontSize: 13, lineHeight: 19, flex: 1 }}>
           Bu seçim sıralama uygunluğunu etkiler, ayarlardan sonra değiştirilebilir.
         </Text>
       </View>

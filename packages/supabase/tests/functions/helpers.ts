@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { type SupabaseClient, createClient } from '@supabase/supabase-js';
 
 export const SUPABASE_URL = 'http://127.0.0.1:54321';
 export const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
@@ -16,8 +16,7 @@ const LOCAL_SERVICE_ROLE_KEY =
   '.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0' +
   '.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
-export const SERVICE_ROLE_KEY =
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? LOCAL_SERVICE_ROLE_KEY;
+export const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? LOCAL_SERVICE_ROLE_KEY;
 export const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? LOCAL_ANON_KEY;
 
 /** All test emails must use this domain so cleanupTestData() can find them. */
@@ -104,7 +103,9 @@ export async function invokeFunction(
     body: JSON.stringify(body),
   });
   const contentType = res.headers.get('content-type') ?? '';
-  const responseBody = contentType.includes('application/json') ? await res.json() : await res.text();
+  const responseBody = contentType.includes('application/json')
+    ? await res.json()
+    : await res.text();
   return { status: res.status, body: responseBody };
 }
 
@@ -191,7 +192,10 @@ export async function cleanupTestData(): Promise<void> {
   await supa.from('user_blocks').delete().neq('blocker_id', '00000000-0000-0000-0000-000000000000');
   // match_request_applications cascade from match_requests, but nuke explicitly
   // (defense-in-depth, mirrors audit_log/announcements/notifications pattern).
-  await supa.from('match_request_applications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supa
+    .from('match_request_applications')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
   await supa.from('match_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   // Season-related rows: tournaments, tournament_matches, season_standings cascade from seasons.
   // yearly_championship does not cascade from seasons so delete explicitly.

@@ -35,12 +35,14 @@ export async function invokeFunction<TResponse = unknown>(
     : await res.text();
 
   if (!res.ok) {
-    const errorMsg = typeof parsed === 'object' && parsed && 'error' in parsed
-      ? (parsed as { error: { message: string } }).error?.message ?? 'Request failed'
-      : `Request failed: ${res.status}`;
-    const details = typeof parsed === 'object' && parsed && 'error' in parsed
-      ? (parsed as { error: unknown }).error
-      : parsed;
+    const errorMsg =
+      typeof parsed === 'object' && parsed && 'error' in parsed
+        ? ((parsed as { error: { message: string } }).error?.message ?? 'Request failed')
+        : `Request failed: ${res.status}`;
+    const details =
+      typeof parsed === 'object' && parsed && 'error' in parsed
+        ? (parsed as { error: unknown }).error
+        : parsed;
     throw new EdgeFunctionError(errorMsg, res.status, details);
   }
 

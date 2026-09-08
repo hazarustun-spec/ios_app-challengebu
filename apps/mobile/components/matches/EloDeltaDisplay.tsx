@@ -17,7 +17,10 @@ export function EloDeltaDisplay({ before, after }: Props) {
           <Text className="text-xs text-gray-500">Önce</Text>
           <Text className="text-2xl font-semibold text-gray-900">{before}</Text>
         </View>
-        <Text className={`text-2xl font-bold ${color}`}>{sign}{delta}</Text>
+        <Text className={`text-2xl font-bold ${color}`}>
+          {sign}
+          {delta}
+        </Text>
         <View>
           <Text className="text-xs text-gray-500">Sonra</Text>
           <Text className="text-2xl font-semibold text-gray-900">{after}</Text>

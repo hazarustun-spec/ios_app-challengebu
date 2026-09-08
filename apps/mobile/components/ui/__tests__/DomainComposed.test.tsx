@@ -90,14 +90,12 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
   >;
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,

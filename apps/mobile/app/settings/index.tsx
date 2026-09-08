@@ -17,18 +17,18 @@
 // the app, so flipping it opens the system Settings instead. Granular
 // per-category control lives at /settings/notification-preferences.
 
-import { useCallback, useState } from 'react';
-import { Alert, Linking, ScrollView, Text, View } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { router, useFocusEffect } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { useCallback, useState } from 'react';
+import { Alert, Linking, ScrollView, Text, View } from 'react-native';
 import { ListRow } from '../../components/ui/ListRow';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { Toggle } from '../../components/ui/Toggle';
-import { useSignOut } from '../../hooks/use-sign-out';
 import { useMyProfile } from '../../hooks/use-profile';
+import { useSignOut } from '../../hooks/use-sign-out';
+import { LEGAL_URLS } from '../../lib/legal';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
-import { LEGAL_URLS } from '../../lib/legal';
 
 const APP_VERSION = '1.0.0';
 
@@ -80,9 +80,7 @@ export default function Settings() {
             title="Bildirim tercihleri"
             subtitle="8 kategori"
             chevron
-            onPress={() =>
-              router.push('/settings/notification-preferences' as never)
-            }
+            onPress={() => router.push('/settings/notification-preferences' as never)}
           />
         </Section>
 

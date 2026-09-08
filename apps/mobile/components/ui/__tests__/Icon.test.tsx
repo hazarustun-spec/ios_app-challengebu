@@ -89,8 +89,7 @@ function normalize(node: unknown): Normalized {
     string,
     unknown
   >;
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -100,18 +99,12 @@ function normalize(node: unknown): Normalized {
 
 describe('Icon', () => {
   // ----------- shape category snapshots -----------
-  test.each<IconName>([
-    'chevR',
-    'plus',
-    'trophy',
-    'mail',
-    'check',
-    'warn',
-    'lock',
-    'dots',
-  ])('renders %s with defaults', (name) => {
-    expect(normalize(Icon({ name }))).toMatchSnapshot();
-  });
+  test.each<IconName>(['chevR', 'plus', 'trophy', 'mail', 'check', 'warn', 'lock', 'dots'])(
+    'renders %s with defaults',
+    (name) => {
+      expect(normalize(Icon({ name }))).toMatchSnapshot();
+    },
+  );
 
   test('applies custom size, color, stroke, fill', () => {
     expect(
@@ -144,7 +137,12 @@ describe('Icon', () => {
       };
       tree.children.forEach(walk);
       const types = flat.map((c) => (c && typeof c === 'object' ? c.type : null));
-      expect(types).toEqual(['Circle', 'Path']);
+      // `settings` is the lucide-style gear: the toothed outline first, the
+      // centre hub on top of it. This read ['Circle', 'Path'] — the order of an
+      // older sun-shaped glyph that was replaced without updating the test, so
+      // the case had been failing on its own for some time. The assertion is
+      // still the right one; only the expected order was stale.
+      expect(types).toEqual(['Path', 'Circle']);
     }
   });
 

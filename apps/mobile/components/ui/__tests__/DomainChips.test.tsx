@@ -46,9 +46,7 @@ const { LevelIcon } = await import('../LevelIcon');
 const { FormatChip } = await import('../FormatChip');
 const { FormDots } = await import('../FormDots');
 const { LEVELS, levelForElo, levelProgress } = await import('../../../lib/levels');
-const { FORMATS, UI_TO_DB_FORMAT, DB_TO_UI_FORMAT } = await import(
-  '../../../lib/formats'
-);
+const { FORMATS, UI_TO_DB_FORMAT, DB_TO_UI_FORMAT } = await import('../../../lib/formats');
 
 function describeType(type: unknown): string {
   if (typeof type === 'string') return type;
@@ -86,14 +84,12 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
   >;
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -153,10 +149,7 @@ describe('LevelIcon', () => {
       expect(
         count(
           tree,
-          (n) =>
-            n.type === 'Icon' &&
-            n.props.name === lv.icon &&
-            n.props.color === lv.color,
+          (n) => n.type === 'Icon' && n.props.name === lv.icon && n.props.color === lv.color,
         ),
       ).toBe(1);
     }
@@ -181,10 +174,7 @@ describe('FormatChip', () => {
       expect(
         count(
           tree,
-          (n) =>
-            n.type === 'Icon' &&
-            n.props.name === f.mark &&
-            n.props.color === f.color,
+          (n) => n.type === 'Icon' && n.props.name === f.mark && n.props.color === f.color,
         ),
       ).toBe(1);
     }
@@ -216,12 +206,8 @@ describe('FormDots', () => {
       string | number | null
     >;
     const [win, loss] = rowChildren(tree);
-    expect((win!.props.style as { backgroundColor: string }).backgroundColor).toBe(
-      '#5C8C1E',
-    );
-    expect((loss!.props.style as { backgroundColor: string }).backgroundColor).toBe(
-      '#E0463C',
-    );
+    expect((win!.props.style as { backgroundColor: string }).backgroundColor).toBe('#5C8C1E');
+    expect((loss!.props.style as { backgroundColor: string }).backgroundColor).toBe('#E0463C');
   });
 });
 
@@ -311,11 +297,6 @@ describe('FORMATS mapping', () => {
     const uiKeys = Object.keys(UI_TO_DB_FORMAT).sort();
     const dbKeys = Object.values(UI_TO_DB_FORMAT).sort();
     expect(uiKeys).toEqual(['klasik', 'proset', 'set3', 'tiebreak']);
-    expect(dbKeys).toEqual([
-      '3set_klasik',
-      'bu_klasik',
-      'hizli_tiebreak',
-      'pro_set_8',
-    ]);
+    expect(dbKeys).toEqual(['3set_klasik', 'bu_klasik', 'hizli_tiebreak', 'pro_set_8']);
   });
 });

@@ -94,8 +94,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -214,9 +213,7 @@ describe('ListRow', () => {
   });
 
   test('right node renders between content and chevron', () => {
-    const tree = normalize(
-      ListRow({ icon: 'bell', title: 'Push', right: textNode('ON') }),
-    );
+    const tree = normalize(ListRow({ icon: 'bell', title: 'Push', right: textNode('ON') }));
     expect(tree).toMatchSnapshot();
     expect(collectText(tree)).toContain('ON');
   });
@@ -230,9 +227,7 @@ describe('ListRow', () => {
   });
 
   test('iconColor override beats the default text-2 / loss color', () => {
-    const tree = normalize(
-      ListRow({ icon: 'bell', title: 'Custom', iconColor: '#FF00FF' }),
-    );
+    const tree = normalize(ListRow({ icon: 'bell', title: 'Custom', iconColor: '#FF00FF' }));
     const icon = find(tree, (n) => n.type === 'Component' || n.type === 'Icon');
     // Icon is invoked as a function in our normalized output — find via the
     // 'name' prop rather than displayName since `Icon` is a named export.

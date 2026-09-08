@@ -16,10 +16,7 @@ export interface CancelableRequest {
   status: string;
 }
 
-export function canCancelSentOffer(
-  row: CancelableRequest,
-  myUserId: string | undefined,
-): boolean {
+export function canCancelSentOffer(row: CancelableRequest, myUserId: string | undefined): boolean {
   if (!myUserId) return false;
   return row.creator_id === myUserId && row.status === 'pending';
 }

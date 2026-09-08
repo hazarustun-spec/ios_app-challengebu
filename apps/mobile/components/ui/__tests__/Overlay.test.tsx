@@ -103,8 +103,7 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
@@ -115,8 +114,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -215,8 +213,7 @@ describe('Sheet', () => {
     const titleNode = find(
       tree,
       (n) =>
-        n.type === 'Text' &&
-        typeof (n.props as Record<string, unknown>).className === 'string',
+        n.type === 'Text' && typeof (n.props as Record<string, unknown>).className === 'string',
     );
     expect(titleNode).not.toBeNull();
   });
@@ -253,7 +250,7 @@ describe('Sheet', () => {
       (n) =>
         n.type === 'View' &&
         typeof (n.props as Record<string, unknown>).className === 'string' &&
-        ((n.props as Record<string, string>).className).includes('bg-surface-3'),
+        (n.props as Record<string, string>).className.includes('bg-surface-3'),
     );
     expect(handle).toBeNull();
   });

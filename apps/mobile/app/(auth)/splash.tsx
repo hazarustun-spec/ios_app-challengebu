@@ -6,10 +6,9 @@
 // Renders the ChallengeBu tenis ball mark in the center, three pulsing clay
 // dots near the bottom, then auto-replaces to the welcome screen after 1500ms.
 
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -17,6 +16,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BallMark } from '../../components/ui/doodles/BallMark';
 import { colors } from '../../theme/colors';
 

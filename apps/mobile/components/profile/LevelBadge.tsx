@@ -1,5 +1,5 @@
-import { Text, View } from 'react-native';
 import { getLevel } from '@tennis/shared';
+import { Text, View } from 'react-native';
 
 interface Props {
   highestElo: number;

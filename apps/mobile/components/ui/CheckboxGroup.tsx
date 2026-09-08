@@ -13,7 +13,13 @@ interface Props<T extends string> {
   error?: string;
 }
 
-export function CheckboxGroup<T extends string>({ label, options, value, onChange, error }: Props<T>) {
+export function CheckboxGroup<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  error,
+}: Props<T>) {
   const toggle = (v: T) => {
     if (value.includes(v)) onChange(value.filter((x) => x !== v));
     else onChange([...value, v]);

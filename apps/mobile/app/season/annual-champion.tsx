@@ -11,15 +11,15 @@
 // Live data: useYearlyStandings(year) for the standings table;
 // useCurrentSeason() to derive the current academic year.
 
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
-import { Icon } from '../../components/ui/Icon';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors } from '../../theme/colors';
+import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useYearlyStandings, type YearlyStanding } from '../../hooks/use-yearly-standings';
+import { type YearlyStanding, useYearlyStandings } from '../../hooks/use-yearly-standings';
+import { colors } from '../../theme/colors';
 
 const GOLD = '#C9982E';
 
@@ -172,9 +172,8 @@ export default function AnnualChamp() {
             className="font-sans text-text-2"
             style={{ flex: 1, fontSize: 12.5, lineHeight: 19 }}
           >
-            Her sezon finalinden puan: Şampiyon 100 · Finalist 70 · Yarı F. 50 · Çeyrek F. 25.
-            Yıl sonu en yüksek <Text className="font-bold">Yıllık Şampiyon</Text> olur (kalıcı
-            rozet).
+            Her sezon finalinden puan: Şampiyon 100 · Finalist 70 · Yarı F. 50 · Çeyrek F. 25. Yıl
+            sonu en yüksek <Text className="font-bold">Yıllık Şampiyon</Text> olur (kalıcı rozet).
           </Text>
         </View>
 

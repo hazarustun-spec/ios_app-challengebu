@@ -16,11 +16,11 @@
 //   the user could not act on. Bounce those accounts to the dedicated
 //   `/suspended` screen so they see a real explanation and a sign-out CTA.
 
-import { useEffect, useRef } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { router, useSegments } from 'expo-router';
-import { useToast } from './ui/ToastProvider';
+import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../stores/auth-store';
+import { useToast } from './ui/ToastProvider';
 
 const SUSPENDED_STATUSES = new Set(['suspended', 'banned']);
 
@@ -35,8 +35,7 @@ export function AppGuards() {
   useEffect(() => {
     if (loading) return;
     const root = segments[0] as string | undefined;
-    const inPublicArea =
-      root === '(auth)' || root === '(onboarding)' || root === undefined;
+    const inPublicArea = root === '(auth)' || root === '(onboarding)' || root === undefined;
     if (!session && !inPublicArea) {
       router.replace('/(auth)/sign-in');
     }

@@ -23,25 +23,25 @@
 //   - Badges (vitrin): useMyBadges (first 3 pinned, then most recent)
 //   - Display name / profile extras: useAuthStore.profile
 
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { MessagesButton } from '../../components/ui/MessagesButton';
-import { LevelRing } from '../../components/ui/LevelRing';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { RecentMatches } from '../../components/profile/RecentMatches';
 import { BadgeArt } from '../../components/ui/BadgeArt';
 import { LevelIcon } from '../../components/ui/LevelIcon';
-import { useAuthStore } from '../../stores/auth-store';
-import { levelForElo, levelProgress } from '../../lib/levels';
-import { colors } from '../../theme/colors';
-import { useMyRankings, type RankingRow } from '../../hooks/use-my-rankings';
+import { LevelRing } from '../../components/ui/LevelRing';
+import { ListRow } from '../../components/ui/ListRow';
+import { MessagesButton } from '../../components/ui/MessagesButton';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { useEloHistory } from '../../hooks/use-elo-history';
-import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
+import { type MyBadgeRow, useMyBadges } from '../../hooks/use-my-badges';
+import { type RankingRow, useMyRankings } from '../../hooks/use-my-rankings';
 import { useMyProfile } from '../../hooks/use-profile';
 import { formatClassYear } from '../../lib/class-year';
-import { ListRow } from '../../components/ui/ListRow';
-import { RecentMatches } from '../../components/profile/RecentMatches';
+import { levelForElo, levelProgress } from '../../lib/levels';
+import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
 import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
@@ -86,9 +86,27 @@ interface RankTheme {
 }
 
 const THEMES: RankTheme[] = [
-  { bg: colors.lime, fg: colors.onLime, sub: 'rgba(22,22,24,0.62)', pill: 'rgba(255,255,255,0.5)', pillFg: colors.onLime },
-  { bg: colors.court, fg: '#FFFFFF', sub: 'rgba(255,255,255,0.75)', pill: 'rgba(255,255,255,0.2)', pillFg: '#FFFFFF' },
-  { bg: colors.text, fg: colors.bg, sub: 'rgba(255,255,255,0.6)', pill: 'rgba(255,255,255,0.14)', pillFg: colors.bg },
+  {
+    bg: colors.lime,
+    fg: colors.onLime,
+    sub: 'rgba(22,22,24,0.62)',
+    pill: 'rgba(255,255,255,0.5)',
+    pillFg: colors.onLime,
+  },
+  {
+    bg: colors.court,
+    fg: '#FFFFFF',
+    sub: 'rgba(255,255,255,0.75)',
+    pill: 'rgba(255,255,255,0.2)',
+    pillFg: '#FFFFFF',
+  },
+  {
+    bg: colors.text,
+    fg: colors.bg,
+    sub: 'rgba(255,255,255,0.6)',
+    pill: 'rgba(255,255,255,0.14)',
+    pillFg: colors.bg,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -218,10 +236,7 @@ export default function ProfileTab() {
         >
           <LevelRing name={name} elo={ME_ELO} size={82} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <View
-              className="flex-row items-center"
-              style={{ gap: 7, flexWrap: 'wrap' }}
-            >
+            <View className="flex-row items-center" style={{ gap: 7, flexWrap: 'wrap' }}>
               <Text
                 className="font-display font-extrabold text-text"
                 style={{ fontSize: 21, letterSpacing: -0.42 }}
@@ -233,10 +248,7 @@ export default function ProfileTab() {
                 className="bg-surface-2 rounded-pill"
                 style={{ paddingHorizontal: 7, paddingVertical: 2 }}
               >
-                <Text
-                  className="font-sans font-semibold text-text-3"
-                  style={{ fontSize: 11.5 }}
-                >
+                <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11.5 }}>
                   {pronoun}
                 </Text>
               </View>
@@ -247,24 +259,16 @@ export default function ProfileTab() {
               style={{ marginTop: 5, gap: 6 }}
             >
               <LevelIcon level={lv} size={16} />
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 13.5, color: lv.color }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 13.5, color: lv.color }}>
                 {lv.name}
               </Text>
-              <Text
-                className="font-sans text-text-3"
-                style={{ fontSize: 13 }}
-              >
+              <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
                 ›
               </Text>
             </Pressable>
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 12.5, marginTop: 3 }}
-            >
-              {dept} · {yearLabel ? `${yearLabel} · ` : ''}{hand} el
+            <Text className="font-sans text-text-3" style={{ fontSize: 12.5, marginTop: 3 }}>
+              {dept} · {yearLabel ? `${yearLabel} · ` : ''}
+              {hand} el
             </Text>
             {lp.next && (
               <View style={{ marginTop: 7, maxWidth: 210 }}>
@@ -297,10 +301,7 @@ export default function ProfileTab() {
 
         {/* Vitrin Rozetleri */}
         <View style={{ paddingHorizontal: 20, paddingBottom: 14 }}>
-          <View
-            className="flex-row items-center justify-between"
-            style={{ marginBottom: 8 }}
-          >
+          <View className="flex-row items-center justify-between" style={{ marginBottom: 8 }}>
             <Text
               className="font-sans font-extrabold text-text-3"
               style={{ fontSize: 12, letterSpacing: 0.6 }}
@@ -308,10 +309,7 @@ export default function ProfileTab() {
               VİTRİN ROZETLERİ
             </Text>
             <Pressable onPress={() => router.push('/profile/badges' as never)}>
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 12.5, color: colors.clay }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 12.5, color: colors.clay }}>
                 Düzenle
               </Text>
             </Pressable>
@@ -323,10 +321,7 @@ export default function ProfileTab() {
               <Skeleton height={90} radius={18} style={{ flex: 1 }} />
             </View>
           ) : vitrinBadges.length === 0 ? (
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 12.5, paddingVertical: 8 }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 12.5, paddingVertical: 8 }}>
               Henüz rozet yok.
             </Text>
           ) : (
@@ -374,10 +369,7 @@ export default function ProfileTab() {
               SON MAÇLAR
             </Text>
             <Pressable onPress={() => router.push('/match/history' as never)}>
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 12.5, color: colors.clay }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 12.5, color: colors.clay }}>
                 Tümü
               </Text>
             </Pressable>
@@ -446,10 +438,7 @@ export default function ProfileTab() {
         </View>
         <View style={{ padding: 18, paddingTop: 0, gap: 12 }}>
           {rankings.length === 0 ? (
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 13, paddingHorizontal: 4 }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 13, paddingHorizontal: 4 }}>
               Henüz sıralama verin yok.
             </Text>
           ) : (
@@ -462,9 +451,7 @@ export default function ProfileTab() {
               return (
                 <Pressable
                   key={r.category}
-                  onPress={() =>
-                    router.push(`/(tabs)/leaderboard?cat=${r.category}` as never)
-                  }
+                  onPress={() => router.push(`/(tabs)/leaderboard?cat=${r.category}` as never)}
                   style={{
                     backgroundColor: theme.bg,
                     borderRadius: 26,
@@ -520,10 +507,7 @@ export default function ProfileTab() {
                       >
                         #{r.rank}
                       </Text>
-                      <View
-                        className="flex-row items-center"
-                        style={{ gap: 6, marginTop: 8 }}
-                      >
+                      <View className="flex-row items-center" style={{ gap: 6, marginTop: 8 }}>
                         <LevelIcon level={rl} size={15} />
                         <Text
                           className="font-sans font-bold"

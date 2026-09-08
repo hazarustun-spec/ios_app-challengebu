@@ -4,7 +4,7 @@
 import { router } from 'expo-router';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { PickList } from '../../components/onboarding/PickList';
-import { useOnboardingStore, type Pronoun } from '../../stores/onboarding-store';
+import { type Pronoun, useOnboardingStore } from '../../stores/onboarding-store';
 
 export default function ObPronoun() {
   const pronoun = useOnboardingStore((s) => s.pronoun);

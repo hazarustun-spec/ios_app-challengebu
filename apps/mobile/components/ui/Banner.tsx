@@ -81,10 +81,7 @@ export function Banner({ tone, title, body, inline }: BannerProps) {
     <View className={containerClass}>
       <Icon name={spec.iconName} size={20} color={spec.iconColor} stroke={2.3} />
       <View className="flex-1">
-        <Text
-          className="font-sans text-[13.5px] font-extrabold"
-          style={{ color: colors.text }}
-        >
+        <Text className="font-sans text-[13.5px] font-extrabold" style={{ color: colors.text }}>
           {title}
         </Text>
         {body !== undefined && (

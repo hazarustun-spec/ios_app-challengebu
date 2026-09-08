@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import {
-  formatOpponentName,
-  myPerspective,
-  myTeam,
-  opponentIds,
-} from '../match-opponent';
+import { formatOpponentName, myPerspective, myTeam, opponentIds } from '../match-opponent';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -15,23 +10,25 @@ const OPP = 'user-opp';
 const PARTNER = 'user-partner';
 const OPP2 = 'user-opp2';
 
-function baseMatch(overrides: Partial<{
-  team_a: string[];
-  team_b: string[];
-  score_a: number;
-  score_b: number;
-  winner: 'a' | 'b' | 'void' | null;
-  before_a: number | null;
-  after_a: number | null;
-  before_b: number | null;
-  after_b: number | null;
-}> = {}) {
+function baseMatch(
+  overrides: Partial<{
+    team_a: string[];
+    team_b: string[];
+    score_a: number;
+    score_b: number;
+    winner: 'a' | 'b' | 'void' | null;
+    before_a: number | null;
+    after_a: number | null;
+    before_b: number | null;
+    after_b: number | null;
+  }> = {},
+) {
   return {
     team_a_player_ids: overrides.team_a ?? [ME],
     team_b_player_ids: overrides.team_b ?? [OPP],
     score_team_a: overrides.score_a ?? 6,
     score_team_b: overrides.score_b ?? 3,
-    winner_team: overrides.winner !== undefined ? overrides.winner : 'a' as const,
+    winner_team: overrides.winner !== undefined ? overrides.winner : ('a' as const),
     rating_before_team_a: overrides.before_a !== undefined ? overrides.before_a : 1200,
     rating_after_team_a: overrides.after_a !== undefined ? overrides.after_a : 1215,
     rating_before_team_b: overrides.before_b !== undefined ? overrides.before_b : 1200,
@@ -131,34 +128,22 @@ describe('myPerspective', () => {
   });
 
   it('positive eloDelta when team A rating went up', () => {
-    const p = myPerspective(
-      baseMatch({ before_a: 1200, after_a: 1215 }),
-      ME,
-    );
+    const p = myPerspective(baseMatch({ before_a: 1200, after_a: 1215 }), ME);
     expect(p.eloDelta).toBe(15);
   });
 
   it('negative eloDelta when team A rating went down', () => {
-    const p = myPerspective(
-      baseMatch({ before_a: 1200, after_a: 1180 }),
-      ME,
-    );
+    const p = myPerspective(baseMatch({ before_a: 1200, after_a: 1180 }), ME);
     expect(p.eloDelta).toBe(-20);
   });
 
   it('eloDelta is null when rating_after is null', () => {
-    const p = myPerspective(
-      baseMatch({ before_a: 1200, after_a: null }),
-      ME,
-    );
+    const p = myPerspective(baseMatch({ before_a: 1200, after_a: null }), ME);
     expect(p.eloDelta).toBeNull();
   });
 
   it('eloDelta is null when rating_before is null', () => {
-    const p = myPerspective(
-      baseMatch({ before_a: null, after_a: 1215 }),
-      ME,
-    );
+    const p = myPerspective(baseMatch({ before_a: null, after_a: 1215 }), ME);
     expect(p.eloDelta).toBeNull();
   });
 

@@ -22,7 +22,7 @@
 // the cheapest gate that actually runs in CI.
 
 import { describe, expect, it } from 'bun:test';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const APP_ROOT = join(import.meta.dir, '..', '..');
@@ -71,7 +71,7 @@ describe('NativeWind interop safety', () => {
       offenders.length === 0
         ? ''
         : [
-            'Function-form `style` props found. NativeWind\'s interop spreads the',
+            "Function-form `style` props found. NativeWind's interop spreads the",
             'style prop, and spreading a function yields {} — every rule is dropped',
             'silently. Use a plain object and move press feedback to `active:` on',
             'the className:',

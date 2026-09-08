@@ -13,12 +13,12 @@
 
 import { router } from 'expo-router';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
-import { NavHeader } from '../../components/ui/NavHeader';
 import { Banner } from '../../components/ui/Banner';
 import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useAdminHealth } from '../../hooks/use-admin-health';
 import { useAuditLog } from '../../hooks/use-audit-log';
-import { useCronStatus, type CronRunRow } from '../../hooks/use-cron-status';
+import { type CronRunRow, useCronStatus } from '../../hooks/use-cron-status';
 import { colors } from '../../theme/colors';
 
 export default function AdminHealthScreen() {
@@ -29,10 +29,11 @@ export default function AdminHealthScreen() {
   // Group cron rows by jobname → latest run only, so we get one card per job
   // (newest-first ordering preserved by the SQL `order by start_time desc`).
   const latestPerJob = collectLatestPerJob(cron.data ?? []);
-  const failingJobs = latestPerJob.filter((r) => r.status !== 'succeeded' && r.status !== 'running');
+  const failingJobs = latestPerJob.filter(
+    (r) => r.status !== 'succeeded' && r.status !== 'running',
+  );
 
-  const refreshing =
-    health.isRefetching || audit.isRefetching || cron.isRefetching;
+  const refreshing = health.isRefetching || audit.isRefetching || cron.isRefetching;
 
   const refreshAll = () => {
     health.refetch();
@@ -50,11 +51,7 @@ export default function AdminHealthScreen() {
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 32 }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={refreshAll}
-            tintColor={colors.text3}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={refreshAll} tintColor={colors.text3} />
         }
       >
         {/* Top warn banner */}
@@ -130,8 +127,7 @@ export default function AdminHealthScreen() {
                     width: 30,
                     height: 30,
                     borderRadius: 9,
-                    backgroundColor:
-                      row.actor_id === null ? colors.surface2 : colors.claySoft,
+                    backgroundColor: row.actor_id === null ? colors.surface2 : colors.claySoft,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -149,10 +145,7 @@ export default function AdminHealthScreen() {
                   >
                     {row.action}
                   </Text>
-                  <Text
-                    className="font-sans text-text-3"
-                    style={{ fontSize: 11, marginTop: 2 }}
-                  >
+                  <Text className="font-sans text-text-3" style={{ fontSize: 11, marginTop: 2 }}>
                     {row.actor_name ?? 'sistem'} ·{' '}
                     <Text className="font-num">
                       {new Date(row.created_at).toLocaleString('tr-TR')}
@@ -251,16 +244,10 @@ function Stat({ label, value }: { label: string; value: number }) {
         padding: 12,
       }}
     >
-      <Text
-        className="font-sans font-semibold text-text-3"
-        style={{ fontSize: 11 }}
-      >
+      <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11 }}>
         {label}
       </Text>
-      <Text
-        className="font-num font-extrabold text-text"
-        style={{ fontSize: 22, marginTop: 4 }}
-      >
+      <Text className="font-num font-extrabold text-text" style={{ fontSize: 22, marginTop: 4 }}>
         {value}
       </Text>
     </View>

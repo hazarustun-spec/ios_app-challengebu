@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { type ExpoPushMessage, sendToExpo } from '../_shared/expo-push.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { sendToExpo, type ExpoPushMessage } from '../_shared/expo-push.ts';
 
 // Delivers a push for an ALREADY-CREATED notification row.
 //
@@ -23,9 +23,7 @@ Deno.serve(async (req) => {
   if (cors) return cors;
   try {
     const internalKey = (Deno.env.get('INTERNAL_PUSH_KEY') ?? '').trim();
-    const token = (req.headers.get('authorization') ?? '')
-      .replace(/^Bearer\s+/i, '')
-      .trim();
+    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
     if (!internalKey || token !== internalKey) {
       return errorResponse('Forbidden', 401);
     }

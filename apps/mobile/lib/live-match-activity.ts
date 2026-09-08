@@ -66,9 +66,7 @@ export async function endMatchActivity(s: LiveMatchState): Promise<void> {
 // Returns an EventSubscription whose `.remove()` should be called on cleanup, or
 // null when the native module isn't available. A registration failure must never
 // break the scoring flow.
-export function registerActivityPushToken(
-  matchId: string,
-): LiveMatchSubscription | null {
+export function registerActivityPushToken(matchId: string): LiveMatchSubscription | null {
   if (!Native || Platform.OS !== 'ios') return null;
   try {
     return Native.addListener('onPushToken', ({ token }) => {

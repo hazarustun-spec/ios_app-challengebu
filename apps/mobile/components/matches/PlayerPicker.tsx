@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
-import { TextField } from '../ui/TextField';
 import { type PlayerRow, usePlayers } from '../../hooks/use-players';
+import { TextField } from '../ui/TextField';
 
 interface Props {
   selectedId: string | undefined;

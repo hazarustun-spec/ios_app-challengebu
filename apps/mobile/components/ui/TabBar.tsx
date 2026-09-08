@@ -18,9 +18,9 @@
 // `navigation` props the navigator passes and read only the slice we need
 // (see the structural shims below).
 
-import { useEffect, useRef } from 'react';
-import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useEffect, useRef } from 'react';
+import { type LayoutChangeEvent, Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -133,12 +133,7 @@ function TabSlot({ slot, isActive, onPress, onLayout }: TabSlotProps) {
           // court-blue center button the same way the white "+" stroke did.
           <BallMark size={28} color={colors.lime} stroke="#FFFFFF" sw={3.6} />
         ) : (
-          <Icon
-            name={slot.icon}
-            size={23}
-            color="#FFFFFF"
-            stroke={isActive ? 2.4 : 2.1}
-          />
+          <Icon name={slot.icon} size={23} color="#FFFFFF" stroke={isActive ? 2.4 : 2.1} />
         )}
       </Animated.View>
     </Pressable>
@@ -181,10 +176,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
 
   const indicatorStyle = useAnimatedStyle(() => ({
     opacity: indicatorX.value === null ? 0 : 1,
-    transform: [
-      { translateX: indicatorX.value ?? 0 },
-      { translateY: indicatorY.value },
-    ],
+    transform: [{ translateX: indicatorX.value ?? 0 }, { translateY: indicatorY.value }],
   }));
 
   return (

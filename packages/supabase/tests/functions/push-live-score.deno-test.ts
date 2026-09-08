@@ -49,20 +49,40 @@ async function makeIsolatedMatch(): Promise<{
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
   if (!court) throw new Error('No court found');
 
-  const { data: req } = await supa.from('match_requests').insert({
-    creator_id: alice.userId, target_id: bob.userId, type: 'direct_challenge',
-    category: 'erkek_tek', format: 'bu_klasik', proposed_date: '2026-07-01',
-    proposed_time: '19:00', court_id: court.id, status: 'accepted',
-    expires_at: '2026-08-01T00:00:00Z',
-  }).select('id').single();
+  const { data: req } = await supa
+    .from('match_requests')
+    .insert({
+      creator_id: alice.userId,
+      target_id: bob.userId,
+      type: 'direct_challenge',
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      proposed_date: '2026-07-01',
+      proposed_time: '19:00',
+      court_id: court.id,
+      status: 'accepted',
+      expires_at: '2026-08-01T00:00:00Z',
+    })
+    .select('id')
+    .single();
   if (!req) throw new Error(`match_request insert failed (suffix ${suffix})`);
 
-  const { data: m, error: matchErr } = await supa.from('matches').insert({
-    match_request_id: req.id, category: 'erkek_tek', format: 'bu_klasik',
-    court_id: court.id, played_at: '2026-07-01T19:00:00Z', is_rated: true,
-    team_a_player_ids: [alice.userId], team_b_player_ids: [bob.userId],
-  }).select('id').single();
-  if (!m || matchErr) throw new Error(`match insert failed (suffix ${suffix}): ${matchErr?.message}`);
+  const { data: m, error: matchErr } = await supa
+    .from('matches')
+    .insert({
+      match_request_id: req.id,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      court_id: court.id,
+      played_at: '2026-07-01T19:00:00Z',
+      is_rated: true,
+      team_a_player_ids: [alice.userId],
+      team_b_player_ids: [bob.userId],
+    })
+    .select('id')
+    .single();
+  if (!m || matchErr)
+    throw new Error(`match insert failed (suffix ${suffix}): ${matchErr?.message}`);
 
   return {
     matchId: m.id,
@@ -114,7 +134,11 @@ Deno.test('push-live-score: missing/wrong Bearer → 401', async () => {
   assertEquals(noAuth.status, 401);
 
   // Present but not equal to INTERNAL_PUSH_KEY.
-  const wrong = await invokeFunction('push-live-score', { matchId: fakeId }, 'definitely-not-the-key');
+  const wrong = await invokeFunction(
+    'push-live-score',
+    { matchId: fakeId },
+    'definitely-not-the-key',
+  );
   assertEquals(wrong.status, 401);
 });
 
@@ -131,7 +155,12 @@ Deno.test({
       // BEFORE reading Vault or signing a JWT, so this passes with no .p8 present.
       const supa = adminClient();
       const { error } = await supa.from('live_match_scores').insert({
-        match_id: matchId, games_a: 1, games_b: 0, points_a: 2, points_b: 1, phase: 'ongoing',
+        match_id: matchId,
+        games_a: 1,
+        games_b: 0,
+        points_a: 2,
+        points_b: 1,
+        phase: 'ongoing',
       });
       if (error) throw new Error(`seed live_match_scores: ${error.message}`);
 

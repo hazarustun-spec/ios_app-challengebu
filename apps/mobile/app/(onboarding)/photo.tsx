@@ -5,10 +5,10 @@
 // tapping "Bitir" or "Atla" routes to a not-yet-mounted screen. Wire-up of
 // final submission moves into D15.
 
-import { Image, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { pickAvatar } from '../../components/profile/AvatarPicker';
+import { Image, Pressable, Text, View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
+import { pickAvatar } from '../../components/profile/AvatarPicker';
 import { Icon } from '../../components/ui/Icon';
 import { useOnboardingStore } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
@@ -82,10 +82,7 @@ export default function ObPhoto() {
           </View>
         </Pressable>
         <Pressable onPress={pick}>
-          <Text
-            className="font-sans font-bold"
-            style={{ fontSize: 14, color: colors.clay }}
-          >
+          <Text className="font-sans font-bold" style={{ fontSize: 14, color: colors.clay }}>
             {photoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf yükle'}
           </Text>
         </Pressable>

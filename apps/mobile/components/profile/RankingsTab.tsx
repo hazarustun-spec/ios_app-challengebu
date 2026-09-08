@@ -1,6 +1,6 @@
+import { getCurrentSeasonWindow } from '@tennis/shared';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
-import { getCurrentSeasonWindow } from '@tennis/shared';
 import { useUserRankings } from '../../hooks/use-my-rankings';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -49,7 +49,9 @@ export function RankingsTab({ userId }: Props) {
         onPress={() => router.push('/season/annual-champion' as never)}
         className="mt-3 flex-row items-center justify-between rounded-lg border border-amber-300 bg-amber-50 p-3"
       >
-        <Text className="text-sm font-medium text-amber-900">🏆 Yıllık Şampiyonluk {currentYear}</Text>
+        <Text className="text-sm font-medium text-amber-900">
+          🏆 Yıllık Şampiyonluk {currentYear}
+        </Text>
         <Text className="text-sm text-amber-700">›</Text>
       </Pressable>
     </View>

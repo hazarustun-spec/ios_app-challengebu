@@ -10,13 +10,13 @@
 
 import { router } from 'expo-router';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Icon } from '../../components/ui/Icon';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import {
-  useAdminAnnouncements,
   type PublishedAnnouncement,
+  useAdminAnnouncements,
 } from '../../hooks/use-admin-announcements';
 import { colors } from '../../theme/colors';
 
@@ -107,10 +107,7 @@ function AnnouncementRow({ item }: { item: PublishedAnnouncement }) {
         <Icon name="megaphone" size={17} color={colors.acPurple} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 14, lineHeight: 19 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 14, lineHeight: 19 }}>
           {item.title}
         </Text>
         {item.body ? (
@@ -122,10 +119,7 @@ function AnnouncementRow({ item }: { item: PublishedAnnouncement }) {
             {item.body}
           </Text>
         ) : null}
-        <Text
-          className="font-sans text-text-3"
-          style={{ fontSize: 11.5, marginTop: 6 }}
-        >
+        <Text className="font-sans text-text-3" style={{ fontSize: 11.5, marginTop: 6 }}>
           {when}
         </Text>
       </View>

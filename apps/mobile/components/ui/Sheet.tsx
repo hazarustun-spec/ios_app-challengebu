@@ -25,18 +25,8 @@
 // dept seç (onboarding) action sheets.
 
 import type { ReactNode } from 'react';
-import {
-  Dimensions,
-  Modal as RNModal,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Dimensions, Pressable, Modal as RNModal, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 
 import { curves } from '../../theme/motion';
 
@@ -52,13 +42,7 @@ export interface SheetProps {
 const SCREEN_H = Dimensions.get('window').height;
 const SHEET_DURATION = 220;
 
-export function Sheet({
-  visible,
-  onClose,
-  title,
-  grabHandle = true,
-  children,
-}: SheetProps) {
+export function Sheet({ visible, onClose, title, grabHandle = true, children }: SheetProps) {
   // useDerivedValue re-targets the animation on the UI thread whenever
   // `visible` flips on the JS thread — no useEffect needed, which keeps the
   // component snapshot-testable without faking React's hook dispatcher.
@@ -100,9 +84,7 @@ export function Sheet({
           style={contentStyle}
           className="rounded-t-xl border-t-base border-border-strong bg-surface px-5 pt-3 pb-8"
         >
-          {grabHandle && (
-            <View className="mx-auto mb-2 h-1 w-9 rounded-full bg-surface-3" />
-          )}
+          {grabHandle && <View className="mx-auto mb-2 h-1 w-9 rounded-full bg-surface-3" />}
           {title && (
             <Text className="mb-4 pt-3 text-center font-display text-[18px] font-extrabold text-text">
               {title}

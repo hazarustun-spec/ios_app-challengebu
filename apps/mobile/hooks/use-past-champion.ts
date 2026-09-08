@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { seasonDisplayName, type SeasonName } from '@tennis/shared';
-import { supabase } from '../lib/supabase';
+import { type SeasonName, seasonDisplayName } from '@tennis/shared';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface PastChampion {
   label: string;

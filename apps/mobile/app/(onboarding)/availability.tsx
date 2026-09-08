@@ -1,13 +1,13 @@
 // Onboarding · Müsaitlik (D13) — 2×3 checkbox grid
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObAvail
 
-import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { CheckBox } from '../../components/ui/CheckBox';
-import { useOnboardingStore, type AvailabilitySlot } from '../../stores/onboarding-store';
-import { colors } from '../../theme/colors';
 import { haptics } from '../../lib/haptics';
+import { type AvailabilitySlot, useOnboardingStore } from '../../stores/onboarding-store';
+import { colors } from '../../theme/colors';
 
 const SLOTS: { key: AvailabilitySlot; label: string }[] = [
   { key: 'wd_am', label: 'Hafta içi sabah' },
@@ -25,9 +25,7 @@ export default function ObAvailability() {
   const toggle = (k: AvailabilitySlot) => {
     setField(
       'availability',
-      availability.includes(k)
-        ? availability.filter((x) => x !== k)
-        : [...availability, k],
+      availability.includes(k) ? availability.filter((x) => x !== k) : [...availability, k],
     );
   };
 

@@ -8,14 +8,18 @@
 // vs pink-deep), each with a faded watermark glyph + tag pill + arrow
 // CTA.
 
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
 import { Icon, type IconName } from '../../../components/ui/Icon';
-import { useNewMatchStore, type MatchKind, type CategoryKey } from '../../../stores/new-match-store';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useMyProfile } from '../../../hooks/use-profile';
 import { defaultCategoryForGender } from '../../../lib/primary-category';
+import {
+  type CategoryKey,
+  type MatchKind,
+  useNewMatchStore,
+} from '../../../stores/new-match-store';
 import { colors } from '../../../theme/colors';
 
 interface KindCardConfig {
@@ -25,8 +29,8 @@ interface KindCardConfig {
   tag: string;
   desc: string;
   bg: string;
-  motifColor: string;   // darker-tinted watermark color
-  accentColor: string;  // icon tile icon, pill text, arrow circle bg, "Seç" text
+  motifColor: string; // darker-tinted watermark color
+  accentColor: string; // icon tile icon, pill text, arrow circle bg, "Seç" text
 }
 
 const CARDS: KindCardConfig[] = [
@@ -36,9 +40,9 @@ const CARDS: KindCardConfig[] = [
     title: 'Sıralama Maçı',
     tag: 'ELO ETKİLER',
     desc: "ELO'nu etkiler, sıralamada yükselirsin. Format kuralları zorunlu.",
-    bg: colors.court,        // #2270BC
+    bg: colors.court, // #2270BC
     motifColor: '#1B5EA0',
-    accentColor: colors.court,  // court blue (arrow circle, icon, pill text)
+    accentColor: colors.court, // court blue (arrow circle, icon, pill text)
   },
   {
     kind: 'friendly',
@@ -48,7 +52,7 @@ const CARDS: KindCardConfig[] = [
     desc: "ELO'ya etki etmez — eğlence ve antrenman için. İstatistiklere sayılmaz.",
     bg: '#C81C82',
     motifColor: '#A8156C',
-    accentColor: '#C81C82',  // pink
+    accentColor: '#C81C82', // pink
   },
 ];
 
@@ -60,7 +64,10 @@ export default function NewMatchType() {
   const myProfileQ = useMyProfile();
   useEffect(() => {
     if (myProfileQ.data?.gender_category) {
-      setField('category', defaultCategoryForGender(myProfileQ.data.gender_category) as CategoryKey);
+      setField(
+        'category',
+        defaultCategoryForGender(myProfileQ.data.gender_category) as CategoryKey,
+      );
     }
   }, [myProfileQ.data?.gender_category]);
 

@@ -11,46 +11,64 @@ Deno.test('notif categories: new values accepted, old values rejected', async ()
   try {
     const supa = adminClient();
 
-    const okOpen = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'open_listings',
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const okOpen = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'open_listings',
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assertEquals(okOpen.error, null, `open_listings insert failed: ${okOpen.error?.message}`);
 
-    const okRem = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'match_reminders',
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const okRem = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'match_reminders',
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assertEquals(okRem.error, null, `match_reminders insert failed: ${okRem.error?.message}`);
 
-    const failDispute = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'dispute_updates' as never,
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const failDispute = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'dispute_updates' as never,
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assert(failDispute.error !== null, 'dispute_updates should be rejected');
 
-    const failDoubles = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'doubles_invitations' as never,
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const failDoubles = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'doubles_invitations' as never,
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assert(failDoubles.error !== null, 'doubles_invitations should be rejected');
 
-    const failProposals = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'match_proposals' as never,
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const failProposals = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'match_proposals' as never,
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assert(failProposals.error !== null, 'match_proposals (legacy) should be rejected');
 
-    const failInactivity = await supa.from('notification_preferences').upsert({
-      profile_id: user.userId,
-      category: 'inactivity_warning' as never,
-      enabled: true,
-    }, { onConflict: 'profile_id,category' });
+    const failInactivity = await supa.from('notification_preferences').upsert(
+      {
+        profile_id: user.userId,
+        category: 'inactivity_warning' as never,
+        enabled: true,
+      },
+      { onConflict: 'profile_id,category' },
+    );
     assert(failInactivity.error !== null, 'inactivity_warning (legacy) should be rejected');
   } finally {
     await teardownUsers([user.userId]);
@@ -62,7 +80,8 @@ Deno.test('notif categories: default prefs trigger seeds 9 categories per new pr
   const user = await createTestUser({ email: `notif-default-${s}@test.local` });
   try {
     const supa = adminClient();
-    const { data } = await supa.from('notification_preferences')
+    const { data } = await supa
+      .from('notification_preferences')
       .select('category, enabled')
       .eq('profile_id', user.userId);
 

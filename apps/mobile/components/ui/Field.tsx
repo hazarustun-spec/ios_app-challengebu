@@ -21,8 +21,8 @@
 
 import { Pressable, Text, TextInput, View } from 'react-native';
 import type { KeyboardTypeOptions, TextInputProps } from 'react-native';
-import { Icon, type IconName } from './Icon';
 import { colors } from '../../theme/colors';
+import { Icon, type IconName } from './Icon';
 
 export type FieldType = 'text' | 'email' | 'password' | 'tel' | 'search';
 
@@ -137,9 +137,7 @@ export function Field({
           ))}
       </View>
       {hint && (
-        <Text
-          className={['mt-2 text-[12.5px]', error ? 'text-loss' : 'text-text-3'].join(' ')}
-        >
+        <Text className={['mt-2 text-[12.5px]', error ? 'text-loss' : 'text-text-3'].join(' ')}>
           {hint}
         </Text>
       )}

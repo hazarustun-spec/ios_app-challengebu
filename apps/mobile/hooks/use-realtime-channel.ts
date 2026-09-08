@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 /**
@@ -76,5 +76,12 @@ export function useRealtimeChannel({
       if (timer.current) clearTimeout(timer.current);
       supabase.removeChannel(channel);
     };
-  }, [channelName, enabled, JSON.stringify(configs), JSON.stringify(invalidateKeys), qc, debounceMs]);
+  }, [
+    channelName,
+    enabled,
+    JSON.stringify(configs),
+    JSON.stringify(invalidateKeys),
+    qc,
+    debounceMs,
+  ]);
 }

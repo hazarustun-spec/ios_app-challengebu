@@ -3,7 +3,13 @@
 
 do $$
 declare
-  expected_table_count constant int := 22;
+  -- A FLOOR, not an equality. This was `= 22` and every migration that added
+  -- a table failed CI on a schema that was perfectly correct — by the time it
+  -- was noticed the real count was 32 and the job had been red for weeks.
+  -- The thing worth asserting is that migrations ran and nothing vanished; a
+  -- new table is the normal case, not a regression. The RLS sweep below is
+  -- what actually guards new tables, and it needs no number at all.
+  expected_table_min_count constant int := 32;
   expected_court_count constant int := 3;
   expected_dept_min_count constant int := 30;
   expected_badge_min_count constant int := 30;
@@ -12,8 +18,9 @@ declare
 begin
   -- Table count
   select count(*) into actual from pg_tables where schemaname = 'public';
-  if actual <> expected_table_count then
-    raise exception 'Expected % public tables, got %', expected_table_count, actual;
+  if actual < expected_table_min_count then
+    raise exception 'Expected at least % public tables, got % — a migration did not run, or a table was dropped',
+      expected_table_min_count, actual;
   end if;
   raise notice 'PASS: % public tables', actual;
 

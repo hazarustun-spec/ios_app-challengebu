@@ -3,18 +3,33 @@ import { adminClient, createTestUser, invokeFunction, teardownUsers } from './he
 
 Deno.test('select-application: creator selects applicant', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-soca-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-soca-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-soca-${s}@test.local`, genderCategory: 'erkek' });
-  const carol = await createTestUser({ email: `carol-soca-${s}@test.local`, genderCategory: 'erkek' });
+  const carol = await createTestUser({
+    email: `carol-soca-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   let matchId = '';
   try {
     const supa = adminClient();
     const { data: court } = await supa.from('courts').select('id').limit(1).single();
 
-    const { body: created } = await invokeFunction('create-match-request', {
-      type: 'open_call', category: 'erkek_tek', format: 'bu_klasik',
-      isRated: true, proposedDate: '2026-07-01', proposedTime: '19:00', courtId: court!.id,
-    }, alice.accessToken);
+    const { body: created } = await invokeFunction(
+      'create-match-request',
+      {
+        type: 'open_call',
+        category: 'erkek_tek',
+        format: 'bu_klasik',
+        isRated: true,
+        proposedDate: '2026-07-01',
+        proposedTime: '19:00',
+        courtId: court!.id,
+      },
+      alice.accessToken,
+    );
     const requestId = (created as { id: string }).id;
 
     await invokeFunction('apply-to-open-call', { requestId }, bob.accessToken);
@@ -27,7 +42,9 @@ Deno.test('select-application: creator selects applicant', async () => {
       .single();
 
     const { status, body } = await invokeFunction(
-      'select-open-call-application', { applicationId: bobApp!.id }, alice.accessToken,
+      'select-open-call-application',
+      { applicationId: bobApp!.id },
+      alice.accessToken,
     );
     assertEquals(status, 200);
 
@@ -43,22 +60,39 @@ Deno.test('select-application: creator selects applicant', async () => {
       .single();
     assertEquals(carolApp!.status, 'declined');
   } finally {
-    await teardownUsers([alice.userId, bob.userId, carol.userId], { matchIds: matchId ? [matchId] : [] });
+    await teardownUsers([alice.userId, bob.userId, carol.userId], {
+      matchIds: matchId ? [matchId] : [],
+    });
   }
 });
 
 Deno.test('select-application: non-creator forbidden', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-soca-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-soca-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-soca-${s}@test.local`, genderCategory: 'erkek' });
-  const carol = await createTestUser({ email: `carol-soca-${s}@test.local`, genderCategory: 'erkek' });
+  const carol = await createTestUser({
+    email: `carol-soca-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const supa = adminClient();
     const { data: court } = await supa.from('courts').select('id').limit(1).single();
-    const { body: created } = await invokeFunction('create-match-request', {
-      type: 'open_call', category: 'erkek_tek', format: 'bu_klasik',
-      isRated: true, proposedDate: '2026-07-01', proposedTime: '19:00', courtId: court!.id,
-    }, alice.accessToken);
+    const { body: created } = await invokeFunction(
+      'create-match-request',
+      {
+        type: 'open_call',
+        category: 'erkek_tek',
+        format: 'bu_klasik',
+        isRated: true,
+        proposedDate: '2026-07-01',
+        proposedTime: '19:00',
+        courtId: court!.id,
+      },
+      alice.accessToken,
+    );
     const requestId = (created as { id: string }).id;
     await invokeFunction('apply-to-open-call', { requestId }, bob.accessToken);
     const { data: bobApp } = await supa
@@ -68,7 +102,9 @@ Deno.test('select-application: non-creator forbidden', async () => {
       .single();
 
     const { status } = await invokeFunction(
-      'select-open-call-application', { applicationId: bobApp!.id }, carol.accessToken,
+      'select-open-call-application',
+      { applicationId: bobApp!.id },
+      carol.accessToken,
     );
     assertEquals(status, 403);
   } finally {

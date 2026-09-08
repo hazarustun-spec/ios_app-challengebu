@@ -3,16 +3,28 @@ import { adminClient, createTestUser, invokeFunction, teardownUsers } from './he
 
 Deno.test('apply-to-open-call: user applies to open call', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-atoc-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-atoc-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-atoc-${s}@test.local`, genderCategory: 'erkek' });
   try {
     const supa = adminClient();
     const { data: court } = await supa.from('courts').select('id').limit(1).single();
 
-    const { body: created } = await invokeFunction('create-match-request', {
-      type: 'open_call', category: 'erkek_tek', format: 'bu_klasik',
-      isRated: true, proposedDate: '2026-07-01', proposedTime: '19:00', courtId: court!.id,
-    }, alice.accessToken);
+    const { body: created } = await invokeFunction(
+      'create-match-request',
+      {
+        type: 'open_call',
+        category: 'erkek_tek',
+        format: 'bu_klasik',
+        isRated: true,
+        proposedDate: '2026-07-01',
+        proposedTime: '19:00',
+        courtId: court!.id,
+      },
+      alice.accessToken,
+    );
 
     const { status } = await invokeFunction(
       'apply-to-open-call',
@@ -34,15 +46,27 @@ Deno.test('apply-to-open-call: user applies to open call', async () => {
 
 Deno.test('apply-to-open-call: cannot apply to own call', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-atoc-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-atoc-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const supa = adminClient();
     const { data: court } = await supa.from('courts').select('id').limit(1).single();
 
-    const { body: created } = await invokeFunction('create-match-request', {
-      type: 'open_call', category: 'erkek_tek', format: 'bu_klasik',
-      isRated: true, proposedDate: '2026-07-01', proposedTime: '19:00', courtId: court!.id,
-    }, alice.accessToken);
+    const { body: created } = await invokeFunction(
+      'create-match-request',
+      {
+        type: 'open_call',
+        category: 'erkek_tek',
+        format: 'bu_klasik',
+        isRated: true,
+        proposedDate: '2026-07-01',
+        proposedTime: '19:00',
+        courtId: court!.id,
+      },
+      alice.accessToken,
+    );
 
     const { status } = await invokeFunction(
       'apply-to-open-call',

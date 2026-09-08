@@ -5,8 +5,8 @@
 // Supabase dashboard. app_version + platform are attached for triage.
 
 import { useMutation } from '@tanstack/react-query';
-import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 

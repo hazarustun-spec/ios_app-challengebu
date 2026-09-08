@@ -25,7 +25,6 @@
 //   uri?    — optional photo URL forwarded to Avatar
 
 import { View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 import Animated, {
   Easing,
   interpolate,
@@ -33,6 +32,7 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Circle } from 'react-native-svg';
 
 import { levelForElo } from '../../lib/levels';
 import { Avatar } from './Avatar';

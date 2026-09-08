@@ -1,9 +1,9 @@
 import { z } from 'zod';
+import { AuthError } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError } from '../_shared/auth-guard.ts';
 import { requireInternalOrAdmin } from '../_shared/internal-guard.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
 const inputSchema = z.object({ matchId: z.string().uuid() });
 
@@ -50,7 +50,11 @@ Deno.serve(async (req) => {
       if (tournament.status !== 'completed') {
         await supa.from('tournaments').update({ status: 'completed' }).eq('id', tournament.id);
       }
-      return jsonResponse({ advanced: false, reason: 'final completed', tournamentCompleted: true });
+      return jsonResponse({
+        advanced: false,
+        reason: 'final completed',
+        tournamentCompleted: true,
+      });
     }
 
     const winnerSeed = match.winner_team === 'a' ? tm.seed_a : tm.seed_b;

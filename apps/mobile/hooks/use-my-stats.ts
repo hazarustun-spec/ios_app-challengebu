@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface PlayerStats {
   totalMatches: number;
@@ -27,9 +27,7 @@ interface MatchSlim {
 
 export function useUserStats(userId: string | undefined, includePrivate: boolean) {
   return useQuery<PlayerStats>({
-    queryKey: includePrivate
-      ? queryKeys.stats.mine()
-      : queryKeys.stats.forUser(userId ?? ''),
+    queryKey: includePrivate ? queryKeys.stats.mine() : queryKeys.stats.forUser(userId ?? ''),
     queryFn: async () => {
       if (!userId) return EMPTY_STATS;
       const { data, error } = await supabase
@@ -45,7 +43,7 @@ export function useUserStats(userId: string | undefined, includePrivate: boolean
         .order('played_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      const matches = ((data ?? []) as unknown) as MatchSlim[];
+      const matches = (data ?? []) as unknown as MatchSlim[];
 
       let opponentName: { name: string; matches: number } | null = null;
       if (includePrivate) {

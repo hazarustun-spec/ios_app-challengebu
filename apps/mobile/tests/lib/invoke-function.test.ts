@@ -1,4 +1,4 @@
-import { describe, expect, test, mock } from 'bun:test';
+import { describe, expect, mock, test } from 'bun:test';
 import { EdgeFunctionError } from '../../lib/invoke-function';
 
 describe('invoke-function', () => {
@@ -13,10 +13,13 @@ describe('invoke-function', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'anon-test-key-aaaaaaaaaaaaaaaaaaaaa';
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = mock(async () => new Response(
-      JSON.stringify({ error: { message: 'Forbidden' } }),
-      { status: 403, headers: { 'content-type': 'application/json' } },
-    )) as unknown as typeof fetch;
+    globalThis.fetch = mock(
+      async () =>
+        new Response(JSON.stringify({ error: { message: 'Forbidden' } }), {
+          status: 403,
+          headers: { 'content-type': 'application/json' },
+        }),
+    ) as unknown as typeof fetch;
 
     const { invokeFunction } = await import('../../lib/invoke-function');
     let caught: unknown;
@@ -58,10 +61,13 @@ describe('invoke-function', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'anon-test-key-aaaaaaaaaaaaaaaaaaaaa';
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = mock(async () => new Response(
-      JSON.stringify({ id: 'req-1', status: 'pending' }),
-      { status: 200, headers: { 'content-type': 'application/json' } },
-    )) as unknown as typeof fetch;
+    globalThis.fetch = mock(
+      async () =>
+        new Response(JSON.stringify({ id: 'req-1', status: 'pending' }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+    ) as unknown as typeof fetch;
 
     const { invokeFunction } = await import('../../lib/invoke-function');
     const result = await invokeFunction<{ id: string; status: string }>('test-fn', {}, 'token');

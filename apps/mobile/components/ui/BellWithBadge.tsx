@@ -25,11 +25,7 @@ export interface BellWithBadgeProps {
   color?: string;
 }
 
-export function BellWithBadge({
-  count = 0,
-  size = 24,
-  color = colors.text,
-}: BellWithBadgeProps) {
+export function BellWithBadge({ count = 0, size = 24, color = colors.text }: BellWithBadgeProps) {
   return (
     <View>
       <Icon name="bell" size={size} color={color} />
@@ -50,10 +46,7 @@ export function BellWithBadge({
             justifyContent: 'center',
           }}
         >
-          <Text
-            className="font-sans font-extrabold"
-            style={{ fontSize: 10, color: '#FFFFFF' }}
-          >
+          <Text className="font-sans font-extrabold" style={{ fontSize: 10, color: '#FFFFFF' }}>
             {count > 99 ? '99+' : count}
           </Text>
         </View>

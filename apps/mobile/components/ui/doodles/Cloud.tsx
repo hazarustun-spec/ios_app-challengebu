@@ -1,7 +1,7 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/doodles.jsx :: Cloud
 // Outline cloud/blob — used over lime hero blocks.
 import Svg, { Path } from 'react-native-svg';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../../theme/colors';
 
 interface CloudProps {

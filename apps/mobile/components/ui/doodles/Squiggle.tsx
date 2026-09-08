@@ -1,7 +1,7 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/doodles.jsx :: Squiggle
 // Wavy pink squiggle decoration.
 import Svg, { Path } from 'react-native-svg';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../../theme/colors';
 
 interface SquiggleProps {
@@ -12,12 +12,7 @@ interface SquiggleProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Squiggle({
-  w = 60,
-  color = colors.pink,
-  stroke = 3,
-  style,
-}: SquiggleProps) {
+export function Squiggle({ w = 60, color = colors.pink, stroke = 3, style }: SquiggleProps) {
   const h = w * 0.25;
   return (
     <Svg width={w} height={h} viewBox="0 0 60 15" fill="none" style={style}>

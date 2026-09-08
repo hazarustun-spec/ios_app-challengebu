@@ -1,10 +1,7 @@
 import { Alert, Pressable, Text, View } from 'react-native';
-import { Button } from '../../ui/Button';
-import {
-  useScoreEntryStore,
-  type BuKlasikDraft,
-} from '../../../stores/score-entry-store';
 import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
+import { type BuKlasikDraft, useScoreEntryStore } from '../../../stores/score-entry-store';
+import { Button } from '../../ui/Button';
 
 interface Props {
   matchId: string;
@@ -54,7 +51,9 @@ export function BuKlasikScoreEntry({ matchId, myLetter, onSubmit, submitting }: 
   return (
     <View className="flex-1 gap-4">
       <View className="rounded-lg bg-gray-100 p-4">
-        <Text className="mb-2 text-center text-sm text-gray-600">El {Math.min(currentEl, MAX_ELS)}</Text>
+        <Text className="mb-2 text-center text-sm text-gray-600">
+          El {Math.min(currentEl, MAX_ELS)}
+        </Text>
         <View className="flex-row items-center justify-center gap-6">
           <View className="items-center">
             <Text className="text-xs text-gray-500">{myLetter === 'a' ? 'Sen' : 'Rakip'}</Text>
@@ -68,28 +67,32 @@ export function BuKlasikScoreEntry({ matchId, myLetter, onSubmit, submitting }: 
         </View>
       </View>
 
-      <Text className="text-sm text-gray-700">
-        Bu eli kim kazandı?
-      </Text>
+      <Text className="text-sm text-gray-700">Bu eli kim kazandı?</Text>
       <View className="flex-row gap-3">
         <Pressable
           onPress={() => recordEl('a')}
           disabled={matchComplete}
           className={`flex-1 items-center rounded-lg border border-primary py-4 ${matchComplete ? 'opacity-50' : 'active:bg-blue-50'}`}
         >
-          <Text className="text-lg font-semibold text-primary">{myLetter === 'a' ? 'Ben' : 'Rakip'}</Text>
+          <Text className="text-lg font-semibold text-primary">
+            {myLetter === 'a' ? 'Ben' : 'Rakip'}
+          </Text>
         </Pressable>
         <Pressable
           onPress={() => recordEl('b')}
           disabled={matchComplete}
           className={`flex-1 items-center rounded-lg border border-primary py-4 ${matchComplete ? 'opacity-50' : 'active:bg-blue-50'}`}
         >
-          <Text className="text-lg font-semibold text-primary">{myLetter === 'b' ? 'Ben' : 'Rakip'}</Text>
+          <Text className="text-lg font-semibold text-primary">
+            {myLetter === 'b' ? 'Ben' : 'Rakip'}
+          </Text>
         </Pressable>
       </View>
 
       <Pressable onPress={undoLast} disabled={draft.els.length === 0} className="items-center py-2">
-        <Text className={draft.els.length === 0 ? 'text-gray-400' : 'text-primary'}>↩ Son eli geri al</Text>
+        <Text className={draft.els.length === 0 ? 'text-gray-400' : 'text-primary'}>
+          ↩ Son eli geri al
+        </Text>
       </Pressable>
 
       {matchComplete && (
@@ -102,10 +105,14 @@ export function BuKlasikScoreEntry({ matchId, myLetter, onSubmit, submitting }: 
 
       <View className="mt-auto gap-3">
         {canVoid && (
-          <Button onPress={submitVoid} variant="ghost">Maçı bitir (3-3 voided)</Button>
+          <Button onPress={submitVoid} variant="ghost">
+            Maçı bitir (3-3 voided)
+          </Button>
         )}
         {matchComplete && (
-          <Button onPress={submitFinal} loading={submitting}>Skoru gönder</Button>
+          <Button onPress={submitFinal} loading={submitting}>
+            Skoru gönder
+          </Button>
         )}
       </View>
     </View>

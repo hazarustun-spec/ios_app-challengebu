@@ -3,10 +3,10 @@ import { Easing } from 'react-native-reanimated';
 
 /** Animation curves from tokens.css motion table. */
 export const curves = {
-  popIn:    Easing.bezier(0.2, 0.9, 0.3, 1.1),   // modal + rozet (overshoot)
-  slideUp:  Easing.bezier(0.2, 0.8, 0.2, 1),     // bottom sheet, list entries
-  ball:     Easing.bezier(0.34, 1.4, 0.5, 1),    // canlı maç top
-  outQuint: Easing.bezier(0.22, 1, 0.36, 1),     // generic ease-out
+  popIn: Easing.bezier(0.2, 0.9, 0.3, 1.1), // modal + rozet (overshoot)
+  slideUp: Easing.bezier(0.2, 0.8, 0.2, 1), // bottom sheet, list entries
+  ball: Easing.bezier(0.34, 1.4, 0.5, 1), // canlı maç top
+  outQuint: Easing.bezier(0.22, 1, 0.36, 1), // generic ease-out
 } as const;
 
 export const durations = {
@@ -24,8 +24,4 @@ export const scorePopFrames = [
 ] as const;
 
 /** Pip fill animation: scale 0 → 1.25 → 1 */
-export const pipFillFrames = [
-  { scale: 0 },
-  { scale: 1.25 },
-  { scale: 1.0 },
-] as const;
+export const pipFillFrames = [{ scale: 0 }, { scale: 1.25 }, { scale: 1.0 }] as const;

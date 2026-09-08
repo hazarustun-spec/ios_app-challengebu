@@ -21,32 +21,19 @@
 // name field, so every row uses the category icon chip.
 
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Icon, type IconName } from '../components/ui/Icon';
 import { NavHeader } from '../components/ui/NavHeader';
 import { useMarkAllRead } from '../hooks/use-mark-all-read';
 import { useMarkNotificationRead } from '../hooks/use-mark-notification-read';
-import {
-  useNotifications,
-  type NotificationRow as Row,
-} from '../hooks/use-notifications';
 import type { NotificationCategory } from '../hooks/use-notification-preferences';
+import { type NotificationRow as Row, useNotifications } from '../hooks/use-notifications';
 import { useUnreadCount } from '../hooks/use-unread-count';
 import { useAuthStore } from '../stores/auth-store';
 import { colors } from '../theme/colors';
 
-const CATEGORY_META: Record<
-  NotificationCategory,
-  { icon: IconName; color: string }
-> = {
+const CATEGORY_META: Record<NotificationCategory, { icon: IconName; color: string }> = {
   match_invitations: { icon: 'bolt', color: colors.clay },
   match_score_pending: { icon: 'check', color: colors.win },
   ladder_movement: { icon: 'ranking', color: colors.info },
@@ -200,9 +187,7 @@ export default function NotificationsScreen() {
     <NavHeader
       large
       title="Bildirimler"
-      onBack={() =>
-        router.canGoBack() ? router.back() : router.replace('/(tabs)')
-      }
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
       actionIcon={unread > 0 ? 'check' : undefined}
       onAction={unread > 0 ? () => markAll.mutate() : undefined}
     />

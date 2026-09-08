@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({ seasonId: z.string().uuid() });
 
@@ -35,7 +35,11 @@ Deno.serve(async (req) => {
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) return errorResponse('Invalid input', 400, parsed.error.format());
 
-    const { data: season } = await supa.from('seasons').select('*').eq('id', parsed.data.seasonId).maybeSingle();
+    const { data: season } = await supa
+      .from('seasons')
+      .select('*')
+      .eq('id', parsed.data.seasonId)
+      .maybeSingle();
     if (!season) return errorResponse('Season not found', 404);
     if (season.status === 'closed') return errorResponse('Season already closed', 409);
 
@@ -43,7 +47,10 @@ Deno.serve(async (req) => {
     const { data: ratings } = await supa.from('elo_ratings').select('id, rating');
     for (const r of ratings ?? []) {
       const newRating = Math.round((r.rating + 1200) / 2);
-      await supa.from('elo_ratings').update({ rating: newRating, matches_played: 0 }).eq('id', r.id);
+      await supa
+        .from('elo_ratings')
+        .update({ rating: newRating, matches_played: 0 })
+        .eq('id', r.id);
     }
 
     // 2. Resolve badge IDs by code (we only insert the codes we recognise).
@@ -189,7 +196,8 @@ async function awardSeasonalBadges(
   }
 
   // Build the insert payload.
-  const awards: { profile_id: string; badge_id: string; season_id: string; earned_at: string }[] = [];
+  const awards: { profile_id: string; badge_id: string; season_id: string; earned_at: string }[] =
+    [];
   const now = new Date().toISOString();
   const push = (profileId: string, code: string) => {
     const badgeId = badgeByCode.get(code);

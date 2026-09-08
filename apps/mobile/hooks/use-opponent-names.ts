@@ -3,10 +3,10 @@
 // opponent display names without triggering per-card network requests.
 
 import { useMemo } from 'react';
-import { useAuthStore } from '../stores/auth-store';
 import { formatOpponentName, opponentIds } from '../lib/match-opponent';
-import { usePlayers, type PlayerRow } from './use-players';
 import type { MatchLike } from '../lib/match-opponent';
+import { useAuthStore } from '../stores/auth-store';
+import { type PlayerRow, usePlayers } from './use-players';
 
 export interface OpponentInfo {
   /** All opponent player IDs (1 for singles, 2 for doubles). */
@@ -42,9 +42,7 @@ export function useOpponentNames(): UseOpponentNamesReturn {
 
     const resolved = ids.map((id) => playerMap.get(id)).filter(Boolean) as PlayerRow[];
 
-    const name = isLoading || resolved.length === 0
-      ? 'Rakip'
-      : formatOpponentName(resolved);
+    const name = isLoading || resolved.length === 0 ? 'Rakip' : formatOpponentName(resolved);
 
     const primaryId = ids[0] ?? null;
     const firstPlayer = primaryId ? playerMap.get(primaryId) : undefined;

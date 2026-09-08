@@ -1,11 +1,11 @@
-import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
 import { seasonDisplayName } from '@tennis/shared';
-import { supabase } from '../../lib/supabase';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
+import { supabase } from '../../lib/supabase';
 
 export function SeasonBanner() {
   const season = useCurrentSeason();
@@ -42,12 +42,8 @@ export function SeasonBanner() {
   if (status === 'announced') {
     return (
       <BannerShell>
-        <Text className="text-sm font-semibold text-amber-900">
-          🏆 {label} Finali yaklaşıyor
-        </Text>
-        <Text className="mt-1 text-xs text-amber-800">
-          {top8.summary}
-        </Text>
+        <Text className="text-sm font-semibold text-amber-900">🏆 {label} Finali yaklaşıyor</Text>
+        <Text className="mt-1 text-xs text-amber-800">{top8.summary}</Text>
       </BannerShell>
     );
   }
@@ -68,11 +64,11 @@ export function SeasonBanner() {
   if (status === 'finale_in_progress') {
     return (
       <BannerShell
-        onPress={firstTournamentId ? () => router.push(`/tournament/${firstTournamentId}`) : undefined}
+        onPress={
+          firstTournamentId ? () => router.push(`/tournament/${firstTournamentId}`) : undefined
+        }
       >
-        <Text className="text-sm font-semibold text-amber-900">
-          🏆 {label} Finali devam ediyor
-        </Text>
+        <Text className="text-sm font-semibold text-amber-900">🏆 {label} Finali devam ediyor</Text>
         <Text className="mt-1 text-xs text-amber-800">
           {firstTournamentId ? "Bracket'i görüntülemek için dokun" : 'Bracket hazırlanıyor...'}
         </Text>
@@ -82,12 +78,8 @@ export function SeasonBanner() {
 
   return (
     <BannerShell>
-      <Text className="text-sm font-semibold text-amber-900">
-        ✅ {label} Finali tamamlandı
-      </Text>
-      <Text className="mt-1 text-xs text-amber-800">
-        Şampiyonlar profilde rozet aldı.
-      </Text>
+      <Text className="text-sm font-semibold text-amber-900">✅ {label} Finali tamamlandı</Text>
+      <Text className="mt-1 text-xs text-amber-800">Şampiyonlar profilde rozet aldı.</Text>
     </BannerShell>
   );
 }
@@ -106,9 +98,9 @@ function BannerShell({
   return <Pressable onPress={onPress}>{inner}</Pressable>;
 }
 
-function computeTop8Status(
-  rankings: { category: string; rating: number; rank: number }[],
-): { summary: string } {
+function computeTop8Status(rankings: { category: string; rating: number; rank: number }[]): {
+  summary: string;
+} {
   if (rankings.length === 0) {
     return { summary: 'Sıralama almak için sıralama maçı oyna.' };
   }

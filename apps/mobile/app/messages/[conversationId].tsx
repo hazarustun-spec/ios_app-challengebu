@@ -11,6 +11,7 @@
 //   useReportUser()                     — mutate({ reportedId: otherUserId, reason })
 //   useAuthStore(s => s.user?.id)       — determine mine vs theirs for bubble alignment
 
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,24 +25,23 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
 
+import { Icon } from '../../components/ui/Icon';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Sheet } from '../../components/ui/Sheet';
-import { Icon } from '../../components/ui/Icon';
+import { useToast } from '../../components/ui/ToastProvider';
 import {
+  type MessageRow,
+  useDeleteMessage,
+  useMarkConversationRead,
   useMessages,
   useSendMessage,
-  useMarkConversationRead,
-  useDeleteMessage,
-  type MessageRow,
 } from '../../hooks/use-messages';
 import { useBlockUser, useReportUser } from '../../hooks/use-moderation';
 import { useTypingIndicator } from '../../hooks/use-typing-indicator';
+import { userMessage } from '../../lib/user-message';
 import { useAuthStore } from '../../stores/auth-store';
 import { useMessageOutboxStore } from '../../stores/message-outbox-store';
-import { useToast } from '../../components/ui/ToastProvider';
-import { userMessage } from '../../lib/user-message';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -88,20 +88,14 @@ function Bubble({ item, isMine, onLongPress, onPress }: BubbleProps) {
         onPress={isFailed ? onPress : undefined}
         delayLongPress={300}
         accessibilityRole={isFailed ? 'button' : undefined}
-        accessibilityLabel={
-          isFailed ? 'Gönderilemedi. Yeniden göndermek için dokun' : undefined
-        }
+        accessibilityLabel={isFailed ? 'Gönderilemedi. Yeniden göndermek için dokun' : undefined}
         style={{
           paddingHorizontal: 14,
           paddingVertical: 9,
           borderRadius: 18,
           borderBottomRightRadius: isMine ? 4 : 18,
           borderBottomLeftRadius: isMine ? 18 : 4,
-          backgroundColor: isDeleted
-            ? colors.surface2
-            : isMine
-            ? colors.clay
-            : colors.surface2,
+          backgroundColor: isDeleted ? colors.surface2 : isMine ? colors.clay : colors.surface2,
           // Subtle border for theirs; a failed row gets a loss-coloured one so
           // the state is carried by more than the footer text alone.
           borderWidth: isFailed ? 1.5 : isMine && !isDeleted ? 0 : 1,
@@ -113,11 +107,7 @@ function Bubble({ item, isMine, onLongPress, onPress }: BubbleProps) {
             fontSize: 15,
             lineHeight: 21,
             fontStyle: isDeleted ? 'italic' : 'normal',
-            color: isDeleted
-              ? colors.text3
-              : isMine
-              ? '#FFFFFF'
-              : colors.text,
+            color: isDeleted ? colors.text3 : isMine ? '#FFFFFF' : colors.text,
             fontFamily: undefined, // inherits NativeWind sans
           }}
         >
@@ -229,9 +219,7 @@ function TypingBubble({ name }: { name?: string }) {
           borderColor: colors.surface3,
         }}
       >
-        <Text style={{ fontSize: 15, lineHeight: 21, color: colors.text3 }}>
-          yazıyor…
-        </Text>
+        <Text style={{ fontSize: 15, lineHeight: 21, color: colors.text3 }}>yazıyor…</Text>
       </View>
     </View>
   );
@@ -242,25 +230,19 @@ function TypingBubble({ name }: { name?: string }) {
 // ---------------------------------------------------------------------------
 
 export default function ConversationScreen() {
-  const { conversationId, otherUserId, name } =
-    useLocalSearchParams<{
-      conversationId: string;
-      otherUserId?: string;
-      name?: string;
-    }>();
+  const { conversationId, otherUserId, name } = useLocalSearchParams<{
+    conversationId: string;
+    otherUserId?: string;
+    name?: string;
+  }>();
 
   const myUserId = useAuthStore((s) => s.user?.id);
   const insets = useSafeAreaInsets();
   const toast = useToast();
 
   // Hooks
-  const {
-    messages,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useMessages(conversationId);
+  const { messages, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useMessages(conversationId);
   const sendMessage = useSendMessage();
   // A second instance so a retry in flight does not disable the composer's
   // send button (`canSend` watches `sendMessage.isPending`).
@@ -324,8 +306,7 @@ export default function ConversationScreen() {
         outboxId: item.id,
       },
       {
-        onError: (e) =>
-          toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error'),
+        onError: (e) => toast.show(userMessage(e, 'Mesaj gönderilemedi.'), 'error'),
       },
     );
   }
@@ -335,41 +316,32 @@ export default function ConversationScreen() {
    * must never reach `delete_message` — it just drops the outbox entry.
    */
   function handleDiscardOutbox(item: MessageRow) {
-    Alert.alert(
-      'Gönderilmemiş mesaj',
-      'Bu mesaj hiç gönderilemedi. Silmek istiyor musun?',
-      [
-        { text: 'Vazgeç', style: 'cancel' },
-        {
-          text: 'Sil',
-          style: 'destructive',
-          onPress: () => removeFromOutbox(item.id),
-        },
-      ],
-    );
+    Alert.alert('Gönderilmemiş mesaj', 'Bu mesaj hiç gönderilemedi. Silmek istiyor musun?', [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'Sil',
+        style: 'destructive',
+        onPress: () => removeFromOutbox(item.id),
+      },
+    ]);
   }
 
   function handleDeleteMessage(messageId: string) {
-    Alert.alert(
-      'Mesajı sil',
-      'Bu mesaj herkesten silinsin mi? Bu işlem geri alınamaz.',
-      [
-        { text: 'Vazgeç', style: 'cancel' },
-        {
-          text: 'Herkesten sil',
-          style: 'destructive',
-          onPress: () => {
-            deleteMessage.mutate(
-              { messageId, conversationId: conversationId! },
-              {
-                onError: () =>
-                  Alert.alert('Hata', 'Mesaj silinemedi, tekrar dene.'),
-              },
-            );
-          },
+    Alert.alert('Mesajı sil', 'Bu mesaj herkesten silinsin mi? Bu işlem geri alınamaz.', [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'Herkesten sil',
+        style: 'destructive',
+        onPress: () => {
+          deleteMessage.mutate(
+            { messageId, conversationId: conversationId! },
+            {
+              onError: () => Alert.alert('Hata', 'Mesaj silinemedi, tekrar dene.'),
+            },
+          );
         },
-      ],
-    );
+      },
+    ]);
   }
 
   function handleReport() {
@@ -387,10 +359,8 @@ export default function ConversationScreen() {
             reportUser.mutate(
               { reportedId: otherUserId, reason: 'inappropriate_message' },
               {
-                onSuccess: () =>
-                  Alert.alert('Teşekkürler', 'Şikayetin alındı, incelenecek.'),
-                onError: () =>
-                  Alert.alert('Hata', 'Şikayet gönderilemedi, tekrar dene.'),
+                onSuccess: () => Alert.alert('Teşekkürler', 'Şikayetin alındı, incelenecek.'),
+                onError: () => Alert.alert('Hata', 'Şikayet gönderilemedi, tekrar dene.'),
               },
             );
           },
@@ -415,8 +385,7 @@ export default function ConversationScreen() {
               { blockedId: otherUserId },
               {
                 onSuccess: () => router.back(),
-                onError: () =>
-                  Alert.alert('Hata', 'Engelleme işlemi başarısız, tekrar dene.'),
+                onError: () => Alert.alert('Hata', 'Engelleme işlemi başarısız, tekrar dene.'),
               },
             );
           },
@@ -443,11 +412,7 @@ export default function ConversationScreen() {
         onBack={() => router.back()}
         actionIcon="dots"
         onAction={() => setMenuOpen(true)}
-        onPressTitle={
-          otherUserId
-            ? () => router.push(`/user/${otherUserId}` as const)
-            : undefined
-        }
+        onPressTitle={otherUserId ? () => router.push(`/user/${otherUserId}` as const) : undefined}
       />
 
       {/* Message list */}
@@ -500,9 +465,7 @@ export default function ConversationScreen() {
               onLongPress={() =>
                 // Outbox rows have no server id — discarding one locally is the
                 // only thing "delete" can mean for them.
-                item.outboxStatus
-                  ? handleDiscardOutbox(item)
-                  : handleDeleteMessage(item.id)
+                item.outboxStatus ? handleDiscardOutbox(item) : handleDeleteMessage(item.id)
               }
               onPress={() => handleRetry(item)}
             />
@@ -514,9 +477,7 @@ export default function ConversationScreen() {
           // Inverted, so the header paints at the BOTTOM of the thread —
           // directly above the composer, which is where a typing indicator
           // belongs, and it rides the scroll instead of floating over it.
-          ListHeaderComponent={
-            isOtherTyping ? <TypingBubble name={name} /> : null
-          }
+          ListHeaderComponent={isOtherTyping ? <TypingBubble name={name} /> : null}
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.4}
           onEndReached={() => {

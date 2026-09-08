@@ -4,7 +4,7 @@
 import { router } from 'expo-router';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { PickList } from '../../components/onboarding/PickList';
-import { useOnboardingStore, type DominantHand } from '../../stores/onboarding-store';
+import { type DominantHand, useOnboardingStore } from '../../stores/onboarding-store';
 
 export default function ObHand() {
   const hand = useOnboardingStore((s) => s.hand);

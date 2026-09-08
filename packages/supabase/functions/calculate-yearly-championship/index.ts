@@ -1,14 +1,19 @@
 import { z } from 'zod';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({ year: z.number().int().min(2025).max(2100) });
 
 const CATEGORIES = [
-  'erkek_tek', 'kadin_tek', 'open_tek',
-  'erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift',
+  'erkek_tek',
+  'kadin_tek',
+  'open_tek',
+  'erkek_cift',
+  'kadin_cift',
+  'karma_cift',
+  'open_cift',
 ];
 
 Deno.serve(async (req) => {
@@ -33,7 +38,8 @@ Deno.serve(async (req) => {
 
       const pointsByProfile = new Map<string, number>();
       for (const s of standings ?? []) {
-        const points = s.rank === 1 ? 100 : s.rank === 2 ? 70 : s.rank <= 4 ? 50 : s.rank <= 8 ? 25 : 0;
+        const points =
+          s.rank === 1 ? 100 : s.rank === 2 ? 70 : s.rank <= 4 ? 50 : s.rank <= 8 ? 25 : 0;
         pointsByProfile.set(s.profile_id, (pointsByProfile.get(s.profile_id) ?? 0) + points);
       }
 

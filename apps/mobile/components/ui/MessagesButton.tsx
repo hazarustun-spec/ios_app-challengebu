@@ -6,11 +6,11 @@
 // `useUnreadMessageCount` (the `unread_message_count` RPC) — NOT from
 // `useUnreadCount`, which counts notifications.
 
-import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { Icon } from './Icon';
+import { Pressable, Text, View } from 'react-native';
 import { useUnreadMessageCount } from '../../hooks/use-conversations';
 import { colors } from '../../theme/colors';
+import { Icon } from './Icon';
 
 export function MessagesButton() {
   const { data: unread = 0 } = useUnreadMessageCount();
@@ -47,10 +47,7 @@ export function MessagesButton() {
             justifyContent: 'center',
           }}
         >
-          <Text
-            className="font-sans font-extrabold"
-            style={{ fontSize: 10, color: '#FFFFFF' }}
-          >
+          <Text className="font-sans font-extrabold" style={{ fontSize: 10, color: '#FFFFFF' }}>
             {unread > 99 ? '99+' : unread}
           </Text>
         </View>

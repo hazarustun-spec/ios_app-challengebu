@@ -9,7 +9,8 @@
 //   - useMyBadges()   → user's earned badges, pinned_at marks current showcase
 //   - usePinBadges()  → mutation to persist the 3-pin showcase
 
-import { useState, useEffect } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -17,19 +18,18 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { CardBadgeWon } from '../../components/share/CardBadgeWon';
+import { ShareSheet } from '../../components/share/ShareSheet';
+import { BadgeArt } from '../../components/ui/BadgeArt';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
-import { BadgeArt } from '../../components/ui/BadgeArt';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useAllBadges } from '../../hooks/use-all-badges';
 import type { BadgeCatalogRow } from '../../hooks/use-all-badges';
 import { useMyBadges } from '../../hooks/use-my-badges';
+import type { MyBadgeRow } from '../../hooks/use-my-badges';
 import { usePinBadges } from '../../hooks/use-pin-badges';
 import { colors } from '../../theme/colors';
-import { ShareSheet } from '../../components/share/ShareSheet';
-import { CardBadgeWon } from '../../components/share/CardBadgeWon';
-import type { MyBadgeRow } from '../../hooks/use-my-badges';
 
 // ---------------------------------------------------------------------------
 // Per-item animated card — staggered FadeInDown entrance; earned badges get
@@ -191,18 +191,14 @@ export default function Badges() {
   const earnedIds = new Set(earned.map((b) => b.badge_id));
 
   // Derive initial pinned badge_ids from pinned_at field
-  const initialPinned = earned
-    .filter((b) => b.pinned_at !== null)
-    .map((b) => b.badge_id);
+  const initialPinned = earned.filter((b) => b.pinned_at !== null).map((b) => b.badge_id);
 
   const [pinned, setPinned] = useState<string[]>(initialPinned);
 
   // Sync pinned state when earned badges load (after first fetch)
   useEffect(() => {
     if (myBadgesQ.isSuccess) {
-      const fromServer = earned
-        .filter((b) => b.pinned_at !== null)
-        .map((b) => b.badge_id);
+      const fromServer = earned.filter((b) => b.pinned_at !== null).map((b) => b.badge_id);
       setPinned(fromServer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -210,19 +206,12 @@ export default function Badges() {
 
   const togglePin = (badgeId: string) => {
     setPinned((p) =>
-      p.includes(badgeId)
-        ? p.filter((x) => x !== badgeId)
-        : p.length < 3
-          ? [...p, badgeId]
-          : p,
+      p.includes(badgeId) ? p.filter((x) => x !== badgeId) : p.length < 3 ? [...p, badgeId] : p,
     );
   };
 
   const handleSave = () => {
-    pinMutation.mutate(
-      { selectedBadgeIds: pinned },
-      { onSuccess: () => router.back() },
-    );
+    pinMutation.mutate({ selectedBadgeIds: pinned }, { onSuccess: () => router.back() });
   };
 
   const isLoading = allBadgesQ.isLoading || myBadgesQ.isLoading;
@@ -252,10 +241,7 @@ export default function Badges() {
       <View className="flex-1 bg-bg">
         {header}
         <View className="flex-1 items-center justify-center" style={{ padding: 32 }}>
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 14, textAlign: 'center' }}
-          >
+          <Text className="font-sans text-text-3" style={{ fontSize: 14, textAlign: 'center' }}>
             Rozetler yüklenemedi. Lütfen tekrar dene.
           </Text>
         </View>
@@ -285,8 +271,7 @@ export default function Badges() {
             className="font-sans text-text-2"
             style={{ flex: 1, fontSize: 12.5, lineHeight: 18 }}
           >
-            Profilinde gösterilecek{' '}
-            <Text className="font-bold text-text">3 rozet</Text> seç. (
+            Profilinde gösterilecek <Text className="font-bold text-text">3 rozet</Text> seç. (
             {pinned.length}/3)
           </Text>
         </View>
@@ -317,12 +302,7 @@ export default function Badges() {
       </ScrollView>
 
       <View style={{ padding: 18 }}>
-        <Button
-          full
-          size="lg"
-          onPress={handleSave}
-          disabled={pinMutation.isPending}
-        >
+        <Button full size="lg" onPress={handleSave} disabled={pinMutation.isPending}>
           {pinMutation.isPending ? 'Kaydediliyor…' : 'Vitrini kaydet'}
         </Button>
       </View>

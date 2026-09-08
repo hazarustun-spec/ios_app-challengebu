@@ -62,15 +62,11 @@ export function myPerspective(match: MatchLike, myId: string): MyPerspective {
   const myScore = side === 'a' ? match.score_team_a : match.score_team_b;
   const oppScore = side === 'a' ? match.score_team_b : match.score_team_a;
 
-  const ratingBefore =
-    side === 'a' ? match.rating_before_team_a : match.rating_before_team_b;
-  const ratingAfter =
-    side === 'a' ? match.rating_after_team_a : match.rating_after_team_b;
+  const ratingBefore = side === 'a' ? match.rating_before_team_a : match.rating_before_team_b;
+  const ratingAfter = side === 'a' ? match.rating_after_team_a : match.rating_after_team_b;
 
   const eloDelta =
-    ratingBefore !== null && ratingAfter !== null
-      ? ratingAfter - ratingBefore
-      : null;
+    ratingBefore !== null && ratingAfter !== null ? ratingAfter - ratingBefore : null;
 
   let won: boolean | null = null;
   if (match.winner_team !== null && match.winner_team !== 'void') {
@@ -90,12 +86,9 @@ export function myPerspective(match: MatchLike, myId: string): MyPerspective {
  *  - Doubles (2 players): "First & First"
  *  - Empty array: "Bilinmeyen oyuncu"
  */
-export function formatOpponentName(
-  players: { first_name: string; last_name: string }[]
-): string {
+export function formatOpponentName(players: { first_name: string; last_name: string }[]): string {
   if (players.length === 0) return 'Bilinmeyen oyuncu';
-  if (players.length === 1)
-    return `${players[0].first_name} ${players[0].last_name}`;
+  if (players.length === 1) return `${players[0].first_name} ${players[0].last_name}`;
   // Doubles: join first names with " & "
   return players.map((p) => p.first_name).join(' & ');
 }

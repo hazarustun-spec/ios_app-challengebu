@@ -19,12 +19,12 @@ export interface Level {
 
 export const LEVELS: readonly Level[] = [
   { code: 'yeni_cekirge', name_tr: 'Yeni Çekirge', icon: '🌱', threshold: 0 },
-  { code: 'caylak',       name_tr: 'Çaylak',       icon: '🎾', threshold: 1000 },
-  { code: 'amator',       name_tr: 'Amatör',       icon: '🏃', threshold: 1200 },
-  { code: 'rekabetci',    name_tr: 'Rekabetçi',    icon: '⚡', threshold: 1400 },
-  { code: 'usta',         name_tr: 'Usta',         icon: '🔥', threshold: 1600 },
-  { code: 'elit',         name_tr: 'Elit',         icon: '💎', threshold: 1800 },
-  { code: 'sampiyon',     name_tr: 'Şampiyon',     icon: '👑', threshold: 2000 },
+  { code: 'caylak', name_tr: 'Çaylak', icon: '🎾', threshold: 1000 },
+  { code: 'amator', name_tr: 'Amatör', icon: '🏃', threshold: 1200 },
+  { code: 'rekabetci', name_tr: 'Rekabetçi', icon: '⚡', threshold: 1400 },
+  { code: 'usta', name_tr: 'Usta', icon: '🔥', threshold: 1600 },
+  { code: 'elit', name_tr: 'Elit', icon: '💎', threshold: 1800 },
+  { code: 'sampiyon', name_tr: 'Şampiyon', icon: '👑', threshold: 2000 },
 ];
 
 export function getLevel(elo: number): Level {

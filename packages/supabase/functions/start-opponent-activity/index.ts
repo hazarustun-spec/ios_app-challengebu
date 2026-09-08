@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
 import { makeApnsJwt, sendLiveActivityStartPush } from '../_shared/apns.ts';
+import { handleCors } from '../_shared/cors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
 // Auto-starts the OPPONENT's Live Activity when a match begins. Invoked by the
 // `trg_start_opponent_activity` AFTER-UPDATE trigger on public.matches (via
@@ -24,9 +24,7 @@ Deno.serve(async (req) => {
   if (cors) return cors;
   try {
     const internalKey = (Deno.env.get('INTERNAL_PUSH_KEY') ?? '').trim();
-    const token = (req.headers.get('authorization') ?? '')
-      .replace(/^Bearer\s+/i, '')
-      .trim();
+    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
     if (!internalKey || token !== internalKey) {
       return errorResponse('Forbidden', 401);
     }
@@ -76,7 +74,7 @@ Deno.serve(async (req) => {
     const apnsKey = await secret('apns_key');
     const apnsKeyId = (await secret('apns_key_id')).trim();
     const apnsTeamId = (await secret('apns_team_id')).trim();
-    const apnsHost = ((await secret('apns_host')).trim()) || 'https://api.sandbox.push.apple.com';
+    const apnsHost = (await secret('apns_host')).trim() || 'https://api.sandbox.push.apple.com';
 
     const jwt = await makeApnsJwt(apnsKey, apnsKeyId, apnsTeamId);
 
@@ -94,9 +92,7 @@ Deno.serve(async (req) => {
       }
     }
     const opponentName = (oppUids: string[]): string => {
-      const names = oppUids
-        .map((uid) => firstNameByUid.get(uid))
-        .filter((n): n is string => !!n);
+      const names = oppUids.map((uid) => firstNameByUid.get(uid)).filter((n): n is string => !!n);
       return names.length > 0 ? names.join(' & ') : 'Rakip';
     };
 

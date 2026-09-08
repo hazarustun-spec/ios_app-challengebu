@@ -1,11 +1,11 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { BracketView } from '../../components/seasons/BracketView';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
-import { BracketView } from '../../components/seasons/BracketView';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useTournamentBracket } from '../../hooks/use-tournament-bracket';
+import { colors } from '../../theme/colors';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -21,19 +21,11 @@ export default function TournamentScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = useTournamentBracket(id);
 
-  const categoryLabel = data
-    ? (CATEGORY_LABELS[data.category] ?? data.category)
-    : 'Turnuva';
-  const subtitle = data
-    ? `${data.bracket_size} oyuncu · ${statusLabel(data.status)}`
-    : undefined;
+  const categoryLabel = data ? (CATEGORY_LABELS[data.category] ?? data.category) : 'Turnuva';
+  const subtitle = data ? `${data.bracket_size} oyuncu · ${statusLabel(data.status)}` : undefined;
 
   const header = (
-    <NavHeader
-      title={categoryLabel}
-      subtitle={subtitle}
-      onBack={() => router.back()}
-    />
+    <NavHeader title={categoryLabel} subtitle={subtitle} onBack={() => router.back()} />
   );
 
   if (isLoading) {
@@ -81,15 +73,11 @@ export default function TournamentScreen() {
             className="font-sans"
             style={{ flex: 1, fontSize: 12, lineHeight: 18, color: colors.text2 }}
           >
-            Beklenmedik bracket boyutu ({data.bracket_size}); ham slot listesini
-            gösteriyoruz.
+            Beklenmedik bracket boyutu ({data.bracket_size}); ham slot listesini gösteriyoruz.
           </Text>
         </View>
       )}
-      <ScrollView
-        horizontal
-        contentContainerStyle={{ padding: 16, alignItems: 'center', gap: 18 }}
-      >
+      <ScrollView horizontal contentContainerStyle={{ padding: 16, alignItems: 'center', gap: 18 }}>
         <BracketView bracketSize={data.bracket_size} slots={data.slots} />
       </ScrollView>
     </View>

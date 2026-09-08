@@ -7,18 +7,18 @@
 // `useAdminUpdateProfile` mutation with the Plan 8 Phase A4 `suspendedUntil`
 // param — `null` for permanent ban, ISO timestamp for auto-expire.
 
-import { useLocalSearchParams, router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
-import { NavHeader } from '../../../components/ui/NavHeader';
-import { ListRow } from '../../../components/ui/ListRow';
 import { Avatar } from '../../../components/ui/Avatar';
-import { Sheet } from '../../../components/ui/Sheet';
 import { Banner } from '../../../components/ui/Banner';
+import { ListRow } from '../../../components/ui/ListRow';
+import { NavHeader } from '../../../components/ui/NavHeader';
+import { Sheet } from '../../../components/ui/Sheet';
 import { useAdminUpdateProfile } from '../../../hooks/use-admin-update-profile';
 import { useAdminUserDetail } from '../../../hooks/use-admin-user-detail';
-import { colors } from '../../../theme/colors';
 import { userMessage } from '../../../lib/user-message';
+import { colors } from '../../../theme/colors';
 
 const STATUS_LABEL: Record<string, string> = {
   active: 'Aktif',

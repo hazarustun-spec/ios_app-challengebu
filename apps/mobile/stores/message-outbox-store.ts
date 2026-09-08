@@ -14,9 +14,9 @@
 // limit (2048 bytes on the Android backing store) is respected by trimming the
 // persisted slice — see `trimForPersist`.
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type OutboxStatus = 'sending' | 'failed';
 
@@ -65,9 +65,7 @@ const MAX_ITEMS = 30;
 const MAX_PERSISTED_BYTES = 1800;
 
 function makeOutboxId(): string {
-  return `outbox-${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(2, 10)}`;
+  return `outbox-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /**
@@ -75,9 +73,7 @@ function makeOutboxId(): string {
  * most recent unsent messages are the ones the user is actually looking at.
  */
 function trimForPersist(items: OutboxMessage[]): OutboxMessage[] {
-  const newestFirst = items
-    .slice()
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const newestFirst = items.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const kept: OutboxMessage[] = [];
   for (const item of newestFirst) {
     kept.push(item);
@@ -120,9 +116,7 @@ export const useMessageOutboxStore = create<MessageOutboxState>()(
 
       markFailed: (id, error) =>
         set((s) => ({
-          items: s.items.map((i) =>
-            i.id === id ? { ...i, status: 'failed', error } : i,
-          ),
+          items: s.items.map((i) => (i.id === id ? { ...i, status: 'failed', error } : i)),
         })),
 
       remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),

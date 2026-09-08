@@ -1,9 +1,9 @@
 import { z } from 'zod';
+import { AuthError } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError } from '../_shared/auth-guard.ts';
 import { requireInternalOrAdmin } from '../_shared/internal-guard.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
 const inputSchema = z.object({ matchId: z.string().uuid() });
 
@@ -226,10 +226,8 @@ function detectComeback(match: Record<string, unknown>, team: 'a' | 'b'): boolea
     if (!d.sets || d.sets.length !== 3) return false;
     const [s1, s2, s3] = d.sets;
     if (!s1 || !s2 || !s3) return false;
-    const lost = (s: { a: number; b: number }) =>
-      team === 'a' ? s.a < s.b : s.b < s.a;
-    const won = (s: { a: number; b: number }) =>
-      team === 'a' ? s.a > s.b : s.b > s.a;
+    const lost = (s: { a: number; b: number }) => (team === 'a' ? s.a < s.b : s.b < s.a);
+    const won = (s: { a: number; b: number }) => (team === 'a' ? s.a > s.b : s.b > s.a);
     return lost(s1) && won(s2) && won(s3);
   }
 

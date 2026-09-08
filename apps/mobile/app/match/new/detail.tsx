@@ -13,20 +13,17 @@
 // The court list is wired live via useCourts() and stores the court UUID
 // (the first active court is auto-selected so a valid id is always sent).
 
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
-import { Sheet } from '../../../components/ui/Sheet';
 import { Button } from '../../../components/ui/Button';
 import { Icon, type IconName } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
+import { Sheet } from '../../../components/ui/Sheet';
+import { useCourts } from '../../../hooks/use-courts';
 import { FORMATS } from '../../../lib/formats';
 import { formatDateLabel, nextDays, toIso } from '../../../lib/match-dates';
-import {
-  useNewMatchStore,
-  type CategoryKey,
-} from '../../../stores/new-match-store';
-import { useCourts } from '../../../hooks/use-courts';
+import { type CategoryKey, useNewMatchStore } from '../../../stores/new-match-store';
 import { colors } from '../../../theme/colors';
 
 interface CategoryDef {
@@ -49,8 +46,18 @@ const CATEGORIES: CategoryDef[] = [
 
 // Hourly court slots, 09:00–20:00.
 const TIMES = [
-  '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
-  '15:00', '16:00', '17:00', '18:00', '19:00', '20:00',
+  '09:00',
+  '10:00',
+  '11:00',
+  '12:00',
+  '13:00',
+  '14:00',
+  '15:00',
+  '16:00',
+  '17:00',
+  '18:00',
+  '19:00',
+  '20:00',
 ];
 
 type SheetKey = 'cat' | 'fmt' | 'date' | 'time' | 'court';
@@ -78,16 +85,10 @@ function Selector({ label, value, icon, onPress }: SelectorProps) {
     >
       <Icon name={icon} size={20} color={colors.text3} />
       <View style={{ flex: 1 }}>
-        <Text
-          className="font-sans font-bold text-text-3"
-          style={{ fontSize: 11.5 }}
-        >
+        <Text className="font-sans font-bold text-text-3" style={{ fontSize: 11.5 }}>
           {label}
         </Text>
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 15 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
           {value}
         </Text>
       </View>
@@ -97,8 +98,7 @@ function Selector({ label, value, icon, onPress }: SelectorProps) {
 }
 
 export default function NewMatchDetail() {
-  const { category, format, date, time, court, setField, path } =
-    useNewMatchStore();
+  const { category, format, date, time, court, setField, path } = useNewMatchStore();
   const [openSheet, setOpenSheet] = useState<SheetKey | null>(null);
   const courtsQuery = useCourts();
   const courts = courtsQuery.data ?? [];
@@ -147,8 +147,7 @@ export default function NewMatchDetail() {
     if (!fmtFound) setField('format', FORMATS[0]!.key);
   }, [fmtFound, setField]);
   const isDoubles = cat.group === 'cift';
-  const courtName =
-    courts.find((c) => c.id === court)?.name ?? 'Kort seç';
+  const courtName = courts.find((c) => c.id === court)?.name ?? 'Kort seç';
 
   return (
     <View className="flex-1 bg-bg">
@@ -176,20 +175,10 @@ export default function NewMatchDetail() {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Selector
-              label="Saat"
-              value={time}
-              icon="clock"
-              onPress={() => setOpenSheet('time')}
-            />
+            <Selector label="Saat" value={time} icon="clock" onPress={() => setOpenSheet('time')} />
           </View>
         </View>
-        <Selector
-          label="Kort"
-          value={courtName}
-          icon="pin"
-          onPress={() => setOpenSheet('court')}
-        />
+        <Selector label="Kort" value={courtName} icon="pin" onPress={() => setOpenSheet('court')} />
 
         {/* Info banner — singles vs doubles preview of next step. */}
         <View
@@ -214,10 +203,7 @@ export default function NewMatchDetail() {
             the store's snap effect wipes `time`. The Devam button correctly
             disables — but without this hint the user has no idea why. */}
         {availableTimes.length === 0 && (
-          <View
-            className="flex-row bg-warn-soft rounded-md"
-            style={{ padding: 12, gap: 10 }}
-          >
+          <View className="flex-row bg-warn-soft rounded-md" style={{ padding: 12, gap: 10 }}>
             <Icon name="info" size={16} color={colors.warn} />
             <Text
               className="font-sans text-text-2"
@@ -258,11 +244,7 @@ export default function NewMatchDetail() {
       </View>
 
       {/* Category sheet — 2-col grid, clay outline on selection. */}
-      <Sheet
-        visible={openSheet === 'cat'}
-        onClose={() => setOpenSheet(null)}
-        title="Kategori seç"
-      >
+      <Sheet visible={openSheet === 'cat'} onClose={() => setOpenSheet(null)} title="Kategori seç">
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {CATEGORIES.map((c) => {
             const on = c.key === category;
@@ -284,10 +266,7 @@ export default function NewMatchDetail() {
                   alignItems: 'center',
                 }}
               >
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
                   {c.label}
                 </Text>
               </Pressable>
@@ -297,11 +276,7 @@ export default function NewMatchDetail() {
       </Sheet>
 
       {/* Format sheet — per-format brand color outlines selection. */}
-      <Sheet
-        visible={openSheet === 'fmt'}
-        onClose={() => setOpenSheet(null)}
-        title="Format seç"
-      >
+      <Sheet visible={openSheet === 'fmt'} onClose={() => setOpenSheet(null)} title="Format seç">
         <View style={{ gap: 10 }}>
           {FORMATS.map((f) => {
             const on = f.key === format;
@@ -339,19 +314,11 @@ export default function NewMatchDetail() {
                     <Icon name={f.mark} size={19} color={f.color} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      className="font-sans font-extrabold text-text"
-                      style={{ fontSize: 15.5 }}
-                    >
-                      {f.name}{' '}
-                      <Text style={{ fontSize: 12, color: f.color }}>
-                        · {f.tag}
-                      </Text>
+                    <Text className="font-sans font-extrabold text-text" style={{ fontSize: 15.5 }}>
+                      {f.name} <Text style={{ fontSize: 12, color: f.color }}>· {f.tag}</Text>
                     </Text>
                   </View>
-                  {on && (
-                    <Icon name="check" size={18} color={f.color} stroke={3} />
-                  )}
+                  {on && <Icon name="check" size={18} color={f.color} stroke={3} />}
                 </Pressable>
                 <Pressable
                   onPress={() => router.push(`/match/new/format-rules?format=${f.key}` as never)}
@@ -367,11 +334,7 @@ export default function NewMatchDetail() {
       </Sheet>
 
       {/* Date sheet — vertical list of day labels. */}
-      <Sheet
-        visible={openSheet === 'date'}
-        onClose={() => setOpenSheet(null)}
-        title="Tarih seç"
-      >
+      <Sheet visible={openSheet === 'date'} onClose={() => setOpenSheet(null)} title="Tarih seç">
         {days.map((d) => (
           <Pressable
             key={d.iso}
@@ -388,31 +351,19 @@ export default function NewMatchDetail() {
               borderColor: colors.surface3,
             }}
           >
-            <Text
-              className="font-sans font-bold text-text"
-              style={{ fontSize: 15 }}
-            >
+            <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
               {d.label}
             </Text>
-            {date === d.iso && (
-              <Icon name="check" size={18} color={colors.clay} stroke={3} />
-            )}
+            {date === d.iso && <Icon name="check" size={18} color={colors.clay} stroke={3} />}
           </Pressable>
         ))}
       </Sheet>
 
       {/* Time sheet — 3-col grid of 24h slots. */}
-      <Sheet
-        visible={openSheet === 'time'}
-        onClose={() => setOpenSheet(null)}
-        title="Saat seç"
-      >
+      <Sheet visible={openSheet === 'time'} onClose={() => setOpenSheet(null)} title="Saat seç">
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {availableTimes.length === 0 && (
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 13.5, paddingVertical: 8 }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 13.5, paddingVertical: 8 }}>
               Bugün için uygun saat kalmadı — başka bir gün seç.
             </Text>
           )}
@@ -434,10 +385,7 @@ export default function NewMatchDetail() {
                 backgroundColor: colors.surface,
               }}
             >
-              <Text
-                className="font-num font-bold text-text"
-                style={{ fontSize: 15 }}
-              >
+              <Text className="font-num font-bold text-text" style={{ fontSize: 15 }}>
                 {t}
               </Text>
             </Pressable>
@@ -446,30 +394,20 @@ export default function NewMatchDetail() {
       </Sheet>
 
       {/* Court sheet — list rows with pin + check. Live data from useCourts(). */}
-      <Sheet
-        visible={openSheet === 'court'}
-        onClose={() => setOpenSheet(null)}
-        title="Kort seç"
-      >
+      <Sheet visible={openSheet === 'court'} onClose={() => setOpenSheet(null)} title="Kort seç">
         {courtsQuery.isLoading ? (
           <View style={{ paddingVertical: 24, alignItems: 'center' }}>
             <ActivityIndicator color={colors.clay} />
           </View>
         ) : courtsQuery.isError ? (
           <View style={{ paddingVertical: 16, paddingHorizontal: 8 }}>
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 13.5, textAlign: 'center' }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 13.5, textAlign: 'center' }}>
               Kortlar yüklenemedi. Lütfen tekrar dene.
             </Text>
           </View>
         ) : (courtsQuery.data ?? []).length === 0 ? (
           <View style={{ paddingVertical: 16, paddingHorizontal: 8 }}>
-            <Text
-              className="font-sans text-text-3"
-              style={{ fontSize: 13.5, textAlign: 'center' }}
-            >
+            <Text className="font-sans text-text-3" style={{ fontSize: 13.5, textAlign: 'center' }}>
               Aktif kort bulunamadı.
             </Text>
           </View>
@@ -492,15 +430,10 @@ export default function NewMatchDetail() {
               }}
             >
               <Icon name="pin" size={20} color={colors.clay} />
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ flex: 1, fontSize: 15 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ flex: 1, fontSize: 15 }}>
                 {c.name}
               </Text>
-              {court === c.id && (
-                <Icon name="check" size={18} color={colors.clay} stroke={3} />
-              )}
+              {court === c.id && <Icon name="check" size={18} color={colors.clay} stroke={3} />}
             </Pressable>
           ))
         )}

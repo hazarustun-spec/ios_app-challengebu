@@ -1,11 +1,13 @@
-import { supabase } from './supabase';
 import { useAuthStore } from '../stores/auth-store';
 import { writeLiveActivityAuthContext } from './live-match-activity';
 import { isOnboardingComplete } from './onboarding-status';
 import { setSentryUser } from './sentry';
+import { supabase } from './supabase';
 
 export async function bootstrapAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   useAuthStore.getState().setSession(session);
   // Keep the App Group user-level auth context fresh so the lock-screen
   // AwardPointIntent can authenticate (iOS-guarded inside the helper).

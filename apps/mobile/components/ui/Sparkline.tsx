@@ -27,13 +27,13 @@
 //     to satisfy React's rules of hooks.
 
 import { useEffect } from 'react';
-import Svg, { Polyline } from 'react-native-svg';
 import Animated, {
   Easing,
   useAnimatedProps,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Polyline } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 
 // Defined outside the component so createAnimatedComponent runs only once.
@@ -72,13 +72,7 @@ export interface SparklineProps {
   stroke?: number;
 }
 
-export function Sparkline({
-  data,
-  color = 'auto',
-  w = 60,
-  h = 20,
-  stroke = 2,
-}: SparklineProps) {
+export function Sparkline({ data, color = 'auto', w = 60, h = 20, stroke = 2 }: SparklineProps) {
   const hasData = data.length >= 2;
   // Compute path length up-front so SharedValue sync happens before useEffect.
   const pathLen = hasData ? approxSparklineLen(data, w, h) : 1;
@@ -116,14 +110,11 @@ export function Sparkline({
   const range = max - min || 1;
   const x = (i: number) => (i / (data.length - 1)) * w;
   const y = (v: number) => h - ((v - min) / range) * h;
-  const points = data
-    .map((v, i) => `${x(i).toFixed(2)},${y(v).toFixed(2)}`)
-    .join(' ');
+  const points = data.map((v, i) => `${x(i).toFixed(2)},${y(v).toFixed(2)}`).join(' ');
 
   const first = data[0]!;
   const last = data[data.length - 1]!;
-  const finalColor =
-    color === 'auto' ? (last >= first ? colors.win : colors.loss) : color;
+  const finalColor = color === 'auto' ? (last >= first ? colors.win : colors.loss) : color;
 
   return (
     <Svg width={w} height={h}>

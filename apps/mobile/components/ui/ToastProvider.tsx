@@ -20,10 +20,10 @@
 // surface in React Native via a Context + `Animated` so the API stays
 // `toast.show('Teklif gönderildi')` from any screen.
 
-import { useEffect, useState, useCallback, useContext, createContext } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Animated, Easing } from 'react-native';
-import { ToastView, type ToastVariant } from './Toast';
+import { type ToastVariant, ToastView } from './Toast';
 
 interface ToastApi {
   show: (message: string, variant?: ToastVariant) => void;
@@ -57,12 +57,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [translateY] = useState(() => new Animated.Value(ENTRY_TRANSLATE));
   const [opacity] = useState(() => new Animated.Value(0));
 
-  const show = useCallback(
-    (message: string, variant: ToastVariant = 'success') => {
-      setToast({ message, variant, key: Date.now() });
-    },
-    [],
-  );
+  const show = useCallback((message: string, variant: ToastVariant = 'success') => {
+    setToast({ message, variant, key: Date.now() });
+  }, []);
 
   useEffect(() => {
     if (!toast) return;

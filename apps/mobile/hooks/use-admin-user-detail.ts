@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface AdminUserDetail {
   user_id: string;
@@ -27,7 +27,9 @@ export function useAdminUserDetail(userId: string | undefined) {
   return useQuery<AdminUserDetail | null>({
     // Avoid sharing the umbrella admin.all key when disabled — invalidating
     // admin.all from a sibling hook would otherwise refetch this no-op query.
-    queryKey: userId ? queryKeys.admin.userDetail(userId) : [...queryKeys.admin.all, 'userDetail', 'disabled'],
+    queryKey: userId
+      ? queryKeys.admin.userDetail(userId)
+      : [...queryKeys.admin.all, 'userDetail', 'disabled'],
     enabled: !!userId,
     queryFn: async () => {
       if (!userId) return null;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 
 export interface RankingRow {
@@ -29,7 +29,9 @@ export function useUserRankings(targetUserId: string | undefined) {
     queryKey: queryKeys.rankings.forUser(targetUserId ?? ''),
     queryFn: async () => {
       if (!targetUserId) return [];
-      const { data, error } = await supabase.rpc('get_user_rankings', { target_user_id: targetUserId });
+      const { data, error } = await supabase.rpc('get_user_rankings', {
+        target_user_id: targetUserId,
+      });
       if (error) throw error;
       return (data ?? []) as RankingRow[];
     },

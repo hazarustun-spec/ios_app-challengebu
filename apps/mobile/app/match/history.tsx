@@ -17,17 +17,17 @@
 //   - Opponent names: useOpponentNames().resolve(match)
 //   - Win/score/delta: myPerspective(match, myUserId) from lib/match-opponent
 
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
-import { myPerspective } from '../../lib/match-opponent';
+import { NavHeader } from '../../components/ui/NavHeader';
+import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { useMyMatchHistory } from '../../hooks/use-match-history';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
+import { DB_TO_UI_FORMAT, FORMATS } from '../../lib/formats';
+import { myPerspective } from '../../lib/match-opponent';
 import { useAuthStore } from '../../stores/auth-store';
-import type { ActiveMatchRow } from '../../hooks/use-active-matches';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -74,12 +74,7 @@ export default function MatchHistory() {
   const decided = wins + losses;
   const winRate = decided > 0 ? `${Math.round((wins / decided) * 100)}%` : '—';
 
-  const header = (
-    <NavHeader
-      title="Geçmiş Maçlar"
-      onBack={() => router.back()}
-    />
-  );
+  const header = <NavHeader title="Geçmiş Maçlar" onBack={() => router.back()} />;
 
   if (historyQ.isLoading) {
     return (
@@ -138,16 +133,10 @@ export default function MatchHistory() {
                 alignItems: 'center',
               }}
             >
-              <Text
-                className="font-num font-extrabold"
-                style={{ fontSize: 21, color: c }}
-              >
+              <Text className="font-num font-extrabold" style={{ fontSize: 21, color: c }}>
                 {v}
               </Text>
-              <Text
-                className="font-sans font-semibold text-text-3"
-                style={{ fontSize: 11 }}
-              >
+              <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11 }}>
                 {l}
               </Text>
             </View>
@@ -163,11 +152,7 @@ export default function MatchHistory() {
             const score = `${perspective.myScore}-${perspective.oppScore}`;
             const delta = perspective.eloDelta ?? 0;
 
-            const stripColor = isVoid
-              ? colors.warn
-              : win
-                ? colors.win
-                : colors.loss;
+            const stripColor = isVoid ? colors.warn : win ? colors.win : colors.loss;
 
             // Convert DB format enum to UI key for FORMATS lookup
             const uiFormatKey = DB_TO_UI_FORMAT[m.format] ?? null;
@@ -196,24 +181,15 @@ export default function MatchHistory() {
                 />
                 <Avatar name={opponent.primaryName} size={40} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 14.5 }}
-                  >
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                     {opponent.name}
                   </Text>
-                  <Text
-                    className="font-sans text-text-3"
-                    style={{ fontSize: 12, marginTop: 2 }}
-                  >
+                  <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 2 }}>
                     {fmtName} · {catLabel} · {dateLabel}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text
-                    className="font-num font-bold text-text"
-                    style={{ fontSize: 17 }}
-                  >
+                  <Text className="font-num font-bold text-text" style={{ fontSize: 17 }}>
                     {score}
                   </Text>
                   <Text

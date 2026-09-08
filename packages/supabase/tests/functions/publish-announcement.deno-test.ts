@@ -8,7 +8,10 @@ Deno.test('publish-announcement: inserts row + fans out notifications to all pro
     role: 'admin',
     genderCategory: 'erkek',
   });
-  const alice = await createTestUser({ email: `alice-pa-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-pa-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-pa-${s}@test.local`, genderCategory: 'kadin' });
   try {
     const supa = adminClient();
@@ -37,7 +40,8 @@ Deno.test('publish-announcement: inserts row + fans out notifications to all pro
     assertEquals(recipientSet.has(alice.userId), true);
     assertEquals(recipientSet.has(bob.userId), true);
     // recipientCount from the function must be >= 3 (there may be other DB users)
-    if (result.recipientCount < 3) throw new Error(`recipientCount ${result.recipientCount} should be >= 3`);
+    if (result.recipientCount < 3)
+      throw new Error(`recipientCount ${result.recipientCount} should be >= 3`);
     assertEquals(notifs![0].title, `Duyuru-${s}`);
   } finally {
     await teardownUsers([admin.userId, alice.userId, bob.userId]);
@@ -51,7 +55,10 @@ Deno.test('publish-announcement: filter by genderCategory', async () => {
     role: 'admin',
     genderCategory: 'erkek',
   });
-  const alice = await createTestUser({ email: `alice-pa-${s}@test.local`, genderCategory: 'kadin' });
+  const alice = await createTestUser({
+    email: `alice-pa-${s}@test.local`,
+    genderCategory: 'kadin',
+  });
   const bob = await createTestUser({ email: `bob-pa-${s}@test.local`, genderCategory: 'erkek' });
   try {
     const supa = adminClient();
@@ -85,7 +92,11 @@ Deno.test('publish-announcement: filter by genderCategory', async () => {
       .eq('recipient_id', bob.userId)
       .eq('category', 'community_announcements')
       .eq('title', `Kadin-${s}`);
-    assertEquals((bobNotif ?? []).length, 0, 'bob (erkek) should NOT have received the kadin announcement');
+    assertEquals(
+      (bobNotif ?? []).length,
+      0,
+      'bob (erkek) should NOT have received the kadin announcement',
+    );
   } finally {
     await teardownUsers([admin.userId, alice.userId, bob.userId]);
   }
@@ -93,7 +104,10 @@ Deno.test('publish-announcement: filter by genderCategory', async () => {
 
 Deno.test('publish-announcement: non-admin forbidden', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-pa-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-pa-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const { status } = await invokeFunction(
       'publish-announcement',

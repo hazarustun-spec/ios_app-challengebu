@@ -10,10 +10,9 @@
 // Submit runs on button press (not on mount). On error, the review phase is
 // re-shown with a retry button. The existing celebration UI is unchanged.
 
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -21,29 +20,30 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
-import { LevelIcon } from '../../components/ui/LevelIcon';
 import { Icon } from '../../components/ui/Icon';
-import { haptics } from '../../lib/haptics';
+import { LevelIcon } from '../../components/ui/LevelIcon';
 import { BallMark } from '../../components/ui/doodles/BallMark';
 import { Cloud } from '../../components/ui/doodles/Cloud';
 import { Dots } from '../../components/ui/doodles/Dots';
 import { Squiggle } from '../../components/ui/doodles/Squiggle';
 import { Star } from '../../components/ui/doodles/Star';
-import { loadProfile } from '../../lib/auth-bootstrap';
-import { levelForElo } from '../../lib/levels';
 import { useSubmitOnboarding } from '../../hooks/use-submit-onboarding';
+import { loadProfile } from '../../lib/auth-bootstrap';
+import { haptics } from '../../lib/haptics';
+import { levelForElo } from '../../lib/levels';
+import { userMessage } from '../../lib/user-message';
 import {
-  useOnboardingStore,
   type AvailabilitySlot,
   type ClassYear,
   type DominantHand,
   type GenderCategory,
   type Pronoun,
   type SkillLevel,
+  useOnboardingStore,
 } from '../../stores/onboarding-store';
 import { colors } from '../../theme/colors';
-import { userMessage } from '../../lib/user-message';
 
 const INITIAL_ELO = 1200;
 
@@ -311,14 +311,9 @@ export default function ObDone() {
             >
               SEVİYE
             </Text>
-            <View
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}
-            >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
               <LevelIcon level={level} size={18} />
-              <Text
-                className="font-display font-extrabold text-white"
-                style={{ fontSize: 17 }}
-              >
+              <Text className="font-display font-extrabold text-white" style={{ fontSize: 17 }}>
                 {level.name}
               </Text>
             </View>
@@ -330,14 +325,8 @@ export default function ObDone() {
           <Button full size="lg" arrow onPress={goHome}>
             Sıralamayı keşfet
           </Button>
-          <Pressable
-            onPress={goHome}
-            style={{ alignItems: 'center', paddingVertical: 8 }}
-          >
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 14, color: colors.clay }}
-            >
+          <Pressable onPress={goHome} style={{ alignItems: 'center', paddingVertical: 8 }}>
+            <Text className="font-sans font-bold" style={{ fontSize: 14, color: colors.clay }}>
               İlk maçını oluştur
             </Text>
           </Pressable>
@@ -419,14 +408,8 @@ export default function ObDone() {
             label="Sınıf"
             value={snapshot.classYear ? YEAR_LABEL[snapshot.classYear] : '—'}
           />
-          <ReviewRow
-            label="Bölüm"
-            value={snapshot.departmentName || '—'}
-          />
-          <ReviewRow
-            label="Seviye"
-            value={snapshot.level ? LEVEL_LABEL[snapshot.level] : '—'}
-          />
+          <ReviewRow label="Bölüm" value={snapshot.departmentName || '—'} />
+          <ReviewRow label="Seviye" value={snapshot.level ? LEVEL_LABEL[snapshot.level] : '—'} />
           <ReviewRow
             label="Dominant El"
             value={snapshot.hand ? HAND_LABEL[snapshot.hand] : '—'}
@@ -447,11 +430,19 @@ export default function ObDone() {
         >
           <Text
             className="font-sans font-bold text-text-3"
-            style={{ fontSize: 11.5, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 }}
+            style={{
+              fontSize: 11.5,
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+              marginBottom: 6,
+            }}
           >
             Müsaitlik
           </Text>
-          <Text className="font-sans font-semibold text-text" style={{ fontSize: 14.5, lineHeight: 21 }}>
+          <Text
+            className="font-sans font-semibold text-text"
+            style={{ fontSize: 14.5, lineHeight: 21 }}
+          >
             {availText}
           </Text>
         </View>
@@ -468,13 +459,7 @@ export default function ObDone() {
 
       {/* CTA */}
       <View style={{ marginTop: 12 }}>
-        <Button
-          full
-          size="lg"
-          arrow
-          loading={submit.isPending}
-          onPress={handleConfirm}
-        >
+        <Button full size="lg" arrow loading={submit.isPending} onPress={handleConfirm}>
           {error ? 'Tekrar dene' : 'Onayla ve bitir'}
         </Button>
       </View>
@@ -508,10 +493,7 @@ function ReviewRow({
         gap: 12,
       }}
     >
-      <Text
-        className="font-sans font-bold text-text-3"
-        style={{ fontSize: 13.5 }}
-      >
+      <Text className="font-sans font-bold text-text-3" style={{ fontSize: 13.5 }}>
         {label}
       </Text>
       <Text

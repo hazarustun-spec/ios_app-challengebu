@@ -15,13 +15,18 @@ async function makeRequest(creatorId: string, targetId: string): Promise<string>
   const { data: req, error } = await supa
     .from('match_requests')
     .insert({
-      creator_id: creatorId, target_id: targetId,
-      type: 'direct_challenge', category: 'erkek_tek', format: 'bu_klasik',
-      proposed_date: '2026-06-20', proposed_time: '18:30',
+      creator_id: creatorId,
+      target_id: targetId,
+      type: 'direct_challenge',
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      proposed_date: '2026-06-20',
+      proposed_time: '18:30',
       court_id: court!.id,
       expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
     })
-    .select('id').single();
+    .select('id')
+    .single();
   if (error) throw error;
   return req!.id as string;
 }
@@ -45,7 +50,8 @@ Deno.test('messaging: participants can read/write under RLS, outsiders cannot', 
     const { data: conv, error: convErr } = await ca
       .from('conversations')
       .insert({ request_id: reqId, participant_low: low, participant_high: high })
-      .select('id').single();
+      .select('id')
+      .single();
     assertEquals(convErr, null);
     assertExists(conv);
     const convId = conv!.id as string;
@@ -85,15 +91,19 @@ Deno.test('messaging: get_or_create_conversation is idempotent + mark_read works
     const cb = userClient(b.accessToken);
 
     const c1 = await ca.rpc('get_or_create_conversation', {
-      p_request_id: reqId, p_other_user_id: b.userId,
+      p_request_id: reqId,
+      p_other_user_id: b.userId,
     });
     const c2 = await ca.rpc('get_or_create_conversation', {
-      p_request_id: reqId, p_other_user_id: b.userId,
+      p_request_id: reqId,
+      p_other_user_id: b.userId,
     });
     assertEquals(c1.error, null);
     assertEquals(c1.data, c2.data); // same conversation id
 
-    await ca.from('messages').insert({ conversation_id: c1.data, sender_id: a.userId, body: 'selam' });
+    await ca
+      .from('messages')
+      .insert({ conversation_id: c1.data, sender_id: a.userId, body: 'selam' });
     const before = await cb.rpc('unread_message_count');
     assertEquals(before.data, 1);
     const read = await cb.rpc('mark_conversation_read', { p_conversation_id: c1.data });
@@ -118,7 +128,8 @@ Deno.test('messaging: a block prevents sending', async () => {
     const { data: conv } = await ca
       .from('conversations')
       .insert({ request_id: reqId, participant_low: low, participant_high: high })
-      .select('id').single();
+      .select('id')
+      .single();
     const convId = conv!.id as string;
 
     await cb.from('user_blocks').insert({ blocker_id: b.userId, blocked_id: a.userId });

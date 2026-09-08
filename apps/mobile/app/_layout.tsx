@@ -1,7 +1,7 @@
 import '../global.css';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { QueryClientProvider } from '@tanstack/react-query';
 
 // The on-screen LogBox warning banner (dev only) overlays the UI and occludes
 // tap targets, which breaks Maestro E2E flows (and is generally noise during
@@ -60,25 +60,25 @@ function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ErrorBoundary>
             <ToastProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(onboarding)" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="index" />
-              <Stack.Screen name="match/[id]" />
-              <Stack.Screen name="profile" />
-              <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
-              <Stack.Screen name="tournament/[id]" options={{ headerShown: false }} />
-              <Stack.Screen name="notifications" />
-              <Stack.Screen name="messages" />
-              <Stack.Screen name="settings" />
-              <Stack.Screen name="suspended" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="(admin)" />
-              <Stack.Screen name="(dev)" />
-            </Stack>
-            <AppGuards />
-            <CelebrationMount />
-            <StatusBar style="dark" />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(onboarding)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="index" />
+                <Stack.Screen name="match/[id]" />
+                <Stack.Screen name="profile" />
+                <Stack.Screen name="user/[userId]" options={{ headerShown: false }} />
+                <Stack.Screen name="tournament/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="notifications" />
+                <Stack.Screen name="messages" />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="suspended" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="(admin)" />
+                <Stack.Screen name="(dev)" />
+              </Stack>
+              <AppGuards />
+              <CelebrationMount />
+              <StatusBar style="dark" />
             </ToastProvider>
           </ErrorBoundary>
         </QueryClientProvider>

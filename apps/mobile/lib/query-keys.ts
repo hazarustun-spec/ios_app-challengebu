@@ -13,13 +13,13 @@ export const queryKeys = {
   },
   applications: {
     all: ['applications'] as const,
-    forRequest: (requestId: string) => [...queryKeys.applications.all, 'request', requestId] as const,
+    forRequest: (requestId: string) =>
+      [...queryKeys.applications.all, 'request', requestId] as const,
     mine: () => [...queryKeys.applications.all, 'mine'] as const,
   },
   matchApplications: {
     all: ['match-applications'] as const,
-    byRequest: (id: string) =>
-      [...queryKeys.matchApplications.all, 'request', id] as const,
+    byRequest: (id: string) => [...queryKeys.matchApplications.all, 'request', id] as const,
     mine: () => [...queryKeys.matchApplications.all, 'mine'] as const,
   },
   activeMatches: {
@@ -98,14 +98,12 @@ export const queryKeys = {
     all: ['tournaments'] as const,
     bracket: (tournamentId: string) =>
       [...queryKeys.tournaments.all, 'bracket', tournamentId] as const,
-    bySeason: (seasonId: string) =>
-      [...queryKeys.tournaments.all, 'by-season', seasonId] as const,
+    bySeason: (seasonId: string) => [...queryKeys.tournaments.all, 'by-season', seasonId] as const,
   },
   yearly: {
     all: ['yearly'] as const,
     standings: (year: number) => [...queryKeys.yearly.all, 'standings', year] as const,
-    pastChampion: (userId: string) =>
-      [...queryKeys.yearly.all, 'past-champion', userId] as const,
+    pastChampion: (userId: string) => [...queryKeys.yearly.all, 'past-champion', userId] as const,
   },
   suggestions: {
     all: ['suggestions'] as const,

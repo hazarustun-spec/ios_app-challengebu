@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface YearlyStanding {
   category: string;
@@ -35,7 +35,7 @@ export function useYearlyStandings(year: number | undefined) {
         .order('rank', { ascending: true });
       if (error) throw error;
       const grouped: Record<string, YearlyStanding[]> = {};
-      for (const r of ((data ?? []) as unknown as RawRow[])) {
+      for (const r of (data ?? []) as unknown as RawRow[]) {
         const list = grouped[r.category] ?? [];
         list.push({
           category: r.category,

@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({ seasonId: z.string().uuid() });
 
@@ -44,7 +44,11 @@ Deno.serve(async (req) => {
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) return errorResponse('Invalid input', 400, parsed.error.format());
 
-    const { data: season } = await supa.from('seasons').select('*').eq('id', parsed.data.seasonId).maybeSingle();
+    const { data: season } = await supa
+      .from('seasons')
+      .select('*')
+      .eq('id', parsed.data.seasonId)
+      .maybeSingle();
     if (!season) return errorResponse('Season not found', 404);
     // Idempotency guard: re-firing would duplicate season_standings /
     // season_doubles_teams / tournaments rows because none have a per-season
@@ -111,14 +115,23 @@ async function seedSinglesTournament(
     });
   }
 
-  const { data: tournament } = await supa.from('tournaments').insert({
-    season_id: seasonId,
-    category,
-    bracket_size: SINGLES_BRACKET_SIZE,
-    status: 'seeded',
-  }).select('id').single();
+  const { data: tournament } = await supa
+    .from('tournaments')
+    .insert({
+      season_id: seasonId,
+      category,
+      bracket_size: SINGLES_BRACKET_SIZE,
+      status: 'seeded',
+    })
+    .select('id')
+    .single();
 
-  const seedPairs = [[1, 8], [4, 5], [3, 6], [2, 7]];
+  const seedPairs = [
+    [1, 8],
+    [4, 5],
+    [3, 6],
+    [2, 7],
+  ];
   for (let pos = 0; pos < seedPairs.length; pos++) {
     await supa.from('tournament_matches').insert({
       tournament_id: tournament!.id,
@@ -200,15 +213,22 @@ async function seedDoublesTournament(
     });
   }
 
-  const { data: tournament } = await supa.from('tournaments').insert({
-    season_id: season.id,
-    category,
-    bracket_size: DOUBLES_BRACKET_SIZE,
-    status: 'seeded',
-  }).select('id').single();
+  const { data: tournament } = await supa
+    .from('tournaments')
+    .insert({
+      season_id: season.id,
+      category,
+      bracket_size: DOUBLES_BRACKET_SIZE,
+      status: 'seeded',
+    })
+    .select('id')
+    .single();
 
   // Doubles bracket: SF only, F is created lazily by advance-tournament-bracket.
-  const seedPairs = [[1, 4], [2, 3]];
+  const seedPairs = [
+    [1, 4],
+    [2, 3],
+  ];
   for (let pos = 0; pos < seedPairs.length; pos++) {
     await supa.from('tournament_matches').insert({
       tournament_id: tournament!.id,

@@ -16,15 +16,15 @@
 //     <CardMatchResult {...props} />
 //   </ShareSheet>
 
+import * as Sharing from 'expo-sharing';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import { Dimensions, Pressable, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
-import { Sheet } from '../ui/Sheet';
+import { colors } from '../../theme/colors';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
-import { colors } from '../../theme/colors';
+import { Sheet } from '../ui/Sheet';
 
 export interface ShareSheetProps {
   visible: boolean;
@@ -149,9 +149,7 @@ export function ShareSheet({
               <Button
                 size="lg"
                 full
-                icon={
-                  <Icon name="share" size={18} color={colors.onLime} stroke={2} />
-                }
+                icon={<Icon name="share" size={18} color={colors.onLime} stroke={2} />}
                 onPress={handleShare}
               >
                 Paylaş

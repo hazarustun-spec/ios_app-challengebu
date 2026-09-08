@@ -3,9 +3,9 @@
 // onboarding store, kept separate so it isn't wiped when the onboarding draft
 // resets.
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface UiFlagsState {
   /** Whether the first-launch ELO explainer has been shown. */

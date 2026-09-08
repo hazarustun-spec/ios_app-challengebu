@@ -14,15 +14,15 @@
 // clears the local session and redirects to /(auth)/welcome. Satisfies Apple
 // guideline 5.1.1(v) (in-app account deletion).
 
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { Icon, type IconName } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useDeleteAccount } from '../../hooks/use-delete-account';
-import { colors } from '../../theme/colors';
 import { userMessage } from '../../lib/user-message';
+import { colors } from '../../theme/colors';
 
 export default function DeleteAccount() {
   const [step, setStep] = useState<1 | 2>(1);
@@ -53,16 +53,12 @@ export default function DeleteAccount() {
           >
             Emin misin?
           </Text>
-          <Text
-            className="font-sans text-text-2"
-            style={{ fontSize: 15, lineHeight: 24 }}
-          >
+          <Text className="font-sans text-text-2" style={{ fontSize: 15, lineHeight: 24 }}>
             Hesabını silmek geri alınamaz. Ancak{' '}
             <Text className="font-bold">
-              maç geçmişin ve ELO kayıtların sıralama bütünlüğü için
-              anonimleştirilerek korunur
-            </Text>
-            {' '}("Silinmiş Oyuncu" olarak).
+              maç geçmişin ve ELO kayıtların sıralama bütünlüğü için anonimleştirilerek korunur
+            </Text>{' '}
+            ("Silinmiş Oyuncu" olarak).
           </Text>
 
           <View style={{ gap: 10 }}>
@@ -75,10 +71,7 @@ export default function DeleteAccount() {
             ).map(([t, ic, c]) => (
               <View key={t} className="flex-row items-center" style={{ gap: 10 }}>
                 <Icon name={ic} size={18} color={c} />
-                <Text
-                  className="font-sans text-text-2"
-                  style={{ fontSize: 13.5 }}
-                >
+                <Text className="font-sans text-text-2" style={{ fontSize: 13.5 }}>
                   {t}
                 </Text>
               </View>
@@ -106,13 +99,8 @@ export default function DeleteAccount() {
     <View className="flex-1 bg-bg">
       <NavHeader title="Son onay" onBack={() => setStep(1)} />
       <ScrollView contentContainerStyle={{ padding: 22, gap: 20 }}>
-        <Text
-          className="font-sans text-text-2"
-          style={{ fontSize: 15, lineHeight: 24 }}
-        >
-          Onaylamak için aşağıya{' '}
-          <Text className="font-bold text-text">SİL</Text>
-          {' '}yaz.
+        <Text className="font-sans text-text-2" style={{ fontSize: 15, lineHeight: 24 }}>
+          Onaylamak için aşağıya <Text className="font-bold text-text">SİL</Text> yaz.
         </Text>
         <TextInput
           value={confirm}
@@ -155,8 +143,7 @@ export default function DeleteAccount() {
             deleteAccount.mutate(undefined, {
               onSuccess: () => router.replace('/(auth)/welcome' as never),
               onError: (err: unknown) => {
-                const msg =
-                  userMessage(err, 'Hesap silinemedi. Lütfen tekrar dene.');
+                const msg = userMessage(err, 'Hesap silinemedi. Lütfen tekrar dene.');
                 Alert.alert('Hesap silinemedi', msg);
               },
             });

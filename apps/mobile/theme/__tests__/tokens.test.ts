@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { tokens, colors } from '../tokens';
+import { colors, tokens } from '../tokens';
 
 describe('design tokens', () => {
   test('snapshot — guards accidental changes', () => {
@@ -13,7 +13,17 @@ describe('design tokens', () => {
   });
 
   test('typography scale has all required variants', () => {
-    const expectedVariants = ['display', 'h1', 'h2', 'h3', 'bodyLg', 'body', 'caption', 'label', 'num'];
+    const expectedVariants = [
+      'display',
+      'h1',
+      'h2',
+      'h3',
+      'bodyLg',
+      'body',
+      'caption',
+      'label',
+      'num',
+    ];
     for (const v of expectedVariants) {
       expect(tokens.typography).toHaveProperty(v);
     }

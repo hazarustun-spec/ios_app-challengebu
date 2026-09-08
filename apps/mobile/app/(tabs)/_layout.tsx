@@ -23,7 +23,7 @@
 // queries while the user is inside the tab shell. This mirrors what
 // `(app)/_layout.tsx` did under the Plan 4-7 chrome.
 
-import { router, Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { View } from 'react-native';
 import { NotificationListener } from '../../components/notifications/NotificationListener';
 import { TabBar } from '../../components/ui/TabBar';
@@ -32,10 +32,7 @@ export default function TabsLayout() {
   return (
     <View className="flex-1">
       <NotificationListener />
-      <Tabs
-        tabBar={(props) => <TabBar {...props} />}
-        screenOptions={{ headerShown: false }}
-      >
+      <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
         <Tabs.Screen name="index" options={{ title: 'Anasayfa' }} />
         <Tabs.Screen name="matches" options={{ title: 'Maçlar' }} />
         <Tabs.Screen

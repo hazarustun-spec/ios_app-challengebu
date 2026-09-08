@@ -52,10 +52,7 @@ export function GreetHeader({
       }}
     >
       <View style={{ flex: 1 }}>
-        <Text
-          className="font-sans"
-          style={{ fontSize: 13, color: colors.text3 }}
-        >
+        <Text className="font-sans" style={{ fontSize: 13, color: colors.text3 }}>
           Selam,
         </Text>
         <Text

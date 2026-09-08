@@ -29,9 +29,9 @@ import { NavHeader } from '../../components/ui/NavHeader';
 import { sanitizeOtp } from '../../lib/otp-code';
 import { reviewLogin } from '../../lib/review-auth';
 import { supabase } from '../../lib/supabase';
+import { userMessage } from '../../lib/user-message';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
-import { userMessage } from '../../lib/user-message';
 
 export default function OtpScreen() {
   const { email } = useLocalSearchParams<{ email?: string }>();
@@ -280,8 +280,7 @@ export default function OtpScreen() {
             paddingHorizontal: 12,
           }}
         >
-          E-postandaki sihirli bağlantıya tıkladıysan uygulamaya geri dön —
-          otomatik giriş yapılır.
+          E-postandaki sihirli bağlantıya tıkladıysan uygulamaya geri dön — otomatik giriş yapılır.
         </Text>
       </View>
     </KeyboardAvoidingView>

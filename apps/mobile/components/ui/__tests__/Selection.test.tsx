@@ -109,8 +109,7 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
@@ -121,8 +120,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -275,9 +273,7 @@ describe('Toggle', () => {
 
 describe('CheckBox', () => {
   test('square unchecked', () => {
-    expect(
-      normalize(CheckBox({ checked: false, onChange: () => {} })),
-    ).toMatchSnapshot();
+    expect(normalize(CheckBox({ checked: false, onChange: () => {} }))).toMatchSnapshot();
   });
 
   test('square checked renders inner Icon', () => {
@@ -289,9 +285,7 @@ describe('CheckBox', () => {
   });
 
   test('circle (radio) checked exposes accessibilityRole=radio', () => {
-    const tree = normalize(
-      CheckBox({ shape: 'circle', checked: true, onChange: () => {} }),
-    );
+    const tree = normalize(CheckBox({ shape: 'circle', checked: true, onChange: () => {} }));
     expect(tree).toMatchSnapshot();
     const pressable = find(tree, (n) => n.type === 'Pressable');
     expect(pressable?.props.accessibilityRole).toBe('radio');

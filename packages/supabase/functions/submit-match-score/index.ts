@@ -1,27 +1,37 @@
 import { z } from 'zod';
-import { handleCors } from '../_shared/cors.ts';
-import { conflict, errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
 import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { handleCors } from '../_shared/cors.ts';
+import {
+  conflict,
+  errorResponse,
+  forbidden,
+  internalError,
+  jsonResponse,
+} from '../_shared/errors.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
-const inputSchema = z.object({
-  matchId: z.string().uuid(),
-  scoreTeamA: z.number().int().min(0),
-  scoreTeamB: z.number().int().min(0),
-  winnerTeam: z.enum(['a', 'b', 'void']),
-  els: z.array(z.object({ el: z.number().int().min(1), winner: z.enum(['a', 'b']) })).optional(),
-  sets: z.array(z.object({ set: z.number().int(), a: z.number().int(), b: z.number().int() })).optional(),
-  games: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
-  tiebreakScore: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
-  points: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
-}).refine(
-  (data) => {
-    if (data.winnerTeam === 'void') return data.scoreTeamA === data.scoreTeamB;
-    if (data.winnerTeam === 'a') return data.scoreTeamA > data.scoreTeamB;
-    return data.scoreTeamB > data.scoreTeamA;
-  },
-  { message: 'winnerTeam must match scores', path: ['winnerTeam'] },
-);
+const inputSchema = z
+  .object({
+    matchId: z.string().uuid(),
+    scoreTeamA: z.number().int().min(0),
+    scoreTeamB: z.number().int().min(0),
+    winnerTeam: z.enum(['a', 'b', 'void']),
+    els: z.array(z.object({ el: z.number().int().min(1), winner: z.enum(['a', 'b']) })).optional(),
+    sets: z
+      .array(z.object({ set: z.number().int(), a: z.number().int(), b: z.number().int() }))
+      .optional(),
+    games: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
+    tiebreakScore: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
+    points: z.object({ a: z.number().int(), b: z.number().int() }).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.winnerTeam === 'void') return data.scoreTeamA === data.scoreTeamB;
+      if (data.winnerTeam === 'a') return data.scoreTeamA > data.scoreTeamB;
+      return data.scoreTeamB > data.scoreTeamA;
+    },
+    { message: 'winnerTeam must match scores', path: ['winnerTeam'] },
+  );
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -72,10 +82,12 @@ Deno.serve(async (req) => {
       ...(input.points ? { points: input.points } : {}),
     };
 
-    await supa.from('match_score_submissions').upsert(
-      { match_id: match.id, submitted_by: auth.userId, score_details: scoreDetails },
-      { onConflict: 'match_id,submitted_by' },
-    );
+    await supa
+      .from('match_score_submissions')
+      .upsert(
+        { match_id: match.id, submitted_by: auth.userId, score_details: scoreDetails },
+        { onConflict: 'match_id,submitted_by' },
+      );
 
     const { data: submissions } = await supa
       .from('match_score_submissions')
@@ -96,9 +108,7 @@ Deno.serve(async (req) => {
     if (!allSubmitted) {
       // Nudge the players who haven't entered a score yet — match_score_pending.
       try {
-        const pending = allPlayers.filter(
-          (p) => !latestPerPlayer.has(p) && p !== auth.userId,
-        );
+        const pending = allPlayers.filter((p) => !latestPerPlayer.has(p) && p !== auth.userId);
         if (pending.length > 0) {
           const { data: submitter } = await supa
             .from('profiles')
@@ -135,12 +145,15 @@ Deno.serve(async (req) => {
     // final caller could sneak in a different score between consensus check
     // and the DB write.
     const agreedDetails = firstDetails;
-    await supa.from('matches').update({
-      score_team_a: agreedDetails.scoreTeamA as number,
-      score_team_b: agreedDetails.scoreTeamB as number,
-      winner_team: agreedDetails.winnerTeam as string,
-      score_details: agreedDetails,
-    }).eq('id', match.id);
+    await supa
+      .from('matches')
+      .update({
+        score_team_a: agreedDetails.scoreTeamA as number,
+        score_team_b: agreedDetails.scoreTeamB as number,
+        winner_team: agreedDetails.winnerTeam as string,
+        score_details: agreedDetails,
+      })
+      .eq('id', match.id);
 
     return jsonResponse({ matched: true });
   } catch (err) {

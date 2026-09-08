@@ -77,22 +77,21 @@ const phoneSchema = z
   .regex(/^\+\d{10,15}$/, 'Phone must be E.164 format (e.g. +905551234567)')
   .optional();
 
-export const onboardingSchema = z
-  .object({
-    firstName: z.string().trim().min(1).max(50),
-    lastName: z.string().trim().min(1).max(50),
-    phone: phoneSchema,
-    pronoun: z.enum(PRONOUN_VALUES),
-    pronounCustom: z.string().trim().min(1).max(30).optional(),
-    genderCategory: z.enum(GENDER_CATEGORY_VALUES),
-    departmentId: z.string().uuid(),
-    classYear: z.enum(CLASS_YEAR_VALUES),
-    skillSelfAssessment: z.enum(SKILL_VALUES),
-    dominantHand: z.enum(HAND_VALUES),
-    availabilityWindows: z.array(z.enum(AVAILABILITY_VALUES)).min(1),
-    showDepartment: z.boolean(),
-    showClassYear: z.boolean(),
-  });
+export const onboardingSchema = z.object({
+  firstName: z.string().trim().min(1).max(50),
+  lastName: z.string().trim().min(1).max(50),
+  phone: phoneSchema,
+  pronoun: z.enum(PRONOUN_VALUES),
+  pronounCustom: z.string().trim().min(1).max(30).optional(),
+  genderCategory: z.enum(GENDER_CATEGORY_VALUES),
+  departmentId: z.string().uuid(),
+  classYear: z.enum(CLASS_YEAR_VALUES),
+  skillSelfAssessment: z.enum(SKILL_VALUES),
+  dominantHand: z.enum(HAND_VALUES),
+  availabilityWindows: z.array(z.enum(AVAILABILITY_VALUES)).min(1),
+  showDepartment: z.boolean(),
+  showClassYear: z.boolean(),
+});
 // pronounCustom stays optional for 'other'. The wizard labels that option
 // "Diğer / belirtmek istemiyorum" and offers no text field, so requiring a
 // value describes a screen that does not exist — the same mismatch the DB

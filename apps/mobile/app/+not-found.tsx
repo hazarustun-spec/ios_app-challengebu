@@ -2,10 +2,10 @@
 // the user on sign-in (the previous default), route by auth state — same logic
 // as index.tsx — so a logged-in user lands on Home, not a login screen.
 
-import { Redirect, type Href } from 'expo-router';
+import { type Href, Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '../stores/auth-store';
-import { useOnboardingStore, firstIncompleteStep } from '../stores/onboarding-store';
+import { firstIncompleteStep, useOnboardingStore } from '../stores/onboarding-store';
 
 export default function NotFound() {
   const { session, profile, loading } = useAuthStore();

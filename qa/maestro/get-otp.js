@@ -3,9 +3,7 @@
 var inbox = typeof EMAIL !== 'undefined' ? EMAIL : 'alice@example.edu.tr';
 var listRes = http.get('http://127.0.0.1:54324/api/v1/messages');
 var data = json(listRes.body);
-var msgs = (data.messages || []).filter(function (m) {
-  return JSON.stringify(m.To).indexOf(inbox) >= 0;
-});
+var msgs = (data.messages || []).filter((m) => JSON.stringify(m.To).indexOf(inbox) >= 0);
 if (msgs.length === 0) {
   output.otp = 'NOCODE';
 } else {
@@ -15,9 +13,7 @@ if (msgs.length === 0) {
   // Prefer the labelled code ("enter the code: 862385") over any 6-digit run
   // that may appear inside the magic-link token URL.
   var match =
-    text.match(/code:\s*(\d{6})/i) ||
-    text.match(/kod:\s*(\d{6})/i) ||
-    text.match(/(\d{6})/);
+    text.match(/code:\s*(\d{6})/i) || text.match(/kod:\s*(\d{6})/i) || text.match(/(\d{6})/);
   var otp = match ? match[1] : '000000';
   output.otp = otp;
   // The 6-box OTP input auto-advances focus per digit; typing all 6 at once

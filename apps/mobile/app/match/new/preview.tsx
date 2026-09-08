@@ -20,23 +20,23 @@
 //   - useCourts → resolve nm.court (UUID) → court name for the summary row
 //   - useCreateMatchRequest → mutation called on CTA press
 
-import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
-import { clientKFactor, FORMATS, UI_TO_DB_FORMAT } from '../../../lib/formats';
-import { formatDateLabel } from '../../../lib/match-dates';
-import { rulesGateState } from '../../../lib/rules-gate';
-import { useNewMatchStore } from '../../../stores/new-match-store';
-import { useAuthStore } from '../../../stores/auth-store';
-import { useMyRankings } from '../../../hooks/use-my-rankings';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useCourts } from '../../../hooks/use-courts';
 import { useCreateMatchRequest } from '../../../hooks/use-create-match-request';
-import { colors } from '../../../theme/colors';
+import { useMyRankings } from '../../../hooks/use-my-rankings';
+import { FORMATS, UI_TO_DB_FORMAT, clientKFactor } from '../../../lib/formats';
+import { formatDateLabel } from '../../../lib/match-dates';
+import { rulesGateState } from '../../../lib/rules-gate';
 import { userMessage } from '../../../lib/user-message';
+import { useAuthStore } from '../../../stores/auth-store';
+import { useNewMatchStore } from '../../../stores/new-match-store';
+import { colors } from '../../../theme/colors';
 
 /** Standard ELO expectation for player A vs player B. */
 function expected(myElo: number, oppElo: number): number {
@@ -87,12 +87,8 @@ export default function MatchPreview() {
 
   // ELO prediction deltas (only when both ELOs are known and match is ranked)
   const eloReady = ME_ELO !== null && opp !== null;
-  const winDelta = eloReady
-    ? Math.round(K_FACTOR * (1 - expected(ME_ELO!, opp!.elo)))
-    : null;
-  const lossDelta = eloReady
-    ? -Math.round(K_FACTOR * expected(ME_ELO!, opp!.elo))
-    : null;
+  const winDelta = eloReady ? Math.round(K_FACTOR * (1 - expected(ME_ELO!, opp!.elo))) : null;
+  const lossDelta = eloReady ? -Math.round(K_FACTOR * expected(ME_ELO!, opp!.elo)) : null;
 
   const rows: Array<[string, string]> = [
     ['Tip', nm.kind === 'ranking' ? 'Sıralama Maçı' : 'Dostluk Maçı'],
@@ -122,8 +118,7 @@ export default function MatchPreview() {
       router.dismissAll();
       router.replace('/(tabs)/matches' as never);
     } catch (err: unknown) {
-      const msg =
-        userMessage(err, 'Bilinmeyen bir hata oluştu.');
+      const msg = userMessage(err, 'Bilinmeyen bir hata oluştu.');
       Alert.alert('Teklif gönderilemedi', msg);
     } finally {
       setSubmitting(false);
@@ -159,10 +154,7 @@ export default function MatchPreview() {
                 + {nm.partner?.name.split(' ')[0] ?? '—'}
               </Text>
             </View>
-            <Text
-              className="font-num font-extrabold text-text-3"
-              style={{ fontSize: 16 }}
-            >
+            <Text className="font-num font-extrabold text-text-3" style={{ fontSize: 16 }}>
               VS
             </Text>
             {/* Team B: opponent + opponent partner */}
@@ -221,17 +213,11 @@ export default function MatchPreview() {
               >
                 Sen
               </Text>
-              <Text
-                className="font-num font-bold text-text-3"
-                style={{ fontSize: 12 }}
-              >
+              <Text className="font-num font-bold text-text-3" style={{ fontSize: 12 }}>
                 {rankingsQ.isLoading ? '—' : (ME_ELO ?? '—')}
               </Text>
             </View>
-            <Text
-              className="font-num font-extrabold text-text-3"
-              style={{ fontSize: 16 }}
-            >
+            <Text className="font-num font-extrabold text-text-3" style={{ fontSize: 16 }}>
               VS
             </Text>
             <View style={{ alignItems: 'center' }}>
@@ -242,10 +228,7 @@ export default function MatchPreview() {
               >
                 {isOpen ? 'Açık İlan' : opp ? opp.name.split(' ')[0] : '—'}
               </Text>
-              <Text
-                className="font-num font-bold text-text-3"
-                style={{ fontSize: 12 }}
-              >
+              <Text className="font-num font-bold text-text-3" style={{ fontSize: 12 }}>
                 {isOpen ? 'rakip bekleniyor' : (opp?.elo ?? '—')}
               </Text>
             </View>
@@ -273,10 +256,7 @@ export default function MatchPreview() {
                   borderColor: colors.borderStrong,
                 }}
               >
-                <Text
-                  className="font-sans font-bold text-text-3"
-                  style={{ fontSize: 11 }}
-                >
+                <Text className="font-sans font-bold text-text-3" style={{ fontSize: 11 }}>
                   Kazanırsan
                 </Text>
                 <Text
@@ -294,10 +274,7 @@ export default function MatchPreview() {
                   alignItems: 'center',
                 }}
               >
-                <Text
-                  className="font-sans font-bold text-text-3"
-                  style={{ fontSize: 11 }}
-                >
+                <Text className="font-sans font-bold text-text-3" style={{ fontSize: 11 }}>
                   Kaybedersen
                 </Text>
                 <Text
@@ -319,10 +296,7 @@ export default function MatchPreview() {
               }}
             >
               <Icon name="info" size={14} color={colors.text3} />
-              <Text
-                className="font-sans font-semibold text-text-2"
-                style={{ fontSize: 11.5 }}
-              >
+              <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 11.5 }}>
                 Tahmini · K-faktör {K_FACTOR}
               </Text>
             </View>
@@ -349,16 +323,10 @@ export default function MatchPreview() {
                 borderColor: colors.surface3,
               }}
             >
-              <Text
-                className="font-sans font-semibold text-text-3"
-                style={{ fontSize: 14 }}
-              >
+              <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 14 }}>
                 {l}
               </Text>
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 14 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
                 {v}
               </Text>
             </View>
@@ -368,9 +336,7 @@ export default function MatchPreview() {
       <View style={{ padding: 18, gap: 10 }}>
         {gate !== 'not-required' && (
           <Pressable
-            onPress={() =>
-              router.push(`/match/new/format-rules?format=${nm.format}` as never)
-            }
+            onPress={() => router.push(`/match/new/format-rules?format=${nm.format}` as never)}
             accessibilityRole="button"
             className="flex-row items-center rounded-md"
             style={{
@@ -394,11 +360,7 @@ export default function MatchPreview() {
                 ? 'Format kuralları okundu'
                 : 'Önce format kurallarını oku (zorunlu)'}
             </Text>
-            <Icon
-              name="chevR"
-              size={18}
-              color={gate === 'read' ? colors.win : colors.warn}
-            />
+            <Icon name="chevR" size={18} color={gate === 'read' ? colors.win : colors.warn} />
           </Pressable>
         )}
         <Button
@@ -417,10 +379,7 @@ export default function MatchPreview() {
           {submitting ? 'Gönderiliyor…' : 'Teklifi gönder'}
         </Button>
         {gate === 'unread' && (
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 12.5, textAlign: 'center' }}
-          >
+          <Text className="font-sans text-text-3" style={{ fontSize: 12.5, textAlign: 'center' }}>
             Göndermek için format kurallarını okumalısın.
           </Text>
         )}

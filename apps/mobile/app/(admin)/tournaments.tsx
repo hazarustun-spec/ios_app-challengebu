@@ -13,19 +13,19 @@
 //   - `useBracketSeeds` reads the raw [rank, profile_id, name] standings
 //   - `useReorderBracket` wraps the `admin_reorder_bracket_seeds` RPC
 
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { Avatar } from '../../components/ui/Avatar';
 import { Banner } from '../../components/ui/Banner';
 import { Icon } from '../../components/ui/Icon';
-import { Avatar } from '../../components/ui/Avatar';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useAdminTournaments, useVoidBracketMatch } from '../../hooks/use-admin-tournaments';
-import { useTournamentBracket } from '../../hooks/use-tournament-bracket';
-import { useBracketSeeds, type BracketSeedEntry } from '../../hooks/use-bracket-seeds';
+import { type BracketSeedEntry, useBracketSeeds } from '../../hooks/use-bracket-seeds';
 import { useReorderBracket } from '../../hooks/use-reorder-bracket';
-import { colors } from '../../theme/colors';
+import { useTournamentBracket } from '../../hooks/use-tournament-bracket';
 import { userMessage } from '../../lib/user-message';
+import { colors } from '../../theme/colors';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',

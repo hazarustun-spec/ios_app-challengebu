@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
-import { useCelebrationStore } from './post-match-celebration-store';
+import { create } from 'zustand';
 import { useMessageOutboxStore } from './message-outbox-store';
+import { useCelebrationStore } from './post-match-celebration-store';
 
 interface ProfileSummary {
   userId: string;

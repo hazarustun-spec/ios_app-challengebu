@@ -7,6 +7,7 @@
 // Countdown hero + my standing + finale timeline + bracket CTA + annual
 // championship link.
 
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import Animated, {
@@ -16,14 +17,13 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon, type IconName } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useUpcomingFinaleStatus } from '../../hooks/use-upcoming-finale-status';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -34,10 +34,7 @@ function PulsingDot() {
   const opacity = useSharedValue(1);
   useEffect(() => {
     opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.3, { duration: 900 }),
-        withTiming(1, { duration: 900 }),
-      ),
+      withSequence(withTiming(0.3, { duration: 900 }), withTiming(1, { duration: 900 })),
       -1,
       false,
     );
@@ -74,8 +71,7 @@ function buildSeasonLabel(name: string, year: number): string {
 function formatDateRange(isoA: string, isoB: string): string {
   const a = new Date(isoA);
   const b = new Date(isoB);
-  const fmtShort = (d: Date) =>
-    d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  const fmtShort = (d: Date) => d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   return `${fmtShort(a)} – ${fmtShort(b)}`;
 }
 
@@ -138,9 +134,7 @@ export default function Season() {
     ? formatDateRange(season.finale_starts_at, season.finale_ends_at)
     : '';
   const daysLeft = season ? daysUntil(season.finale_starts_at) : null;
-  const finalePct = season
-    ? seasonProgress(season.starts_at, season.finale_starts_at)
-    : 0;
+  const finalePct = season ? seasonProgress(season.starts_at, season.finale_starts_at) : 0;
 
   // My standing
   const myRankings = rankingsQ.data ?? [];
@@ -156,9 +150,7 @@ export default function Season() {
       large
       title={sezonLabel}
       subtitle={season ? `${datesRange} · Aktif ladder` : 'Yükleniyor…'}
-      onBack={() =>
-        router.canGoBack() ? router.back() : router.replace('/(tabs)/leaderboard')
-      }
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/leaderboard'))}
       actionIcon="clock"
       onAction={() => router.push('/season/archive' as never)}
     />
@@ -244,7 +236,9 @@ export default function Season() {
           }}
         >
           {/* Top row: pulsing dot + label | days badge */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
               <PulsingDot />
               <Text
@@ -255,10 +249,7 @@ export default function Season() {
               </Text>
             </View>
             {daysLeft !== null && (
-              <Text
-                className="font-num font-bold"
-                style={{ fontSize: 13, color: '#FFFFFF' }}
-              >
+              <Text className="font-num font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
                 {daysLeft} gün
               </Text>
             )}
@@ -284,7 +275,14 @@ export default function Season() {
           </View>
 
           {/* Bottom row */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginTop: 15,
+            }}
+          >
             <Text
               className="font-sans font-semibold"
               style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
@@ -320,10 +318,16 @@ export default function Season() {
                 justifyContent: 'center',
               }}
             >
-              <Text className="font-num font-extrabold" style={{ fontSize: 9, color: colors.text3 }}>
+              <Text
+                className="font-num font-extrabold"
+                style={{ fontSize: 9, color: colors.text3 }}
+              >
                 SEN
               </Text>
-              <Text className="font-num font-extrabold" style={{ fontSize: 18, color: colors.clay }}>
+              <Text
+                className="font-num font-extrabold"
+                style={{ fontSize: 18, color: colors.clay }}
+              >
                 {myRank}
               </Text>
             </View>

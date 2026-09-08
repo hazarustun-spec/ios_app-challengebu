@@ -9,12 +9,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { Avatar } from '../../components/ui/Avatar';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { Icon } from '../../components/ui/Icon';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { SearchBar } from '../../components/ui/SearchBar';
-import { Avatar } from '../../components/ui/Avatar';
-import { Icon } from '../../components/ui/Icon';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { useAdminUsers, type AdminUserRow } from '../../hooks/use-admin-users';
+import { type AdminUserRow, useAdminUsers } from '../../hooks/use-admin-users';
 import { colors } from '../../theme/colors';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -36,11 +36,7 @@ export default function AdminUsersScreen() {
         onBack={() => router.back()}
       />
       <View style={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 }}>
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Oyuncu ara…"
-        />
+        <SearchBar value={search} onChange={setSearch} placeholder="Oyuncu ara…" />
       </View>
       <FlatList
         data={data}
@@ -71,9 +67,7 @@ export default function AdminUsersScreen() {
 function UserRow({ user }: { user: AdminUserRow }) {
   const fullName = `${user.first_name} ${user.last_name}`.trim();
   const statusLabel =
-    user.status && user.status !== 'active'
-      ? STATUS_LABEL[user.status] ?? user.status
-      : null;
+    user.status && user.status !== 'active' ? (STATUS_LABEL[user.status] ?? user.status) : null;
   return (
     <Pressable
       onPress={() => router.push(`/(admin)/users/${user.user_id}`)}

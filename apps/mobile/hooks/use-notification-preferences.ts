@@ -1,10 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  NOTIFICATION_CATEGORIES,
-  type NotificationCategory,
-} from '@tennis/shared';
-import { supabase } from '../lib/supabase';
+import { NOTIFICATION_CATEGORIES, type NotificationCategory } from '@tennis/shared';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 
 export type { NotificationCategory };

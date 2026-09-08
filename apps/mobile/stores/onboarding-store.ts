@@ -16,31 +16,16 @@
 // canonical Supabase column names (`gender_category`, `skill_self_assessment`,
 // `dominant_hand`, `availability_windows`, …).
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type Pronoun = 'he/him' | 'she/her' | 'they/them' | 'other';
 export type GenderCategory = 'erkek' | 'kadin' | 'open_only';
-export type ClassYear =
-  | 'hazirlik'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '4_plus'
-  | 'yl'
-  | 'doktora'
-  | 'mezun';
+export type ClassYear = 'hazirlik' | '1' | '2' | '3' | '4' | '4_plus' | 'yl' | 'doktora' | 'mezun';
 export type SkillLevel = 'baslangic' | 'orta' | 'ileri';
 export type DominantHand = 'sag' | 'sol';
-export type AvailabilitySlot =
-  | 'wd_am'
-  | 'wd_noon'
-  | 'wd_eve'
-  | 'we_am'
-  | 'we_noon'
-  | 'we_eve';
+export type AvailabilitySlot = 'wd_am' | 'wd_noon' | 'wd_eve' | 'we_am' | 'we_noon' | 'we_eve';
 
 export interface OnboardingState {
   firstName: string;
@@ -142,9 +127,7 @@ export type OBRoute =
  * so they are always considered complete. If every required field is filled,
  * returns `/(onboarding)/done` so the user can confirm and submit.
  */
-export function firstIncompleteStep(
-  draft: Omit<OnboardingState, 'setField' | 'reset'>,
-): OBRoute {
+export function firstIncompleteStep(draft: Omit<OnboardingState, 'setField' | 'reset'>): OBRoute {
   if (!draft.firstName.trim() || !draft.lastName.trim()) return '/(onboarding)/name';
   // phone is optional — always treated as complete
   if (!draft.pronoun) return '/(onboarding)/pronoun';

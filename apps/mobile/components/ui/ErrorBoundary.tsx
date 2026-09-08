@@ -64,8 +64,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
             textAlign: 'center',
           }}
         >
-          Beklenmedik bir hata oluştu. Tekrar denemek için aşağıdaki düğmeye
-          dokun; sorun sürerse uygulamayı kapatıp yeniden aç.
+          Beklenmedik bir hata oluştu. Tekrar denemek için aşağıdaki düğmeye dokun; sorun sürerse
+          uygulamayı kapatıp yeniden aç.
         </Text>
         <Pressable
           onPress={this.reset}

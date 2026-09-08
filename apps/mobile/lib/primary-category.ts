@@ -74,8 +74,6 @@ export function primaryCategoryOf(
   fallback?: string,
 ): string {
   return (
-    pickPrimaryCategory(rows, gender)?.category ??
-    fallback ??
-    defaultCategoryForGender(gender)
+    pickPrimaryCategory(rows, gender)?.category ?? fallback ?? defaultCategoryForGender(gender)
   );
 }

@@ -24,11 +24,7 @@
 //     drops onPress + adds opacity-50 to className.
 
 import { describe, expect, mock, test } from 'bun:test';
-import {
-  createElement,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import { type ReactElement, type ReactNode, createElement } from 'react';
 
 function makeTag(displayName: string) {
   const Comp = (_props: Record<string, unknown>) => null;
@@ -61,8 +57,17 @@ mock.module('react-native-reanimated', () => {
     View: makeTag('Animated.View'),
     createAnimatedComponent: (C: unknown) => C,
   };
+  const passthrough = (v: unknown) => v;
   return {
     default: AnimatedNamespace,
+    // mock.module replaces the whole namespace, so anything a component in
+    // this file imports has to be listed here — a missing name is a LINK
+    // error that kills the file before any test runs, not an undefined at
+    // call time.
+    withSpring: passthrough,
+    withSequence: (...v: unknown[]) => v[v.length - 1],
+    cancelAnimation: () => {},
+    runOnJS: (fn: unknown) => fn,
     useSharedValue: (initial: number) => ({ value: initial }),
     useDerivedValue: (factory: () => unknown) => {
       let value: unknown;
@@ -148,8 +153,7 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
@@ -160,8 +164,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -218,16 +221,13 @@ describe('GreetHeader', () => {
     // Bell tap target should be a Pressable with the right a11y label.
     const bell = find(
       tree,
-      (n) =>
-        n.type === 'Pressable' && n.props.accessibilityLabel === 'Bildirimler',
+      (n) => n.type === 'Pressable' && n.props.accessibilityLabel === 'Bildirimler',
     );
     expect(bell).not.toBeNull();
   });
 
   test('without sub line', () => {
-    const tree = normalize(
-      GreetHeader({ name: 'Hazar' }),
-    );
+    const tree = normalize(GreetHeader({ name: 'Hazar' }));
     expect(tree).toMatchSnapshot();
     // Exactly two Text nodes ("Selam," + name) when sub is omitted.
     const texts = findAll(tree, (n) => n.type === 'Text');
@@ -244,9 +244,7 @@ describe('LevelRing', () => {
     // Wave 1: LevelRing now overlays an animated SVG ring instead of
     // forwarding the `ring` color to Avatar's border. The Avatar is
     // rendered WITHOUT `ring` (undefined) and an Svg is placed on top.
-    const tree = normalize(
-      LevelRing({ name: 'Mert Şahin', elo: 1612 }),
-    );
+    const tree = normalize(LevelRing({ name: 'Mert Şahin', elo: 1612 }));
     expect(tree).toMatchSnapshot();
     // Avatar present with correct name + size but no ring prop.
     const avatar = find(tree, (n) => n.type === 'Avatar');
@@ -270,9 +268,7 @@ describe('Skel', () => {
   });
 
   test('custom dimensions', () => {
-    expect(
-      normalize(Skel({ w: 120, h: 32, r: 16 })),
-    ).toMatchSnapshot();
+    expect(normalize(Skel({ w: 120, h: 32, r: 16 }))).toMatchSnapshot();
   });
 });
 
@@ -363,9 +359,7 @@ describe('BellWithBadge', () => {
 
 describe('ScoreInput', () => {
   test('with court tint (my-side button)', () => {
-    const tree = normalize(
-      ScoreInput({ label: 'Sana sayı', tint: '#2270BC', onPress: () => {} }),
-    );
+    const tree = normalize(ScoreInput({ label: 'Sana sayı', tint: '#2270BC', onPress: () => {} }));
     expect(tree).toMatchSnapshot();
     // Icon receives the tint color.
     const icon = find(tree, (n) => n.type === 'Icon');
@@ -373,18 +367,14 @@ describe('ScoreInput', () => {
   });
 
   test('without tint (opponent button) falls back to ink', () => {
-    const tree = normalize(
-      ScoreInput({ label: 'Berk sayı', onPress: () => {} }),
-    );
+    const tree = normalize(ScoreInput({ label: 'Berk sayı', onPress: () => {} }));
     expect(tree).toMatchSnapshot();
     const icon = find(tree, (n) => n.type === 'Icon');
     expect(icon?.props.color).toBe('#161618');
   });
 
   test('disabled drops onPress + adds opacity-50', () => {
-    const tree = normalize(
-      ScoreInput({ label: 'Disabled', onPress: () => {}, disabled: true }),
-    );
+    const tree = normalize(ScoreInput({ label: 'Disabled', onPress: () => {}, disabled: true }));
     expect(tree).toMatchSnapshot();
     const pressable = find(tree, (n) => n.type === 'Pressable');
     expect(pressable?.props.onPress).toBeUndefined();

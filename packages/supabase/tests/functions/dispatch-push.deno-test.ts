@@ -1,9 +1,9 @@
 import { assertEquals } from 'jsr:@std/assert';
 import {
-  adminClient,
   ANON_KEY,
-  createTestUser,
   FUNCTIONS_URL,
+  adminClient,
+  createTestUser,
   invokeFunction,
   teardownUsers,
 } from './helpers.ts';
@@ -34,7 +34,8 @@ async function insertNotification(recipientId: string): Promise<string> {
       body: 'İlk maç rozetini cebine attın!',
       data: { action: 'badges_earned' },
     })
-    .select('id').single();
+    .select('id')
+    .single();
   if (error || !data) throw new Error(`insert notification: ${error?.message}`);
   return data.id;
 }
@@ -63,7 +64,9 @@ Deno.test({
   ignore: !KEY_HONORED,
   async fn() {
     const { status } = await invokeFunction(
-      'dispatch-push', { notificationId: 'not-a-uuid' }, INTERNAL_PUSH_KEY,
+      'dispatch-push',
+      { notificationId: 'not-a-uuid' },
+      INTERNAL_PUSH_KEY,
     );
     assertEquals(status, 400);
   },
@@ -88,11 +91,16 @@ Deno.test({
   ignore: !KEY_HONORED,
   async fn() {
     const s = crypto.randomUUID().slice(0, 8);
-    const alice = await createTestUser({ email: `alice-dp-${s}@test.local`, genderCategory: 'erkek' });
+    const alice = await createTestUser({
+      email: `alice-dp-${s}@test.local`,
+      genderCategory: 'erkek',
+    });
     try {
       const notificationId = await insertNotification(alice.userId);
       const { status, body } = await invokeFunction(
-        'dispatch-push', { notificationId }, INTERNAL_PUSH_KEY,
+        'dispatch-push',
+        { notificationId },
+        INTERNAL_PUSH_KEY,
       );
       assertEquals(status, 200);
       const result = body as { pushed: boolean; reason: string };
@@ -109,7 +117,10 @@ Deno.test({
   ignore: !KEY_HONORED,
   async fn() {
     const s = crypto.randomUUID().slice(0, 8);
-    const alice = await createTestUser({ email: `alice-dp-${s}@test.local`, genderCategory: 'erkek' });
+    const alice = await createTestUser({
+      email: `alice-dp-${s}@test.local`,
+      genderCategory: 'erkek',
+    });
     try {
       const supa = adminClient();
       await supa
@@ -120,7 +131,9 @@ Deno.test({
 
       const notificationId = await insertNotification(alice.userId);
       const { status, body } = await invokeFunction(
-        'dispatch-push', { notificationId }, INTERNAL_PUSH_KEY,
+        'dispatch-push',
+        { notificationId },
+        INTERNAL_PUSH_KEY,
       );
       assertEquals(status, 200);
       const result = body as { pushed: boolean; reason: string };

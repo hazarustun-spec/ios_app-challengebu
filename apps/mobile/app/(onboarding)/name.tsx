@@ -1,8 +1,8 @@
 // Onboarding · Ad Soyad (D5)
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObName
 
-import { View } from 'react-native';
 import { router } from 'expo-router';
+import { View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Field } from '../../components/ui/Field';
 import { useOnboardingStore } from '../../stores/onboarding-store';

@@ -26,16 +26,13 @@
 //       'orta', 'sag')
 //     on conflict (user_id) do nothing;
 
-var SUPA =
-  typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
+var SUPA = typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
 var KEY =
   typeof SERVICE_ROLE_KEY !== 'undefined'
     ? SERVICE_ROLE_KEY
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 var OPP_EMAIL =
-  typeof OPPONENT_EMAIL !== 'undefined'
-    ? OPPONENT_EMAIL
-    : 'rakip.test@example.edu.tr';
+  typeof OPPONENT_EMAIL !== 'undefined' ? OPPONENT_EMAIL : 'rakip.test@example.edu.tr';
 
 var H = {
   apikey: KEY,
@@ -60,9 +57,7 @@ if (created.ok) {
   // Already exists — look the id up from an existing profile, else the admin
   // user list (filtered by email client-side).
   var prof = http.get(
-    SUPA +
-      '/rest/v1/profiles?select=user_id&email=eq.' +
-      encodeURIComponent(OPP_EMAIL),
+    SUPA + '/rest/v1/profiles?select=user_id&email=eq.' + encodeURIComponent(OPP_EMAIL),
     { headers: H },
   );
   var rows = json(prof.body);
@@ -72,9 +67,7 @@ if (created.ok) {
     var list = http.get(SUPA + '/auth/v1/admin/users?per_page=200', {
       headers: H,
     });
-    var users = (json(list.body).users || []).filter(function (u) {
-      return u.email === OPP_EMAIL;
-    });
+    var users = (json(list.body).users || []).filter((u) => u.email === OPP_EMAIL);
     if (users.length > 0) opponentId = users[0].id;
   }
 }

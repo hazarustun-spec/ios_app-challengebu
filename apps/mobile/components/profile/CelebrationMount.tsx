@@ -9,20 +9,7 @@ export function CelebrationMount() {
   if (!front) return null;
 
   if (front.kind === 'badge') {
-    return (
-      <BadgeUnlockModal
-        visible
-        badge={front.badge}
-        onClose={popFront}
-      />
-    );
+    return <BadgeUnlockModal visible badge={front.badge} onClose={popFront} />;
   }
-  return (
-    <LevelUpModal
-      visible
-      before={front.before}
-      after={front.after}
-      onClose={popFront}
-    />
-  );
+  return <LevelUpModal visible before={front.before} after={front.after} onClose={popFront} />;
 }

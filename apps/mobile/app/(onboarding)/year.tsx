@@ -1,13 +1,13 @@
 // Onboarding · Sınıf (D10) — pill grid + show toggle
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObYear
 
-import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Toggle } from '../../components/ui/Toggle';
-import { useOnboardingStore, type ClassYear } from '../../stores/onboarding-store';
-import { colors } from '../../theme/colors';
 import { haptics } from '../../lib/haptics';
+import { type ClassYear, useOnboardingStore } from '../../stores/onboarding-store';
+import { colors } from '../../theme/colors';
 
 const YEARS: { value: ClassYear; label: string }[] = [
   { value: 'hazirlik', label: 'Hazırlık' },
@@ -79,17 +79,11 @@ export default function ObYear() {
         }}
       >
         <View style={{ flex: 1 }}>
-          <Text
-            className="font-sans font-bold text-text"
-            style={{ fontSize: 14.5 }}
-          >
+          <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
             Profilimde göster
           </Text>
         </View>
-        <Toggle
-          value={showClassYear}
-          onChange={(v) => setField('showClassYear', v)}
-        />
+        <Toggle value={showClassYear} onChange={(v) => setField('showClassYear', v)} />
       </Pressable>
     </OBFrame>
   );

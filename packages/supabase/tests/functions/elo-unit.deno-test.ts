@@ -11,16 +11,16 @@
 import { assertAlmostEquals, assertEquals, assertThrows } from 'jsr:@std/assert';
 import {
   ALL_FORMATS,
-  calculateDoublesEloChange,
-  calculateEloChange,
   DEFAULT_STARTING_ELO,
-  expectedScore,
-  getKFactor,
-  getMarginMultiplier,
   K_ESTABLISHED,
   K_NEW_PLAYER,
   type MatchFormat,
   NEW_PLAYER_THRESHOLD,
+  calculateDoublesEloChange,
+  calculateEloChange,
+  expectedScore,
+  getKFactor,
+  getMarginMultiplier,
 } from '../../functions/_shared/elo.ts';
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ Deno.test('getKFactor: at/above threshold → K_ESTABLISHED (20)', () => {
 Deno.test('getKFactor: rejects negative and non-integer input', () => {
   assertThrows(() => getKFactor(-1), Error);
   assertThrows(() => getKFactor(3.5), Error);
-  assertThrows(() => getKFactor(NaN), Error);
+  assertThrows(() => getKFactor(Number.NaN), Error);
 });
 
 // ---------------------------------------------------------------------------
@@ -328,10 +328,14 @@ Deno.test('singles: rejects non-finite ratings', () => {
     winnerScore: 4,
     loserScore: 3,
   };
-  assertThrows(() => calculateEloChange({ ...base, winnerRating: Infinity }), Error);
-  assertThrows(() => calculateEloChange({ ...base, winnerRating: NaN }), Error);
   assertThrows(
-    () => calculateEloChange({ ...base, winnerRating: 1200, loserRating: Infinity }),
+    () => calculateEloChange({ ...base, winnerRating: Number.POSITIVE_INFINITY }),
+    Error,
+  );
+  assertThrows(() => calculateEloChange({ ...base, winnerRating: Number.NaN }), Error);
+  assertThrows(
+    () =>
+      calculateEloChange({ ...base, winnerRating: 1200, loserRating: Number.POSITIVE_INFINITY }),
     Error,
   );
 });

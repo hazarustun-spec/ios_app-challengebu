@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { type SeasonName, seasonDisplayName } from '@tennis/shared';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface EloPoint {
   matchId: string;
@@ -60,7 +60,7 @@ export function useEloHistory(userId: string | undefined) {
         .limit(100);
       if (error) throw error;
 
-      const rows = (((data ?? []) as unknown) as MatchRow[]).slice().reverse();
+      const rows = ((data ?? []) as unknown as MatchRow[]).slice().reverse();
 
       const byCategory: Record<string, EloPoint[]> = {};
       for (const m of rows) {

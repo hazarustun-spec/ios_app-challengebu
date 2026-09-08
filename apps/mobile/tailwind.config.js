@@ -57,10 +57,7 @@ const colors = {
 };
 
 module.exports = {
-  content: [
-    './app/**/*.{js,jsx,ts,tsx}',
-    './components/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
@@ -117,10 +114,10 @@ module.exports = {
       },
       spacing: {
         // Half-step augmentations on top of Tailwind's default 0/0.5/1/...
-        '0.5': 2,
-        '1.5': 6,
-        '4.5': 18,
-        '5.5': 22,
+        0.5: 2,
+        1.5: 6,
+        4.5: 18,
+        5.5: 22,
       },
       borderRadius: {
         xs: '10px',

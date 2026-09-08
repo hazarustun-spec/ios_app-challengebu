@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { conflict, errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({
   type: z.enum(['direct_challenge', 'open_call']),
@@ -18,17 +18,20 @@ const inputSchema = z.object({
   ]),
   format: z.enum(['bu_klasik', 'hizli_tiebreak', 'pro_set_8', '3set_klasik']),
   isRated: z.boolean(),
-  proposedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
-    (s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)),
-    'proposedDate must be a valid calendar date',
-  ),
-  proposedTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).refine(
-    (s) => {
+  proposedDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine(
+      (s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)),
+      'proposedDate must be a valid calendar date',
+    ),
+  proposedTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}(:\d{2})?$/)
+    .refine((s) => {
       const [h, m] = s.split(':').map(Number);
       return h >= 0 && h < 24 && m >= 0 && m < 60;
-    },
-    'proposedTime must be a valid HH:MM time',
-  ),
+    }, 'proposedTime must be a valid HH:MM time'),
   courtId: z.string().uuid(),
   creatorPartnerId: z.string().uuid().optional(),
   targetPartnerId: z.string().uuid().optional(),
@@ -165,8 +168,8 @@ Deno.serve(async (req) => {
         const name =
           [creator?.first_name, creator?.last_name].filter(Boolean).join(' ').trim() ||
           'Bir oyuncu';
-        const recipients = [input.targetId, input.targetPartnerId].filter(
-          (id): id is string => Boolean(id),
+        const recipients = [input.targetId, input.targetPartnerId].filter((id): id is string =>
+          Boolean(id),
         );
         await supa.from('notifications').insert(
           recipients.map((rid) => ({
@@ -205,10 +208,10 @@ Deno.serve(async (req) => {
           .gte('created_at', cooldownSince);
 
         if ((recentAnnouncements ?? 0) > 0) {
-          console.info(
-            '[create-match-request] open-call announcement suppressed (cooldown)',
-            { creator: auth.userId, requestId: row!.id },
-          );
+          console.info('[create-match-request] open-call announcement suppressed (cooldown)', {
+            creator: auth.userId,
+            requestId: row!.id,
+          });
           return jsonResponse({
             id: row!.id,
             status: row!.status,

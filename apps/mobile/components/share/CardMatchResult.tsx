@@ -8,8 +8,8 @@
 
 import { Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { BallMark } from '../ui/doodles/BallMark';
 import { colors } from '../../theme/colors';
+import { BallMark } from '../ui/doodles/BallMark';
 
 export interface CardMatchResultProps {
   myName: string;
@@ -116,10 +116,7 @@ export function CardMatchResult({
   // ELO pill
   const pillBg = isWin ? LIME : '#FCE6E4';
   const pillColor = isWin ? '#FFFFFF' : PINK;
-  const pillText =
-    isWin
-      ? `▲ +${eloDelta} ELO`
-      : `▼ ${eloDelta} ELO`; // eloDelta already negative for losses
+  const pillText = isWin ? `▲ +${eloDelta} ELO` : `▼ ${eloDelta} ELO`; // eloDelta already negative for losses
 
   return (
     <View
@@ -462,11 +459,7 @@ function CardFooter({
   onLime?: boolean;
 }) {
   const c = light ? '#fff' : colors.text;
-  const sub = light
-    ? 'rgba(255,255,255,0.62)'
-    : onLime
-      ? 'rgba(22,22,24,0.55)'
-      : colors.text3;
+  const sub = light ? 'rgba(255,255,255,0.62)' : onLime ? 'rgba(22,22,24,0.55)' : colors.text3;
 
   return (
     <View

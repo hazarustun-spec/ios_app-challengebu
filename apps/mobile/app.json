@@ -94,9 +94,7 @@
                   "bundleIdentifier": "app.challengebu.ios.widget",
                   "targetName": "LiveMatch",
                   "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.app.challengebu.ios"
-                    ]
+                    "com.apple.security.application-groups": ["group.app.challengebu.ios"]
                   }
                 }
               ]

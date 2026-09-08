@@ -1,9 +1,9 @@
 import { z } from 'zod';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { type ExpoPushMessage, sendToExpo } from '../_shared/expo-push.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
-import { sendToExpo, type ExpoPushMessage } from '../_shared/expo-push.ts';
 
 const inputSchema = z.object({
   conversationId: z.string().uuid(),
@@ -34,8 +34,7 @@ Deno.serve(async (req) => {
     if (me !== conv.participant_low && me !== conv.participant_high) {
       return errorResponse('Not a participant of this conversation', 403);
     }
-    const recipientId =
-      me === conv.participant_low ? conv.participant_high : conv.participant_low;
+    const recipientId = me === conv.participant_low ? conv.participant_high : conv.participant_low;
 
     // Block check (either direction blocks messaging).
     // Two separate parameterised queries avoid interpolating UUIDs into a filter string.
@@ -63,7 +62,10 @@ Deno.serve(async (req) => {
       .insert({ conversation_id: conversationId, sender_id: me, body })
       .select('id, created_at')
       .single();
-    if (msgErr) { console.error('[send-message]', msgErr); return errorResponse('Failed to send message', 500); }
+    if (msgErr) {
+      console.error('[send-message]', msgErr);
+      return errorResponse('Failed to send message', 500);
+    }
 
     const preview = body.slice(0, 80);
     await supa
@@ -77,9 +79,7 @@ Deno.serve(async (req) => {
       .select('first_name, last_name')
       .eq('user_id', me)
       .single();
-    const senderName = sender
-      ? `${sender.first_name} ${sender.last_name}`.trim()
-      : 'Yeni mesaj 💬';
+    const senderName = sender ? `${sender.first_name} ${sender.last_name}`.trim() : 'Yeni mesaj 💬';
 
     // Notification row + push, honouring the recipient's preference.
     const { data: notification } = await supa

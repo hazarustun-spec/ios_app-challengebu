@@ -15,9 +15,13 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  erkek_tek: 'Erkek Tek', kadin_tek: 'Kadın Tek', open_tek: 'Open Tek',
-  erkek_cift: 'Erkek Çift', kadin_cift: 'Kadın Çift',
-  karma_cift: 'Karma Çift', open_cift: 'Open Çift',
+  erkek_tek: 'Erkek Tek',
+  kadin_tek: 'Kadın Tek',
+  open_tek: 'Open Tek',
+  erkek_cift: 'Erkek Çift',
+  kadin_cift: 'Kadın Çift',
+  karma_cift: 'Karma Çift',
+  open_cift: 'Open Çift',
 };
 
 export function ActiveMatchCard({ match, myUserId, onPress }: Props) {
@@ -49,12 +53,16 @@ export function ActiveMatchCard({ match, myUserId, onPress }: Props) {
         </Text>
       </View>
       <Text className="text-sm text-gray-700">
-        {FORMAT_LABELS[match.format] ?? match.format} · {dateStr} {timeStr} · {match.court?.name ?? '—'}
+        {FORMAT_LABELS[match.format] ?? match.format} · {dateStr} {timeStr} ·{' '}
+        {match.court?.name ?? '—'}
       </Text>
       <Text className="mt-2 text-sm font-medium text-primary">{stateLabel}</Text>
       {winnerSet && (
         <Text className="mt-1 text-sm text-gray-600">
-          Skor: {onTeamA ? `${match.score_team_a} - ${match.score_team_b}` : `${match.score_team_b} - ${match.score_team_a}`}
+          Skor:{' '}
+          {onTeamA
+            ? `${match.score_team_a} - ${match.score_team_b}`
+            : `${match.score_team_b} - ${match.score_team_a}`}
         </Text>
       )}
     </Pressable>

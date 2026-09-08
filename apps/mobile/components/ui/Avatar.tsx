@@ -32,10 +32,7 @@ import { Image, Text, View } from 'react-native';
 import { colors } from '../../theme/colors';
 import { Icon, type IconName } from './Icon';
 
-export type AvatarBadge =
-  | number
-  | 'frozen'
-  | { kind: 'level'; color: string; icon: IconName };
+export type AvatarBadge = number | 'frozen' | { kind: 'level'; color: string; icon: IconName };
 
 export interface AvatarProps {
   /** Display name — used for initials + deterministic palette hash. */
@@ -183,9 +180,7 @@ export function Avatar({ name, size = 44, uri, ring, badge }: AvatarProps) {
           }}
         >
           {typeof badge === 'number' ? (
-            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 11 }}>
-              {badge}
-            </Text>
+            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 11 }}>{badge}</Text>
           ) : badge === 'frozen' ? (
             <Icon name="snow" size={10} color="#FFFFFF" stroke={2.4} />
           ) : (

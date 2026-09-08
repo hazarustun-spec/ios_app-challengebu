@@ -32,7 +32,7 @@ const RULES: Record<MatchFormat, { title: string; bullets: string[] }> = {
     bullets: [
       'Game bazında oynanır (klasik tenis sayımı).',
       'İlk 8 game alan kazanır (8-6 veya daha fazla fark).',
-      '8-7 yetmez — 8\'i kazanmak için 2 game farkı şarttır (8-6, 9-7, ...).',
+      "8-7 yetmez — 8'i kazanmak için 2 game farkı şarttır (8-6, 9-7, ...).",
       '8-8 olursa 7 sayılık tiebreak oynanır.',
     ],
   },
@@ -48,7 +48,10 @@ const RULES: Record<MatchFormat, { title: string; bullets: string[] }> = {
 };
 
 export function FormatRulesModal({ visible, format, onAcknowledge }: Props) {
-  const rules = RULES[format] ?? { title: 'Bilinmeyen format', bullets: ['Format kuralları tanımlı değil.'] };
+  const rules = RULES[format] ?? {
+    title: 'Bilinmeyen format',
+    bullets: ['Format kuralları tanımlı değil.'],
+  };
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <View className="flex-1 bg-white p-6">

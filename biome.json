@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["**/dist/**", "**/.turbo/**", "**/node_modules/**", "**/build/**", "**/.expo/**"]
+    "ignore": [
+      "**/dist/**",
+      "**/.turbo/**",
+      "**/node_modules/**",
+      "**/build/**",
+      "**/.expo/**",
+      "**/.claude/worktrees/**",
+      "docs/superpowers/specs/plan-8-design-bundle/**"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -39,5 +47,21 @@
     "formatter": {
       "enabled": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["**/maestro/**/*.js", "**/.maestro/**/*.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noVar": "off",
+            "useTemplate": "off"
+          },
+          "correctness": {
+            "noInnerDeclarations": "off"
+          }
+        }
+      }
+    }
+  ]
 }

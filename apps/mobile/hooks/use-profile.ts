@@ -12,16 +12,7 @@ export interface MyProfile {
   pronoun_custom: string | null;
   gender_category: 'erkek' | 'kadin' | 'open_only';
   department_id: string | null;
-  class_year:
-    | 'hazirlik'
-    | '1'
-    | '2'
-    | '3'
-    | '4'
-    | '4_plus'
-    | 'yl'
-    | 'doktora'
-    | 'mezun';
+  class_year: 'hazirlik' | '1' | '2' | '3' | '4' | '4_plus' | 'yl' | 'doktora' | 'mezun';
   show_class_year: boolean;
   show_department: boolean;
   skill_self_assessment: 'baslangic' | 'orta' | 'ileri';

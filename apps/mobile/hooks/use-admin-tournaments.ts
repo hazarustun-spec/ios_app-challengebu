@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useCurrentSeason } from './use-current-season';
 
 export interface AdminTournamentRow {
@@ -24,7 +24,7 @@ export function useAdminTournaments() {
         .eq('season_id', seasonId)
         .order('category', { ascending: true });
       if (error) throw error;
-      return ((data ?? []) as unknown) as AdminTournamentRow[];
+      return (data ?? []) as unknown as AdminTournamentRow[];
     },
   });
 }

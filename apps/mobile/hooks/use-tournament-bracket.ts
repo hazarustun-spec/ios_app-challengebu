@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 const DOUBLES_CATEGORIES = ['erkek_cift', 'kadin_cift', 'karma_cift', 'open_cift'];
 
@@ -88,9 +88,17 @@ export function useTournamentBracket(tournamentId: string | undefined) {
       let seedToId: Record<number, string> = {};
 
       if (DOUBLES_CATEGORIES.includes(tournament.category)) {
-        seedToLabel = await fetchDoublesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
+        seedToLabel = await fetchDoublesSeedLabels(
+          tournament.season_id,
+          tournament.category,
+          tournament.bracket_size,
+        );
       } else {
-        const result = await fetchSinglesSeedLabels(tournament.season_id, tournament.category, tournament.bracket_size);
+        const result = await fetchSinglesSeedLabels(
+          tournament.season_id,
+          tournament.category,
+          tournament.bracket_size,
+        );
         seedToLabel = result.seedToLabel;
         seedToId = result.seedToId;
       }
@@ -106,10 +114,10 @@ export function useTournamentBracket(tournamentId: string | undefined) {
         winner_team: r.match?.winner_team ?? null,
         score_team_a: r.match?.score_team_a ?? null,
         score_team_b: r.match?.score_team_b ?? null,
-        player_a_name: r.seed_a !== null ? seedToLabel[r.seed_a] ?? null : null,
-        player_b_name: r.seed_b !== null ? seedToLabel[r.seed_b] ?? null : null,
-        player_a_id: r.seed_a !== null ? seedToId[r.seed_a] ?? null : null,
-        player_b_id: r.seed_b !== null ? seedToId[r.seed_b] ?? null : null,
+        player_a_name: r.seed_a !== null ? (seedToLabel[r.seed_a] ?? null) : null,
+        player_b_name: r.seed_b !== null ? (seedToLabel[r.seed_b] ?? null) : null,
+        player_a_id: r.seed_a !== null ? (seedToId[r.seed_a] ?? null) : null,
+        player_b_id: r.seed_b !== null ? (seedToId[r.seed_b] ?? null) : null,
       }));
 
       return {
@@ -144,7 +152,7 @@ async function fetchSinglesSeedLabels(
 
   const seedToLabel: Record<number, string> = {};
   const seedToId: Record<number, string> = {};
-  for (const s of ((data ?? []) as unknown as SinglesStandingRow[])) {
+  for (const s of (data ?? []) as unknown as SinglesStandingRow[]) {
     seedToLabel[s.rank] = s.profile ? `${s.profile.first_name} ${s.profile.last_name}` : '—';
     if (s.profile_id) seedToId[s.rank] = s.profile_id;
   }
@@ -168,7 +176,7 @@ async function fetchDoublesSeedLabels(
     .lte('rank', bracketSize);
 
   const labels: Record<number, string> = {};
-  for (const t of ((data ?? []) as unknown as DoublesTeamRow[])) {
+  for (const t of (data ?? []) as unknown as DoublesTeamRow[]) {
     const a = t.player_a?.first_name ?? '?';
     const b = t.player_b?.first_name ?? '?';
     labels[t.rank] = `${a} / ${b}`;

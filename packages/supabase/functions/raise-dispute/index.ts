@@ -1,8 +1,14 @@
 import { z } from 'zod';
-import { handleCors } from '../_shared/cors.ts';
-import { conflict, errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
 import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { handleCors } from '../_shared/cors.ts';
+import {
+  conflict,
+  errorResponse,
+  forbidden,
+  internalError,
+  jsonResponse,
+} from '../_shared/errors.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
 const inputSchema = z.object({
   matchId: z.string().uuid(),
@@ -34,11 +40,15 @@ Deno.serve(async (req) => {
       return errorResponse('Scores must be submitted before a dispute can be raised', 400);
     }
 
-    const { data: dispute, error } = await supa.from('disputes').insert({
-      match_id: match.id,
-      raised_by: auth.userId,
-      reason: parsed.data.reason,
-    }).select('id').single();
+    const { data: dispute, error } = await supa
+      .from('disputes')
+      .insert({
+        match_id: match.id,
+        raised_by: auth.userId,
+        reason: parsed.data.reason,
+      })
+      .select('id')
+      .single();
     if (error) return errorResponse('Failed to create dispute', 500, error);
 
     const { error: updateErr } = await supa

@@ -8,13 +8,13 @@
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, ScrollView, Text, View } from 'react-native';
-import { NavHeader } from '../../../components/ui/NavHeader';
-import { Button } from '../../../components/ui/Button';
 import { Banner } from '../../../components/ui/Banner';
+import { Button } from '../../../components/ui/Button';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useDisputeDetail } from '../../../hooks/use-dispute-detail';
-import { useResolveDispute, type DisputeOutcome } from '../../../hooks/use-resolve-dispute';
-import { colors } from '../../../theme/colors';
+import { type DisputeOutcome, useResolveDispute } from '../../../hooks/use-resolve-dispute';
 import { userMessage } from '../../../lib/user-message';
+import { colors } from '../../../theme/colors';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',

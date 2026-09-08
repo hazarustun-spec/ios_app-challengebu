@@ -18,16 +18,13 @@
 //       status = case when winner_team = 'void' then 'voided' else 'confirmed' end
 //     where id = :matchId;
 
-var SUPA =
-  typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
+var SUPA = typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
 var KEY =
   typeof SERVICE_ROLE_KEY !== 'undefined'
     ? SERVICE_ROLE_KEY
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 var OPP_EMAIL =
-  typeof OPPONENT_EMAIL !== 'undefined'
-    ? OPPONENT_EMAIL
-    : 'rakip.test@example.edu.tr';
+  typeof OPPONENT_EMAIL !== 'undefined' ? OPPONENT_EMAIL : 'rakip.test@example.edu.tr';
 
 var H = {
   apikey: KEY,
@@ -39,9 +36,7 @@ function rest(path) {
   return json(http.get(SUPA + '/rest/v1/' + path, { headers: H }).body);
 }
 
-var profRows = rest(
-  'profiles?select=user_id&email=eq.' + encodeURIComponent(OPP_EMAIL),
-);
+var profRows = rest('profiles?select=user_id&email=eq.' + encodeURIComponent(OPP_EMAIL));
 var opponentId = profRows && profRows.length ? profRows[0].user_id : null;
 
 // Newest scored-but-unconfirmed match the opponent is in.

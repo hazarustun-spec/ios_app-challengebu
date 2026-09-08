@@ -80,9 +80,19 @@ export function EloHistoryChart({
     <View style={{ width, height }}>
       <Svg width={width} height={height}>
         <Line x1={padLeft} y1={padTop} x2={padLeft} y2={padTop + innerH} stroke="#d1d5db" />
-        <Line x1={padLeft} y1={padTop + innerH} x2={padLeft + innerW} y2={padTop + innerH} stroke="#d1d5db" />
-        <SvgText x={4} y={padTop + 8} fontSize="10" fill="#6b7280">{maxElo}</SvgText>
-        <SvgText x={4} y={padTop + innerH} fontSize="10" fill="#6b7280">{minElo}</SvgText>
+        <Line
+          x1={padLeft}
+          y1={padTop + innerH}
+          x2={padLeft + innerW}
+          y2={padTop + innerH}
+          stroke="#d1d5db"
+        />
+        <SvgText x={4} y={padTop + 8} fontSize="10" fill="#6b7280">
+          {maxElo}
+        </SvgText>
+        <SvgText x={4} y={padTop + innerH} fontSize="10" fill="#6b7280">
+          {minElo}
+        </SvgText>
 
         {visibleBoundaries.map((b) => {
           const tb = Date.parse(b.timestamp);
@@ -123,7 +133,10 @@ export function EloHistoryChart({
           <Circle key={p.matchId} cx={xs[i]} cy={ys[i]} r={4} fill="#1e3a8a" />
         ))}
       </Svg>
-      <View pointerEvents="box-none" style={{ position: 'absolute', top: 0, left: 0, width, height }}>
+      <View
+        pointerEvents="box-none"
+        style={{ position: 'absolute', top: 0, left: 0, width, height }}
+      >
         {points.map((p, i) => (
           <Pressable
             key={p.matchId}

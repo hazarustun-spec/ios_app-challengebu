@@ -5,11 +5,11 @@
 //   docs/superpowers/specs/plan-8-design-bundle/project/app/screens-match-flow.jsx
 // as two simple icon+label list rows that route forward to detail.
 
-import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
+import { Pressable, Text, View } from 'react-native';
 import { Icon, type IconName } from '../../../components/ui/Icon';
-import { useNewMatchStore, type MatchPath } from '../../../stores/new-match-store';
+import { NavHeader } from '../../../components/ui/NavHeader';
+import { type MatchPath, useNewMatchStore } from '../../../stores/new-match-store';
 import { colors } from '../../../theme/colors';
 
 interface OptCardProps {
@@ -69,10 +69,7 @@ export default function NewMatchPath() {
               <Icon name={o.icon} size={24} color={colors.text} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-extrabold text-text"
-                style={{ fontSize: 17 }}
-              >
+              <Text className="font-sans font-extrabold text-text" style={{ fontSize: 17 }}>
                 {o.title}
               </Text>
               <Text

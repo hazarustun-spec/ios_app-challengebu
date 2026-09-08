@@ -82,11 +82,7 @@ function normalize(node: unknown): Normalized {
     string,
     unknown
   >;
-  const childArray = children === undefined
-    ? []
-    : Array.isArray(children)
-      ? children
-      : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: describeType(el.type),
     props: rest,

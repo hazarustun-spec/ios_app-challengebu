@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
-import { useEloHistory, type EloPoint } from '../../hooks/use-elo-history';
+import { type EloPoint, useEloHistory } from '../../hooks/use-elo-history';
 import { EloHistoryChart } from './EloHistoryChart';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -49,15 +49,9 @@ export function EloHistoryTab({ userId }: Props) {
             <Pressable
               key={cat}
               onPress={() => setActiveCat(cat)}
-              className={`mr-2 rounded-full px-3 py-1 ${
-                isActive ? 'bg-primary' : 'bg-gray-100'
-              }`}
+              className={`mr-2 rounded-full px-3 py-1 ${isActive ? 'bg-primary' : 'bg-gray-100'}`}
             >
-              <Text
-                className={`text-xs font-medium ${
-                  isActive ? 'text-white' : 'text-gray-700'
-                }`}
-              >
+              <Text className={`text-xs font-medium ${isActive ? 'text-white' : 'text-gray-700'}`}>
                 {CATEGORY_LABELS[cat] ?? cat}
               </Text>
             </Pressable>

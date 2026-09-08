@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { Icon } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
 import type { BracketSlot } from '../../hooks/use-tournament-bracket';
+import { colors } from '../../theme/colors';
 
 interface Props {
   bracketSize: number;
@@ -122,8 +122,19 @@ function MatchCard({ slot }: { slot: BracketSlot }) {
         borderColor: colors.borderStrong,
       }}
     >
-      <Slot name={slot.player_a_name} score={slot.score_team_a} win={aWon} top playerId={slot.player_a_id} />
-      <Slot name={slot.player_b_name} score={slot.score_team_b} win={bWon} playerId={slot.player_b_id} />
+      <Slot
+        name={slot.player_a_name}
+        score={slot.score_team_a}
+        win={aWon}
+        top
+        playerId={slot.player_a_id}
+      />
+      <Slot
+        name={slot.player_b_name}
+        score={slot.score_team_b}
+        win={bWon}
+        playerId={slot.player_b_id}
+      />
     </View>
   );
 

@@ -46,9 +46,7 @@ function restPost(path, body) {
   return json(res.body);
 }
 
-const others = rest(
-  `profiles?select=user_id&user_id=neq.${myUid}&status=eq.active&limit=1`,
-);
+const others = rest(`profiles?select=user_id&user_id=neq.${myUid}&status=eq.active&limit=1`);
 const otherUid = others[0]?.user_id;
 if (!otherUid) throw new Error('No other active profile to message');
 

@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({
   matchId: z.string().uuid(),
@@ -41,17 +41,15 @@ Deno.serve(async (req) => {
       return forbidden('Not a match participant');
     }
 
-    const { error } = await supa
-      .from('live_activity_tokens')
-      .upsert(
-        {
-          match_id: matchId,
-          user_id: auth.userId,
-          update_token: token,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'match_id,user_id' },
-      );
+    const { error } = await supa.from('live_activity_tokens').upsert(
+      {
+        match_id: matchId,
+        user_id: auth.userId,
+        update_token: token,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'match_id,user_id' },
+    );
     if (error) {
       console.error('[register-activity-token] upsert failed', error);
       return internalError(error);

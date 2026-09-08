@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface PublishedAnnouncement {
   id: string;
@@ -21,7 +21,7 @@ export function useAdminAnnouncements() {
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
-      return ((data ?? []) as unknown) as PublishedAnnouncement[];
+      return (data ?? []) as unknown as PublishedAnnouncement[];
     },
   });
 }

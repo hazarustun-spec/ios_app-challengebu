@@ -3,6 +3,7 @@
 // Coarse category chip (Hata / Öneri / Genel) + a multiline note. Submits via
 // useSubmitFeedback into public.feedback, then thanks the user and pops back.
 
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
@@ -14,15 +15,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
 import { Button } from '../../components/ui/Button';
-import {
-  useSubmitFeedback,
-  type FeedbackCategory,
-} from '../../hooks/use-submit-feedback';
-import { colors } from '../../theme/colors';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { type FeedbackCategory, useSubmitFeedback } from '../../hooks/use-submit-feedback';
 import { userMessage } from '../../lib/user-message';
+import { colors } from '../../theme/colors';
 
 const CATEGORIES: Array<{ value: FeedbackCategory; label: string }> = [
   { value: 'bug', label: 'Hata' },
@@ -46,17 +43,12 @@ export default function FeedbackScreen() {
       { category, body: trimmed },
       {
         onSuccess: () => {
-          Alert.alert(
-            'Teşekkürler! 🎾',
-            'Geri bildirimin bize ulaştı. Her mesajı okuyoruz.',
-            [{ text: 'Tamam', onPress: () => router.back() }],
-          );
+          Alert.alert('Teşekkürler! 🎾', 'Geri bildirimin bize ulaştı. Her mesajı okuyoruz.', [
+            { text: 'Tamam', onPress: () => router.back() },
+          ]);
         },
         onError: (err) => {
-          Alert.alert(
-            'Gönderilemedi',
-            userMessage(err, 'Bir sorun oluştu.'),
-          );
+          Alert.alert('Gönderilemedi', userMessage(err, 'Bir sorun oluştu.'));
         },
       },
     );
@@ -73,10 +65,7 @@ export default function FeedbackScreen() {
           contentContainerStyle={{ padding: 20, gap: 20 }}
           keyboardShouldPersistTaps="handled"
         >
-          <Text
-            className="font-sans text-text-2"
-            style={{ fontSize: 14.5, lineHeight: 22 }}
-          >
+          <Text className="font-sans text-text-2" style={{ fontSize: 14.5, lineHeight: 22 }}>
             Bir hata mı buldun, bir fikrin mi var? Yaz — hepsini okuyoruz.
           </Text>
 
@@ -134,10 +123,7 @@ export default function FeedbackScreen() {
                 borderColor: colors.borderStrong,
               }}
             />
-            <Text
-              className="font-num text-text-3"
-              style={{ fontSize: 11.5, textAlign: 'right' }}
-            >
+            <Text className="font-num text-text-3" style={{ fontSize: 11.5, textAlign: 'right' }}>
               {trimmed.length}/{MAX}
             </Text>
           </View>

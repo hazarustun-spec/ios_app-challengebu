@@ -57,10 +57,7 @@ export interface MatchCardProps {
   onCtaPress?: () => void;
 }
 
-const STATUS_MAP: Record<
-  MatchKind,
-  { label: string; color: string; bgClass: string }
-> = {
+const STATUS_MAP: Record<MatchKind, { label: string; color: string; bgClass: string }> = {
   planned: { label: 'Planlı', color: colors.court, bgClass: 'bg-blue-soft' },
   pending: { label: 'Skor bekliyor', color: colors.warn, bgClass: 'bg-warn-soft' },
   done: { label: 'Tamamlandı', color: colors.win, bgClass: 'bg-lime-soft' },
@@ -82,10 +79,7 @@ export function MatchCard({
   return (
     <View className="rounded-lg overflow-hidden border-base border-border-strong bg-surface">
       <View
-        className={[
-          'flex-row items-center justify-between px-4 py-2.5',
-          status.bgClass,
-        ].join(' ')}
+        className={['flex-row items-center justify-between px-4 py-2.5', status.bgClass].join(' ')}
         style={{ borderBottomWidth: 1.5, borderColor: colors.borderStrong }}
       >
         <View className="flex-row items-center" style={{ gap: 6 }}>
@@ -116,9 +110,7 @@ export function MatchCard({
               style={{ fontSize: 14, color: colors.text }}
               numberOfLines={1}
             >
-              Sen{' '}
-              <Text style={{ color: colors.text3, fontWeight: '600' }}>vs</Text>{' '}
-              {opponentName}
+              Sen <Text style={{ color: colors.text3, fontWeight: '600' }}>vs</Text> {opponentName}
             </Text>
             <Text
               className="font-sans font-semibold"
@@ -150,10 +142,7 @@ export function MatchCard({
             >
               {win ? 'Kazandın' : 'Kaybettin'}
             </Text>
-            <Text
-              className="font-num font-extrabold"
-              style={{ fontSize: 22, color: colors.text }}
-            >
+            <Text className="font-num font-extrabold" style={{ fontSize: 22, color: colors.text }}>
               {score}
             </Text>
             {opponentElo !== undefined && eloDelta !== undefined && (

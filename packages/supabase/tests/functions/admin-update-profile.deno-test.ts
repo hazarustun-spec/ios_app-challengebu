@@ -3,8 +3,15 @@ import { adminClient, createTestUser, invokeFunction, teardownUsers } from './he
 
 Deno.test('admin-update-profile: promotes player to admin', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const admin = await createTestUser({ email: `admin-aup-${s}@test.local`, role: 'admin', genderCategory: 'erkek' });
-  const alice = await createTestUser({ email: `alice-aup-${s}@test.local`, genderCategory: 'erkek' });
+  const admin = await createTestUser({
+    email: `admin-aup-${s}@test.local`,
+    role: 'admin',
+    genderCategory: 'erkek',
+  });
+  const alice = await createTestUser({
+    email: `alice-aup-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   try {
     const { status, body } = await invokeFunction(
       'admin-update-profile',
@@ -16,7 +23,11 @@ Deno.test('admin-update-profile: promotes player to admin', async () => {
     assertEquals(result.role, 'admin');
 
     const supa = adminClient();
-    const { data: prof } = await supa.from('profiles').select('role').eq('user_id', alice.userId).single();
+    const { data: prof } = await supa
+      .from('profiles')
+      .select('role')
+      .eq('user_id', alice.userId)
+      .single();
     assertEquals(prof!.role, 'admin');
 
     const { data: audit } = await supa
@@ -33,7 +44,10 @@ Deno.test('admin-update-profile: promotes player to admin', async () => {
 
 Deno.test('admin-update-profile: non-admin forbidden', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-aup-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-aup-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-aup-${s}@test.local`, genderCategory: 'erkek' });
   try {
     const { status } = await invokeFunction(
@@ -49,7 +63,11 @@ Deno.test('admin-update-profile: non-admin forbidden', async () => {
 
 Deno.test('admin-update-profile: admin cannot demote self', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const admin = await createTestUser({ email: `admin-aup-${s}@test.local`, role: 'admin', genderCategory: 'erkek' });
+  const admin = await createTestUser({
+    email: `admin-aup-${s}@test.local`,
+    role: 'admin',
+    genderCategory: 'erkek',
+  });
   try {
     const { status } = await invokeFunction(
       'admin-update-profile',

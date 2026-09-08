@@ -1,5 +1,10 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, createTestUser, invokeFunction, teardownUsers } from '../functions/helpers.ts';
+import {
+  adminClient,
+  createTestUser,
+  invokeFunction,
+  teardownUsers,
+} from '../functions/helpers.ts';
 
 /**
  * Plan 8 Task A1 — match_kind enum + ELO guard.
@@ -38,21 +43,36 @@ async function seedAwaitingMatch(opts: {
   const { data: match, error } = await supa
     .from('matches')
     .insert({
-      category: 'erkek_tek', format: 'bu_klasik', court_id: courtId,
-      played_at: new Date().toISOString(), is_rated: true, kind: opts.kind,
-      team_a_player_ids: [opts.aliceId], team_b_player_ids: [opts.bobId],
-      score_team_a: 4, score_team_b: 2, winner_team: 'a',
-      status: 'awaiting_confirmation', confirmed_by: opts.preConfirmedBy,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      court_id: courtId,
+      played_at: new Date().toISOString(),
+      is_rated: true,
+      kind: opts.kind,
+      team_a_player_ids: [opts.aliceId],
+      team_b_player_ids: [opts.bobId],
+      score_team_a: 4,
+      score_team_b: 2,
+      winner_team: 'a',
+      status: 'awaiting_confirmation',
+      confirmed_by: opts.preConfirmedBy,
     })
-    .select('id').single();
+    .select('id')
+    .single();
   if (error || !match) throw new Error(`seedAwaitingMatch: ${error?.message}`);
   return match.id as string;
 }
 
 Deno.test("match_kind 'friendly' → ELO unchanged after confirmation", async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-mk-friendly-${s}@test.local`, genderCategory: 'erkek' });
-  const bob = await createTestUser({ email: `bob-mk-friendly-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-mk-friendly-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
+  const bob = await createTestUser({
+    email: `bob-mk-friendly-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
 
   const aliceBefore = await getRating(alice.userId, 'erkek_tek');
   const bobBefore = await getRating(bob.userId, 'erkek_tek');
@@ -60,8 +80,10 @@ Deno.test("match_kind 'friendly' → ELO unchanged after confirmation", async ()
   assertEquals(bobBefore, 1200);
 
   const matchId = await seedAwaitingMatch({
-    aliceId: alice.userId, bobId: bob.userId,
-    kind: 'friendly', preConfirmedBy: [bob.userId],
+    aliceId: alice.userId,
+    bobId: bob.userId,
+    kind: 'friendly',
+    preConfirmedBy: [bob.userId],
   });
 
   try {
@@ -70,7 +92,11 @@ Deno.test("match_kind 'friendly' → ELO unchanged after confirmation", async ()
     assertEquals((res.body as { confirmed: boolean }).confirmed, true);
 
     const supa = adminClient();
-    const { data: m } = await supa.from('matches').select('status, kind').eq('id', matchId).single();
+    const { data: m } = await supa
+      .from('matches')
+      .select('status, kind')
+      .eq('id', matchId)
+      .single();
     assertEquals(m!.status, 'confirmed');
     assertEquals(m!.kind, 'friendly');
 
@@ -85,12 +111,20 @@ Deno.test("match_kind 'friendly' → ELO unchanged after confirmation", async ()
 
 Deno.test("match_kind 'ranking' → ELO updates after confirmation", async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-mk-ranking-${s}@test.local`, genderCategory: 'erkek' });
-  const bob = await createTestUser({ email: `bob-mk-ranking-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-mk-ranking-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
+  const bob = await createTestUser({
+    email: `bob-mk-ranking-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
 
   const matchId = await seedAwaitingMatch({
-    aliceId: alice.userId, bobId: bob.userId,
-    kind: 'ranking', preConfirmedBy: [bob.userId],
+    aliceId: alice.userId,
+    bobId: bob.userId,
+    kind: 'ranking',
+    preConfirmedBy: [bob.userId],
   });
 
   try {

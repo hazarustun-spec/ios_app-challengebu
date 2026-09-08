@@ -11,18 +11,18 @@
 //   - ELO delta tile: useEloHistory — cumulative delta across primary category
 //   - Primary category for ELO history: useMyRankings (same logic as home screen)
 
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Icon, type IconName } from '../../components/ui/Icon';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { FormGuide } from '../../components/ui/FormGuide';
 import type { FormResult } from '../../components/ui/FormGuide';
-import { useUserStats } from '../../hooks/use-my-stats';
+import { Icon, type IconName } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useEloHistory } from '../../hooks/use-elo-history';
-import { useMyRankings } from '../../hooks/use-my-rankings';
 import { useMyMatchHistory } from '../../hooks/use-match-history';
-import { useAuthStore } from '../../stores/auth-store';
+import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useUserStats } from '../../hooks/use-my-stats';
 import { myPerspective } from '../../lib/match-opponent';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -81,11 +81,7 @@ export default function Stats() {
 
   const eloDeltaRaw = computeEloDelta(byCategory, primaryCat);
   const eloDeltaLabel =
-    eloDeltaRaw === null
-      ? '—'
-      : eloDeltaRaw >= 0
-        ? `+${eloDeltaRaw}`
-        : String(eloDeltaRaw);
+    eloDeltaRaw === null ? '—' : eloDeltaRaw >= 0 ? `+${eloDeltaRaw}` : String(eloDeltaRaw);
 
   // "Öne çıkanlar" facts — only include rows where data is available.
   type Fact = readonly [IconName, string, string, string];
@@ -126,7 +122,11 @@ export default function Stats() {
     matchHistoryQ.refetch();
   };
 
-  const isRefetching = statsQ.isRefetching || rankingsQ.isRefetching || eloHistoryQ.isRefetching || matchHistoryQ.isRefetching;
+  const isRefetching =
+    statsQ.isRefetching ||
+    rankingsQ.isRefetching ||
+    eloHistoryQ.isRefetching ||
+    matchHistoryQ.isRefetching;
 
   const header = <NavHeader title="İstatistikler" onBack={() => router.back()} />;
 
@@ -178,9 +178,7 @@ export default function Stats() {
         }
       >
         {/* Big 2x2 */}
-        <View
-          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
-        >
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {BIG.map(([v, l]) => (
             <View
               key={l}
@@ -219,20 +217,11 @@ export default function Stats() {
             borderColor: colors.borderStrong,
           }}
         >
-          <View
-            className="flex-row justify-between"
-            style={{ marginBottom: 10 }}
-          >
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 13, color: colors.win }}
-            >
+          <View className="flex-row justify-between" style={{ marginBottom: 10 }}>
+            <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.win }}>
               {wins} Galibiyet
             </Text>
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 13, color: colors.loss }}
-            >
+            <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.loss }}>
               {losses} Mağlubiyet
             </Text>
           </View>
@@ -326,24 +315,15 @@ export default function Stats() {
                   <Icon name={icon} size={18} color={colors.clay} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text
-                    className="font-sans font-semibold text-text-3"
-                    style={{ fontSize: 12.5 }}
-                  >
+                  <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 12.5 }}>
                     {l}
                   </Text>
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 15 }}
-                  >
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
                     {v}
                   </Text>
                 </View>
                 {!!sub && (
-                  <Text
-                    className="font-sans font-semibold text-text-3"
-                    style={{ fontSize: 12 }}
-                  >
+                  <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 12 }}>
                     {sub}
                   </Text>
                 )}

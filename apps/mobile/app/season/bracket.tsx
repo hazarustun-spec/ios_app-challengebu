@@ -9,17 +9,17 @@
 // card. Rounds are inferred from BracketSlot.round (1 = QF, 2 = SF, 3 = F)
 // for an 8-player bracket. Graceful empty when no bracket seeded.
 
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { Icon } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useTournamentBracket, type BracketSlot } from '../../hooks/use-tournament-bracket';
-import { supabase } from '../../lib/supabase';
+import { type BracketSlot, useTournamentBracket } from '../../hooks/use-tournament-bracket';
 import { queryKeys } from '../../lib/query-keys';
+import { supabase } from '../../lib/supabase';
+import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
 // Local types
@@ -31,7 +31,12 @@ type SlotData = { name?: string; win?: boolean; id?: string };
 // Sub-components (design-preserved)
 // ---------------------------------------------------------------------------
 
-function Slot({ name, win, top, id }: { name?: string; win?: boolean; top?: boolean; id?: string }) {
+function Slot({
+  name,
+  win,
+  top,
+  id,
+}: { name?: string; win?: boolean; top?: boolean; id?: string }) {
   const slotStyle = {
     padding: 7,
     paddingHorizontal: 9,
@@ -111,8 +116,16 @@ function slotToMatchPair(slot: BracketSlot): [SlotData, SlotData] {
   const aWon = slot.winner_team === 'a';
   const bWon = slot.winner_team === 'b';
   return [
-    { name: slot.player_a_name ?? undefined, win: aWon || undefined, id: slot.player_a_id ?? undefined },
-    { name: slot.player_b_name ?? undefined, win: bWon || undefined, id: slot.player_b_id ?? undefined },
+    {
+      name: slot.player_a_name ?? undefined,
+      win: aWon || undefined,
+      id: slot.player_a_id ?? undefined,
+    },
+    {
+      name: slot.player_b_name ?? undefined,
+      win: bWon || undefined,
+      id: slot.player_b_id ?? undefined,
+    },
   ];
 }
 
@@ -262,7 +275,6 @@ export default function Bracket() {
     <View className="flex-1 bg-bg">
       {header}
       <ScrollView horizontal contentContainerStyle={{ padding: 16, alignItems: 'center', gap: 18 }}>
-
         {/* Çeyrek — only shown for 8-player brackets */}
         {qfSlots.length > 0 && (
           <View style={{ gap: 14 }}>
@@ -348,7 +360,6 @@ export default function Bracket() {
             </View>
           </View>
         )}
-
       </ScrollView>
     </View>
   );

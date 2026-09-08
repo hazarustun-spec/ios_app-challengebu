@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({
   targetUserId: z.string().uuid(),

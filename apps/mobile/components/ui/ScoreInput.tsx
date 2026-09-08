@@ -42,10 +42,7 @@ export function ScoreInput({ label, tint, onPress, disabled }: ScoreInputProps) 
       style={{ flex: 1, height: 84, gap: 5 }}
     >
       <Icon name="plus" size={27} color={tint ?? colors.text} stroke={2.6} />
-      <Text
-        className="font-sans font-extrabold"
-        style={{ fontSize: 13.5, color: colors.text }}
-      >
+      <Text className="font-sans font-extrabold" style={{ fontSize: 13.5, color: colors.text }}>
         {label}
       </Text>
     </Pressable>

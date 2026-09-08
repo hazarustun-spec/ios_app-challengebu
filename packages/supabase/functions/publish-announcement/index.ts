@@ -1,9 +1,9 @@
 import { z } from 'zod';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
-import { jsonResponse, errorResponse, internalError } from '../_shared/errors.ts';
+import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { type ExpoPushMessage, sendToExpo } from '../_shared/expo-push.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { requireAdmin, AuthError } from '../_shared/auth-guard.ts';
-import { sendToExpo, type ExpoPushMessage } from '../_shared/expo-push.ts';
 
 const inputSchema = z.object({
   title: z.string().min(1).max(200),
@@ -108,7 +108,10 @@ Deno.serve(async (req) => {
           await sendToExpo(slice);
           pushed += slice.length;
         } catch (pushErr) {
-          console.error('publish-announcement push fanout chunk failed', { offset: i, err: pushErr });
+          console.error('publish-announcement push fanout chunk failed', {
+            offset: i,
+            err: pushErr,
+          });
         }
       }
     }

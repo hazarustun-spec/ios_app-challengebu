@@ -1,7 +1,7 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/doodles.jsx :: Dots
 // Small dots burst — 8 circles around a centerless ring, alternating radii.
 import Svg, { Circle } from 'react-native-svg';
-import type { StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../../theme/colors';
 
 interface DotsProps {

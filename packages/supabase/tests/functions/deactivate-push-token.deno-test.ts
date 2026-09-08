@@ -51,9 +51,15 @@ Deno.test('deactivate-push-token: does not delete other users tokens', async () 
     );
     assertEquals(res.status, 200);
 
-    const { data: aTokens } = await supa.from('push_tokens').select('id').eq('profile_id', userA.userId);
+    const { data: aTokens } = await supa
+      .from('push_tokens')
+      .select('id')
+      .eq('profile_id', userA.userId);
     assertEquals(aTokens!.length, 1, 'A token must survive');
-    const { data: bTokens } = await supa.from('push_tokens').select('id').eq('profile_id', userB.userId);
+    const { data: bTokens } = await supa
+      .from('push_tokens')
+      .select('id')
+      .eq('profile_id', userB.userId);
     assertEquals(bTokens!.length, 1, 'B token unrelated, must survive');
   } finally {
     await teardownUsers([userA.userId, userB.userId]);

@@ -6,12 +6,12 @@
 // tried to read personalised feeds. This screen is the single dead-end the
 // AppGuards route them to instead — an explicit message plus a sign-out CTA.
 
-import { View, Text, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
-import { useAuthStore } from '../stores/auth-store';
 import { useSignOut } from '../hooks/use-sign-out';
+import { useAuthStore } from '../stores/auth-store';
 import { colors } from '../theme/colors';
 
 export default function SuspendedScreen() {

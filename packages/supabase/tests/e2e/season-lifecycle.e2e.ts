@@ -1,5 +1,10 @@
 import { assert, assertEquals } from 'jsr:@std/assert';
-import { adminClient, cleanupTestData, createTestUser, invokeFunction } from '../functions/helpers.ts';
+import {
+  adminClient,
+  cleanupTestData,
+  createTestUser,
+  invokeFunction,
+} from '../functions/helpers.ts';
 
 Deno.test('season-lifecycle E2E: close-season + start-season-finale', async () => {
   await cleanupTestData();
@@ -95,12 +100,19 @@ Deno.test('season-lifecycle E2E: close-season + start-season-finale', async () =
     .from('elo_ratings')
     .select('profile_id, rating, matches_played')
     .eq('category', 'erkek_tek')
-    .in('profile_id', players.map((p) => p.userId));
+    .in(
+      'profile_id',
+      players.map((p) => p.userId),
+    );
   for (const row of ratingsAfter ?? []) {
     const i = players.findIndex((p) => p.userId === row.profile_id);
     const original = 1400 + (8 - i) * 25;
     const expected = Math.round((original + 1200) / 2);
-    assertEquals(row.rating, expected, `player${i} soft-reset expected ${expected} got ${row.rating}`);
+    assertEquals(
+      row.rating,
+      expected,
+      `player${i} soft-reset expected ${expected} got ${row.rating}`,
+    );
     assertEquals(row.matches_played, 0);
   }
 

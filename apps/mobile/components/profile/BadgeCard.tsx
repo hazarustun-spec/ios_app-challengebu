@@ -20,16 +20,17 @@ export function BadgeCard({ icon, name_tr, description_tr, earned }: Props) {
       >
         <Text className={`text-3xl ${earned ? '' : 'opacity-30'}`}>{icon}</Text>
         <Text
-          className={`mt-1 text-center text-[10px] ${
-            earned ? 'text-gray-900' : 'text-gray-400'
-          }`}
+          className={`mt-1 text-center text-[10px] ${earned ? 'text-gray-900' : 'text-gray-400'}`}
           numberOfLines={1}
         >
           {name_tr}
         </Text>
       </Pressable>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <Pressable onPress={() => setOpen(false)} className="flex-1 items-center justify-center bg-black/50">
+        <Pressable
+          onPress={() => setOpen(false)}
+          className="flex-1 items-center justify-center bg-black/50"
+        >
           <View className="mx-8 items-center rounded-2xl bg-white p-6">
             <Text className="text-5xl">{icon}</Text>
             <Text className="mt-3 text-lg font-bold text-gray-900">{name_tr}</Text>

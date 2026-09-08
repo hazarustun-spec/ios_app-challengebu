@@ -16,19 +16,12 @@
 //     closed season (used to navigate to /tournament/[id] on card tap)
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import { router } from 'expo-router';
 import { seasonDisplayName } from '@tennis/shared';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useAdminSeasons } from '../../hooks/use-admin-seasons';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
@@ -108,9 +101,7 @@ function useSeasonChampions() {
         .filter((r) => r.season_id !== null && r.badge !== null)
         .map((r) => ({
           seasonId: r.season_id!,
-          name: r.profile
-            ? `${r.profile.first_name} ${r.profile.last_name}`.trim()
-            : 'Bilinmeyen',
+          name: r.profile ? `${r.profile.first_name} ${r.profile.last_name}`.trim() : 'Bilinmeyen',
           badgeCode: r.badge!.code,
         }));
     },
@@ -145,8 +136,7 @@ export default function SeasonArchive() {
 
   const isLoading = seasonsQ.isLoading || championsQ.isLoading;
   const isError = seasonsQ.isError || championsQ.isError;
-  const isRefetching =
-    (seasonsQ.isRefetching ?? false) || (championsQ.isRefetching ?? false);
+  const isRefetching = (seasonsQ.isRefetching ?? false) || (championsQ.isRefetching ?? false);
 
   // Build a lookup: seasonId → champion badge rows
   const champMap = new Map<string, SeasonChampion[]>();
@@ -159,9 +149,7 @@ export default function SeasonArchive() {
   // Lookup: seasonId → erkek_tek tournament id (may be undefined for old seasons)
   const tournamentIdMap = tournamentsQ.data ?? {};
 
-  const header = (
-    <NavHeader title="Geçmiş Sezonlar" onBack={() => router.back()} />
-  );
+  const header = <NavHeader title="Geçmiş Sezonlar" onBack={() => router.back()} />;
 
   if (isLoading) {
     return (
@@ -189,10 +177,7 @@ export default function SeasonArchive() {
               void tournamentsQ.refetch();
             }}
           >
-            <Text
-              className="font-sans font-bold"
-              style={{ fontSize: 14, color: colors.court }}
-            >
+            <Text className="font-sans font-bold" style={{ fontSize: 14, color: colors.court }}>
               Tekrar dene
             </Text>
           </Pressable>
@@ -243,21 +228,12 @@ export default function SeasonArchive() {
 
           const cardContent = (
             <>
-              <View
-                className="flex-row items-center justify-between"
-                style={{ marginBottom: 12 }}
-              >
-                <Text
-                  className="font-sans font-extrabold text-text"
-                  style={{ fontSize: 16 }}
-                >
+              <View className="flex-row items-center justify-between" style={{ marginBottom: 12 }}>
+                <Text className="font-sans font-extrabold text-text" style={{ fontSize: 16 }}>
                   {seasonTitle}
                 </Text>
                 <View className="flex-row items-center" style={{ gap: 6 }}>
-                  <Text
-                    className="font-num font-semibold text-text-3"
-                    style={{ fontSize: 12 }}
-                  >
+                  <Text className="font-num font-semibold text-text-3" style={{ fontSize: 12 }}>
                     {dateRange}
                   </Text>
                   {tournamentId !== undefined && (
@@ -271,16 +247,10 @@ export default function SeasonArchive() {
               >
                 <Icon name="crown" size={20} color={GOLD} />
                 <View style={{ flex: 1 }}>
-                  <Text
-                    className="font-sans font-semibold text-text-3"
-                    style={{ fontSize: 11 }}
-                  >
+                  <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11 }}>
                     Şampiyon
                   </Text>
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 14 }}
-                  >
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
                     {champName ?? '—'}
                   </Text>
                 </View>
@@ -295,10 +265,7 @@ export default function SeasonArchive() {
                     }}
                   >
                     <Icon name="trophy" size={12} color={GOLD} />
-                    <Text
-                      className="font-sans font-bold"
-                      style={{ fontSize: 11, color: GOLD }}
-                    >
+                    <Text className="font-sans font-bold" style={{ fontSize: 11, color: GOLD }}>
                       Yıllık
                     </Text>
                   </View>

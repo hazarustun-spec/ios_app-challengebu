@@ -37,10 +37,7 @@ export function FormatChip({ fmtKey, size = 11 }: FormatChipProps) {
       }}
     >
       <Icon name={fmt.mark} size={size + 2} color={fmt.color} />
-      <Text
-        className="font-sans font-bold"
-        style={{ fontSize: size, color: fmt.color }}
-      >
+      <Text className="font-sans font-bold" style={{ fontSize: size, color: fmt.color }}>
         {fmt.name}
       </Text>
     </View>

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { scoreCandidates, type Candidate, type Me } from '../opponent-suggest';
+import { type Candidate, type Me, scoreCandidates } from '../opponent-suggest';
 
 const me: Me = {
   userId: 'me',

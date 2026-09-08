@@ -7,8 +7,8 @@
 // Mirrors the style of use-conversations.ts.
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 
 export interface MessageableContact {

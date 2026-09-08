@@ -8,8 +8,18 @@
 // No React-Native imports → safe to unit test under bun test.
 
 const TR_MONTHS = [
-  'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-  'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
+  'Oca',
+  'Şub',
+  'Mar',
+  'Nis',
+  'May',
+  'Haz',
+  'Tem',
+  'Ağu',
+  'Eyl',
+  'Eki',
+  'Kas',
+  'Ara',
 ];
 // JS getDay(): 0 = Sunday … 6 = Saturday
 const TR_WEEKDAYS = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];

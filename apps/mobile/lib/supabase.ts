@@ -10,14 +10,18 @@ const ExpoSecureStoreAdapter = {
   removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
-export const supabase = createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.EXPO_PUBLIC_SUPABASE_ANON_KEY, {
-  auth: {
-    storage: ExpoSecureStoreAdapter,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+export const supabase = createClient(
+  env.EXPO_PUBLIC_SUPABASE_URL,
+  env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      storage: ExpoSecureStoreAdapter,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
   },
-});
+);
 
 // `autoRefreshToken` alone is not enough on React Native. The refresh timer is
 // a JS interval, and the OS suspends it the moment the app leaves the

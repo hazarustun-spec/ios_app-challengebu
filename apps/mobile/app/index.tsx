@@ -1,10 +1,10 @@
-import { Redirect, type Href } from 'expo-router';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { type Href, Redirect } from 'expo-router';
 import { useState } from 'react';
-import { useAuthStore } from '../stores/auth-store';
-import { useOnboardingStore, firstIncompleteStep } from '../stores/onboarding-store';
-import { loadProfile } from '../lib/auth-bootstrap';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { Button } from '../components/ui/Button';
+import { loadProfile } from '../lib/auth-bootstrap';
+import { useAuthStore } from '../stores/auth-store';
+import { firstIncompleteStep, useOnboardingStore } from '../stores/onboarding-store';
 import { colors } from '../theme/colors';
 
 export default function Index() {

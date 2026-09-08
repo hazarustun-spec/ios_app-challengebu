@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface AdminHealth {
   totalUsers: number;
@@ -34,10 +34,7 @@ export function useAdminHealth() {
           .from('matches')
           .select('id', { count: 'exact', head: true })
           .gte('played_at', startIso),
-        supabase
-          .from('disputes')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'open'),
+        supabase.from('disputes').select('id', { count: 'exact', head: true }).eq('status', 'open'),
         supabase
           .from('match_requests')
           .select('id', { count: 'exact', head: true })

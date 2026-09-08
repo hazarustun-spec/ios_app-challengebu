@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
-import { Icon, type IconName } from '../ui/Icon';
 import { colors } from '../../theme/colors';
+import { Icon, type IconName } from '../ui/Icon';
 
 interface Props {
   title: string;

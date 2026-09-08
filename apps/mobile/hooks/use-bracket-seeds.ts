@@ -12,8 +12,8 @@
 // uuid[8] array.
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface BracketSeedEntry {
   rank: number;
@@ -34,15 +34,12 @@ export interface UseBracketSeedsInput {
   bracketSize: number;
 }
 
-export function useBracketSeeds({
-  seasonId,
-  category,
-  bracketSize,
-}: UseBracketSeedsInput) {
+export function useBracketSeeds({ seasonId, category, bracketSize }: UseBracketSeedsInput) {
   return useQuery<BracketSeedEntry[]>({
-    queryKey: seasonId && category
-      ? [...queryKeys.admin.all, 'bracket-seeds', seasonId, category, bracketSize]
-      : [...queryKeys.admin.all, 'bracket-seeds', 'disabled'],
+    queryKey:
+      seasonId && category
+        ? [...queryKeys.admin.all, 'bracket-seeds', seasonId, category, bracketSize]
+        : [...queryKeys.admin.all, 'bracket-seeds', 'disabled'],
     enabled: !!seasonId && !!category,
     queryFn: async () => {
       if (!seasonId || !category) return [];

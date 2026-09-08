@@ -1,20 +1,20 @@
-import { useMemo } from 'react';
 import {
+  type InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQueryClient,
-  type InfiniteData,
 } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { queryKeys } from '../lib/query-keys';
-import { useAuthStore } from '../stores/auth-store';
+import { useMemo } from 'react';
 import { invokeFunction } from '../lib/invoke-function';
-import { useRealtimeChannel } from './use-realtime-channel';
+import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../stores/auth-store';
 import {
-  useMessageOutboxStore,
   type OutboxMessage,
   type OutboxStatus,
+  useMessageOutboxStore,
 } from '../stores/message-outbox-store';
+import { useRealtimeChannel } from './use-realtime-channel';
 
 export interface MessageRow {
   id: string;
@@ -46,8 +46,7 @@ interface SendMessageResponse {
 /** Rows fetched per page. Keyset-paginated on `created_at`, newest first. */
 export const MESSAGES_PAGE_SIZE = 50;
 
-const MESSAGE_COLUMNS =
-  'id, conversation_id, sender_id, body, created_at, read_at, deleted_at';
+const MESSAGE_COLUMNS = 'id, conversation_id, sender_id, body, created_at, read_at, deleted_at';
 
 type MessagesPage = MessageRow[];
 /** Shape TanStack stores under `queryKeys.conversations.messages(id)`. */
@@ -98,10 +97,7 @@ function outboxToRow(entry: OutboxMessage): MessageRow {
  * twice in a row. `failed` rows are never matched — they never reached the
  * server, so nothing on the server can stand in for them.
  */
-function mergeOutbox(
-  server: MessageRow[],
-  outbox: OutboxMessage[],
-): MessageRow[] {
+function mergeOutbox(server: MessageRow[], outbox: OutboxMessage[]): MessageRow[] {
   if (outbox.length === 0) return server;
 
   const absorbed = new Set<string>();
@@ -139,10 +135,7 @@ function mergeOutbox(
   let i = 0;
   let j = 0;
   while (i < pendingRows.length && j < server.length) {
-    if (
-      Date.parse(pendingRows[i]!.created_at) >=
-      Date.parse(server[j]!.created_at)
-    ) {
+    if (Date.parse(pendingRows[i]!.created_at) >= Date.parse(server[j]!.created_at)) {
       out.push(pendingRows[i++]!);
     } else {
       out.push(server[j++]!);
@@ -169,9 +162,7 @@ export function useMessages(conversationId: string | undefined) {
 
   // Realtime subscription — only when we have a valid conversationId and user
   useRealtimeChannel({
-    channelName: conversationId
-      ? `messages:thread:${conversationId}`
-      : 'messages:thread:none',
+    channelName: conversationId ? `messages:thread:${conversationId}` : 'messages:thread:none',
     enabled: !!conversationId && !!myUserId,
     configs: [
       {
@@ -225,19 +216,12 @@ export function useMessages(conversationId: string | undefined) {
   // zustand v5 a fresh array on every store read and loop the snapshot check.
   const outboxItems = useMessageOutboxStore((s) => s.items);
   const outboxForThread = useMemo(
-    () =>
-      conversationId
-        ? outboxItems.filter((i) => i.conversationId === conversationId)
-        : [],
+    () => (conversationId ? outboxItems.filter((i) => i.conversationId === conversationId) : []),
     [outboxItems, conversationId],
   );
 
   const messages = useMemo(
-    () =>
-      mergeOutbox(
-        flattenPages(query.data as MessagesCache | undefined),
-        outboxForThread,
-      ),
+    () => mergeOutbox(flattenPages(query.data as MessagesCache | undefined), outboxForThread),
     [query.data, outboxForThread],
   );
 
@@ -275,20 +259,11 @@ interface SendMessageContext {
 export function useSendMessage() {
   const qc = useQueryClient();
 
-  return useMutation<
-    SendMessageResponse,
-    Error,
-    SendMessageVars,
-    SendMessageContext
-  >({
+  return useMutation<SendMessageResponse, Error, SendMessageVars, SendMessageContext>({
     mutationFn: async ({ conversationId, body }) => {
       const token = useAuthStore.getState().session?.access_token;
       if (!token) throw new Error('Oturum bulunamadı');
-      return invokeFunction<SendMessageResponse>(
-        'send-message',
-        { conversationId, body },
-        token,
-      );
+      return invokeFunction<SendMessageResponse>('send-message', { conversationId, body }, token);
     },
     onMutate: ({ conversationId, body, outboxId }) => {
       const outbox = useMessageOutboxStore.getState();

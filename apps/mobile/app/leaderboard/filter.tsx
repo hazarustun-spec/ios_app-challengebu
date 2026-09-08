@@ -12,23 +12,23 @@
 // "Sıfırla" calls store.reset(), primary CTA shows the live filtered count
 // for the current category and navigates back on press.
 
-import { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { CheckBox } from '../../components/ui/CheckBox';
-import { Toggle } from '../../components/ui/Toggle';
 import { Icon } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { Toggle } from '../../components/ui/Toggle';
 import { useLadder } from '../../hooks/use-ladder';
-import {
-  useLeaderboardFilterStore,
-  applyLadderFilter,
-  type LadderFilter,
-} from '../../stores/leaderboard-filter-store';
 import { AVAILABILITY_SLOTS as SLOTS } from '../../lib/availability';
+import {
+  type LadderFilter,
+  applyLadderFilter,
+  useLeaderboardFilterStore,
+} from '../../stores/leaderboard-filter-store';
+import { colors } from '../../theme/colors';
 
 const ELO_MIN = 900;
 const ELO_MAX = 2000;
@@ -61,36 +61,19 @@ export default function FilterPanel() {
     [eloMin, eloMax, availability, showFrozen, showHibernating],
   );
 
-  const count = useMemo(
-    () => applyLadderFilter(rows, currentFilter).length,
-    [rows, currentFilter],
-  );
+  const count = useMemo(() => applyLadderFilter(rows, currentFilter).length, [rows, currentFilter]);
 
   return (
     <View className="flex-1 bg-bg">
-      <NavHeader
-        title="Filtrele"
-        onBack={() => router.back()}
-        action="Sıfırla"
-        onAction={reset}
-      />
+      <NavHeader title="Filtrele" onBack={() => router.back()} action="Sıfırla" onAction={reset} />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 24 }}>
         {/* ELO range */}
         <View>
-          <View
-            className="flex-row justify-between"
-            style={{ marginBottom: 12 }}
-          >
-            <Text
-              className="font-sans font-bold text-text"
-              style={{ fontSize: 15 }}
-            >
+          <View className="flex-row justify-between" style={{ marginBottom: 12 }}>
+            <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
               ELO aralığı
             </Text>
-            <Text
-              className="font-num font-bold"
-              style={{ fontSize: 14, color: colors.clay }}
-            >
+            <Text className="font-num font-bold" style={{ fontSize: 14, color: colors.clay }}>
               {eloMin} – {eloMax}
             </Text>
           </View>
@@ -124,9 +107,7 @@ export default function FilterPanel() {
           >
             Müsaitlik
           </Text>
-          <View
-            style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}
-          >
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             {SLOTS.map((s) => {
               const on = availability.includes(s.key);
               return (
@@ -145,10 +126,7 @@ export default function FilterPanel() {
                   }}
                 >
                   <CheckBox checked={on} onChange={() => toggleAvailability(s.key)} />
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 12.5 }}
-                  >
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 12.5 }}>
                     {s.label}
                   </Text>
                 </Pressable>
@@ -166,16 +144,10 @@ export default function FilterPanel() {
           >
             <Icon name="snow" size={20} color={colors.frozen} />
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 14.5 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                 Donmuş oyuncular
               </Text>
-              <Text
-                className="font-sans"
-                style={{ fontSize: 12.5, color: colors.text3 }}
-              >
+              <Text className="font-sans" style={{ fontSize: 12.5, color: colors.text3 }}>
                 30+ gündür inaktif
               </Text>
             </View>
@@ -188,16 +160,10 @@ export default function FilterPanel() {
           >
             <Icon name="moon" size={20} color={colors.text2} />
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 14.5 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                 Hibernasyondakiler
               </Text>
-              <Text
-                className="font-sans"
-                style={{ fontSize: 12.5, color: colors.text3 }}
-              >
+              <Text className="font-sans" style={{ fontSize: 12.5, color: colors.text3 }}>
                 Sezon arası dinlenenler
               </Text>
             </View>

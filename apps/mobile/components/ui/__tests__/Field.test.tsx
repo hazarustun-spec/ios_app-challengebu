@@ -105,8 +105,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -130,16 +129,12 @@ function find(
 
 describe('Field', () => {
   test('renders with label + placeholder', () => {
-    expect(
-      normalize(Field({ label: 'Ad', placeholder: 'Adın', value: '' })),
-    ).toMatchSnapshot();
+    expect(normalize(Field({ label: 'Ad', placeholder: 'Adın', value: '' }))).toMatchSnapshot();
   });
 
   test('renders with leading icon + suffix', () => {
     expect(
-      normalize(
-        Field({ icon: 'mail', suffix: 'değiştir', value: 'ad@example.edu.tr' }),
-      ),
+      normalize(Field({ icon: 'mail', suffix: 'değiştir', value: 'ad@example.edu.tr' })),
     ).toMatchSnapshot();
   });
 
@@ -192,9 +187,7 @@ describe('Field', () => {
   });
 
   test('onSuffixPress wraps suffix in a Pressable', () => {
-    const tree = normalize(
-      Field({ value: '', suffix: 'göster', onSuffixPress: () => {} }),
-    );
+    const tree = normalize(Field({ value: '', suffix: 'göster', onSuffixPress: () => {} }));
     expect(tree).toMatchSnapshot();
     const pressable = find(tree, (n) => n.type === 'Pressable');
     expect(pressable).not.toBeNull();
@@ -208,9 +201,7 @@ describe('SearchBar', () => {
   });
 
   test('custom placeholder', () => {
-    expect(
-      normalize(renderSearchBar({ placeholder: 'Oyuncu ara…', value: '' })),
-    ).toMatchSnapshot();
+    expect(normalize(renderSearchBar({ placeholder: 'Oyuncu ara…', value: '' }))).toMatchSnapshot();
   });
 
   test('SearchBar delegates to Field with type=search', () => {

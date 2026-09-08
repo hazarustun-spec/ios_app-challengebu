@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
+import { onboardingSchema } from '@tennis/shared/schemas';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { onboardingSchema } from '@tennis/shared/schemas';
-import { supabase } from '../lib/supabase';
 import { SLOT_TO_DB } from '../lib/availability';
-import { useAuthStore } from '../stores/auth-store';
 import { captureException } from '../lib/sentry';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../stores/auth-store';
 import type { OnboardingState } from '../stores/onboarding-store';
 
 type DraftSnapshot = Omit<OnboardingState, 'setField' | 'reset'>;
@@ -67,9 +67,7 @@ function validateDraft(draft: DraftSnapshot, phone: string | null) {
     where: 'useSubmitOnboarding.validateDraft',
     fields,
   });
-  throw new Error(
-    'Profil bilgilerinde eksik ya da geçersiz alan var. Adımlara dönüp kontrol et.',
-  );
+  throw new Error('Profil bilgilerinde eksik ya da geçersiz alan var. Adımlara dönüp kontrol et.');
 }
 
 export function useSubmitOnboarding() {
@@ -106,18 +104,14 @@ export function useSubmitOnboarding() {
           });
           const buffer = Uint8Array.from(atob(fileData), (c) => c.charCodeAt(0));
           const fileName = `${user.id}.jpg`;
-          const { error: upErr } = await supabase.storage
-            .from('avatars')
-            .upload(fileName, buffer, {
-              contentType: 'image/jpeg',
-              upsert: true,
-            });
+          const { error: upErr } = await supabase.storage.from('avatars').upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          });
           if (upErr) {
             captureException(upErr, { where: 'useSubmitOnboarding.avatarUpload' });
           } else {
-            const { data: urlData } = supabase.storage
-              .from('avatars')
-              .getPublicUrl(fileName);
+            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
             avatarUrl = urlData.publicUrl;
           }
         } catch (err) {

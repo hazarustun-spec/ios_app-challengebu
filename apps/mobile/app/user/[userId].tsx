@@ -16,28 +16,28 @@
 // pushes to `/match/new/detail` so the wizard lands on detail with the
 // opponent already chosen.
 
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Avatar } from '../../components/ui/Avatar';
-import { LevelIcon } from '../../components/ui/LevelIcon';
-import { Button } from '../../components/ui/Button';
-import { Icon } from '../../components/ui/Icon';
-import { EmptyState } from '../../components/ui/EmptyState';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { RecentMatches } from '../../components/profile/RecentMatches';
+import { Avatar } from '../../components/ui/Avatar';
+import { Button } from '../../components/ui/Button';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { FormGuide } from '../../components/ui/FormGuide';
 import type { FormResult } from '../../components/ui/FormGuide';
+import { Icon } from '../../components/ui/Icon';
+import { LevelIcon } from '../../components/ui/LevelIcon';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { useHeadToHead } from '../../hooks/use-head-to-head';
+import { useUserMatchHistory } from '../../hooks/use-match-history';
+import { useMessageableContacts } from '../../hooks/use-messageable-contacts';
+import { useUserRankings } from '../../hooks/use-my-rankings';
+import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
+import { useStartConversation } from '../../hooks/use-start-conversation';
+import { formatClassYear } from '../../lib/class-year';
 import { levelForElo } from '../../lib/levels';
 import { myPerspective } from '../../lib/match-opponent';
-import { formatClassYear } from '../../lib/class-year';
-import { useNewMatchStore } from '../../stores/new-match-store';
 import { useAuthStore } from '../../stores/auth-store';
-import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
-import { useUserRankings } from '../../hooks/use-my-rankings';
-import { useUserMatchHistory } from '../../hooks/use-match-history';
-import { useHeadToHead } from '../../hooks/use-head-to-head';
-import { useMessageableContacts } from '../../hooks/use-messageable-contacts';
-import { useStartConversation } from '../../hooks/use-start-conversation';
+import { useNewMatchStore } from '../../stores/new-match-store';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -153,8 +153,8 @@ export default function PlayerPreview() {
   const h2hLabel = h2hQ.isLoading
     ? '…'
     : h2h.totalMatches === 0
-    ? '—'
-    : `${h2h.theirWins}-${h2h.myWins}`;
+      ? '—'
+      : `${h2h.theirWins}-${h2h.myWins}`;
 
   const meydanOku = () => {
     setField('opponent', {
@@ -165,9 +165,7 @@ export default function PlayerPreview() {
     router.push('/match/new/detail' as never);
   };
 
-  const header = (
-    <NavHeader title="Oyuncu" onBack={() => router.back()} close />
-  );
+  const header = <NavHeader title="Oyuncu" onBack={() => router.back()} close />;
 
   if (isLoading) {
     return (
@@ -228,10 +226,7 @@ export default function PlayerPreview() {
         {/* Hero */}
         <View style={{ alignItems: 'center', gap: 8, paddingTop: 6 }}>
           <Avatar name={name} size={92} ring={lv.color} />
-          <View
-            className="flex-row items-center"
-            style={{ gap: 8, marginTop: 4 }}
-          >
+          <View className="flex-row items-center" style={{ gap: 8, marginTop: 4 }}>
             <Text
               className="font-display font-extrabold text-text"
               style={{ fontSize: 23, letterSpacing: -0.46 }}
@@ -239,10 +234,7 @@ export default function PlayerPreview() {
               {name}
             </Text>
           </View>
-          <View
-            className="flex-row items-center"
-            style={{ gap: 8 }}
-          >
+          <View className="flex-row items-center" style={{ gap: 8 }}>
             {pronoun && (
               <View
                 className="bg-surface-2 rounded-pill"
@@ -256,24 +248,15 @@ export default function PlayerPreview() {
                 </Text>
               </View>
             )}
-            <View
-              className="flex-row items-center"
-              style={{ gap: 5 }}
-            >
+            <View className="flex-row items-center" style={{ gap: 5 }}>
               <LevelIcon level={lv} size={16} />
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 13.5, color: lv.color }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 13.5, color: lv.color }}>
                 {lv.name}
               </Text>
             </View>
           </View>
           {(showDept || showYear) && (
-            <Text
-              className="font-sans"
-              style={{ fontSize: 13, color: colors.text2 }}
-            >
+            <Text className="font-sans" style={{ fontSize: 13, color: colors.text2 }}>
               {[showDept ? deptName : null, showYear ? formatClassYear(p.class_year) : null]
                 .filter(Boolean)
                 .join(' · ')}
@@ -282,10 +265,7 @@ export default function PlayerPreview() {
         </View>
 
         {/* Stats 2x2 row */}
-        <View
-          className="flex-row"
-          style={{ gap: 8, marginTop: 12 }}
-        >
+        <View className="flex-row" style={{ gap: 8, marginTop: 12 }}>
           {(
             [
               ['Rank', primaryRank !== null ? `#${primaryRank}` : '—'],
@@ -305,10 +285,7 @@ export default function PlayerPreview() {
                 alignItems: 'center',
               }}
             >
-              <Text
-                className="font-num font-bold text-text"
-                style={{ fontSize: 19 }}
-              >
+              <Text className="font-num font-bold text-text" style={{ fontSize: 19 }}>
                 {v}
               </Text>
               <Text
@@ -360,10 +337,7 @@ export default function PlayerPreview() {
               >
                 {CATEGORY_LABELS[primaryRanking.category] ?? primaryRanking.category} · ELO
               </Text>
-              <Text
-                className="font-num font-extrabold"
-                style={{ fontSize: 26, color: lv.color }}
-              >
+              <Text className="font-num font-extrabold" style={{ fontSize: 26, color: lv.color }}>
                 {primaryRanking.rating}
               </Text>
             </View>
@@ -387,10 +361,7 @@ export default function PlayerPreview() {
 
         {/* Frozen banner */}
         {frozen && (
-          <View
-            className="flex-row bg-frozen-soft rounded-md"
-            style={{ padding: 13, gap: 10 }}
-          >
+          <View className="flex-row bg-frozen-soft rounded-md" style={{ padding: 13, gap: 10 }}>
             <Icon name="snow" size={18} color={colors.frozen} />
             <Text
               className="font-sans"
@@ -401,9 +372,8 @@ export default function PlayerPreview() {
                 color: colors.text2,
               }}
             >
-              Bu oyuncu{' '}
-              <Text className="font-bold">donmuş</Text> durumda (30+ gündür
-              inaktif). Meydan okuman onu yeniden aktifleştirir.
+              Bu oyuncu <Text className="font-bold">donmuş</Text> durumda (30+ gündür inaktif).
+              Meydan okuman onu yeniden aktifleştirir.
             </Text>
           </View>
         )}
@@ -426,28 +396,16 @@ export default function PlayerPreview() {
               KARŞILAŞTIRMALARIMIZDAKİ SKOR
             </Text>
             <View className="flex-row items-center" style={{ gap: 12, marginTop: 4 }}>
-              <Text
-                className="font-num font-extrabold text-text"
-                style={{ fontSize: 26 }}
-              >
+              <Text className="font-num font-extrabold text-text" style={{ fontSize: 26 }}>
                 {h2h.theirWins}
               </Text>
-              <Text
-                className="font-sans font-bold text-text-3"
-                style={{ fontSize: 14 }}
-              >
+              <Text className="font-sans font-bold text-text-3" style={{ fontSize: 14 }}>
                 –
               </Text>
-              <Text
-                className="font-num font-extrabold text-text"
-                style={{ fontSize: 26 }}
-              >
+              <Text className="font-num font-extrabold text-text" style={{ fontSize: 26 }}>
                 {h2h.myWins}
               </Text>
-              <Text
-                className="font-sans text-text-3"
-                style={{ fontSize: 12.5, flex: 1 }}
-              >
+              <Text className="font-sans text-text-3" style={{ fontSize: 12.5, flex: 1 }}>
                 {h2h.totalMatches} maç oynandı
               </Text>
             </View>

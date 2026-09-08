@@ -15,22 +15,9 @@
 // Data and logic unchanged: useEloHistory, category logic, stats row,
 // share sheet are identical to the original.
 
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
-import Svg, {
-  Circle,
-  Defs,
-  Line,
-  LinearGradient,
-  Path,
-  Stop,
-} from 'react-native-svg';
+import { ActivityIndicator, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -38,24 +25,17 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
+import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop } from 'react-native-svg';
+import { CardEloProgress } from '../../components/share/CardEloProgress';
+import { ShareSheet } from '../../components/share/ShareSheet';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Segmented } from '../../components/ui/Segmented';
-import {
-  useEloHistory,
-  type EloPoint,
-  type SeasonBoundary,
-} from '../../hooks/use-elo-history';
-import { useAuthStore } from '../../stores/auth-store';
+import { type EloPoint, type SeasonBoundary, useEloHistory } from '../../hooks/use-elo-history';
 import { useMyProfile } from '../../hooks/use-profile';
-import {
-  primaryCategoryOf,
-  defaultCategoryForGender,
-} from '../../lib/primary-category';
-import { colors } from '../../theme/colors';
-import { ShareSheet } from '../../components/share/ShareSheet';
-import { CardEloProgress } from '../../components/share/CardEloProgress';
 import { levelForElo } from '../../lib/levels';
+import { defaultCategoryForGender, primaryCategoryOf } from '../../lib/primary-category';
+import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
 
 // AnimatedPath must be created outside the component so
 // Animated.createAnimatedComponent runs only once (mirrors LevelRing pattern).
@@ -73,15 +53,18 @@ const CATEGORY_LABELS: Record<string, string> = {
   erkek_cift: 'Erkek Çift',
 };
 
-const H = 160;   // chart height (px)
-const PAD = 10;  // inset padding inside the chart
+const H = 160; // chart height (px)
+const PAD = 10; // inset padding inside the chart
 
 const TOOLTIP_W = 90;
 const TOOLTIP_H = 44;
 
 // ─── geometry helpers ────────────────────────────────────────────────────────
 
-interface Pt { x: number; y: number }
+interface Pt {
+  x: number;
+  y: number;
+}
 
 /** Convert ELO values to chart-space {x, y} coordinates. */
 function makePts(data: number[], w: number): Pt[] {
@@ -90,10 +73,7 @@ function makePts(data: number[], w: number): Pt[] {
   const max = data.length === 1 ? data[0] + 30 : Math.max(...data) + 30;
   const range = max - min || 1;
   return data.map((v, i) => ({
-    x:
-      data.length === 1
-        ? w / 2
-        : PAD + (i * (w - PAD * 2)) / (data.length - 1),
+    x: data.length === 1 ? w / 2 : PAD + (i * (w - PAD * 2)) / (data.length - 1),
     y: H - PAD - ((v - min) / range) * (H - PAD * 2),
   }));
 }
@@ -151,26 +131,18 @@ function approxPathLen(pts: Pt[]): number {
 
 // ─── season helpers ───────────────────────────────────────────────────────────
 
-function seasonMarkerIndices(
-  points: EloPoint[],
-  boundaries: SeasonBoundary[],
-): number[] {
+function seasonMarkerIndices(points: EloPoint[], boundaries: SeasonBoundary[]): number[] {
   if (points.length === 0 || boundaries.length === 0) return [];
   return boundaries
     .map((b) => {
       const ts = new Date(b.timestamp).getTime();
-      const idx = points.findIndex(
-        (p) => new Date(p.played_at).getTime() >= ts,
-      );
+      const idx = points.findIndex((p) => new Date(p.played_at).getTime() >= ts);
       return idx;
     })
     .filter((idx) => idx >= 0 && idx < points.length);
 }
 
-function countSeasonsForCategory(
-  points: EloPoint[],
-  boundaries: SeasonBoundary[],
-): number {
+function countSeasonsForCategory(points: EloPoint[], boundaries: SeasonBoundary[]): number {
   if (points.length === 0) return 0;
   const first = new Date(points[0].played_at).getTime();
   const last = new Date(points[points.length - 1].played_at).getTime();
@@ -257,7 +229,7 @@ export default function EloHistory() {
   }));
 
   // ── derived display values ──
-  const current = eloValues.length > 0 ? eloValues[eloValues.length - 1] ?? 0 : 0;
+  const current = eloValues.length > 0 ? (eloValues[eloValues.length - 1] ?? 0) : 0;
   const peak = eloValues.length > 0 ? Math.max(...eloValues) : 0;
   const selValue = eloValues[clampedSel] ?? 0;
   const selPoint = catPoints[clampedSel];
@@ -268,7 +240,7 @@ export default function EloHistory() {
       })
     : '';
 
-  const firstElo = eloValues.length > 0 ? eloValues[0] ?? 0 : 0;
+  const firstElo = eloValues.length > 0 ? (eloValues[0] ?? 0) : 0;
   const totalGain = eloValues.length > 1 ? current - firstElo : 0;
   const totalGainLabel = totalGain >= 0 ? `+${totalGain}` : `${totalGain}`;
 
@@ -280,9 +252,7 @@ export default function EloHistory() {
   const tooltipLeft = selPt
     ? Math.max(0, Math.min(selPt.x - TOOLTIP_W / 2, chartW - TOOLTIP_W))
     : 0;
-  const tooltipTop = selPt
-    ? Math.max(PAD + 2, selPt.y - TOOLTIP_H - 10)
-    : 0;
+  const tooltipTop = selPt ? Math.max(PAD + 2, selPt.y - TOOLTIP_H - 10) : 0;
 
   // ── shared chrome ──
   const header = (
@@ -374,35 +344,20 @@ export default function EloHistory() {
           style={{ padding: 18, borderWidth: 1, borderColor: colors.borderStrong }}
         >
           {/* Header: current ELO / peak */}
-          <View
-            className="flex-row items-end justify-between"
-            style={{ marginBottom: 16 }}
-          >
+          <View className="flex-row items-end justify-between" style={{ marginBottom: 16 }}>
             <View>
-              <Text
-                className="font-sans font-bold text-text-3"
-                style={{ fontSize: 12.5 }}
-              >
+              <Text className="font-sans font-bold text-text-3" style={{ fontSize: 12.5 }}>
                 Güncel
               </Text>
-              <Text
-                className="font-num font-extrabold text-text"
-                style={{ fontSize: 28 }}
-              >
+              <Text className="font-num font-extrabold text-text" style={{ fontSize: 28 }}>
                 {current}
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text
-                className="font-sans font-bold text-text-3"
-                style={{ fontSize: 12.5 }}
-              >
+              <Text className="font-sans font-bold text-text-3" style={{ fontSize: 12.5 }}>
                 En yüksek
               </Text>
-              <Text
-                className="font-num font-bold"
-                style={{ fontSize: 17, color: colors.win }}
-              >
+              <Text className="font-num font-bold" style={{ fontSize: 17, color: colors.win }}>
                 {peak}
               </Text>
             </View>
@@ -548,16 +503,10 @@ export default function EloHistory() {
 
           {/* Scrubber label row */}
           <View className="flex-row justify-between" style={{ marginTop: 8 }}>
-            <Text
-              className="font-sans font-semibold text-text-3"
-              style={{ fontSize: 11 }}
-            >
+            <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11 }}>
               Maç {clampedSel + 1} / {eloValues.length}
             </Text>
-            <Text
-              className="font-num font-extrabold"
-              style={{ fontSize: 13, color: colors.clay }}
-            >
+            <Text className="font-num font-extrabold" style={{ fontSize: 13, color: colors.clay }}>
               {selValue} ELO
             </Text>
           </View>
@@ -582,10 +531,7 @@ export default function EloHistory() {
                 alignItems: 'center',
               }}
             >
-              <Text
-                className="font-num font-extrabold"
-                style={{ fontSize: 19, color: c }}
-              >
+              <Text className="font-num font-extrabold" style={{ fontSize: 19, color: c }}>
                 {v}
               </Text>
               <Text

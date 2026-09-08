@@ -83,14 +83,12 @@ function normalize(node: unknown): Normalized {
   }
   const el = node as ReactElement;
   const elType = el.type as unknown;
-  const typeLabel =
-    typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
+  const typeLabel = typeof elType === 'symbol' ? 'Fragment' : describeType(elType);
   const { children, ...rest } = (el.props ?? {}) as { children?: unknown } & Record<
     string,
     unknown
   >;
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -143,9 +141,7 @@ describe('Banner', () => {
   });
 
   test('warning tone', () => {
-    const tree = normalize(
-      Banner({ tone: 'warning', title: 'Skor onayı bekliyor' }),
-    );
+    const tree = normalize(Banner({ tone: 'warning', title: 'Skor onayı bekliyor' }));
     expect(tree).toMatchSnapshot();
     const icon = find(tree, (n) => n.type === 'Icon');
     expect(icon?.props.name).toBe('warn');
@@ -178,9 +174,7 @@ describe('Banner', () => {
   });
 
   test('inline padding variant', () => {
-    const tree = normalize(
-      Banner({ tone: 'info', title: 'kompakt', inline: true }),
-    );
+    const tree = normalize(Banner({ tone: 'info', title: 'kompakt', inline: true }));
     expect(tree).toMatchSnapshot();
     // The outermost View carries the inline padding token (p-3 vs p-3.5).
     const root = find(tree, (n) => n.type === 'View');
@@ -196,18 +190,14 @@ describe('Banner', () => {
 
 describe('ToastView', () => {
   test('success variant', () => {
-    const tree = normalize(
-      ToastView({ variant: 'success', message: 'Meydan okuma gönderildi' }),
-    );
+    const tree = normalize(ToastView({ variant: 'success', message: 'Meydan okuma gönderildi' }));
     expect(tree).toMatchSnapshot();
     const icon = find(tree, (n) => n.type === 'Icon');
     expect(icon?.props.name).toBe('check');
   });
 
   test('error variant', () => {
-    const tree = normalize(
-      ToastView({ variant: 'error', message: 'Hata oluştu' }),
-    );
+    const tree = normalize(ToastView({ variant: 'error', message: 'Hata oluştu' }));
     expect(tree).toMatchSnapshot();
     const icon = find(tree, (n) => n.type === 'Icon');
     expect(icon?.props.name).toBe('xCircle');

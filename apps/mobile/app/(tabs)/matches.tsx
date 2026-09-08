@@ -26,52 +26,59 @@
 //   - usePlayerRatings(ids)    → per-player ELO badge on Teklifler + İlanlar cards
 //                                (scoped to the creators rendered on screen)
 
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import {
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { ScreenEnter } from '../../components/ui/ScreenEnter';
-import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Segmented } from '../../components/ui/Segmented';
+import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
-import { Icon } from '../../components/ui/Icon';
-import { FormatChip } from '../../components/ui/FormatChip';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { FormatChip } from '../../components/ui/FormatChip';
+import { Icon } from '../../components/ui/Icon';
 import { MessagesButton } from '../../components/ui/MessagesButton';
-import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
+import { Segmented } from '../../components/ui/Segmented';
+import { Sheet } from '../../components/ui/Sheet';
+import { useToast } from '../../components/ui/ToastProvider';
+import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
 import { useActiveMatches } from '../../hooks/use-active-matches';
 import type { ActiveMatchRow } from '../../hooks/use-active-matches';
-import { useOpponentNames } from '../../hooks/use-opponent-names';
-import { useStartConversation } from '../../hooks/use-start-conversation';
+import { useDeleteMatchRequest } from '../../hooks/use-delete-match-request';
+import { usePlayerRatings } from '../../hooks/use-ladder';
+import { useApplyToMatchRequest, useMyMatchApplications } from '../../hooks/use-match-applications';
 import {
+  type MatchRequestRow,
   useIncomingMatchRequests,
   useOutgoingMatchRequests,
-  type MatchRequestRow,
 } from '../../hooks/use-match-requests';
-import { useAcceptMatchRequest } from '../../hooks/use-accept-match-request';
-import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
-import { useOpenCallsFeed, useMyOpenCalls } from '../../hooks/use-open-calls';
-import {
-  useApplyToMatchRequest,
-  useMyMatchApplications,
-} from '../../hooks/use-match-applications';
-import { useDeleteMatchRequest } from '../../hooks/use-delete-match-request';
-import { canCancelSentOffer } from '../../lib/match-request-rules';
-import { useAuthStore } from '../../stores/auth-store';
-import { useToast } from '../../components/ui/ToastProvider';
-import { usePlayerRatings } from '../../hooks/use-ladder';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyOpenCalls, useOpenCallsFeed } from '../../hooks/use-open-calls';
+import { useOpponentNames } from '../../hooks/use-opponent-names';
 import { useMyProfile } from '../../hooks/use-profile';
-import { primaryCategoryOf } from '../../lib/primary-category';
+import { useRejectMatchRequest } from '../../hooks/use-reject-match-request';
+import { useStartConversation } from '../../hooks/use-start-conversation';
 import { DB_TO_UI_FORMAT } from '../../lib/formats';
 import type { FormatKey } from '../../lib/formats';
-import { levelForElo } from '../../lib/levels';
-import { colors } from '../../theme/colors';
-import { Sheet } from '../../components/ui/Sheet';
 import { haptics } from '../../lib/haptics';
+import { levelForElo } from '../../lib/levels';
+import { canCancelSentOffer } from '../../lib/match-request-rules';
+import { primaryCategoryOf } from '../../lib/primary-category';
 import { userMessage } from '../../lib/user-message';
+import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
 
 type HubView = 'upcoming' | 'offers' | 'feed';
 
@@ -149,10 +156,7 @@ export default function MatchesTab() {
   // Suggestions are personalized to the player's primary category.
   const rankingsQ = useMyRankings();
   const myProfileQ = useMyProfile();
-  const primaryCat = primaryCategoryOf(
-    rankingsQ.data,
-    myProfileQ.data?.gender_category,
-  );
+  const primaryCat = primaryCategoryOf(rankingsQ.data, myProfileQ.data?.gender_category);
 
   // Hoist all queries here so we can feed a single refreshControl to the
   // outer ScrollView without nesting ScrollViews.
@@ -225,8 +229,7 @@ export default function MatchesTab() {
               value: 'offers',
               label: 'Teklifler',
               badge:
-                view !== 'offers' &&
-                (requestsQ.data ?? []).some((r) => r.status === 'pending'),
+                view !== 'offers' && (requestsQ.data ?? []).some((r) => r.status === 'pending'),
             },
             {
               value: 'feed',
@@ -260,12 +263,7 @@ export default function MatchesTab() {
           <OpponentSuggestStrip category={primaryCat} variant="full" />
         </View>
 
-        {view === 'upcoming' && (
-          <UpcomingList
-            matchesQ={matchesQ}
-            opponentNames={opponentNames}
-          />
-        )}
+        {view === 'upcoming' && <UpcomingList matchesQ={matchesQ} opponentNames={opponentNames} />}
         {view === 'offers' && (
           <>
             <OffersList
@@ -429,8 +427,10 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
         (buttonIndex) => {
           if (options[buttonIndex] === 'Detay') router.push(`/match/${m.id}` as never);
           else if (options[buttonIndex] === 'Mesaj') openMessageWithOpponent(m);
-          else if (options[buttonIndex] === 'Kurallar') router.push(`/match/new/format-rules?format=${fmtKey}` as never);
-          else if (options[buttonIndex] === 'İtiraz et') router.push(`/match/${m.id}/dispute` as never);
+          else if (options[buttonIndex] === 'Kurallar')
+            router.push(`/match/new/format-rules?format=${fmtKey}` as never);
+          else if (options[buttonIndex] === 'İtiraz et')
+            router.push(`/match/${m.id}/dispute` as never);
         },
       );
     } else {
@@ -468,8 +468,7 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
         const timeStr = formatMatchTime(m.played_at);
         const courtLabel = m.court?.name ?? 'Bilinmeyen kort';
         // awaiting_confirmation = pending approval; disputed = in dispute
-        const isPending =
-          m.status === 'awaiting_confirmation' || m.status === 'disputed';
+        const isPending = m.status === 'awaiting_confirmation' || m.status === 'disputed';
         const opponent = opponentNames.resolve(m);
 
         return (
@@ -484,144 +483,125 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
               />
             )}
           >
-          <Pressable
-            onLongPress={() => handleLongPress(m)}
-            delayLongPress={400}
-          >
-          <View
-            className="rounded-lg border-base border-border-strong bg-surface overflow-hidden"
-          >
-            <View
-              className="flex-row items-center"
-              style={{ padding: 14, paddingHorizontal: 16, gap: 12 }}
-            >
-              <Avatar name={opponent.primaryName} size={46} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 15.5 }}
-                >
-                  {opponent.name}
-                </Text>
+            <Pressable onLongPress={() => handleLongPress(m)} delayLongPress={400}>
+              <View className="rounded-lg border-base border-border-strong bg-surface overflow-hidden">
                 <View
                   className="flex-row items-center"
-                  style={{ marginTop: 3, gap: 7 }}
+                  style={{ padding: 14, paddingHorizontal: 16, gap: 12 }}
                 >
-                  <KindDot kind={kind} />
-                  <Text className="text-text-3" style={{ fontSize: 12 }}>
-                    · {catLabel}
-                  </Text>
+                  <Avatar name={opponent.primaryName} size={46} />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text className="font-sans font-bold text-text" style={{ fontSize: 15.5 }}>
+                      {opponent.name}
+                    </Text>
+                    <View className="flex-row items-center" style={{ marginTop: 3, gap: 7 }}>
+                      <KindDot kind={kind} />
+                      <Text className="text-text-3" style={{ fontSize: 12 }}>
+                        · {catLabel}
+                      </Text>
+                    </View>
+                  </View>
+                  {isPending ? (
+                    <View
+                      className="flex-row items-center rounded-pill"
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        gap: 4,
+                        backgroundColor: colors.warnSoft,
+                      }}
+                    >
+                      <Icon name="clock" size={12} color={colors.warn} />
+                      <Text
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: '800',
+                          color: colors.warn,
+                        }}
+                      >
+                        {m.status === 'disputed' ? 'İtiraz' : 'Onay bekliyor'}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View
+                      className="flex-row items-center rounded-pill"
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        gap: 4,
+                        backgroundColor: colors.limeSoft,
+                      }}
+                    >
+                      <Icon name="check" size={12} color={colors.win} stroke={3} />
+                      <Text
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: '800',
+                          color: colors.win,
+                        }}
+                      >
+                        Onaylı
+                      </Text>
+                    </View>
+                  )}
                 </View>
-              </View>
-              {isPending ? (
                 <View
-                  className="flex-row items-center rounded-pill"
+                  className="flex-row items-center"
                   style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    gap: 4,
-                    backgroundColor: colors.warnSoft,
+                    paddingHorizontal: 16,
+                    paddingBottom: 12,
+                    gap: 14,
+                    flexWrap: 'wrap',
                   }}
                 >
-                  <Icon name="clock" size={12} color={colors.warn} />
-                  <Text
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: '800',
-                      color: colors.warn,
-                    }}
-                  >
-                    {m.status === 'disputed' ? 'İtiraz' : 'Onay bekliyor'}
-                  </Text>
+                  <View className="flex-row items-center" style={{ gap: 5 }}>
+                    <Icon name="calendar" size={15} color={colors.text3} />
+                    <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 13 }}>
+                      {dateStr} · {timeStr}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center" style={{ gap: 5 }}>
+                    <Icon name="pin" size={15} color={colors.text3} />
+                    <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 13 }}>
+                      {courtLabel}
+                    </Text>
+                  </View>
+                  <FormatChip fmtKey={fmtKey} />
                 </View>
-              ) : (
                 <View
-                  className="flex-row items-center rounded-pill"
-                  style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    gap: 4,
-                    backgroundColor: colors.limeSoft,
-                  }}
+                  className="flex-row"
+                  style={{ paddingHorizontal: 16, paddingBottom: 14, gap: 8 }}
                 >
-                  <Icon name="check" size={12} color={colors.win} stroke={3} />
-                  <Text
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: '800',
-                      color: colors.win,
-                    }}
-                  >
-                    Onaylı
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      full
+                      icon={<Icon name="info" size={15} color={colors.text} />}
+                      onPress={() =>
+                        router.push(`/match/new/format-rules?format=${fmtKey}` as never)
+                      }
+                    >
+                      Kurallar
+                    </Button>
+                  </View>
+                  <View style={{ flex: 1.4 }}>
+                    <Button
+                      size="sm"
+                      full
+                      icon={<Icon name="spark" size={15} color={colors.onLime} />}
+                      onPress={() =>
+                        m.winner_team == null
+                          ? router.push(`/match/${m.id}/start` as never)
+                          : router.push(`/match/${m.id}/result` as never)
+                      }
+                    >
+                      {m.winner_team == null ? 'Maçı Başlat' : 'Sonucu Onayla'}
+                    </Button>
+                  </View>
                 </View>
-              )}
-            </View>
-            <View
-              className="flex-row items-center"
-              style={{
-                paddingHorizontal: 16,
-                paddingBottom: 12,
-                gap: 14,
-                flexWrap: 'wrap',
-              }}
-            >
-              <View className="flex-row items-center" style={{ gap: 5 }}>
-                <Icon name="calendar" size={15} color={colors.text3} />
-                <Text
-                  className="font-sans font-semibold text-text-2"
-                  style={{ fontSize: 13 }}
-                >
-                  {dateStr} · {timeStr}
-                </Text>
               </View>
-              <View className="flex-row items-center" style={{ gap: 5 }}>
-                <Icon name="pin" size={15} color={colors.text3} />
-                <Text
-                  className="font-sans font-semibold text-text-2"
-                  style={{ fontSize: 13 }}
-                >
-                  {courtLabel}
-                </Text>
-              </View>
-              <FormatChip fmtKey={fmtKey} />
-            </View>
-            <View
-              className="flex-row"
-              style={{ paddingHorizontal: 16, paddingBottom: 14, gap: 8 }}
-            >
-              <View style={{ flex: 1 }}>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  full
-                  icon={<Icon name="info" size={15} color={colors.text} />}
-                  onPress={() =>
-                    router.push(
-                      `/match/new/format-rules?format=${fmtKey}` as never,
-                    )
-                  }
-                >
-                  Kurallar
-                </Button>
-              </View>
-              <View style={{ flex: 1.4 }}>
-                <Button
-                  size="sm"
-                  full
-                  icon={<Icon name="spark" size={15} color={colors.onLime} />}
-                  onPress={() =>
-                    m.winner_team == null
-                      ? router.push(`/match/${m.id}/start` as never)
-                      : router.push(`/match/${m.id}/result` as never)
-                  }
-                >
-                  {m.winner_team == null ? 'Maçı Başlat' : 'Sonucu Onayla'}
-                </Button>
-              </View>
-            </View>
-          </View>
-          </Pressable>
+            </Pressable>
           </ReanimatedSwipeable>
         );
       })}
@@ -639,30 +619,56 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
                 setMenuMatchId(null);
                 router.push(`/match/${menuMatch.id}` as never);
               }}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                paddingVertical: 14,
+                paddingHorizontal: 4,
+              }}
             >
               <Icon name="list" size={20} color={colors.text} />
-              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Detay</Text>
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>
+                Detay
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
                 setMenuMatchId(null);
                 openMessageWithOpponent(menuMatch);
               }}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                paddingVertical: 14,
+                paddingHorizontal: 4,
+              }}
             >
               <Icon name="mail" size={20} color={colors.text} />
-              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Mesaj</Text>
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>
+                Mesaj
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
                 setMenuMatchId(null);
-                router.push(`/match/new/format-rules?format=${toFormatKey(menuMatch.format as string)}` as never);
+                router.push(
+                  `/match/new/format-rules?format=${toFormatKey(menuMatch.format as string)}` as never,
+                );
               }}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                paddingVertical: 14,
+                paddingHorizontal: 4,
+              }}
             >
               <Icon name="info" size={20} color={colors.text} />
-              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>Kurallar</Text>
+              <Text className="font-sans font-semibold text-text" style={{ fontSize: 16 }}>
+                Kurallar
+              </Text>
             </Pressable>
             {menuMatch.status !== 'disputed' && (
               <Pressable
@@ -670,10 +676,21 @@ function UpcomingList({ matchesQ, opponentNames }: UpcomingListProps) {
                   setMenuMatchId(null);
                   router.push(`/match/${menuMatch.id}/dispute` as never);
                 }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 4 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 14,
+                  paddingVertical: 14,
+                  paddingHorizontal: 4,
+                }}
               >
                 <Icon name="flag" size={20} color={colors.loss} />
-                <Text className="font-sans font-semibold" style={{ fontSize: 16, color: colors.loss }}>İtiraz et</Text>
+                <Text
+                  className="font-sans font-semibold"
+                  style={{ fontSize: 16, color: colors.loss }}
+                >
+                  İtiraz et
+                </Text>
               </Pressable>
             )}
           </View>
@@ -696,9 +713,7 @@ interface OffersListProps {
 
 function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
   const toast = useToast();
-  const requests: MatchRequestRow[] = (requestsQ.data ?? []).filter(
-    (r) => r.status === 'pending',
-  );
+  const requests: MatchRequestRow[] = (requestsQ.data ?? []).filter((r) => r.status === 'pending');
 
   if (requestsQ.isLoading) {
     return (
@@ -763,10 +778,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
               <Avatar name={creatorName} size={46} />
               <View style={{ flex: 1 }}>
                 <View className="flex-row items-center" style={{ gap: 7 }}>
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 15.5 }}
-                  >
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 15.5 }}>
                     {creatorName}
                   </Text>
                   {creatorElo !== null && creatorLevel !== null && (
@@ -787,10 +799,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
                     </View>
                   )}
                 </View>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ fontSize: 12.5, marginTop: 2 }}
-                >
+                <Text className="font-sans text-text-3" style={{ fontSize: 12.5, marginTop: 2 }}>
                   sana meydan okudu · {catLabel}
                 </Text>
               </View>
@@ -800,10 +809,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
               style={{ gap: 12, marginBottom: 13, flexWrap: 'wrap' }}
             >
               <FormatChip fmtKey={fmtKey} />
-              <Text
-                className="font-sans font-semibold text-text-2"
-                style={{ fontSize: 12.5 }}
-              >
+              <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 12.5 }}>
                 {timeLabel} · {courtLabel}
               </Text>
             </View>
@@ -833,14 +839,7 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
                 <Button
                   size="sm"
                   full
-                  icon={
-                    <Icon
-                      name="check"
-                      size={15}
-                      color={colors.onLime}
-                      stroke={3}
-                    />
-                  }
+                  icon={<Icon name="check" size={15} color={colors.onLime} stroke={3} />}
                   onPress={() =>
                     accept.mutate(
                       { requestId: m.id },
@@ -887,9 +886,7 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
   const toast = useToast();
   const myUserId = useAuthStore((s) => s.user?.id);
   const cancelRequest = useDeleteMatchRequest();
-  const sent = (outgoingQ.data ?? []).filter(
-    (r) => r.type === 'direct_challenge',
-  );
+  const sent = (outgoingQ.data ?? []).filter((r) => r.type === 'direct_challenge');
 
   if (sent.length === 0) return null;
 
@@ -939,10 +936,7 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
             className="rounded-lg border-base border-border-strong bg-surface"
             style={{ padding: 16 }}
           >
-            <View
-              className="flex-row items-center"
-              style={{ gap: 12, marginBottom: 12 }}
-            >
+            <View className="flex-row items-center" style={{ gap: 12, marginBottom: 12 }}>
               {/* Identity strip opens the target's profile. Open calls have no
                   target_id, so it stays inert there.
 
@@ -952,9 +946,7 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                   shoved the status chip past the card's right edge. Press
                   feedback moved to `active:` for the same reason. */}
               <Pressable
-                onPress={() =>
-                  m.target_id && router.push(`/user/${m.target_id}` as never)
-                }
+                onPress={() => m.target_id && router.push(`/user/${m.target_id}` as never)}
                 disabled={!m.target_id}
                 accessibilityRole="button"
                 accessibilityLabel={`${targetName} profilini aç`}
@@ -1007,15 +999,9 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                 </Text>
               </View>
             </View>
-            <View
-              className="flex-row items-center"
-              style={{ gap: 12, flexWrap: 'wrap' }}
-            >
+            <View className="flex-row items-center" style={{ gap: 12, flexWrap: 'wrap' }}>
               <FormatChip fmtKey={fmtKey} />
-              <Text
-                className="font-sans font-semibold text-text-2"
-                style={{ fontSize: 12.5 }}
-              >
+              <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 12.5 }}>
                 {timeLabel} · {courtLabel}
               </Text>
             </View>
@@ -1036,10 +1022,7 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                 }}
               >
                 <Icon name="x" size={15} color={colors.loss} />
-                <Text
-                  className="font-sans font-bold"
-                  style={{ fontSize: 13, color: colors.loss }}
-                >
+                <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.loss }}>
                   {isCancelling ? 'Geri çekiliyor…' : 'Teklifi geri çek'}
                 </Text>
               </Pressable>
@@ -1126,7 +1109,12 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
                   </Text>
                 </View>
               </Pressable>
-              <Pressable onPress={confirmDelete} hitSlop={8} style={{ padding: 10 }} accessibilityLabel="İlanı sil">
+              <Pressable
+                onPress={confirmDelete}
+                hitSlop={8}
+                style={{ padding: 10 }}
+                accessibilityLabel="İlanı sil"
+              >
                 <Icon name="trash" size={18} color={colors.loss} />
               </Pressable>
             </View>
@@ -1173,8 +1161,7 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
           : 'Esnek';
 
         const applyVars = applyMutation.variables as { requestId: string } | undefined;
-        const isApplying =
-          applyMutation.isPending && applyVars?.requestId === m.id;
+        const isApplying = applyMutation.isPending && applyVars?.requestId === m.id;
         const applied = appliedIds.has(m.id);
 
         const creatorElo = ratingOf(m.creator_id, m.category);
@@ -1186,20 +1173,11 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
             className="rounded-lg border-base border-border-strong bg-surface"
             style={{ padding: 16 }}
           >
-            <View
-              className="flex-row items-center"
-              style={{ gap: 12, marginBottom: 12 }}
-            >
+            <View className="flex-row items-center" style={{ gap: 12, marginBottom: 12 }}>
               <Avatar name={creatorName} size={42} />
               <View style={{ flex: 1 }}>
-                <View
-                  className="flex-row items-center"
-                  style={{ gap: 7 }}
-                >
-                  <Text
-                    className="font-sans font-bold text-text"
-                    style={{ fontSize: 15 }}
-                  >
+                <View className="flex-row items-center" style={{ gap: 7 }}>
+                  <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
                     {creatorName}
                   </Text>
                   {creatorElo !== null && creatorLevel !== null && (
@@ -1220,10 +1198,7 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
                     </View>
                   )}
                 </View>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ fontSize: 12.5, marginTop: 1 }}
-                >
+                <Text className="font-sans text-text-3" style={{ fontSize: 12.5, marginTop: 1 }}>
                   {catLabel}
                 </Text>
               </View>
@@ -1235,10 +1210,7 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
               <FormatChip fmtKey={fmtKey} />
               <View className="flex-row items-center" style={{ gap: 5 }}>
                 <Icon name="clock" size={14} color={colors.text3} />
-                <Text
-                  className="font-sans font-semibold text-text-2"
-                  style={{ fontSize: 12.5 }}
-                >
+                <Text className="font-sans font-semibold text-text-2" style={{ fontSize: 12.5 }}>
                   {windowLabel}
                 </Text>
               </View>
@@ -1247,33 +1219,19 @@ function FeedList({ feedQ, myQ, appliedIds, applyMutation, ratingOf }: FeedListP
               full
               size="sm"
               variant="primary"
-              icon={
-                <Icon
-                  name="flag"
-                  size={15}
-                  color={colors.onLime}
-                />
-              }
+              icon={<Icon name="flag" size={15} color={colors.onLime} />}
               onPress={() =>
                 applyMutation.mutate(
                   { requestId: m.id },
                   {
                     onSuccess: () => toast.show('Başvurun gönderildi'),
-                    onError: (e) =>
-                      toast.show(
-                        userMessage(e, 'Başvuru gönderilemedi'),
-                        'error',
-                      ),
+                    onError: (e) => toast.show(userMessage(e, 'Başvuru gönderilemedi'), 'error'),
                   },
                 )
               }
               disabled={isApplying || applied}
             >
-              {applied
-                ? 'Başvuruldu ✓'
-                : isApplying
-                  ? 'Başvuruluyor…'
-                  : 'İlana başvur'}
+              {applied ? 'Başvuruldu ✓' : isApplying ? 'Başvuruluyor…' : 'İlana başvur'}
             </Button>
           </View>
         );

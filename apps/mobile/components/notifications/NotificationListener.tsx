@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
+import { useEffect, useRef } from 'react';
 import { queryKeys } from '../../lib/query-keys';
+import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 
 export function NotificationListener() {

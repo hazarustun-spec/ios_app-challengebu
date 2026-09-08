@@ -8,9 +8,7 @@ interface Props {
 }
 
 export function ScreenContainer({ children, scrollable = false }: Props) {
-  const Inner = (
-    <View className="flex-1 bg-white px-6 py-4">{children}</View>
-  );
+  const Inner = <View className="flex-1 bg-white px-6 py-4">{children}</View>;
   if (scrollable) {
     return (
       <SafeAreaView className="flex-1 bg-white">

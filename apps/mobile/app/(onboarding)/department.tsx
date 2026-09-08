@@ -1,27 +1,16 @@
 // Onboarding · Bölüm (D9) — sheet picker + show toggle
 // Source: docs/superpowers/specs/plan-8-design-bundle/project/app/screens-onboarding.jsx — ObDept
 
-import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SectionList,
-  Text,
-  View,
-} from 'react-native';
 import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, SectionList, Text, View } from 'react-native';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { Field } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
 import { Sheet } from '../../components/ui/Sheet';
 import { Toggle } from '../../components/ui/Toggle';
-import { Icon } from '../../components/ui/Icon';
+import { type Department, type ProgramLevel, useDepartments } from '../../hooks/use-departments';
 import { useOnboardingStore } from '../../stores/onboarding-store';
-import {
-  useDepartments,
-  type Department,
-  type ProgramLevel,
-} from '../../hooks/use-departments';
 import { colors } from '../../theme/colors';
 
 export default function ObDepartment() {
@@ -45,9 +34,7 @@ export default function ObDepartment() {
 
   // Group + search
   const sections = useMemo(() => {
-    const filtered = (deps ?? []).filter((d) =>
-      d.name.toLowerCase().includes(q.toLowerCase()),
-    );
+    const filtered = (deps ?? []).filter((d) => d.name.toLowerCase().includes(q.toLowerCase()));
     const byFaculty = new Map<string, Department[]>();
     for (const d of filtered) {
       const key = d.faculty ?? 'Diğer';
@@ -116,20 +103,14 @@ export default function ObDepartment() {
         }}
       >
         <View style={{ flex: 1 }}>
-          <Text
-            className="font-sans font-bold text-text"
-            style={{ fontSize: 14.5 }}
-          >
+          <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
             Profilimde göster
           </Text>
           <Text className="font-sans text-text-3" style={{ fontSize: 13 }}>
             Diğer oyuncular bölümünü görebilir
           </Text>
         </View>
-        <Toggle
-          value={showDepartment}
-          onChange={(v) => setField('showDepartment', v)}
-        />
+        <Toggle value={showDepartment} onChange={(v) => setField('showDepartment', v)} />
       </Pressable>
 
       <Sheet visible={open} onClose={() => setOpen(false)} title="Bölüm seç">
@@ -137,12 +118,7 @@ export default function ObDepartment() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ height: 520 }}
         >
-          <Field
-            icon="search"
-            placeholder="Bölüm ara…"
-            value={q}
-            onChange={setQ}
-          />
+          <Field icon="search" placeholder="Bölüm ara…" value={q} onChange={setQ} />
           <SectionList
             style={{ marginTop: 12, flex: 1 }}
             sections={sections}

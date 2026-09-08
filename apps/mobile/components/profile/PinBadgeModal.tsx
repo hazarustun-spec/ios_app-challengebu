@@ -65,8 +65,12 @@ export function PinBadgeModal({ visible, onClose }: Props) {
           )}
         </ScrollView>
         <View className="mt-4 gap-2">
-          <Button onPress={save} loading={mutation.isPending}>Kaydet</Button>
-          <Button onPress={onClose} variant="ghost">İptal</Button>
+          <Button onPress={save} loading={mutation.isPending}>
+            Kaydet
+          </Button>
+          <Button onPress={onClose} variant="ghost">
+            İptal
+          </Button>
         </View>
       </View>
     </Modal>

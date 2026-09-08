@@ -7,9 +7,9 @@
 // the leading tile shifts to clay-soft / clay accent.
 
 import { Pressable, Text, View } from 'react-native';
-import { Icon, type IconName } from '../ui/Icon';
-import { colors } from '../../theme/colors';
 import { haptics } from '../../lib/haptics';
+import { colors } from '../../theme/colors';
+import { Icon, type IconName } from '../ui/Icon';
 
 export interface PickOption<T extends string> {
   value: T;
@@ -27,12 +27,7 @@ export interface PickListProps<T extends string> {
   cols?: number;
 }
 
-export function PickList<T extends string>({
-  value,
-  onPick,
-  options,
-  cols = 1,
-}: PickListProps<T>) {
+export function PickList<T extends string>({ value, onPick, options, cols = 1 }: PickListProps<T>) {
   return (
     <View
       style={{
@@ -75,18 +70,11 @@ export function PickList<T extends string>({
                   justifyContent: 'center',
                 }}
               >
-                <Icon
-                  name={o.icon}
-                  size={20}
-                  color={on ? colors.clay : colors.text2}
-                />
+                <Icon name={o.icon} size={20} color={on ? colors.clay : colors.text2} />
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-bold text-text"
-                style={{ fontSize: 15.5 }}
-              >
+              <Text className="font-sans font-bold text-text" style={{ fontSize: 15.5 }}>
                 {o.label}
               </Text>
               {o.desc && (

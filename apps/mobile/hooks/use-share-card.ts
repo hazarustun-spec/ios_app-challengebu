@@ -8,10 +8,10 @@
 //   <ViewShot ref={ref}>...</ViewShot>
 //   <Button onPress={share}>Paylaş</Button>
 
-import { useRef } from 'react';
 import * as Sharing from 'expo-sharing';
-import { captureRef } from 'react-native-view-shot';
+import { useRef } from 'react';
 import type { MutableRefObject } from 'react';
+import { captureRef } from 'react-native-view-shot';
 
 export interface UseShareCardReturn {
   /** Attach this ref to the <ViewShot> (or any View) you want to capture. */
@@ -36,7 +36,7 @@ export function useShareCard(): UseShareCardReturn {
 
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: 'ChallengeBu!'
+        dialogTitle: 'ChallengeBu!',
       });
     } catch {
       // Silently swallow errors (user cancel, capture failure, etc.)

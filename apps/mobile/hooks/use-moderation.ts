@@ -43,14 +43,12 @@ export function useReportUser() {
       const myUserId = useAuthStore.getState().user?.id;
       if (!myUserId) throw new Error('Oturum bulunamadı');
 
-      const { error } = await supabase
-        .from('user_reports')
-        .insert({
-          reporter_id: myUserId,
-          reported_id: reportedId,
-          reason,
-          ...(messageId !== undefined ? { message_id: messageId } : {}),
-        });
+      const { error } = await supabase.from('user_reports').insert({
+        reporter_id: myUserId,
+        reported_id: reportedId,
+        reason,
+        ...(messageId !== undefined ? { message_id: messageId } : {}),
+      });
       if (error) throw error;
     },
   });
@@ -78,9 +76,7 @@ export function useBlockedUsers() {
         .in('user_id', ids);
       if (pErr) throw pErr;
 
-      const byId = new Map(
-        (profs ?? []).map((p) => [p.user_id as string, p]),
-      );
+      const byId = new Map((profs ?? []).map((p) => [p.user_id as string, p]));
       return (blocks ?? []).map((b) => {
         const p = byId.get(b.blocked_id as string);
         const name = p

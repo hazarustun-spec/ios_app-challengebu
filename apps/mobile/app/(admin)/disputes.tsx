@@ -5,10 +5,10 @@
 
 import { router } from 'expo-router';
 import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { Icon } from '../../components/ui/Icon';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { usePendingDisputes, type PendingDispute } from '../../hooks/use-pending-disputes';
+import { Icon } from '../../components/ui/Icon';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { type PendingDispute, usePendingDisputes } from '../../hooks/use-pending-disputes';
 import { useRealtimeChannel } from '../../hooks/use-realtime-channel';
 import { queryKeys } from '../../lib/query-keys';
 import { colors } from '../../theme/colors';
@@ -58,11 +58,7 @@ export default function AdminDisputesScreen() {
         }
         ListEmptyComponent={
           list.isLoading ? null : (
-            <EmptyState
-              icon="check"
-              title="Açık itiraz yok"
-              body="Tüm uyuşmazlıklar çözüldü."
-            />
+            <EmptyState icon="check" title="Açık itiraz yok" body="Tüm uyuşmazlıklar çözüldü." />
           )
         }
       />
@@ -118,10 +114,7 @@ function DisputeCard({ item }: { item: PendingDispute }) {
         >
           {CATEGORY_LABELS[item.match_category] ?? (item.match_category || 'Maç')}
         </Text>
-        <Text
-          className="font-sans font-bold"
-          style={{ fontSize: 14, color: colors.text }}
-        >
+        <Text className="font-sans font-bold" style={{ fontSize: 14, color: colors.text }}>
           {item.raised_by_name} itiraz açtı
         </Text>
       </View>
@@ -140,10 +133,7 @@ function DisputeCard({ item }: { item: PendingDispute }) {
           gap: 6,
         }}
       >
-        <Text
-          className="font-sans font-bold"
-          style={{ fontSize: 13, color: colors.text }}
-        >
+        <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.text }}>
           İncele ve karar ver
         </Text>
         <Icon name="chevR" size={16} color={colors.text} />

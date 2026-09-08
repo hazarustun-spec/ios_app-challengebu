@@ -33,9 +33,9 @@ import { NavHeader } from '../../components/ui/NavHeader';
 import { LEGAL_URLS } from '../../lib/legal';
 import { reviewLogin } from '../../lib/review-auth';
 import { supabase } from '../../lib/supabase';
+import { userMessage } from '../../lib/user-message';
 import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
-import { userMessage } from '../../lib/user-message';
 
 export default function SignIn() {
   const setSession = useAuthStore((s) => s.setSession);

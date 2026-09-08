@@ -13,13 +13,13 @@
 // `<View>`s to share width between Atla and Devam (1:2 ratio when both
 // present, 1:1 when Devam-only).
 
+import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { colors } from '../../theme/colors';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
-import { colors } from '../../theme/colors';
 
 export const OB_STEPS = [
   'name',
@@ -123,10 +123,7 @@ export function OBFrame({
             }}
           />
         </View>
-        <Text
-          className="font-num font-bold text-text-3"
-          style={{ fontSize: 12.5 }}
-        >
+        <Text className="font-num font-bold text-text-3" style={{ fontSize: 12.5 }}>
           {idx + 1}/{total}
         </Text>
       </View>

@@ -49,9 +49,7 @@ type IconRenderer = (color: string, fill: string) => ReactNode;
 
 const ICONS = {
   // ---------------- nav / tabs ----------------
-  ranking: (c, f) => (
-    <Path key="0" d="M5 21V9m7 12V4m7 17v-8" stroke={c} fill={f} />
-  ),
+  ranking: (c, f) => <Path key="0" d="M5 21V9m7 12V4m7 17v-8" stroke={c} fill={f} />,
   matches: (c, f) => (
     <>
       <Rect key="0" x={3} y={5} width={18} height={14} rx={2} stroke={c} fill={f} />
@@ -60,12 +58,7 @@ const ICONS = {
   ),
   bell: (c, f) => (
     <>
-      <Path
-        key="0"
-        d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"
-        stroke={c}
-        fill={f}
-      />
+      <Path key="0" d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" stroke={c} fill={f} />
       <Path key="1" d="M10 19a2 2 0 0 0 4 0" stroke={c} fill={f} />
     </>
   ),
@@ -85,15 +78,9 @@ const ICONS = {
   chevL: (c, f) => <Path key="0" d="M15 5l-7 7 7 7" stroke={c} fill={f} />,
   chevD: (c, f) => <Path key="0" d="M6 9l6 6 6-6" stroke={c} fill={f} />,
   chevU: (c, f) => <Path key="0" d="M6 15l6-6 6 6" stroke={c} fill={f} />,
-  arrowUp: (c, f) => (
-    <Path key="0" d="M12 19V5M6 11l6-6 6 6" stroke={c} fill={f} />
-  ),
-  arrowDn: (c, f) => (
-    <Path key="0" d="M12 5v14M6 13l6 6 6-6" stroke={c} fill={f} />
-  ),
-  arrowRight: (c, f) => (
-    <Path key="0" d="M5 12h14M13 6l6 6-6 6" stroke={c} fill={f} />
-  ),
+  arrowUp: (c, f) => <Path key="0" d="M12 19V5M6 11l6-6 6 6" stroke={c} fill={f} />,
+  arrowDn: (c, f) => <Path key="0" d="M12 5v14M6 13l6 6 6-6" stroke={c} fill={f} />,
+  arrowRight: (c, f) => <Path key="0" d="M5 12h14M13 6l6 6-6 6" stroke={c} fill={f} />,
   compass: (c, f) => (
     <>
       <Circle key="0" cx={12} cy={12} r={9} stroke={c} fill={f} />
@@ -104,17 +91,10 @@ const ICONS = {
     <>
       <Circle key="0" cx={9} cy={9} r={3.2} stroke={c} fill={f} />
       <Path key="1" d="M3.5 19a5.5 5.5 0 0 1 11 0" stroke={c} fill={f} />
-      <Path
-        key="2"
-        d="M16 6.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9"
-        stroke={c}
-        fill={f}
-      />
+      <Path key="2" d="M16 6.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" stroke={c} fill={f} />
     </>
   ),
-  home: (c, f) => (
-    <Path key="0" d="M4 11l8-7 8 7M6 10v9h12v-9" stroke={c} fill={f} />
-  ),
+  home: (c, f) => <Path key="0" d="M4 11l8-7 8 7M6 10v9h12v-9" stroke={c} fill={f} />,
 
   // ---------------- actions / status ----------------
   check: (c, f) => <Path key="0" d="M4 12l5 5L20 6" stroke={c} fill={f} />,
@@ -139,9 +119,7 @@ const ICONS = {
       <Path key="1" d="M9 9l6 6M15 9l-6 6" stroke={c} fill={f} />
     </>
   ),
-  filter: (c, f) => (
-    <Path key="0" d="M3 5h18l-7 8v6l-4 2v-8z" stroke={c} fill={f} />
-  ),
+  filter: (c, f) => <Path key="0" d="M3 5h18l-7 8v6l-4 2v-8z" stroke={c} fill={f} />,
   search: (c, f) => (
     <>
       <Circle key="0" cx={11} cy={11} r={7} stroke={c} fill={f} />
@@ -179,12 +157,7 @@ const ICONS = {
   ),
   pin: (c, f) => (
     <>
-      <Path
-        key="0"
-        d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"
-        stroke={c}
-        fill={f}
-      />
+      <Path key="0" d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" stroke={c} fill={f} />
       <Circle key="1" cx={12} cy={10} r={2.5} stroke={c} fill={f} />
     </>
   ),
@@ -201,14 +174,7 @@ const ICONS = {
       />
     </>
   ),
-  crown: (c, f) => (
-    <Path
-      key="0"
-      d="M4 8l3.5 3L12 6l4.5 5L20 8l-1.5 10h-13z"
-      stroke={c}
-      fill={f}
-    />
-  ),
+  crown: (c, f) => <Path key="0" d="M4 8l3.5 3L12 6l4.5 5L20 8l-1.5 10h-13z" stroke={c} fill={f} />,
   flame: (c, f) => (
     <Path
       key="0"
@@ -217,25 +183,11 @@ const ICONS = {
       fill={f}
     />
   ),
-  bolt: (c, f) => (
-    <Path key="0" d="M13 3L5 14h6l-1 7 8-11h-6z" stroke={c} fill={f} />
-  ),
+  bolt: (c, f) => <Path key="0" d="M13 3L5 14h6l-1 7 8-11h-6z" stroke={c} fill={f} />,
   diamond: (c, f) => <Path key="0" d="M12 3l8 8-8 10-8-10z" stroke={c} fill={f} />,
-  shield: (c, f) => (
-    <Path
-      key="0"
-      d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"
-      stroke={c}
-      fill={f}
-    />
-  ),
+  shield: (c, f) => <Path key="0" d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" stroke={c} fill={f} />,
   star: (c, f) => (
-    <Path
-      key="0"
-      d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"
-      stroke={c}
-      fill={f}
-    />
+    <Path key="0" d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z" stroke={c} fill={f} />
   ),
   medal: (c, f) => (
     <>
@@ -267,14 +219,7 @@ const ICONS = {
       fill={f}
     />
   ),
-  trash: (c, f) => (
-    <Path
-      key="0"
-      d="M4 7h16M9 7V4h6v3m-8 0l1 13h8l1-13"
-      stroke={c}
-      fill={f}
-    />
-  ),
+  trash: (c, f) => <Path key="0" d="M4 7h16M9 7V4h6v3m-8 0l1 13h8l1-13" stroke={c} fill={f} />,
   bellOff: (c, f) => (
     <>
       <Path
@@ -315,14 +260,7 @@ const ICONS = {
       fill={f}
     />
   ),
-  swap: (c, f) => (
-    <Path
-      key="0"
-      d="M7 4l-3 3 3 3M4 7h12m1 10l3-3-3-3m3 3H8"
-      stroke={c}
-      fill={f}
-    />
-  ),
+  swap: (c, f) => <Path key="0" d="M7 4l-3 3 3 3M4 7h12m1 10l3-3-3-3m3 3H8" stroke={c} fill={f} />,
   handshake: (c, f) => (
     <Path
       key="0"
@@ -350,14 +288,7 @@ const ICONS = {
       />
     </>
   ),
-  moon: (c, f) => (
-    <Path
-      key="0"
-      d="M20 14a8 8 0 1 1-9-11 6 6 0 0 0 9 11z"
-      stroke={c}
-      fill={f}
-    />
-  ),
+  moon: (c, f) => <Path key="0" d="M20 14a8 8 0 1 1-9-11 6 6 0 0 0 9 11z" stroke={c} fill={f} />,
   info: (c, f) => (
     <>
       <Circle key="0" cx={12} cy={12} r={9} stroke={c} fill={f} />
@@ -370,16 +301,9 @@ const ICONS = {
       <Path key="1" d="M12 10v4m0 3v.5" stroke={c} fill={f} />
     </>
   ),
-  flag: (c, f) => (
-    <Path key="0" d="M5 21V4m0 0h12l-2 4 2 4H5" stroke={c} fill={f} />
-  ),
+  flag: (c, f) => <Path key="0" d="M5 21V4m0 0h12l-2 4 2 4H5" stroke={c} fill={f} />,
   list: (c, f) => (
-    <Path
-      key="0"
-      d="M8 6h12M8 12h12M8 18h12M4 6v.01M4 12v.01M4 18v.01"
-      stroke={c}
-      fill={f}
-    />
+    <Path key="0" d="M8 6h12M8 12h12M8 18h12M4 6v.01M4 12v.01M4 18v.01" stroke={c} fill={f} />
   ),
   refresh: (c, f) => (
     <Path
@@ -400,17 +324,10 @@ const ICONS = {
       <Path key="1" d="M12 20h.01" stroke={c} fill={f} />
     </>
   ),
-  download: (c, f) => (
-    <Path key="0" d="M12 4v11m-4-4l4 4 4-4M5 20h14" stroke={c} fill={f} />
-  ),
+  download: (c, f) => <Path key="0" d="M12 4v11m-4-4l4 4 4-4M5 20h14" stroke={c} fill={f} />,
   megaphone: (c, f) => (
     <>
-      <Path
-        key="0"
-        d="M4 10v4a1 1 0 0 0 1 1h2l8 4V5L7 9H5a1 1 0 0 0-1 1z"
-        stroke={c}
-        fill={f}
-      />
+      <Path key="0" d="M4 10v4a1 1 0 0 0 1 1h2l8 4V5L7 9H5a1 1 0 0 0-1 1z" stroke={c} fill={f} />
       <Path key="1" d="M18 9a4 4 0 0 1 0 6" stroke={c} fill={f} />
     </>
   ),
@@ -429,12 +346,7 @@ const ICONS = {
   ),
   eye: (c, f) => (
     <>
-      <Path
-        key="0"
-        d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"
-        stroke={c}
-        fill={f}
-      />
+      <Path key="0" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke={c} fill={f} />
       <Circle key="1" cx={12} cy={12} r={3} stroke={c} fill={f} />
     </>
   ),
@@ -502,9 +414,12 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       style={style}
-      accessible={accessibilityLabel !== undefined}
-      accessibilityRole={accessibilityLabel !== undefined ? 'image' : undefined}
-      accessibilityLabel={accessibilityLabel}
+      // Spread rather than three always-present props: an icon with no label
+      // must stay exactly the decorative element it was, both for the
+      // accessibility tree and for the snapshot tests that assert on props.
+      {...(accessibilityLabel !== undefined
+        ? { accessible: true, accessibilityRole: 'image' as const, accessibilityLabel }
+        : {})}
     >
       {render(color, fill)}
     </Svg>

@@ -12,6 +12,7 @@
 // Route params: only `id` is consumed; the legacy win/score/voided/opp
 // search params are no longer used — all values come from the match row.
 
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,28 +34,27 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { haptics } from '../../../lib/haptics';
-import { ScreenEnter } from '../../../components/ui/ScreenEnter';
-import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
+import { CardMatchResult } from '../../../components/share/CardMatchResult';
+import { ShareSheet } from '../../../components/share/ShareSheet';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
+import { Confetti } from '../../../components/ui/Confetti';
 import { Icon, type IconName } from '../../../components/ui/Icon';
-import { colors } from '../../../theme/colors';
+import { NavHeader } from '../../../components/ui/NavHeader';
+import { ScreenEnter } from '../../../components/ui/ScreenEnter';
+import { useConfirmMatch } from '../../../hooks/use-confirm-match';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useMatchSubmissions } from '../../../hooks/use-match-submissions';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
-import { useConfirmMatch } from '../../../hooks/use-confirm-match';
 import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
-import { queryKeys } from '../../../lib/query-keys';
-import { myPerspective } from '../../../lib/match-opponent';
-import { formatByKey, DB_TO_UI_FORMAT } from '../../../lib/formats';
+import { DB_TO_UI_FORMAT, formatByKey } from '../../../lib/formats';
+import { haptics } from '../../../lib/haptics';
 import { formatDateLabel } from '../../../lib/match-dates';
-import { useAuthStore } from '../../../stores/auth-store';
-import { ShareSheet } from '../../../components/share/ShareSheet';
-import { CardMatchResult } from '../../../components/share/CardMatchResult';
-import { Confetti } from '../../../components/ui/Confetti';
+import { myPerspective } from '../../../lib/match-opponent';
+import { queryKeys } from '../../../lib/query-keys';
 import { userMessage } from '../../../lib/user-message';
+import { useAuthStore } from '../../../stores/auth-store';
+import { colors } from '../../../theme/colors';
 
 // AnimatedTextInput: drives the ELO count-up at 60fps via reanimated.
 // Must be defined OUTSIDE the component so createAnimatedComponent runs once.
@@ -131,18 +131,15 @@ export default function MatchResult() {
           ? 'b'
           : 'a'
       : 'a';
-  const ratingBefore =
-    match
-      ? myTeamSide === 'a'
-        ? (match.rating_before_team_a ?? null)
-        : (match.rating_before_team_b ?? null)
-      : null;
+  const ratingBefore = match
+    ? myTeamSide === 'a'
+      ? (match.rating_before_team_a ?? null)
+      : (match.rating_before_team_b ?? null)
+    : null;
 
   // Opponent name from roster
   const opponent = match ? opponentNames.resolve(match) : null;
-  const opponentName = opponentNames.isLoading
-    ? 'Rakip'
-    : (opponent?.name ?? 'Rakip');
+  const opponentName = opponentNames.isLoading ? 'Rakip' : (opponent?.name ?? 'Rakip');
 
   // CountUp: reanimated TextInput drives ELO from startElo → targetElo over 900ms.
   const startElo = ratingBefore ?? 0;
@@ -158,9 +155,12 @@ export default function MatchResult() {
     });
   }, [startElo, targetElo, deltaDisplay, isVoid]);
 
-  const animatedEloProps = useAnimatedProps(() => ({
-    text: String(Math.round(counter.value)),
-  } as any /* RN TextInput `text` prop driven by reanimated */));
+  const animatedEloProps = useAnimatedProps(
+    () =>
+      ({
+        text: String(Math.round(counter.value)),
+      }) as any /* RN TextInput `text` prop driven by reanimated */,
+  );
 
   // Win celebration — ref-guarded so realtime refetches never retrigger it.
   // Fires once as soon as isWin first becomes true. Drives: haptic crescendo,
@@ -214,13 +214,9 @@ export default function MatchResult() {
   // "every participant has submitted" is determined by checking that both team
   // player lists are covered by the set of submitters.
   const submitters = new Set(submissions.map((s) => s.submitted_by));
-  const everyone = match
-    ? [...match.team_a_player_ids, ...match.team_b_player_ids]
-    : [];
+  const everyone = match ? [...match.team_a_player_ids, ...match.team_b_player_ids] : [];
   const hasConflict =
-    !scoresSettled &&
-    everyone.length > 0 &&
-    everyone.every((p) => submitters.has(p));
+    !scoresSettled && everyone.length > 0 && everyone.every((p) => submitters.has(p));
 
   // Oriented conflict scores: "my games – opp games" perspective.
   // iAmTeamA was already derived above as myTeamSide === 'a'.
@@ -237,9 +233,7 @@ export default function MatchResult() {
       ? match.team_b_player_ids
       : match.team_a_player_ids
     : [];
-  const oppSubmission = submissions.find((s) =>
-    opponentTeamIds.includes(s.submitted_by),
-  );
+  const oppSubmission = submissions.find((s) => opponentTeamIds.includes(s.submitted_by));
 
   const conflictMyMine = mySubmission
     ? iAmTeamA
@@ -288,7 +282,15 @@ export default function MatchResult() {
         : isWin
           ? 'Kazandın!'
           : 'Kaybettin';
-  const tagIcon: IconName = hasConflict ? 'info' : isPending ? 'info' : isVoid ? 'info' : isWin ? 'trophy' : 'x';
+  const tagIcon: IconName = hasConflict
+    ? 'info'
+    : isPending
+      ? 'info'
+      : isVoid
+        ? 'info'
+        : isWin
+          ? 'trophy'
+          : 'x';
   const eloColor = isWin ? colors.win : colors.loss;
 
   // My name for the share card — prefer profile but fall back to "Sen"
@@ -355,10 +357,7 @@ export default function MatchResult() {
             ]}
           >
             <Icon name={tagIcon} size={16} color={tagColor} stroke={2.5} />
-            <Text
-              className="font-sans font-extrabold"
-              style={{ fontSize: 14, color: tagColor }}
-            >
+            <Text className="font-sans font-extrabold" style={{ fontSize: 14, color: tagColor }}>
               {tagText}
             </Text>
           </Animated.View>
@@ -370,17 +369,11 @@ export default function MatchResult() {
             </Animated.View>
           )}
 
-          <View
-            className="flex-row items-center justify-center"
-            style={{ gap: 16 }}
-          >
+          <View className="flex-row items-center justify-center" style={{ gap: 16 }}>
             {/* Winner avatar with optional green glow halo */}
             <View style={styles.avatarContainer}>
               {isWin && !isVoid && (
-                <Animated.View
-                  pointerEvents="none"
-                  style={[styles.glowCircle, glowStyle]}
-                />
+                <Animated.View pointerEvents="none" style={[styles.glowCircle, glowStyle]} />
               )}
               <Avatar
                 name="Sen"
@@ -402,10 +395,7 @@ export default function MatchResult() {
               ring={!isWin && !isVoid ? colors.win : undefined}
             />
           </View>
-          <Text
-            className="font-sans font-semibold text-text-3"
-            style={{ fontSize: 13 }}
-          >
+          <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 13 }}>
             {metaLine}
           </Text>
         </View>
@@ -415,20 +405,11 @@ export default function MatchResult() {
             className="bg-surface rounded-lg"
             style={{ padding: 18, borderWidth: 1, borderColor: colors.borderStrong }}
           >
-            <Text
-              className="font-sans font-bold text-text-3"
-              style={{ fontSize: 12.5 }}
-            >
+            <Text className="font-sans font-bold text-text-3" style={{ fontSize: 12.5 }}>
               {isSettled ? 'ELO değişimi' : 'Tahmini ELO değişimi'}
             </Text>
-            <View
-              className="flex-row items-center"
-              style={{ marginTop: 10, gap: 14 }}
-            >
-              <Text
-                className="font-num font-bold text-text-3"
-                style={{ fontSize: 26 }}
-              >
+            <View className="flex-row items-center" style={{ marginTop: 10, gap: 14 }}>
+              <Text className="font-num font-bold text-text-3" style={{ fontSize: 26 }}>
                 {startElo}
               </Text>
               <Icon name="chevR" size={20} color={colors.text3} />
@@ -484,17 +465,13 @@ export default function MatchResult() {
         )}
 
         {isVoid && (
-          <View
-            className="flex-row bg-warn-soft rounded-md"
-            style={{ padding: 14, gap: 10 }}
-          >
+          <View className="flex-row bg-warn-soft rounded-md" style={{ padding: 14, gap: 10 }}>
             <Icon name="info" size={18} color={colors.warn} />
             <Text
               className="font-sans text-text-2"
               style={{ flex: 1, fontSize: 13, lineHeight: 19 }}
             >
-              3-3 berabere — bu maç ELO&apos;yu etkilemez ama
-              istatistiklerine işlenir.
+              3-3 berabere — bu maç ELO&apos;yu etkilemez ama istatistiklerine işlenir.
             </Text>
           </View>
         )}
@@ -506,24 +483,18 @@ export default function MatchResult() {
           >
             <View className="flex-row items-center" style={{ gap: 8 }}>
               <Icon name="info" size={16} color={colors.warn} />
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 13, color: colors.warn }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 13, color: colors.warn }}>
                 Skorlar uyuşmuyor
               </Text>
             </View>
-            <Text
-              className="font-sans text-text-2"
-              style={{ fontSize: 13, lineHeight: 19 }}
-            >
+            <Text className="font-sans text-text-2" style={{ fontSize: 13, lineHeight: 19 }}>
               {conflictMyMine !== null && conflictMyOpp !== null
                 ? `Sen ${conflictMyMine}-${conflictMyOpp} girdin`
                 : 'Senin skorun bilinmiyor'}
               {conflictOppMine !== null && conflictOppOpp !== null
                 ? `, ${isDoubles ? 'rakip takım' : 'rakibin'} ${conflictOppMine}-${conflictOppOpp} girdi.`
-                : `, ${isDoubles ? 'rakip takımın' : 'rakibin'} skoru bilinmiyor.`}
-              {' '}Skoru düzelterek tekrar gönderebilirsin.
+                : `, ${isDoubles ? 'rakip takımın' : 'rakibin'} skoru bilinmiyor.`}{' '}
+              Skoru düzelterek tekrar gönderebilirsin.
             </Text>
           </View>
         )}
@@ -564,52 +535,35 @@ export default function MatchResult() {
               <Button
                 size="lg"
                 full
-                icon={
-                  <Icon name="check" size={17} color={colors.onLime} stroke={3} />
-                }
+                icon={<Icon name="check" size={17} color={colors.onLime} stroke={3} />}
                 onPress={() => router.replace('/(tabs)/matches' as never)}
               >
                 Tamam
               </Button>
             ) : hasConflict ? (
-              <Button
-                size="lg"
-                full
-                onPress={() => router.replace(`/match/${id}/score` as never)}
-              >
+              <Button size="lg" full onPress={() => router.replace(`/match/${id}/score` as never)}>
                 Skoru tekrar gir
               </Button>
             ) : !scoresSettled && !mySubmission ? (
               // Rakip skoru girdi, ben girmedim → CTA'yı skor girmeye çevir.
               // Aksi halde disabled "Rakip bekleniyor" düğmesi kalıyor ki bu,
               // aslında bekleyen tarafın kullanıcı olduğu bir durumda yanlış.
-              <Button
-                size="lg"
-                full
-                onPress={() => router.replace(`/match/${id}/score` as never)}
-              >
+              <Button size="lg" full onPress={() => router.replace(`/match/${id}/score` as never)}>
                 Skoru gir
               </Button>
             ) : (
               <Button
                 size="lg"
                 full
-                disabled={
-                  !scoresSettled || myConfirmed || confirmMutation.isPending
-                }
-                icon={
-                  <Icon name="check" size={17} color={colors.onLime} stroke={3} />
-                }
+                disabled={!scoresSettled || myConfirmed || confirmMutation.isPending}
+                icon={<Icon name="check" size={17} color={colors.onLime} stroke={3} />}
                 onPress={() =>
                   id &&
                   confirmMutation.mutate(
                     { matchId: id },
                     {
                       onError: (e) =>
-                        Alert.alert(
-                          'Onaylanamadı',
-                          userMessage(e, 'Lütfen tekrar dene.'),
-                        ),
+                        Alert.alert('Onaylanamadı', userMessage(e, 'Lütfen tekrar dene.')),
                     },
                   )
                 }

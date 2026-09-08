@@ -22,11 +22,7 @@ export function usePublishAnnouncement() {
   return useMutation<PublishAnnouncementResult, Error, PublishAnnouncementInput>({
     mutationFn: async (input: PublishAnnouncementInput) => {
       if (!accessToken) throw new Error('not authenticated');
-      return invokeFunction<PublishAnnouncementResult>(
-        'publish-announcement',
-        input,
-        accessToken,
-      );
+      return invokeFunction<PublishAnnouncementResult>('publish-announcement', input, accessToken);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.announcements.all });

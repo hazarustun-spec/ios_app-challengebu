@@ -8,9 +8,9 @@
 // Background: lime. Big medallion with badge emoji/icon, badge name, subtitle.
 
 import { Text, View } from 'react-native';
+import { colors } from '../../theme/colors';
 import { Avatar } from '../ui/Avatar';
 import { BadgeArt } from '../ui/BadgeArt';
-import { colors } from '../../theme/colors';
 import { CardFooter } from './CardMatchResult';
 
 export interface CardBadgeWonProps {
@@ -109,9 +109,7 @@ export function CardBadgeWon({
             {badgeCode ? (
               <BadgeArt code={badgeCode} size={380} fallback={badgeEmoji} />
             ) : (
-              <Text
-                style={{ fontSize: 220, lineHeight: 240, textAlign: 'center' }}
-              >
+              <Text style={{ fontSize: 220, lineHeight: 240, textAlign: 'center' }}>
                 {badgeEmoji}
               </Text>
             )}

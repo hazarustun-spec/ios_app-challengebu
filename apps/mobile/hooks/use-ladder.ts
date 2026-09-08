@@ -22,10 +22,10 @@
 // `public_profiles`. The profile read used to be unfiltered, so a 20-player
 // ladder still pulled the entire profile table over the wire.
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useMemo } from 'react';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export interface LadderRow {
   profileId: string;
@@ -66,9 +66,7 @@ const PROFILE_CHUNK = 200;
 
 export function useLadder(category: string | undefined) {
   const query = useQuery<LadderRow[]>({
-    queryKey: category
-      ? queryKeys.ladder.byCategory(category)
-      : queryKeys.ladder.all,
+    queryKey: category ? queryKeys.ladder.byCategory(category) : queryKeys.ladder.all,
     enabled: !!category,
     queryFn: async () => {
       if (!category) return [];
@@ -142,7 +140,7 @@ export function useLadder(category: string | undefined) {
     const m = new Map<string, number>();
     for (const row of rows) m.set(row.profileId, row.rating);
     return (profileId: string | undefined): number | null =>
-      profileId ? m.get(profileId) ?? null : null;
+      profileId ? (m.get(profileId) ?? null) : null;
   }, [rows]);
 
   return {
@@ -213,10 +211,7 @@ export function usePlayerRatings(profileIds: string[] | undefined) {
 
   const map = query.data;
   const ratingOf = useMemo(() => {
-    return (
-      profileId: string | undefined,
-      category: string | undefined,
-    ): number | null => {
+    return (profileId: string | undefined, category: string | undefined): number | null => {
       if (!profileId || !category || !map) return null;
       return map.get(`${profileId}:${category}`) ?? null;
     };

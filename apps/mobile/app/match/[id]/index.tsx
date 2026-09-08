@@ -8,19 +8,19 @@
 //
 // Wired to live data via useMatchDetail(id) + useOpponentNames().
 
+import { router, useLocalSearchParams } from 'expo-router';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
-import { Icon } from '../../../components/ui/Icon';
 import { FormatChip } from '../../../components/ui/FormatChip';
+import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useStartConversation } from '../../../hooks/use-start-conversation';
-import { useAuthStore } from '../../../stores/auth-store';
 import { DB_TO_UI_FORMAT } from '../../../lib/formats';
+import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -145,10 +145,7 @@ export default function MatchDetail() {
               {myFirstName}
             </Text>
           </View>
-          <Text
-            className="font-num font-extrabold text-text-3"
-            style={{ fontSize: 16 }}
-          >
+          <Text className="font-num font-extrabold text-text-3" style={{ fontSize: 16 }}>
             VS
           </Text>
           <View style={{ alignItems: 'center' }}>
@@ -205,9 +202,7 @@ export default function MatchDetail() {
               color: isConfirmed ? colors.win : colors.warn,
             }}
           >
-            {isConfirmed
-              ? 'Maç onaylı, sahaya hazırsın'
-              : 'Karşı taraf henüz onaylamadı'}
+            {isConfirmed ? 'Maç onaylı, sahaya hazırsın' : 'Karşı taraf henüz onaylamadı'}
           </Text>
         </View>
       </ScrollView>
@@ -276,17 +271,11 @@ function Row({
         borderColor: colors.surface3,
       }}
     >
-      <Text
-        className="font-sans font-semibold text-text-3"
-        style={{ fontSize: 14 }}
-      >
+      <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 14 }}>
         {label}
       </Text>
       {valueNode ?? (
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 14 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
           {value}
         </Text>
       )}

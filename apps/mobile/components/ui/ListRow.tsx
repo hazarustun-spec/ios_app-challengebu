@@ -17,8 +17,8 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Icon, type IconName } from './Icon';
 import { colors } from '../../theme/colors';
+import { Icon, type IconName } from './Icon';
 
 export interface ListRowProps {
   icon?: IconName;
@@ -48,10 +48,9 @@ export function ListRow({
   const defaultIconColor = danger ? colors.loss : colors.text2;
   const resolvedIconColor = iconColor ?? defaultIconColor;
 
-  const titleClass = [
-    'font-sans font-bold text-[15px]',
-    danger ? 'text-loss' : 'text-text',
-  ].join(' ');
+  const titleClass = ['font-sans font-bold text-[15px]', danger ? 'text-loss' : 'text-text'].join(
+    ' ',
+  );
 
   const content = (
     <View className="flex-row items-center gap-3 py-3.5 px-4">
@@ -65,10 +64,7 @@ export function ListRow({
           {title}
         </Text>
         {subtitle && (
-          <Text
-            className="text-text-3 text-[12.5px] font-semibold mt-0.5"
-            numberOfLines={1}
-          >
+          <Text className="text-text-3 text-[12.5px] font-semibold mt-0.5" numberOfLines={1}>
             {subtitle}
           </Text>
         )}
@@ -80,11 +76,7 @@ export function ListRow({
 
   if (onPress) {
     return (
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="button"
-        className="active:opacity-80"
-      >
+      <Pressable onPress={onPress} accessibilityRole="button" className="active:opacity-80">
         {content}
       </Pressable>
     );

@@ -10,16 +10,16 @@
 // Data: useMessageableContacts() → MessageableContact[]
 // Style mirrors app/match/new/opponent.tsx.
 
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { router } from 'expo-router';
 import { Avatar } from '../../components/ui/Avatar';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Field } from '../../components/ui/Field';
 import { NavHeader } from '../../components/ui/NavHeader';
 import {
-  useMessageableContacts,
   type MessageableContact,
+  useMessageableContacts,
 } from '../../hooks/use-messageable-contacts';
 import { useStartConversation } from '../../hooks/use-start-conversation';
 import { colors } from '../../theme/colors';
@@ -53,9 +53,7 @@ export default function NewMessageScreen() {
   const { start } = useStartConversation();
   const [q, setQ] = useState('');
 
-  const header = (
-    <NavHeader title="Yeni mesaj" onBack={() => router.back()} />
-  );
+  const header = <NavHeader title="Yeni mesaj" onBack={() => router.back()} />;
 
   if (contactsQ.isLoading) {
     return (
@@ -114,12 +112,7 @@ export default function NewMessageScreen() {
 
       {/* Search field */}
       <View style={{ paddingHorizontal: 18, paddingTop: 4, paddingBottom: 10 }}>
-        <Field
-          icon="search"
-          placeholder="İsim ara…"
-          value={q}
-          onChange={setQ}
-        />
+        <Field icon="search" placeholder="İsim ara…" value={q} onChange={setQ} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0, gap: 8 }}>
@@ -176,11 +169,7 @@ function ContactRow({ contact, onPress }: ContactRowProps) {
         backgroundColor: colors.surface,
       }}
     >
-      <Avatar
-        name={fullName}
-        size={44}
-        uri={contact.avatar_url ?? undefined}
-      />
+      <Avatar name={fullName} size={44} uri={contact.avatar_url ?? undefined} />
 
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text
@@ -192,10 +181,7 @@ function ContactRow({ contact, onPress }: ContactRowProps) {
         </Text>
       </View>
 
-      <Text
-        className="font-sans text-text-3"
-        style={{ fontSize: 11.5 }}
-      >
+      <Text className="font-sans text-text-3" style={{ fontSize: 11.5 }}>
         {relativeTime(contact.last_at)}
       </Text>
     </Pressable>

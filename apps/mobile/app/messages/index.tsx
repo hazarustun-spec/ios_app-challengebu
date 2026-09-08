@@ -8,21 +8,11 @@
 // House style mirrors app/notifications.tsx exactly.
 
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { NavHeader } from '../../components/ui/NavHeader';
-import {
-  useConversations,
-  type ConversationListItem,
-} from '../../hooks/use-conversations';
+import { type ConversationListItem, useConversations } from '../../hooks/use-conversations';
 import { colors } from '../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -62,9 +52,7 @@ export default function MessagesScreen() {
     <NavHeader
       large
       title="Mesajlar"
-      onBack={() =>
-        router.canGoBack() ? router.back() : router.replace('/(tabs)/matches')
-      }
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/matches'))}
       actionIcon="edit"
       onAction={() => router.push('/messages/new' as never)}
     />
@@ -151,11 +139,7 @@ function ConversationRow({ item }: { item: ConversationListItem }) {
       }}
     >
       {/* Avatar */}
-      <Avatar
-        name={item.otherName}
-        size={44}
-        uri={item.otherAvatarUrl ?? undefined}
-      />
+      <Avatar name={item.otherName} size={44} uri={item.otherAvatarUrl ?? undefined} />
 
       {/* Name + preview */}
       <View style={{ flex: 1, minWidth: 0 }}>
@@ -180,10 +164,7 @@ function ConversationRow({ item }: { item: ConversationListItem }) {
 
       {/* Right column: time + unread dot */}
       <View style={{ alignItems: 'flex-end', gap: 6 }}>
-        <Text
-          className="font-sans font-semibold text-text-3"
-          style={{ fontSize: 11.5 }}
-        >
+        <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11.5 }}>
           {relativeTime(item.lastMessageAt)}
         </Text>
         {hasUnread && (

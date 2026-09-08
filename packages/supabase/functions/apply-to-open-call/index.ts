@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { conflict, errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 
 const inputSchema = z.object({
   requestId: z.string().uuid(),
@@ -26,8 +26,10 @@ Deno.serve(async (req) => {
       .eq('id', parsed.data.requestId)
       .single();
     if (!request) return errorResponse('Request not found', 404);
-    if (request.type !== 'open_call') return errorResponse('Only open_call accepts applications', 400);
-    if (request.creator_id === auth.userId) return errorResponse('Cannot apply to your own call', 400);
+    if (request.type !== 'open_call')
+      return errorResponse('Only open_call accepts applications', 400);
+    if (request.creator_id === auth.userId)
+      return errorResponse('Cannot apply to your own call', 400);
     if (request.status !== 'pending') return conflict(`Request is ${request.status}`);
     if (new Date(request.expires_at).getTime() < Date.now()) {
       return conflict('Request has expired');

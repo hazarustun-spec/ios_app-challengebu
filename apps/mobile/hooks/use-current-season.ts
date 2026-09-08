@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export type SeasonStatus = 'upcoming' | 'active' | 'finale' | 'closed';
 export type SeasonName = 'guz' | 'bahar' | 'yaz';

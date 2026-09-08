@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Switch, Text, View } from 'react-native';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
+import { type ProSet8Draft, useScoreEntryStore } from '../../../stores/score-entry-store';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
-import {
-  useScoreEntryStore,
-  type ProSet8Draft,
-} from '../../../stores/score-entry-store';
-import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
@@ -90,13 +87,19 @@ export function ProSet8ScoreEntry({ matchId, myLetter, onSubmit, submitting }: P
         label={myLetter === 'a' ? 'Senin game' : 'Rakibin game'}
         keyboardType="number-pad"
         value={gamesA}
-        onChangeText={(v) => { setGamesA(v); setErr(undefined); }}
+        onChangeText={(v) => {
+          setGamesA(v);
+          setErr(undefined);
+        }}
       />
       <TextField
         label={myLetter === 'b' ? 'Senin game' : 'Rakibin game'}
         keyboardType="number-pad"
         value={gamesB}
-        onChangeText={(v) => { setGamesB(v); setErr(undefined); }}
+        onChangeText={(v) => {
+          setGamesB(v);
+          setErr(undefined);
+        }}
       />
       <View className="flex-row items-center justify-between rounded-lg border border-gray-300 bg-white p-3">
         <Text className="text-base text-gray-900">8-8 oldu, tiebreak oynandı</Text>
@@ -108,19 +111,27 @@ export function ProSet8ScoreEntry({ matchId, myLetter, onSubmit, submitting }: P
             label={`Tiebreak — ${myLetter === 'a' ? 'sen' : 'rakip'}`}
             keyboardType="number-pad"
             value={tbA}
-            onChangeText={(v) => { setTbA(v); setErr(undefined); }}
+            onChangeText={(v) => {
+              setTbA(v);
+              setErr(undefined);
+            }}
           />
           <TextField
             label={`Tiebreak — ${myLetter === 'b' ? 'sen' : 'rakip'}`}
             keyboardType="number-pad"
             value={tbB}
-            onChangeText={(v) => { setTbB(v); setErr(undefined); }}
+            onChangeText={(v) => {
+              setTbB(v);
+              setErr(undefined);
+            }}
           />
         </>
       )}
       {err && <Text className="text-sm text-red-500">{err}</Text>}
       <View className="mt-auto">
-        <Button onPress={onSubmitTap} loading={submitting}>Skoru gönder</Button>
+        <Button onPress={onSubmitTap} loading={submitting}>
+          Skoru gönder
+        </Button>
       </View>
     </View>
   );

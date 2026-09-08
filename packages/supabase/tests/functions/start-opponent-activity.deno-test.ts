@@ -19,8 +19,11 @@ const KEY_HONORED = await probeKeyHonored();
 /** Create an accepted match between isolated (UUID-suffixed) users via direct DB inserts.
  *  Uses admin client to bypass edge-function chains which can be flaky under concurrent load. */
 async function makeIsolatedMatch(): Promise<{
-  matchId: string; aliceId: string; bobId: string;
-  aliceToken: string; bobToken: string;
+  matchId: string;
+  aliceId: string;
+  bobId: string;
+  aliceToken: string;
+  bobToken: string;
 }> {
   const suffix = crypto.randomUUID().slice(0, 8);
   const alice = await createTestUser({
@@ -35,32 +38,43 @@ async function makeIsolatedMatch(): Promise<{
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
   if (!court) throw new Error('No court found');
 
-  const { data: req } = await supa.from('match_requests').insert({
-    creator_id: alice.userId,
-    target_id: bob.userId,
-    type: 'direct_challenge',
-    category: 'erkek_tek',
-    format: 'bu_klasik',
-    proposed_date: '2026-08-01',
-    proposed_time: '19:00',
-    court_id: court.id,
-    status: 'accepted',
-    expires_at: '2026-09-01T00:00:00Z',
-  }).select('id').single();
+  const { data: req } = await supa
+    .from('match_requests')
+    .insert({
+      creator_id: alice.userId,
+      target_id: bob.userId,
+      type: 'direct_challenge',
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      proposed_date: '2026-08-01',
+      proposed_time: '19:00',
+      court_id: court.id,
+      status: 'accepted',
+      expires_at: '2026-09-01T00:00:00Z',
+    })
+    .select('id')
+    .single();
   if (!req) throw new Error(`makeIsolatedMatch: match_request insert failed (suffix ${suffix})`);
 
-  const { data: m, error: matchErr } = await supa.from('matches').insert({
-    match_request_id: req.id,
-    category: 'erkek_tek',
-    format: 'bu_klasik',
-    court_id: court.id,
-    played_at: '2026-08-01T18:00:00Z',
-    is_rated: true,
-    team_a_player_ids: [alice.userId],
-    team_b_player_ids: [bob.userId],
-    // status defaults to 'awaiting_confirmation'
-  }).select('id').single();
-  if (!m || matchErr) throw new Error(`makeIsolatedMatch: match insert failed (suffix ${suffix}): ${matchErr?.message}`);
+  const { data: m, error: matchErr } = await supa
+    .from('matches')
+    .insert({
+      match_request_id: req.id,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      court_id: court.id,
+      played_at: '2026-08-01T18:00:00Z',
+      is_rated: true,
+      team_a_player_ids: [alice.userId],
+      team_b_player_ids: [bob.userId],
+      // status defaults to 'awaiting_confirmation'
+    })
+    .select('id')
+    .single();
+  if (!m || matchErr)
+    throw new Error(
+      `makeIsolatedMatch: match insert failed (suffix ${suffix}): ${matchErr?.message}`,
+    );
 
   return {
     matchId: m.id,

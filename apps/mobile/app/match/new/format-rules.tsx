@@ -13,18 +13,18 @@
 //   4. Sticky footer — "okudum" checkbox gates the CTA. Confirming
 //      returns to the preview screen.
 
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import {
   FORMATS,
+  type FormatKey,
   K_ESTABLISHED,
   K_NEW_PLAYER,
   NEW_PLAYER_THRESHOLD,
-  type FormatKey,
 } from '../../../lib/formats';
 import { useNewMatchStore } from '../../../stores/new-match-store';
 import { colors } from '../../../theme/colors';
@@ -96,16 +96,10 @@ export default function FormatRules() {
               <Icon name={f.mark} size={24} color={f.color} />
             </View>
             <View>
-              <Text
-                className="font-sans font-extrabold text-text"
-                style={{ fontSize: 19 }}
-              >
+              <Text className="font-sans font-extrabold text-text" style={{ fontSize: 19 }}>
                 {f.name}
               </Text>
-              <Text
-                className="font-sans font-bold"
-                style={{ fontSize: 13, color: f.color }}
-              >
+              <Text className="font-sans font-bold" style={{ fontSize: 13, color: f.color }}>
                 {f.tag}
               </Text>
             </View>
@@ -206,10 +200,7 @@ export default function FormatRules() {
           >
             {read && <Icon name="check" size={15} color="#FFFFFF" stroke={3} />}
           </View>
-          <Text
-            className="font-sans font-bold text-text"
-            style={{ fontSize: 13.5 }}
-          >
+          <Text className="font-sans font-bold text-text" style={{ fontSize: 13.5 }}>
             Kuralları okudum ve anladım
           </Text>
         </Pressable>

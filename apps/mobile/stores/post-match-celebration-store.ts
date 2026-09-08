@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { Level } from '@tennis/shared';
+import { create } from 'zustand';
 
 export interface AwardedBadgeView {
   id: string;

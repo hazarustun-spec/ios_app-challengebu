@@ -27,27 +27,21 @@
 // Empty: returns null (no empty box shown).
 // Loading: skeleton cards.
 
-import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { Avatar } from '../ui/Avatar';
-import { Skel } from '../ui/Skel';
+import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+import { type SuggestionItem, useOpponentSuggestions } from '../../hooks/use-opponent-suggestions';
 import { levelForElo } from '../../lib/levels';
-import {
-  useOpponentSuggestions,
-  type SuggestionItem,
-} from '../../hooks/use-opponent-suggestions';
 import { useNewMatchStore } from '../../stores/new-match-store';
 import { colors } from '../../theme/colors';
+import { Avatar } from '../ui/Avatar';
+import { Skel } from '../ui/Skel';
 
 export interface OpponentSuggestStripProps {
   category: string;
   variant?: 'full' | 'compact';
 }
 
-export function OpponentSuggestStrip({
-  category,
-  variant = 'full',
-}: OpponentSuggestStripProps) {
+export function OpponentSuggestStrip({ category, variant = 'full' }: OpponentSuggestStripProps) {
   const setField = useNewMatchStore((s) => s.setField);
   const { suggestions, isLoading } = useOpponentSuggestions(category);
 

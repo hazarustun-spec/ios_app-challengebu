@@ -4,17 +4,17 @@
 // vertical column of category tiles (each tile = icon chip + title + sub +
 // chevron). Counts are live from their respective admin hooks.
 
-import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Icon, type IconName } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
-import { usePendingDisputes } from '../../hooks/use-pending-disputes';
-import { useAdminUsers } from '../../hooks/use-admin-users';
-import { useCurrentSeason, type SeasonName } from '../../hooks/use-current-season';
+import { NavHeader } from '../../components/ui/NavHeader';
 import { useAdminAnnouncements } from '../../hooks/use-admin-announcements';
 import { useAdminHealth } from '../../hooks/use-admin-health';
 import { useAdminTournaments } from '../../hooks/use-admin-tournaments';
+import { useAdminUsers } from '../../hooks/use-admin-users';
+import { type SeasonName, useCurrentSeason } from '../../hooks/use-current-season';
+import { usePendingDisputes } from '../../hooks/use-pending-disputes';
+import { colors } from '../../theme/colors';
 
 // Maps the DB season name slug to a display label.
 const SEASON_LABEL: Record<SeasonName, string> = {
@@ -56,8 +56,7 @@ export default function AdminHome() {
 
   // ── Derived counts (all default to "—" while still loading) ──────────────
 
-  const disputeCount: string =
-    disputesQ.data != null ? String(disputesQ.data.length) : '—';
+  const disputeCount: string = disputesQ.data != null ? String(disputesQ.data.length) : '—';
 
   // Prefer the uncapped totalUsers from the health hook; fall back to the
   // capped useAdminUsers result if health is still loading.
@@ -65,12 +64,11 @@ export default function AdminHome() {
     healthQ.data != null
       ? String(healthQ.data.totalUsers)
       : usersQ.data != null
-      ? String(usersQ.data.length)
-      : '—';
+        ? String(usersQ.data.length)
+        : '—';
 
   // Days left in the current season (until ends_at).
-  const daysLeft: string =
-    seasonQ.data != null ? `${daysUntil(seasonQ.data.ends_at)}g` : '—';
+  const daysLeft: string = seasonQ.data != null ? `${daysUntil(seasonQ.data.ends_at)}g` : '—';
 
   // Season tile sub: "Güz · aktif" / "Bahar · final" / "—"
   const seasonSub: string =
@@ -171,10 +169,7 @@ export default function AdminHome() {
           }}
         >
           <Icon name="shield" size={15} color={colors.bg} />
-          <Text
-            className="font-sans font-extrabold"
-            style={{ fontSize: 12, color: colors.bg }}
-          >
+          <Text className="font-sans font-extrabold" style={{ fontSize: 12, color: colors.bg }}>
             ADMIN
           </Text>
         </View>
@@ -195,16 +190,10 @@ export default function AdminHome() {
                 alignItems: 'center',
               }}
             >
-              <Text
-                className="font-num font-extrabold text-text"
-                style={{ fontSize: 22 }}
-              >
+              <Text className="font-num font-extrabold text-text" style={{ fontSize: 22 }}>
                 {v}
               </Text>
-              <Text
-                className="font-sans font-semibold text-text-3"
-                style={{ fontSize: 11 }}
-              >
+              <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 11 }}>
                 {l}
               </Text>
             </View>
@@ -239,16 +228,10 @@ export default function AdminHome() {
                 <Icon name={t.icon} size={21} color={t.color} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 15.5 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 15.5 }}>
                   {t.title}
                 </Text>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ fontSize: 12.5, marginTop: 1 }}
-                >
+                <Text className="font-sans text-text-3" style={{ fontSize: 12.5, marginTop: 1 }}>
                   {t.sub}
                 </Text>
               </View>

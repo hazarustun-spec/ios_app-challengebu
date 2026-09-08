@@ -8,10 +8,10 @@
 // Background: white (var(--bg)). Big current ELO number + sparkline chart panel.
 
 import { Text, View } from 'react-native';
+import { colors } from '../../theme/colors';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { Sparkline } from '../ui/Sparkline';
-import { colors } from '../../theme/colors';
 import { CardFooter } from './CardMatchResult';
 
 export interface CardEloProgressProps {

@@ -22,16 +22,16 @@
 // (status in confirmed/voided, ordered by played_at desc); we render the first
 // `limit` of those.
 
+import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { router } from 'expo-router';
-import { Avatar } from '../ui/Avatar';
-import { colors } from '../../theme/colors';
-import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
-import { formatOpponentName, myPerspective, opponentIds } from '../../lib/match-opponent';
 import { useUserMatchHistory } from '../../hooks/use-match-history';
 import { usePlayers } from '../../hooks/use-players';
+import { DB_TO_UI_FORMAT, FORMATS } from '../../lib/formats';
+import { formatOpponentName, myPerspective, opponentIds } from '../../lib/match-opponent';
 import { useAuthStore } from '../../stores/auth-store';
+import { colors } from '../../theme/colors';
+import { Avatar } from '../ui/Avatar';
 
 const CATEGORY_LABELS: Record<string, string> = {
   erkek_tek: 'Erkek Tek',
@@ -143,8 +143,7 @@ export function RecentMatches({
         const resolved = oppIds
           .map((id) => nameMap.get(id))
           .filter((p): p is { first_name: string; last_name: string } => !!p);
-        const opponentLabel =
-          resolved.length === 0 ? 'Rakip' : formatOpponentName(resolved);
+        const opponentLabel = resolved.length === 0 ? 'Rakip' : formatOpponentName(resolved);
         const primaryName = resolved[0]
           ? `${resolved[0].first_name} ${resolved[0].last_name}`
           : 'Rakip';
@@ -175,10 +174,7 @@ export function RecentMatches({
               <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                 {opponentLabel}
               </Text>
-              <Text
-                className="font-sans text-text-3"
-                style={{ fontSize: 12, marginTop: 2 }}
-              >
+              <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 2 }}>
                 {fmtName} · {catLabel} · {dateLabel}
               </Text>
             </View>

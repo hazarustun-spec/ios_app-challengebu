@@ -3,7 +3,10 @@ import { adminClient, createTestUser, invokeFunction, teardownUsers } from './he
 
 Deno.test('E2E: full direct challenge → ELO applied', async () => {
   const s = crypto.randomUUID().slice(0, 8);
-  const alice = await createTestUser({ email: `alice-e2e-${s}@test.local`, genderCategory: 'erkek' });
+  const alice = await createTestUser({
+    email: `alice-e2e-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
   const bob = await createTestUser({ email: `bob-e2e-${s}@test.local`, genderCategory: 'erkek' });
   const supa = adminClient();
   const { data: court } = await supa.from('courts').select('id').limit(1).single();
@@ -11,23 +14,41 @@ Deno.test('E2E: full direct challenge → ELO applied', async () => {
   let matchId = '';
   try {
     // 1. Create
-    const { body: created } = await invokeFunction('create-match-request', {
-      type: 'direct_challenge', targetId: bob.userId, category: 'erkek_tek',
-      format: 'bu_klasik', isRated: true, proposedDate: '2026-07-01',
-      proposedTime: '19:00', courtId: court!.id,
-    }, alice.accessToken);
+    const { body: created } = await invokeFunction(
+      'create-match-request',
+      {
+        type: 'direct_challenge',
+        targetId: bob.userId,
+        category: 'erkek_tek',
+        format: 'bu_klasik',
+        isRated: true,
+        proposedDate: '2026-07-01',
+        proposedTime: '19:00',
+        courtId: court!.id,
+      },
+      alice.accessToken,
+    );
     const requestId = (created as { id: string }).id;
 
     // 2. Accept
-    const { body: accepted } = await invokeFunction('accept-match-request', { requestId }, bob.accessToken);
+    const { body: accepted } = await invokeFunction(
+      'accept-match-request',
+      { requestId },
+      bob.accessToken,
+    );
     matchId = (accepted as { matchId: string }).matchId;
 
     // 3. Submit scores (both matching)
     const score = {
-      matchId, scoreTeamA: 4, scoreTeamB: 0, winnerTeam: 'a' as const,
+      matchId,
+      scoreTeamA: 4,
+      scoreTeamB: 0,
+      winnerTeam: 'a' as const,
       els: [
-        { el: 1, winner: 'a' }, { el: 2, winner: 'a' },
-        { el: 3, winner: 'a' }, { el: 4, winner: 'a' },
+        { el: 1, winner: 'a' },
+        { el: 2, winner: 'a' },
+        { el: 3, winner: 'a' },
+        { el: 4, winner: 'a' },
       ],
     };
     const s1 = await invokeFunction('submit-match-score', score, alice.accessToken);
@@ -58,11 +79,9 @@ Deno.test('E2E: full direct challenge → ELO applied', async () => {
       .eq('category', 'erkek_tek')
       .single();
     assertEquals(aliceRating!.matches_played, 1);
-    if (aliceRating!.rating <= 1200) throw new Error(`alice rating ${aliceRating!.rating} should be > 1200 (bagel win)`);
+    if (aliceRating!.rating <= 1200)
+      throw new Error(`alice rating ${aliceRating!.rating} should be > 1200 (bagel win)`);
   } finally {
-    await teardownUsers(
-      [alice.userId, bob.userId],
-      { matchIds: matchId ? [matchId] : [] },
-    );
+    await teardownUsers([alice.userId, bob.userId], { matchIds: matchId ? [matchId] : [] });
   }
 });

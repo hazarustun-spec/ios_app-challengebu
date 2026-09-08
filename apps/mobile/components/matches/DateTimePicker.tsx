@@ -1,6 +1,6 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Platform, Pressable, Text, View } from 'react-native';
 import { useState } from 'react';
+import { Platform, Pressable, Text, View } from 'react-native';
 
 interface Props {
   label: string;

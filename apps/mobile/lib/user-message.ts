@@ -40,8 +40,7 @@ const MESSAGES_TR: Record<string, string> = {
   'Only the target can reject': 'Bu isteği yalnızca davet edilen oyuncu reddedebilir.',
   'Only the creator can select': 'Seçimi yalnızca ilanı açan oyuncu yapabilir.',
   'Only open_call accepts applications': 'Bu isteğe başvuru yapılamaz.',
-  'Only direct_challenge requests can be accepted this way':
-    'Bu istek bu şekilde kabul edilemez.',
+  'Only direct_challenge requests can be accepted this way': 'Bu istek bu şekilde kabul edilemez.',
 
   // Match lifecycle
   'Not a match participant': 'Bu maçın oyuncusu değilsin.',

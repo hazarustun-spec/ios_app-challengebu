@@ -9,7 +9,7 @@
 import { useMemo } from 'react';
 import { Text } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { rankSvg, RANK_ASPECT } from '../../lib/rank-art';
+import { RANK_ASPECT, rankSvg } from '../../lib/rank-art';
 
 interface RankBadgeProps {
   /** Level key/code (cekirge, rekabet, yeni_cekirge, rekabetci, …). */

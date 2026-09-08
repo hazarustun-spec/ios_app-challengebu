@@ -55,7 +55,8 @@ Deno.test('anonymize-account: player anonymizes self', async () => {
     // auth.users row still exists
     const { data: users } = await supa.auth.admin.listUsers();
     const stillThere = users.users.find((u) => u.id === alice.userId);
-    if (!stillThere) throw new Error('auth.users row should still exist (anonymize preserves history)');
+    if (!stillThere)
+      throw new Error('auth.users row should still exist (anonymize preserves history)');
   } finally {
     // Teardown: alice's auth.users row still exists (anonymize doesn't delete it)
     await teardownUsers([alice.userId]);

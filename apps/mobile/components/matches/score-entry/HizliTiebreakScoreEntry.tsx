@@ -1,17 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
+import { type HizliTiebreakDraft, useScoreEntryStore } from '../../../stores/score-entry-store';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
-import {
-  useScoreEntryStore,
-  type HizliTiebreakDraft,
-} from '../../../stores/score-entry-store';
-import { useEffect, useState } from 'react';
-import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: HizliTiebreakDraft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
+  onSubmit: (
+    draft: HizliTiebreakDraft,
+    winnerTeam: WinnerTeam,
+    scoreA: number,
+    scoreB: number,
+  ) => void;
   submitting: boolean;
 }
 
@@ -49,24 +51,30 @@ export function HizliTiebreakScoreEntry({ matchId, myLetter, onSubmit, submittin
 
   return (
     <View className="flex-1 gap-4">
-      <Text className="text-sm text-gray-700">
-        Maç sonu skorunu gir (örn. 10-7).
-      </Text>
+      <Text className="text-sm text-gray-700">Maç sonu skorunu gir (örn. 10-7).</Text>
       <TextField
         label={myLetter === 'a' ? 'Senin sayın' : 'Rakibin sayısı'}
         keyboardType="number-pad"
         value={aStr}
-        onChangeText={(v) => { setAStr(v); setErr(undefined); }}
+        onChangeText={(v) => {
+          setAStr(v);
+          setErr(undefined);
+        }}
       />
       <TextField
         label={myLetter === 'b' ? 'Senin sayın' : 'Rakibin sayısı'}
         keyboardType="number-pad"
         value={bStr}
-        onChangeText={(v) => { setBStr(v); setErr(undefined); }}
+        onChangeText={(v) => {
+          setBStr(v);
+          setErr(undefined);
+        }}
         error={err}
       />
       <View className="mt-auto">
-        <Button onPress={onSubmitTap} loading={submitting}>Skoru gönder</Button>
+        <Button onPress={onSubmitTap} loading={submitting}>
+          Skoru gönder
+        </Button>
       </View>
     </View>
   );

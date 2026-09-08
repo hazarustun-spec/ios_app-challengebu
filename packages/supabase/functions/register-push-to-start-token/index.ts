@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 
 // Registers a device/user-level APNs push-to-start token (captured once at app
 // startup after auth). Unlike register-activity-token, there is NO matchId and
@@ -24,16 +24,14 @@ Deno.serve(async (req) => {
 
     const { token } = parsed.data;
 
-    const { error } = await supa
-      .from('push_to_start_tokens')
-      .upsert(
-        {
-          user_id: auth.userId,
-          token,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' },
-      );
+    const { error } = await supa.from('push_to_start_tokens').upsert(
+      {
+        user_id: auth.userId,
+        token,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
     if (error) {
       console.error('[register-push-to-start-token] upsert failed', error);
       return internalError(error);

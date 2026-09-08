@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 import type { NotificationCategory } from './use-notification-preferences';
 
@@ -27,7 +27,7 @@ export function useNotifications() {
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return ((data ?? []) as unknown) as NotificationRow[];
+      return (data ?? []) as unknown as NotificationRow[];
     },
   });
 }

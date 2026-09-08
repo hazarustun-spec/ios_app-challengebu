@@ -51,7 +51,8 @@ export const useScoreEntryStore = create<State>((set, get) => ({
   setBuKlasik: (matchId, draft) => set((s) => ({ drafts: { ...s.drafts, [matchId]: draft } })),
   setHizliTiebreak: (matchId, draft) => set((s) => ({ drafts: { ...s.drafts, [matchId]: draft } })),
   setProSet8: (matchId, draft) => set((s) => ({ drafts: { ...s.drafts, [matchId]: draft } })),
-  setThreeSetKlasik: (matchId, draft) => set((s) => ({ drafts: { ...s.drafts, [matchId]: draft } })),
+  setThreeSetKlasik: (matchId, draft) =>
+    set((s) => ({ drafts: { ...s.drafts, [matchId]: draft } })),
   clear: (matchId) =>
     set((s) => {
       const next = { ...s.drafts };
@@ -59,7 +60,9 @@ export const useScoreEntryStore = create<State>((set, get) => ({
       return { drafts: next };
     }),
   getBuKlasik: (matchId) => (get().drafts[matchId] as BuKlasikDraft | undefined) ?? initialBuKlasik,
-  getHizliTiebreak: (matchId) => (get().drafts[matchId] as HizliTiebreakDraft | undefined) ?? initialTiebreak,
+  getHizliTiebreak: (matchId) =>
+    (get().drafts[matchId] as HizliTiebreakDraft | undefined) ?? initialTiebreak,
   getProSet8: (matchId) => (get().drafts[matchId] as ProSet8Draft | undefined) ?? initialProSet,
-  getThreeSetKlasik: (matchId) => (get().drafts[matchId] as ThreeSetKlasikDraft | undefined) ?? initialThreeSet,
+  getThreeSetKlasik: (matchId) =>
+    (get().drafts[matchId] as ThreeSetKlasikDraft | undefined) ?? initialThreeSet,
 }));

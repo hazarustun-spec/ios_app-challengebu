@@ -12,24 +12,25 @@
 //   • Match already has winner_team (scored) → skip straight to /score.
 //   • Both already confirmed on first load → play animation directly.
 
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { NavHeader } from '../../../components/ui/NavHeader';
+import { router, useLocalSearchParams } from 'expo-router';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import { MatchStartBurst } from '../../../components/matches/MatchStartBurst';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
-import { Icon } from '../../../components/ui/Icon';
 import { FormatChip } from '../../../components/ui/FormatChip';
-import { MatchStartBurst } from '../../../components/matches/MatchStartBurst';
+import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
-import { useStartMatch } from '../../../hooks/use-start-match';
-import { userMessage } from '../../../lib/user-message';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useRealtimeChannel } from '../../../hooks/use-realtime-channel';
-import { useAuthStore } from '../../../stores/auth-store';
-import { queryKeys } from '../../../lib/query-keys';
+import { useStartMatch } from '../../../hooks/use-start-match';
 import { DB_TO_UI_FORMAT } from '../../../lib/formats';
+import { queryKeys } from '../../../lib/query-keys';
+import { userMessage } from '../../../lib/user-message';
+import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
 // ---------------------------------------------------------------------------
@@ -122,8 +123,7 @@ export default function MatchStartLobby() {
   const everyone = [...teamA, ...teamB];
 
   const iAmReady = !!userId && startedBy.includes(userId);
-  const bothReady =
-    everyone.length > 0 && everyone.every((p) => startedBy.includes(p));
+  const bothReady = everyone.length > 0 && everyone.every((p) => startedBy.includes(p));
 
   // Opponent info
   const opponent = match ? opponentNames.resolve(match) : null;
@@ -142,10 +142,8 @@ export default function MatchStartLobby() {
   // Start-time gate: locked until 15 min before played_at.
   const playedAtMs = match?.played_at ? new Date(match.played_at).getTime() : null;
   const earliestStartMs = playedAtMs != null ? playedAtMs - EARLY_TOLERANCE_MS : null;
-  const tooEarly =
-    earliestStartMs != null && !iAmReady && nowMs < earliestStartMs;
-  const startsInLabel =
-    earliestStartMs != null ? formatCountdown(earliestStartMs - nowMs) : '';
+  const tooEarly = earliestStartMs != null && !iAmReady && nowMs < earliestStartMs;
+  const startsInLabel = earliestStartMs != null ? formatCountdown(earliestStartMs - nowMs) : '';
 
   // -------------------------------------------------------------------------
   // Navigation shortcuts
@@ -173,8 +171,7 @@ export default function MatchStartLobby() {
       // Backend can reject with `pair_weekly_limit`, `too_early`,
       // `wrong_participant`, etc. Without an onError handler the tap did
       // nothing visible and the user tapped again in confusion.
-      onError: (e) =>
-        Alert.alert('Başlatılamadı', userMessage(e, 'Lütfen tekrar dene.')),
+      onError: (e) => Alert.alert('Başlatılamadı', userMessage(e, 'Lütfen tekrar dene.')),
     });
   }
 
@@ -206,9 +203,7 @@ export default function MatchStartLobby() {
         <NavHeader title="Maçı Başlat" onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 14, textAlign: 'center' }}>
-            {matchQ.isError
-              ? 'Maç bilgisi yüklenemedi. Lütfen tekrar dene.'
-              : 'Maç bulunamadı.'}
+            {matchQ.isError ? 'Maç bilgisi yüklenemedi. Lütfen tekrar dene.' : 'Maç bulunamadı.'}
           </Text>
         </View>
       </View>
@@ -238,10 +233,7 @@ export default function MatchStartLobby() {
           {/* Me */}
           <View style={{ alignItems: 'center', flex: 1 }}>
             <Avatar name={myFirstName} size={72} />
-            <Text
-              className="font-sans font-bold text-text"
-              style={{ fontSize: 14, marginTop: 10 }}
-            >
+            <Text className="font-sans font-bold text-text" style={{ fontSize: 14, marginTop: 10 }}>
               Sen
             </Text>
             {iAmReady && (
@@ -256,20 +248,13 @@ export default function MatchStartLobby() {
                 }}
               >
                 <Icon name="check" size={11} color={colors.win} stroke={3} />
-                <Text
-                  style={{ fontSize: 10.5, fontWeight: '800', color: colors.win }}
-                >
-                  Hazır
-                </Text>
+                <Text style={{ fontSize: 10.5, fontWeight: '800', color: colors.win }}>Hazır</Text>
               </View>
             )}
           </View>
 
           {/* VS label */}
-          <Text
-            className="font-num font-extrabold text-text-3"
-            style={{ fontSize: 18 }}
-          >
+          <Text className="font-num font-extrabold text-text-3" style={{ fontSize: 18 }}>
             VS
           </Text>
 
@@ -295,11 +280,7 @@ export default function MatchStartLobby() {
                 }}
               >
                 <Icon name="check" size={11} color={colors.win} stroke={3} />
-                <Text
-                  style={{ fontSize: 10.5, fontWeight: '800', color: colors.win }}
-                >
-                  Hazır
-                </Text>
+                <Text style={{ fontSize: 10.5, fontWeight: '800', color: colors.win }}>Hazır</Text>
               </View>
             )}
           </View>
@@ -316,10 +297,7 @@ export default function MatchStartLobby() {
         >
           <InfoRow label="Tarih" value={whenLabel} first />
           <InfoRow label="Kort" value={courtLabel} />
-          <InfoRow
-            label="Format"
-            valueNode={<FormatChip fmtKey={fmtKey} />}
-          />
+          <InfoRow label="Format" valueNode={<FormatChip fmtKey={fmtKey} />} />
           <InfoRow label="Kategori" value={categoryLabel} />
         </View>
 
@@ -426,10 +404,7 @@ function InfoRow({
         borderColor: colors.surface3,
       }}
     >
-      <Text
-        className="font-sans font-semibold text-text-3"
-        style={{ fontSize: 14 }}
-      >
+      <Text className="font-sans font-semibold text-text-3" style={{ fontSize: 14 }}>
         {label}
       </Text>
       {valueNode ?? (

@@ -1,8 +1,8 @@
+import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
 import { invokeFunction } from '../lib/invoke-function';
 import { useAuthStore } from '../stores/auth-store';
 
@@ -41,8 +41,8 @@ export function usePushRegistration() {
   useEffect(() => {
     let cancelled = false;
 
-    const sub = Notifications.addNotificationResponseReceivedListener(
-      (response) => routeFromNotification(response),
+    const sub = Notifications.addNotificationResponseReceivedListener((response) =>
+      routeFromNotification(response),
     );
 
     Notifications.getLastNotificationResponseAsync()
@@ -61,10 +61,7 @@ export function usePushRegistration() {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Read a uuid from either the camelCase or snake_case key of a payload. */
-function pickUuid(
-  data: Record<string, unknown>,
-  ...keys: string[]
-): string | null {
+function pickUuid(data: Record<string, unknown>, ...keys: string[]): string | null {
   for (const k of keys) {
     const v = data[k];
     if (typeof v === 'string' && UUID_RE.test(v)) return v;
@@ -160,8 +157,7 @@ export async function registerForPushAsync(accessToken: string): Promise<boolean
 
   const projectId =
     Constants.expoConfig?.extra?.eas?.projectId ??
-    (Constants as unknown as { easConfig?: { projectId?: string } }).easConfig
-      ?.projectId;
+    (Constants as unknown as { easConfig?: { projectId?: string } }).easConfig?.projectId;
   const tokenResponse = await Notifications.getExpoPushTokenAsync(
     projectId ? { projectId } : undefined,
   );

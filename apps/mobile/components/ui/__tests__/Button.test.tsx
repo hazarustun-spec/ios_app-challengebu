@@ -73,8 +73,7 @@ function normalize(node: unknown): Normalized {
   if ('onPress' in rest) {
     rest.onPress = rest.onPress === undefined ? undefined : '[Function]';
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: describeType(el.type),
     props: rest,
@@ -88,11 +87,15 @@ describe('Button', () => {
   });
 
   test('renders disabled state', () => {
-    expect(normalize(Button({ children: 'Disabled', disabled: true, onPress: () => {} }))).toMatchSnapshot();
+    expect(
+      normalize(Button({ children: 'Disabled', disabled: true, onPress: () => {} })),
+    ).toMatchSnapshot();
   });
 
   test('renders loading state with ActivityIndicator', () => {
-    expect(normalize(Button({ children: 'Yükleniyor', loading: true, onPress: () => {} }))).toMatchSnapshot();
+    expect(
+      normalize(Button({ children: 'Yükleniyor', loading: true, onPress: () => {} })),
+    ).toMatchSnapshot();
   });
 
   test.each(['primary', 'secondary', 'danger', 'dark', 'ghost', 'tonal'] as const)(

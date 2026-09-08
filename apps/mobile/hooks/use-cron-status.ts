@@ -12,8 +12,8 @@
 // doesn't lose data the audit subscreen might also need.
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/query-keys';
+import { supabase } from '../lib/supabase';
 
 export type CronRunStatus = 'succeeded' | 'failed' | 'running' | 'starting' | string;
 
@@ -33,7 +33,7 @@ export function useCronStatus(limit = 20) {
         lim: limit,
       });
       if (error) throw error;
-      return ((data ?? []) as unknown) as CronRunRow[];
+      return (data ?? []) as unknown as CronRunRow[];
     },
     // Cron status drifts in real time; staleTime keeps the network calm but
     // a pull-to-refresh on the health screen will still fetch fresh data.

@@ -23,29 +23,27 @@
 // shown — the opposing pair is unknown until someone applies. CTA is gated
 // until the partner slot is filled.
 
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { router } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
-import { Field } from '../../../components/ui/Field';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
+import { Field } from '../../../components/ui/Field';
 import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
+import { useLadder } from '../../../hooks/use-ladder';
+import { type PlayerRow, usePlayers } from '../../../hooks/use-players';
 import { levelForElo } from '../../../lib/levels';
+import { useAuthStore } from '../../../stores/auth-store';
 import {
-  useNewMatchStore,
   type CategoryKey,
   type OpponentChoice,
+  useNewMatchStore,
 } from '../../../stores/new-match-store';
-import { usePlayers, type PlayerRow } from '../../../hooks/use-players';
-import { useLadder } from '../../../hooks/use-ladder';
-import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
 /** Map the wizard's category to the gender filter accepted by usePlayers. */
-function categoryToGender(
-  category: CategoryKey,
-): 'erkek' | 'kadin' | 'open_only' | undefined {
+function categoryToGender(category: CategoryKey): 'erkek' | 'kadin' | 'open_only' | undefined {
   if (category.startsWith('erkek_')) return 'erkek';
   if (category.startsWith('kadin_')) return 'kadin';
   // open_* and karma_* categories include all genders — no filter.
@@ -78,8 +76,7 @@ const DIRECT_SLOTS: SlotDef[] = [
 const OPEN_SLOTS: SlotDef[] = [{ key: 'partner', label: 'Partnerin' }];
 
 export default function NewMatchOpponent() {
-  const { path, category, opponent, partner, opponentPartner, setField } =
-    useNewMatchStore();
+  const { path, category, opponent, partner, opponentPartner, setField } = useNewMatchStore();
   const myUserId = useAuthStore((s) => s.user?.id);
   const [q, setQ] = useState('');
   const [activeSlot, setActiveSlot] = useState<DoubleSlot>('partner');
@@ -93,11 +90,7 @@ export default function NewMatchOpponent() {
   const allPlayers: PlayerRow[] = playersQ.data ?? [];
 
   // ---- Doubles helpers ----
-  const visibleSlots: SlotDef[] = isDoubles
-    ? isOpen
-      ? OPEN_SLOTS
-      : DIRECT_SLOTS
-    : [];
+  const visibleSlots: SlotDef[] = isDoubles ? (isOpen ? OPEN_SLOTS : DIRECT_SLOTS) : [];
 
   function getSlotValue(slot: DoubleSlot): OpponentChoice | null {
     if (slot === 'partner') return partner;
@@ -117,8 +110,7 @@ export default function NewMatchOpponent() {
   if (isDoubles) {
     if (activeSlot !== 'partner' && partner) taken.add(partner.userId);
     if (activeSlot !== 'opponent' && opponent) taken.add(opponent.userId);
-    if (activeSlot !== 'opponentPartner' && opponentPartner)
-      taken.add(opponentPartner.userId);
+    if (activeSlot !== 'opponentPartner' && opponentPartner) taken.add(opponentPartner.userId);
   }
   // For singles, only exclude self (taken already has myUserId).
 
@@ -129,9 +121,7 @@ export default function NewMatchOpponent() {
   });
 
   // The currently selected choice for the active list.
-  const activeChoice: OpponentChoice | null = isDoubles
-    ? getSlotValue(activeSlot)
-    : opponent;
+  const activeChoice: OpponentChoice | null = isDoubles ? getSlotValue(activeSlot) : opponent;
 
   // CTA gate.
   const canProceed = isDoubles
@@ -149,9 +139,7 @@ export default function NewMatchOpponent() {
       ? 'İlan notu'
       : 'Rakip seç';
 
-  const header = (
-    <NavHeader title={headerTitle} onBack={() => router.back()} />
-  );
+  const header = <NavHeader title={headerTitle} onBack={() => router.back()} />;
 
   // ---- Loading / error states ----
   if (playersQ.isLoading) {
@@ -170,10 +158,7 @@ export default function NewMatchOpponent() {
       <View className="flex-1 bg-bg">
         {header}
         <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
-          <Text
-            className="font-sans text-text-3"
-            style={{ fontSize: 14, textAlign: 'center' }}
-          >
+          <Text className="font-sans text-text-3" style={{ fontSize: 14, textAlign: 'center' }}>
             Oyuncular yüklenemedi. Lütfen tekrar dene.
           </Text>
         </View>
@@ -216,10 +201,7 @@ export default function NewMatchOpponent() {
             >
               <Avatar name={choice.name} size={42} />
               <View style={{ flex: 1 }}>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14.5 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                   {choice.name}
                 </Text>
                 <Text
@@ -241,9 +223,7 @@ export default function NewMatchOpponent() {
                   justifyContent: 'center',
                 }}
               >
-                {on && (
-                  <Icon name="check" size={13} color="#FFFFFF" stroke={3} />
-                )}
+                {on && <Icon name="check" size={13} color="#FFFFFF" stroke={3} />}
               </View>
             </Pressable>
           );
@@ -292,9 +272,7 @@ export default function NewMatchOpponent() {
                     gap: 5,
                   }}
                 >
-                  {filled && (
-                    <Icon name="check" size={11} color={colors.clay} stroke={3} />
-                  )}
+                  {filled && <Icon name="check" size={11} color={colors.clay} stroke={3} />}
                   <Text
                     className="font-sans font-bold"
                     style={{
@@ -305,10 +283,7 @@ export default function NewMatchOpponent() {
                     {slot.label}
                   </Text>
                   {filled && (
-                    <Text
-                      className="font-sans text-text-3"
-                      style={{ fontSize: 11 }}
-                    >
+                    <Text className="font-sans text-text-3" style={{ fontSize: 11 }}>
                       · {getSlotValue(slot.key)!.name.split(' ')[0]}
                     </Text>
                   )}
@@ -326,17 +301,10 @@ export default function NewMatchOpponent() {
           >
             {visibleSlots.find((s) => s.key === activeSlot)?.label ?? 'Seç'}
           </Text>
-          <Field
-            icon="search"
-            placeholder="Oyuncu ara…"
-            value={q}
-            onChange={setQ}
-          />
+          <Field icon="search" placeholder="Oyuncu ara…" value={q} onChange={setQ} />
         </View>
 
-        <ScrollView
-          contentContainerStyle={{ padding: 16, paddingTop: 0, gap: 8 }}
-        >
+        <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0, gap: 8 }}>
           {playerList}
         </ScrollView>
 
@@ -359,12 +327,7 @@ export default function NewMatchOpponent() {
     <View className="flex-1 bg-bg">
       {header}
       <View style={{ padding: 18, paddingTop: 4, paddingBottom: 10 }}>
-        <Field
-          icon="search"
-          placeholder="Oyuncu ara…"
-          value={q}
-          onChange={setQ}
-        />
+        <Field icon="search" placeholder="Oyuncu ara…" value={q} onChange={setQ} />
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0, gap: 8 }}>
         {playerList}

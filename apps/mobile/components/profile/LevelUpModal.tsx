@@ -1,3 +1,4 @@
+import type { Level } from '@tennis/shared';
 import { useEffect, useRef } from 'react';
 import { Modal, Text, View } from 'react-native';
 import Animated, {
@@ -10,12 +11,11 @@ import Animated, {
   withDelay,
   interpolate,
 } from 'react-native-reanimated';
-import type { Level } from '@tennis/shared';
+import { haptics } from '../../lib/haptics';
+import { colors } from '../../theme/colors';
 import { Button } from '../ui/Button';
 import { Confetti } from '../ui/Confetti';
 import { RankBadge } from '../ui/RankBadge';
-import { haptics } from '../../lib/haptics';
-import { colors } from '../../theme/colors';
 
 interface Props {
   visible: boolean;
@@ -57,17 +57,11 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
     iconProgress.value = withSpring(1, { damping: 5, stiffness: 160 });
 
     // Text slides up after the badge has bounced in
-    textProgress.value = withDelay(
-      200,
-      withSpring(1, { damping: 14, stiffness: 180 }),
-    );
+    textProgress.value = withDelay(200, withSpring(1, { damping: 14, stiffness: 180 }));
 
     // Glow halo: pulse 4 times then rest
     glowPulse.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 500 }),
-        withTiming(0, { duration: 500 }),
-      ),
+      withSequence(withTiming(1, { duration: 500 }), withTiming(0, { duration: 500 })),
       4,
       false,
     );
@@ -91,9 +85,7 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
   // Text slides up 10pt and fades in
   const textStyle = useAnimatedStyle(() => ({
     opacity: textProgress.value,
-    transform: [
-      { translateY: interpolate(textProgress.value, [0, 1], [10, 0]) },
-    ],
+    transform: [{ translateY: interpolate(textProgress.value, [0, 1], [10, 0]) }],
   }));
 
   // Glow halo pulses in scale + opacity
@@ -111,7 +103,6 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
         <Animated.View style={[cardStyle, { width: '100%' }]}>
           {/* Solid white card — no gradient */}
           <View className="w-full items-center rounded-2xl bg-white p-6">
-
             {/* Eyebrow label */}
             <Text
               style={{ color: colors.limeDeep, letterSpacing: 1.5 }}
@@ -152,9 +143,7 @@ export function LevelUpModal({ visible, before, after, onClose }: Props) {
 
             {/* Level name + journey line — staggered slide-up entrance */}
             <Animated.View style={[textStyle, { alignItems: 'center' }]}>
-              <Text className="mt-2 text-2xl font-bold text-gray-900">
-                {after.name_tr}
-              </Text>
+              <Text className="mt-2 text-2xl font-bold text-gray-900">{after.name_tr}</Text>
               <Text className="mt-2 text-center text-sm text-gray-500">
                 {before.icon} {before.name_tr} → {after.icon} {after.name_tr}
               </Text>

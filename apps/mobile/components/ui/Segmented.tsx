@@ -66,12 +66,7 @@ export function Segmented<T extends string | number>({
   size = 'md',
 }: SegmentedProps<T>) {
   return (
-    <View
-      className={[
-        'flex-row rounded-md bg-surface-2 p-[3px]',
-        HEIGHT_CLASS[size],
-      ].join(' ')}
-    >
+    <View className={['flex-row rounded-md bg-surface-2 p-[3px]', HEIGHT_CLASS[size]].join(' ')}>
       {options.map((o) => {
         const selected = o.value === value;
         return (

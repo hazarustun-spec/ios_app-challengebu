@@ -99,8 +99,7 @@ function normalize(node: unknown): Normalized {
       rest[key] = rest[key] === undefined ? undefined : '[Function]';
     }
   }
-  const childArray =
-    children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const childArray = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return {
     type: typeLabel,
     props: rest,
@@ -234,9 +233,7 @@ describe('Avatar', () => {
   });
 
   test('photo URI wins over initials', () => {
-    const tree = normalize(
-      Avatar({ name: 'Mert', uri: 'https://example.com/me.jpg' }),
-    );
+    const tree = normalize(Avatar({ name: 'Mert', uri: 'https://example.com/me.jpg' }));
     const image = find(tree, (n) => n.type === 'Image');
     expect(image).not.toBeNull();
     // Initials Text should NOT be present when a URI is supplied.

@@ -4,7 +4,7 @@
 import { router } from 'expo-router';
 import { OBFrame } from '../../components/onboarding/OBFrame';
 import { PickList } from '../../components/onboarding/PickList';
-import { useOnboardingStore, type SkillLevel } from '../../stores/onboarding-store';
+import { type SkillLevel, useOnboardingStore } from '../../stores/onboarding-store';
 
 export default function ObLevel() {
   const level = useOnboardingStore((s) => s.level);

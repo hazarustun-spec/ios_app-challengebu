@@ -31,9 +31,7 @@ export function PinnedBadges({ pinned, editable = false, onEditPress }: Props) {
           <Text className="text-2xl">{b?.icon ?? '➕'}</Text>
         </View>
       ))}
-      {editable && (
-        <Text className="ml-2 text-xs text-gray-500">Düzenle</Text>
-      )}
+      {editable && <Text className="ml-2 text-xs text-gray-500">Düzenle</Text>}
     </Pressable>
   );
 }

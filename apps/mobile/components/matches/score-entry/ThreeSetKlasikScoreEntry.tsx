@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
+import { type ThreeSetKlasikDraft, useScoreEntryStore } from '../../../stores/score-entry-store';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
-import {
-  useScoreEntryStore,
-  type ThreeSetKlasikDraft,
-} from '../../../stores/score-entry-store';
-import type { WinnerTeam } from '../../../hooks/use-submit-match-score';
 
 interface Props {
   matchId: string;
   myLetter: 'a' | 'b';
-  onSubmit: (draft: ThreeSetKlasikDraft, winnerTeam: WinnerTeam, scoreA: number, scoreB: number) => void;
+  onSubmit: (
+    draft: ThreeSetKlasikDraft,
+    winnerTeam: WinnerTeam,
+    scoreA: number,
+    scoreB: number,
+  ) => void;
   submitting: boolean;
 }
 
@@ -43,7 +45,10 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
 
   const initialSets: SetInput[] = draft.sets.length
     ? draft.sets.map((s) => ({ a: String(s.a), b: String(s.b) }))
-    : [{ a: '', b: '' }, { a: '', b: '' }];
+    : [
+        { a: '', b: '' },
+        { a: '', b: '' },
+      ];
 
   const [sets, setSets] = useState<SetInput[]>(initialSets);
   const [err, setErr] = useState<string>();
@@ -136,7 +141,9 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
       )}
       {err && <Text className="text-sm text-red-500">{err}</Text>}
       <View className="mt-auto">
-        <Button onPress={onSubmitTap} loading={submitting}>Skoru gönder</Button>
+        <Button onPress={onSubmitTap} loading={submitting}>
+          Skoru gönder
+        </Button>
       </View>
     </View>
   );

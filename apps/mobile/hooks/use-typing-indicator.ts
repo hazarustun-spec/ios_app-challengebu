@@ -18,8 +18,8 @@
 // but a crash, a dropped socket or a backgrounded app emits nothing, so the
 // receiver must never rely on it — hence the expiry timer below.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 /** Don't broadcast more than once per this window while the user types. */

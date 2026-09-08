@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { calculateEloChange, calculateDoublesEloChange, type MatchFormat } from './elo.ts';
+import { type MatchFormat, calculateDoublesEloChange, calculateEloChange } from './elo.ts';
 
 interface MatchRow {
   id: string;
@@ -64,15 +64,32 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
       loserScore,
     });
 
-    await supa.from('matches').update({
-      rating_before_team_a: match.winner_team === 'a' ? w.rating : l.rating,
-      rating_after_team_a: match.winner_team === 'a' ? result.winnerNewRating : result.loserNewRating,
-      rating_before_team_b: match.winner_team === 'a' ? l.rating : w.rating,
-      rating_after_team_b: match.winner_team === 'a' ? result.loserNewRating : result.winnerNewRating,
-    }).eq('id', match.id);
+    await supa
+      .from('matches')
+      .update({
+        rating_before_team_a: match.winner_team === 'a' ? w.rating : l.rating,
+        rating_after_team_a:
+          match.winner_team === 'a' ? result.winnerNewRating : result.loserNewRating,
+        rating_before_team_b: match.winner_team === 'a' ? l.rating : w.rating,
+        rating_after_team_b:
+          match.winner_team === 'a' ? result.loserNewRating : result.winnerNewRating,
+      })
+      .eq('id', match.id);
 
-    await upsertRating(supa, winnerIds[0], match.category, result.winnerNewRating, w.matchesPlayed + 1);
-    await upsertRating(supa, loserIds[0], match.category, result.loserNewRating, l.matchesPlayed + 1);
+    await upsertRating(
+      supa,
+      winnerIds[0],
+      match.category,
+      result.winnerNewRating,
+      w.matchesPlayed + 1,
+    );
+    await upsertRating(
+      supa,
+      loserIds[0],
+      match.category,
+      result.loserNewRating,
+      l.matchesPlayed + 1,
+    );
     deltas.push({ id: winnerIds[0], before: w.rating, after: result.winnerNewRating });
     deltas.push({ id: loserIds[0], before: l.rating, after: result.loserNewRating });
   } else if (winnerIds.length === 2 && loserIds.length === 2) {
@@ -97,21 +114,46 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
     const winnerAvgAfter = Math.round(
       (result.winnerNewRatings[0] + result.winnerNewRatings[1]) / 2,
     );
-    const loserAvgAfter = Math.round(
-      (result.loserNewRatings[0] + result.loserNewRatings[1]) / 2,
+    const loserAvgAfter = Math.round((result.loserNewRatings[0] + result.loserNewRatings[1]) / 2);
+
+    await supa
+      .from('matches')
+      .update({
+        rating_before_team_a: match.winner_team === 'a' ? winnerAvgBefore : loserAvgBefore,
+        rating_after_team_a: match.winner_team === 'a' ? winnerAvgAfter : loserAvgAfter,
+        rating_before_team_b: match.winner_team === 'a' ? loserAvgBefore : winnerAvgBefore,
+        rating_after_team_b: match.winner_team === 'a' ? loserAvgAfter : winnerAvgAfter,
+      })
+      .eq('id', match.id);
+
+    await upsertRating(
+      supa,
+      winnerIds[0],
+      match.category,
+      result.winnerNewRatings[0],
+      w1.matchesPlayed + 1,
     );
-
-    await supa.from('matches').update({
-      rating_before_team_a: match.winner_team === 'a' ? winnerAvgBefore : loserAvgBefore,
-      rating_after_team_a: match.winner_team === 'a' ? winnerAvgAfter : loserAvgAfter,
-      rating_before_team_b: match.winner_team === 'a' ? loserAvgBefore : winnerAvgBefore,
-      rating_after_team_b: match.winner_team === 'a' ? loserAvgAfter : winnerAvgAfter,
-    }).eq('id', match.id);
-
-    await upsertRating(supa, winnerIds[0], match.category, result.winnerNewRatings[0], w1.matchesPlayed + 1);
-    await upsertRating(supa, winnerIds[1], match.category, result.winnerNewRatings[1], w2.matchesPlayed + 1);
-    await upsertRating(supa, loserIds[0], match.category, result.loserNewRatings[0], l1.matchesPlayed + 1);
-    await upsertRating(supa, loserIds[1], match.category, result.loserNewRatings[1], l2.matchesPlayed + 1);
+    await upsertRating(
+      supa,
+      winnerIds[1],
+      match.category,
+      result.winnerNewRatings[1],
+      w2.matchesPlayed + 1,
+    );
+    await upsertRating(
+      supa,
+      loserIds[0],
+      match.category,
+      result.loserNewRatings[0],
+      l1.matchesPlayed + 1,
+    );
+    await upsertRating(
+      supa,
+      loserIds[1],
+      match.category,
+      result.loserNewRatings[1],
+      l2.matchesPlayed + 1,
+    );
     deltas.push({ id: winnerIds[0], before: w1.rating, after: result.winnerNewRatings[0] });
     deltas.push({ id: winnerIds[1], before: w2.rating, after: result.winnerNewRatings[1] });
     deltas.push({ id: loserIds[0], before: l1.rating, after: result.loserNewRatings[0] });
@@ -144,7 +186,10 @@ export async function applyEloForMatch(supa: SupabaseClient, match: MatchRow): P
   }
 
   const now = new Date().toISOString();
-  await supa.from('profiles').update({ last_match_at: now, status: 'active' }).in('user_id', allIds);
+  await supa
+    .from('profiles')
+    .update({ last_match_at: now, status: 'active' })
+    .in('user_id', allIds);
 }
 
 async function upsertRating(

@@ -17,11 +17,7 @@
 // toggle, profile edit "Göster" flags, admin announcement publish flag.
 
 import { Pressable, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 
 export interface ToggleProps {
   value: boolean;

@@ -7,9 +7,7 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
 }
 
 function b64url(data: ArrayBuffer | string): string {
-  const bytes = typeof data === 'string'
-    ? new TextEncoder().encode(data)
-    : new Uint8Array(data);
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
   let s = '';
   for (const b of bytes) s += String.fromCharCode(b);
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -34,13 +32,20 @@ export async function makeApnsJwt(p8Pem: string, keyId: string, teamId: string):
   }
 
   const key = await crypto.subtle.importKey(
-    'pkcs8', pemToArrayBuffer(p8Pem),
-    { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+    'pkcs8',
+    pemToArrayBuffer(p8Pem),
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign'],
+  );
   const header = b64url(JSON.stringify({ alg: 'ES256', kid: keyId }));
   const payload = b64url(JSON.stringify({ iss: teamId, iat: now }));
   const signing = `${header}.${payload}`;
   const sig = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(signing));
+    { name: 'ECDSA', hash: 'SHA-256' },
+    key,
+    new TextEncoder().encode(signing),
+  );
   const jwt = `${signing}.${b64url(sig)}`;
   cached = { jwt, iat: now, keyId, teamId };
   return jwt;
@@ -50,12 +55,15 @@ export async function makeApnsJwt(p8Pem: string, keyId: string, teamId: string):
 // carry `attributes` + `attributes-type` so APNs can materialize a brand-new
 // Live Activity on the recipient's device without the app running.
 export async function sendLiveActivityStartPush(opts: {
-  host: string; jwt: string; topic: string; deviceToken: string;
-  attributesType: string;                  // "LiveMatchAttributes"
-  attributes: Record<string, unknown>;     // { matchId, youSide, nameA, nameB, categoryLabel }
-  contentState: Record<string, unknown>;   // initial { gamesA:0, ... }
-  staleDate?: number;                        // optional unix seconds
-  alert?: { title: string; body: string };  // Apple requires `alert` for event:"start"
+  host: string;
+  jwt: string;
+  topic: string;
+  deviceToken: string;
+  attributesType: string; // "LiveMatchAttributes"
+  attributes: Record<string, unknown>; // { matchId, youSide, nameA, nameB, categoryLabel }
+  contentState: Record<string, unknown>; // initial { gamesA:0, ... }
+  staleDate?: number; // optional unix seconds
+  alert?: { title: string; body: string }; // Apple requires `alert` for event:"start"
 }): Promise<{ status: number; body: string }> {
   const aps: Record<string, unknown> = {
     timestamp: Math.floor(Date.now() / 1000),
@@ -81,8 +89,13 @@ export async function sendLiveActivityStartPush(opts: {
 }
 
 export async function sendLiveActivityPush(opts: {
-  host: string; jwt: string; topic: string; deviceToken: string;
-  contentState: Record<string, unknown>; event?: 'update' | 'end'; dismissalDate?: number;
+  host: string;
+  jwt: string;
+  topic: string;
+  deviceToken: string;
+  contentState: Record<string, unknown>;
+  event?: 'update' | 'end';
+  dismissalDate?: number;
 }): Promise<{ status: number; body: string }> {
   const aps: Record<string, unknown> = {
     timestamp: Math.floor(Date.now() / 1000),

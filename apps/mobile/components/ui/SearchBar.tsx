@@ -20,12 +20,7 @@ export interface SearchBarProps {
   autoFocus?: boolean;
 }
 
-export function SearchBar({
-  value,
-  onChange,
-  placeholder = 'Ara…',
-  autoFocus,
-}: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = 'Ara…', autoFocus }: SearchBarProps) {
   const props: FieldProps = {
     icon: 'search',
     type: 'search',

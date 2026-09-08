@@ -20,16 +20,13 @@
 //     update public.match_requests set status='accepted'
 //       where id = (select id from req);
 
-var SUPA =
-  typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
+var SUPA = typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'http://127.0.0.1:54321';
 var KEY =
   typeof SERVICE_ROLE_KEY !== 'undefined'
     ? SERVICE_ROLE_KEY
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 var OPP_EMAIL =
-  typeof OPPONENT_EMAIL !== 'undefined'
-    ? OPPONENT_EMAIL
-    : 'rakip.test@example.edu.tr';
+  typeof OPPONENT_EMAIL !== 'undefined' ? OPPONENT_EMAIL : 'rakip.test@example.edu.tr';
 
 var H = {
   apikey: KEY,
@@ -42,9 +39,7 @@ function rest(path) {
 }
 
 // Resolve the opponent id from their seeded profile.
-var profRows = rest(
-  'profiles?select=user_id&email=eq.' + encodeURIComponent(OPP_EMAIL),
-);
+var profRows = rest('profiles?select=user_id&email=eq.' + encodeURIComponent(OPP_EMAIL));
 var opponentId = profRows && profRows.length ? profRows[0].user_id : null;
 
 // Newest pending direct challenge aimed at the opponent.
@@ -60,12 +55,8 @@ if (!opponentId || !req) {
 } else {
   var time = req.proposed_time.length === 5 ? req.proposed_time + ':00' : req.proposed_time;
   var playedAt = new Date(req.proposed_date + 'T' + time + 'Z').toISOString();
-  var teamA = req.creator_partner_id
-    ? [req.creator_id, req.creator_partner_id]
-    : [req.creator_id];
-  var teamB = req.target_partner_id
-    ? [req.target_id, req.target_partner_id]
-    : [req.target_id];
+  var teamA = req.creator_partner_id ? [req.creator_id, req.creator_partner_id] : [req.creator_id];
+  var teamB = req.target_partner_id ? [req.target_id, req.target_partner_id] : [req.target_id];
 
   var ins = http.post(SUPA + '/rest/v1/matches', {
     headers: Object.assign({}, H, { Prefer: 'return=representation' }),

@@ -17,13 +17,15 @@ async function makeConversation(creatorId: string, targetId: string): Promise<st
       court_id: court!.id,
       expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
     })
-    .select('id').single();
+    .select('id')
+    .single();
   const low = creatorId < targetId ? creatorId : targetId;
   const high = creatorId < targetId ? targetId : creatorId;
   const { data: conv } = await supa
     .from('conversations')
     .insert({ request_id: req!.id, participant_low: low, participant_high: high })
-    .select('id').single();
+    .select('id')
+    .single();
   return conv!.id as string;
 }
 
@@ -34,7 +36,9 @@ Deno.test('send-message: delivers a message + creates a recipient notification',
   try {
     const convId = await makeConversation(a.userId, b.userId);
     const res = await invokeFunction(
-      'send-message', { conversationId: convId, body: 'Kort 2 uygun mu?' }, a.accessToken,
+      'send-message',
+      { conversationId: convId, body: 'Kort 2 uygun mu?' },
+      a.accessToken,
     );
     assertEquals(res.status, 200);
 
@@ -65,7 +69,9 @@ Deno.test('send-message: a non-participant is rejected', async () => {
   try {
     const convId = await makeConversation(a.userId, b.userId);
     const res = await invokeFunction(
-      'send-message', { conversationId: convId, body: 'sızıntı' }, c.accessToken,
+      'send-message',
+      { conversationId: convId, body: 'sızıntı' },
+      c.accessToken,
     );
     assertEquals(res.status, 403);
   } finally {

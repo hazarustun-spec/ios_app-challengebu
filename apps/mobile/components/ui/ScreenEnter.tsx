@@ -34,12 +34,7 @@ export interface ScreenEnterProps {
   delay?: number;
 }
 
-export function ScreenEnter({
-  children,
-  className,
-  style,
-  delay = 0,
-}: ScreenEnterProps) {
+export function ScreenEnter({ children, className, style, delay = 0 }: ScreenEnterProps) {
   const p = useSharedValue(0);
 
   useEffect(() => {
@@ -50,7 +45,7 @@ export function ScreenEnter({
         easing: Easing.out(Easing.cubic),
       }),
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animStyle = useAnimatedStyle(() => ({

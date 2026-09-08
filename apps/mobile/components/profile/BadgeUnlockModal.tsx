@@ -10,16 +10,16 @@ import Animated, {
   withSequence,
   interpolate,
 } from 'react-native-reanimated';
-import type { AwardedBadgeView } from '../../stores/post-match-celebration-store';
-import { Button } from '../ui/Button';
-import { BadgeArt } from '../ui/BadgeArt';
-import { Confetti } from '../ui/Confetti';
-import { ShareSheet } from '../share/ShareSheet';
-import { CardBadgeWon } from '../share/CardBadgeWon';
-import { useAuthStore } from '../../stores/auth-store';
-import { Icon } from '../ui/Icon';
-import { colors } from '../../theme/colors';
 import { haptics } from '../../lib/haptics';
+import { useAuthStore } from '../../stores/auth-store';
+import type { AwardedBadgeView } from '../../stores/post-match-celebration-store';
+import { colors } from '../../theme/colors';
+import { CardBadgeWon } from '../share/CardBadgeWon';
+import { ShareSheet } from '../share/ShareSheet';
+import { BadgeArt } from '../ui/BadgeArt';
+import { Button } from '../ui/Button';
+import { Confetti } from '../ui/Confetti';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   visible: boolean;
@@ -66,17 +66,11 @@ export function BadgeUnlockModal({ visible, badge, onClose }: Props) {
     iconProgress.value = withSpring(1, { damping: 5, stiffness: 160 });
 
     // Text slides up after the badge has bounced in
-    textProgress.value = withDelay(
-      200,
-      withSpring(1, { damping: 14, stiffness: 180 }),
-    );
+    textProgress.value = withDelay(200, withSpring(1, { damping: 14, stiffness: 180 }));
 
     // Glow halo: pulse 4 times then rest
     glowPulse.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 500 }),
-        withTiming(0, { duration: 500 }),
-      ),
+      withSequence(withTiming(1, { duration: 500 }), withTiming(0, { duration: 500 })),
       4,
       false,
     );
@@ -100,9 +94,7 @@ export function BadgeUnlockModal({ visible, badge, onClose }: Props) {
   // Text slides up 10pt and fades in
   const textStyle = useAnimatedStyle(() => ({
     opacity: textProgress.value,
-    transform: [
-      { translateY: interpolate(textProgress.value, [0, 1], [10, 0]) },
-    ],
+    transform: [{ translateY: interpolate(textProgress.value, [0, 1], [10, 0]) }],
   }));
 
   // Glow halo pulses in scale + opacity
@@ -118,7 +110,6 @@ export function BadgeUnlockModal({ visible, badge, onClose }: Props) {
           <Animated.View style={[cardStyle, { width: '100%' }]}>
             {/* Solid card — no gradient */}
             <View className="w-full items-center rounded-2xl bg-white p-6">
-
               {/* Eyebrow label */}
               <Text
                 style={{ color: colors.acGold, letterSpacing: 1.5 }}

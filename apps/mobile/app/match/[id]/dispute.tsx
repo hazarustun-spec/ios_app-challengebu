@@ -6,17 +6,25 @@
 // useOpponentNames, submission via useRaiseDispute. On success navigates back
 // to the matches tab; on error surfaces an inline error message.
 
-import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../../components/ui/NavHeader';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
+import { NavHeader } from '../../../components/ui/NavHeader';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
-import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
-import { colors } from '../../../theme/colors';
+import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
 import { userMessage } from '../../../lib/user-message';
+import { colors } from '../../../theme/colors';
 
 type DisputeReason = 'score' | 'notplayed' | 'format' | 'other';
 
@@ -50,11 +58,10 @@ export default function DisputeForm() {
           router.replace('/(tabs)/matches' as never);
         },
         onError: (err) => {
-          const msg =
-            userMessage(err, 'İtiraz gönderilemedi. Tekrar dene.');
+          const msg = userMessage(err, 'İtiraz gönderilemedi. Tekrar dene.');
           Alert.alert('Hata', msg);
         },
-      }
+      },
     );
   };
 
@@ -74,10 +81,7 @@ export default function DisputeForm() {
       <View className="flex-1 bg-bg">
         <NavHeader title="İtiraz Et" onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center" style={{ padding: 24 }}>
-          <Text
-            className="font-sans text-text-2"
-            style={{ fontSize: 14, textAlign: 'center' }}
-          >
+          <Text className="font-sans text-text-2" style={{ fontSize: 14, textAlign: 'center' }}>
             Maç bilgisi yüklenemedi. Lütfen geri dönüp tekrar dene.
           </Text>
         </View>
@@ -89,27 +93,16 @@ export default function DisputeForm() {
     <View className="flex-1 bg-bg">
       <NavHeader title="İtiraz Et" onBack={() => router.back()} />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
-        <View
-          className="flex-row bg-surface-2 rounded-md"
-          style={{ padding: 14, gap: 10 }}
-        >
+        <View className="flex-row bg-surface-2 rounded-md" style={{ padding: 14, gap: 10 }}>
           <Icon name="info" size={18} color={colors.info} />
-          <Text
-            className="font-sans text-text-2"
-            style={{ flex: 1, fontSize: 13, lineHeight: 19 }}
-          >
-            {opponentName !== 'Rakip'
-              ? `${opponentName} ile olan maçına itiraz ediyorsun. `
-              : ''}
-            İtirazın bir admin tarafından incelenecek. Karar verilene kadar
-            ELO değişimi askıya alınır.
+          <Text className="font-sans text-text-2" style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
+            {opponentName !== 'Rakip' ? `${opponentName} ile olan maçına itiraz ediyorsun. ` : ''}
+            İtirazın bir admin tarafından incelenecek. Karar verilene kadar ELO değişimi askıya
+            alınır.
           </Text>
         </View>
 
-        <Text
-          className="font-sans font-bold text-text-2"
-          style={{ fontSize: 13 }}
-        >
+        <Text className="font-sans font-bold text-text-2" style={{ fontSize: 13 }}>
           İtiraz sebebi
         </Text>
         <View style={{ gap: 8 }}>
@@ -143,10 +136,7 @@ export default function DisputeForm() {
                 >
                   {on && <Icon name="check" size={12} color="#FFFFFF" stroke={3} />}
                 </View>
-                <Text
-                  className="font-sans font-bold text-text"
-                  style={{ fontSize: 14.5 }}
-                >
+                <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
                   {r.label}
                 </Text>
               </Pressable>
@@ -154,10 +144,7 @@ export default function DisputeForm() {
           })}
         </View>
 
-        <Text
-          className="font-sans font-bold text-text-2"
-          style={{ fontSize: 13, marginTop: 6 }}
-        >
+        <Text className="font-sans font-bold text-text-2" style={{ fontSize: 13, marginTop: 6 }}>
           Açıklama
         </Text>
         <TextInput

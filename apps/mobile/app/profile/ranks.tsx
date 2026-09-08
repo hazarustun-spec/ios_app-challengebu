@@ -1,19 +1,17 @@
 // Rütbeler — the seven rank medallions (lib/rank-art) in a showcase grid, the
 // player's current tier highlighted. Reached from the profile level row.
 
-import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { ScrollView, Text, View } from 'react-native';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { RankBadge } from '../../components/ui/RankBadge';
-import { LEVELS, levelForElo } from '../../lib/levels';
 import { useMyRankings } from '../../hooks/use-my-rankings';
+import { LEVELS, levelForElo } from '../../lib/levels';
 import { colors } from '../../theme/colors';
 
 export default function RanksScreen() {
   const rankingsQ = useMyRankings();
-  const top = (rankingsQ.data ?? [])
-    .slice()
-    .sort((a, b) => b.rating - a.rating)[0];
+  const top = (rankingsQ.data ?? []).slice().sort((a, b) => b.rating - a.rating)[0];
   const meElo = top?.rating ?? 1200;
   const currentKey = levelForElo(meElo).key;
 
@@ -59,16 +57,18 @@ export default function RanksScreen() {
                 >
                   {L.name}
                 </Text>
-                <Text
-                  className="font-sans text-text-3"
-                  style={{ marginTop: 2, fontSize: 12 }}
-                >
+                <Text className="font-sans text-text-3" style={{ marginTop: 2, fontSize: 12 }}>
                   {L.minElo}+ ELO
                 </Text>
                 {isCurrent && (
                   <Text
                     className="font-sans font-bold"
-                    style={{ marginTop: 6, fontSize: 10.5, color: colors.clayText, letterSpacing: 0.5 }}
+                    style={{
+                      marginTop: 6,
+                      fontSize: 10.5,
+                      color: colors.clayText,
+                      letterSpacing: 0.5,
+                    }}
                   >
                     ● ŞU ANKİ RÜTBEN
                   </Text>

@@ -41,17 +41,8 @@ const VARIANT_CLASSES: Record<CardVariant, string> = {
   featured: 'bg-court border-base border-border-strong',
 };
 
-export function Card({
-  variant = 'default',
-  onPress,
-  children,
-  className,
-}: CardProps) {
-  const baseClass = [
-    'rounded-lg p-4',
-    VARIANT_CLASSES[variant],
-    className ?? '',
-  ]
+export function Card({ variant = 'default', onPress, children, className }: CardProps) {
+  const baseClass = ['rounded-lg p-4', VARIANT_CLASSES[variant], className ?? '']
     .filter(Boolean)
     .join(' ');
 

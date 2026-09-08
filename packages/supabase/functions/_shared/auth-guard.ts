@@ -6,7 +6,10 @@ export interface AuthContext {
   authHeader: string;
 }
 
-export async function requireAuth(req: Request, serviceClient: SupabaseClient): Promise<AuthContext> {
+export async function requireAuth(
+  req: Request,
+  serviceClient: SupabaseClient,
+): Promise<AuthContext> {
   const authHeader = req.headers.get('authorization');
   if (!authHeader) {
     throw new AuthError('Missing authorization header', 401);
@@ -31,7 +34,10 @@ export async function requireAuth(req: Request, serviceClient: SupabaseClient): 
   };
 }
 
-export async function requireAdmin(req: Request, serviceClient: SupabaseClient): Promise<AuthContext> {
+export async function requireAdmin(
+  req: Request,
+  serviceClient: SupabaseClient,
+): Promise<AuthContext> {
   const ctx = await requireAuth(req, serviceClient);
   if (!ctx.isAdmin) {
     throw new AuthError('Admin role required', 403);
@@ -40,7 +46,10 @@ export async function requireAdmin(req: Request, serviceClient: SupabaseClient):
 }
 
 export class AuthError extends Error {
-  constructor(message: string, public status: 401 | 403) {
+  constructor(
+    message: string,
+    public status: 401 | 403,
+  ) {
     super(message);
     this.name = 'AuthError';
   }

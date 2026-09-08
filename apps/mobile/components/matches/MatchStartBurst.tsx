@@ -11,6 +11,7 @@
 //
 // Kept intentionally self-contained (no context, just `onDone` prop).
 
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -22,11 +23,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { BallMark } from '../ui/doodles/BallMark';
-import { Confetti } from '../ui/Confetti';
 import { colors } from '../../theme/colors';
 import { fontFamily } from '../../theme/typography';
+import { Confetti } from '../ui/Confetti';
+import { BallMark } from '../ui/doodles/BallMark';
 
 interface MatchStartBurstProps {
   onDone: () => void;
@@ -121,10 +121,7 @@ export function MatchStartBurst({ onDone }: MatchStartBurstProps) {
     }, 500);
 
     // 4. Text springs in at 700 ms
-    textScale.value = withDelay(
-      700,
-      withSpring(1, { damping: 10, stiffness: 180, mass: 0.8 }),
-    );
+    textScale.value = withDelay(700, withSpring(1, { damping: 10, stiffness: 180, mass: 0.8 }));
     textOpacity.value = withDelay(700, withTiming(1, { duration: 120 }));
 
     // 5. Navigate at 1600 ms

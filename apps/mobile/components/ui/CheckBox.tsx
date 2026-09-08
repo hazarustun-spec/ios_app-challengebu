@@ -40,9 +40,7 @@ export function CheckBox({
   disabled,
 }: CheckBoxProps) {
   const radiusClass = shape === 'circle' ? 'rounded-full' : 'rounded-xs';
-  const fillClass = checked
-    ? 'bg-clay border-clay'
-    : 'bg-transparent border-border-strong';
+  const fillClass = checked ? 'bg-clay border-clay' : 'bg-transparent border-border-strong';
 
   return (
     <Pressable
@@ -58,9 +56,7 @@ export function CheckBox({
         disabled ? 'opacity-50' : '',
       ].join(' ')}
     >
-      {checked && (
-        <Icon name="check" size={Math.round(size * 0.6)} color="#FFFFFF" stroke={3} />
-      )}
+      {checked && <Icon name="check" size={Math.round(size * 0.6)} color="#FFFFFF" stroke={3} />}
     </Pressable>
   );
 }

@@ -23,40 +23,9 @@
 // strip stays OUTSIDE the list — a horizontal ScrollView nested inside a
 // vertical FlatList is fine only as a sibling, never as a child cell.
 
-import { memo, useEffect, useMemo, useState } from 'react';
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ScreenEnter } from '../../components/ui/ScreenEnter';
 import { router, useLocalSearchParams } from 'expo-router';
-import { NavHeader } from '../../components/ui/NavHeader';
-import { MessagesButton } from '../../components/ui/MessagesButton';
-import { Avatar } from '../../components/ui/Avatar';
-import { LevelIcon } from '../../components/ui/LevelIcon';
-import { Icon } from '../../components/ui/Icon';
-import { levelForElo } from '../../lib/levels';
-import { colors } from '../../theme/colors';
-import { useLadder, type LadderRow } from '../../hooks/use-ladder';
-import { useMyRankings } from '../../hooks/use-my-rankings';
-import { useMyProfile } from '../../hooks/use-profile';
-import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useAuthStore } from '../../stores/auth-store';
-import {
-  useLeaderboardFilterStore,
-  applyLadderFilter,
-  isFilterActive,
-  type LadderFilter,
-} from '../../stores/leaderboard-filter-store';
-import { shadows } from '../../theme/shadows';
-import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
-import { EloInfoSheet } from '../../components/matches/EloInfoSheet';
-import { useUiFlagsStore } from '../../stores/ui-flags-store';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -64,15 +33,36 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { EloInfoSheet } from '../../components/matches/EloInfoSheet';
+import { Avatar } from '../../components/ui/Avatar';
+import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import { Icon } from '../../components/ui/Icon';
+import { LevelIcon } from '../../components/ui/LevelIcon';
+import { MessagesButton } from '../../components/ui/MessagesButton';
+import { NavHeader } from '../../components/ui/NavHeader';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { useCurrentSeason } from '../../hooks/use-current-season';
+import { type LadderRow, useLadder } from '../../hooks/use-ladder';
+import { useMyRankings } from '../../hooks/use-my-rankings';
+import { useMyProfile } from '../../hooks/use-profile';
+import { levelForElo } from '../../lib/levels';
+import { useAuthStore } from '../../stores/auth-store';
+import {
+  type LadderFilter,
+  applyLadderFilter,
+  isFilterActive,
+  useLeaderboardFilterStore,
+} from '../../stores/leaderboard-filter-store';
+import { useUiFlagsStore } from '../../stores/ui-flags-store';
+import { colors } from '../../theme/colors';
+import { shadows } from '../../theme/shadows';
 
 function PulsingDot() {
   const opacity = useSharedValue(1);
   useEffect(() => {
     opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.3, { duration: 900 }),
-        withTiming(1, { duration: 900 }),
-      ),
+      withSequence(withTiming(0.3, { duration: 900 }), withTiming(1, { duration: 900 })),
       -1,
       false,
     );
@@ -188,27 +178,15 @@ const LadderRowItem = memo(function LadderRowItem({
       </Text>
       <Avatar name={name} size={42} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 14.5 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
           {name}
         </Text>
-        <View
-          className="flex-row items-center"
-          style={{ gap: 5, marginTop: 3 }}
-        >
+        <View className="flex-row items-center" style={{ gap: 5, marginTop: 3 }}>
           <LevelIcon level={lv} size={13} />
-          <Text
-            className="font-sans font-semibold"
-            style={{ fontSize: 12, color: colors.text3 }}
-          >
+          <Text className="font-sans font-semibold" style={{ fontSize: 12, color: colors.text3 }}>
             {lv.name}
           </Text>
-          <Text
-            className="font-sans"
-            style={{ fontSize: 11.5, color: colors.text3 }}
-          >
+          <Text className="font-sans" style={{ fontSize: 11.5, color: colors.text3 }}>
             · {row.matchesPlayed} maç
           </Text>
         </View>
@@ -227,11 +205,7 @@ const LadderRowItem = memo(function LadderRowItem({
     </Pressable>
   );
 
-  return index < ROW_ANIM_COUNT ? (
-    <FadeSlideIn index={index}>{content}</FadeSlideIn>
-  ) : (
-    content
-  );
+  return index < ROW_ANIM_COUNT ? <FadeSlideIn index={index}>{content}</FadeSlideIn> : content;
 });
 
 /** 8px gutter between rank rows — replaces the old wrapper's `gap: 8`. */
@@ -317,10 +291,9 @@ export default function Leaderboard() {
     ? rows.find((r) => r.profileId === userId)
     : undefined;
 
-  const meName =
-    profile
-      ? `${profile.firstName} ${profile.lastName}`.trim()
-      : meRow
+  const meName = profile
+    ? `${profile.firstName} ${profile.lastName}`.trim()
+    : meRow
       ? `${meRow.firstName} ${meRow.lastName}`.trim()
       : 'Sen';
 
@@ -344,15 +317,9 @@ export default function Leaderboard() {
       <NavHeader
         large
         title="Sıralama"
-        subtitle={
-          daysLeft !== null
-            ? `${sezonLabel} · ${daysLeft} gün kaldı`
-            : sezonLabel
-        }
+        subtitle={daysLeft !== null ? `${sezonLabel} · ${daysLeft} gün kaldı` : sezonLabel}
         actionIcon="filter"
-        onAction={() =>
-          router.push((`/leaderboard/filter?cat=${cat}`) as never)
-        }
+        onAction={() => router.push(`/leaderboard/filter?cat=${cat}` as never)}
         rightSlot={<MessagesButton />}
       />
       {/* Filter-active indicator dot — shown when a non-default filter is set */}
@@ -392,11 +359,7 @@ export default function Leaderboard() {
           ))}
         </View>
         {/* Countdown hero block */}
-        <Skeleton
-          height={128}
-          radius={12}
-          style={{ marginHorizontal: 14, marginTop: 8 }}
-        />
+        <Skeleton height={128} radius={12} style={{ marginHorizontal: 14, marginTop: 8 }} />
         <ScrollView
           contentContainerStyle={{ padding: 14, paddingTop: 14, gap: 14 }}
           scrollEnabled={false}
@@ -450,10 +413,7 @@ export default function Leaderboard() {
         accessibilityLabel="ELO nasıl çalışır?"
       >
         <Icon name="info" size={14} color={colors.text3} />
-        <Text
-          className="font-sans font-semibold"
-          style={{ fontSize: 12, color: colors.text3 }}
-        >
+        <Text className="font-sans font-semibold" style={{ fontSize: 12, color: colors.text3 }}>
           ELO nasıl çalışır?
         </Text>
       </Pressable>
@@ -555,16 +515,10 @@ export default function Leaderboard() {
             #{meRow.rank}
           </Text>
           <Avatar name={meName} size={28} />
-          <Text
-            className="font-sans font-bold text-text"
-            style={{ flex: 1, fontSize: 13 }}
-          >
+          <Text className="font-sans font-bold text-text" style={{ flex: 1, fontSize: 13 }}>
             Sen · sıralamadaki yerin
           </Text>
-          <Text
-            className="font-num font-extrabold text-text"
-            style={{ fontSize: 14 }}
-          >
+          <Text className="font-num font-extrabold text-text" style={{ fontSize: 14 }}>
             {meRow.rating}
           </Text>
         </Pressable>
@@ -580,11 +534,7 @@ export default function Leaderboard() {
         data={restRows}
         keyExtractor={(item) => item.profileId}
         renderItem={({ item, index }) => (
-          <LadderRowItem
-            row={item}
-            index={index}
-            isMe={item.profileId === userId}
-          />
+          <LadderRowItem row={item} index={index} isMe={item.profileId === userId} />
         )}
         ItemSeparatorComponent={RowSeparator}
         onScroll={(e) => setStuck(e.nativeEvent.contentOffset.y > 210)}
@@ -617,7 +567,13 @@ export default function Leaderboard() {
               }}
             >
               {/* Top row: pulsing dot + label | days badge + İLK 8 badge */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
                   <PulsingDot />
                   <Text
@@ -629,10 +585,7 @@ export default function Leaderboard() {
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 5 }}>
                   {daysLeft !== null && (
-                    <Text
-                      className="font-num font-bold"
-                      style={{ fontSize: 13, color: '#FFFFFF' }}
-                    >
+                    <Text className="font-num font-bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
                       {daysLeft} gün
                     </Text>
                   )}
@@ -677,7 +630,14 @@ export default function Leaderboard() {
               </View>
 
               {/* Bottom row */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 15,
+                }}
+              >
                 <Text
                   className="font-sans font-semibold"
                   style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}
@@ -726,10 +686,7 @@ export default function Leaderboard() {
                 </View>
                 <Avatar name={meName} size={46} ring={colors.court} />
                 <View style={{ flex: 1 }}>
-                  <Text
-                    className="font-display font-bold text-text"
-                    style={{ fontSize: 16 }}
-                  >
+                  <Text className="font-display font-bold text-text" style={{ fontSize: 16 }}>
                     {meName}
                   </Text>
                   <View className="flex-row" style={{ gap: 6, marginTop: 5 }}>
@@ -780,16 +737,10 @@ export default function Leaderboard() {
                 </View>
                 <Avatar name={meName} size={46} />
                 <View style={{ flex: 1 }}>
-                  <Text
-                    className="font-display font-bold text-text"
-                    style={{ fontSize: 16 }}
-                  >
+                  <Text className="font-display font-bold text-text" style={{ fontSize: 16 }}>
                     {meName}
                   </Text>
-                  <Text
-                    className="font-sans text-text-3"
-                    style={{ fontSize: 12, marginTop: 4 }}
-                  >
+                  <Text className="font-sans text-text-3" style={{ fontSize: 12, marginTop: 4 }}>
                     Bu kategoride sıralaman yok.
                   </Text>
                 </View>

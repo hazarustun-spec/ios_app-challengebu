@@ -21,8 +21,8 @@
 //   - Unread bell: useUnreadCount
 //   - Display name: useAuthStore.profile
 
-import { useEffect } from 'react';
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
@@ -34,28 +34,28 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { ScreenEnter } from '../../components/ui/ScreenEnter';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { Avatar } from '../../components/ui/Avatar';
-import { GreetHeader } from '../../components/ui/GreetHeader';
-import { MessagesButton } from '../../components/ui/MessagesButton';
-import { Icon, type IconName } from '../../components/ui/Icon';
 // Sparkline removed — ELO hero now uses form-dots instead of a trend line.
 import { OpponentSuggestStrip } from '../../components/matches/OpponentSuggestStrip';
-import { useActiveMatches, type ActiveMatchRow } from '../../hooks/use-active-matches';
+import { Avatar } from '../../components/ui/Avatar';
+import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
+import { GreetHeader } from '../../components/ui/GreetHeader';
+import { Icon, type IconName } from '../../components/ui/Icon';
+import { MessagesButton } from '../../components/ui/MessagesButton';
+import { ScreenEnter } from '../../components/ui/ScreenEnter';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { type ActiveMatchRow, useActiveMatches } from '../../hooks/use-active-matches';
+import { useCurrentSeason } from '../../hooks/use-current-season';
 import { useEloHistory } from '../../hooks/use-elo-history';
 import { useMyMatchHistory } from '../../hooks/use-match-history';
 import { useMyRankings } from '../../hooks/use-my-rankings';
-import { useCurrentSeason } from '../../hooks/use-current-season';
-import { useUnreadCount } from '../../hooks/use-unread-count';
 import { useOpponentNames } from '../../hooks/use-opponent-names';
-import { myPerspective } from '../../lib/match-opponent';
-import { levelForElo, levelProgress } from '../../lib/levels';
-import { useAuthStore } from '../../stores/auth-store';
 import { useMyProfile } from '../../hooks/use-profile';
+import { useUnreadCount } from '../../hooks/use-unread-count';
+import { levelForElo, levelProgress } from '../../lib/levels';
+import { myPerspective } from '../../lib/match-opponent';
 import { defaultCategoryForGender, pickPrimaryCategory } from '../../lib/primary-category';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme/colors';
-import { FadeSlideIn } from '../../components/ui/FadeSlideIn';
 import { shadows } from '../../theme/shadows';
 
 // AnimatedTextInput drives the ELO hero count-up via reanimated (same pattern
@@ -133,9 +133,7 @@ export default function HomeScreen() {
   // ELO trend (last 10 points in primary category)
   const catPoints = (eloHistoryQ.data?.byCategory ?? {})[primaryCat] ?? [];
   const ELO_TREND: number[] =
-    catPoints.length > 0
-      ? catPoints.slice(-10).map((p) => p.elo)
-      : [ME_ELO]; // single-point fallback keeps the sparkline stable
+    catPoints.length > 0 ? catPoints.slice(-10).map((p) => p.elo) : [ME_ELO]; // single-point fallback keeps the sparkline stable
 
   // ELO delta: difference between the most recent point's elo and eloBefore
   const latestPoint = catPoints.length > 0 ? catPoints[catPoints.length - 1] : null;
@@ -158,7 +156,7 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ME_ELO]);
   const animatedEloProps = useAnimatedProps(
-    () => ({ text: String(Math.round(eloCounter.value)) } as any),
+    () => ({ text: String(Math.round(eloCounter.value)) }) as any,
   );
 
   // ELO delta chip entrance: fades + slides in from right ~820 ms after the
@@ -169,10 +167,7 @@ export default function HomeScreen() {
     deltaOpacity.value = 0;
     deltaTranslateX.value = 10;
     deltaOpacity.value = withDelay(820, withTiming(1, { duration: 380 }));
-    deltaTranslateX.value = withDelay(
-      820,
-      withSpring(0, { damping: 18, stiffness: 200 }),
-    );
+    deltaTranslateX.value = withDelay(820, withSpring(0, { damping: 18, stiffness: 200 }));
     // deltaOpacity/deltaTranslateX are stable SharedValue refs — safe to omit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ME_ELO]);
@@ -184,8 +179,9 @@ export default function HomeScreen() {
   // --- Season banner ---
   const seasonQ = useCurrentSeason();
   const season = seasonQ.data;
-  const SEASON_DAYS_LEFT =
-    season?.finale_starts_at ? Math.max(0, daysUntil(season.finale_starts_at)) : null;
+  const SEASON_DAYS_LEFT = season?.finale_starts_at
+    ? Math.max(0, daysUntil(season.finale_starts_at))
+    : null;
 
   // --- Active matches ---
   const activeMatchesQ = useActiveMatches();
@@ -297,9 +293,10 @@ export default function HomeScreen() {
       >
         {/* ELO HERO — flat, solid #2270BC, no gradient/shadow */}
         <View style={{ borderRadius: 34, padding: 26, backgroundColor: '#2270BC' }}>
-
           {/* Row 1: category label (left) + white level pill (right) */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             <Text
               className="font-sans font-bold"
               style={{ fontSize: 12, letterSpacing: 2, color: 'rgba(255,255,255,0.7)' }}
@@ -314,10 +311,7 @@ export default function HomeScreen() {
                 backgroundColor: '#fff',
               }}
             >
-              <Text
-                className="font-sans font-extrabold"
-                style={{ fontSize: 11, color: '#161618' }}
-              >
+              <Text className="font-sans font-extrabold" style={{ fontSize: 11, color: '#161618' }}>
                 {lv.name.toUpperCase()}
               </Text>
             </View>
@@ -361,10 +355,7 @@ export default function HomeScreen() {
                   color="#161618"
                   stroke={3}
                 />
-                <Text
-                  className="font-num font-bold"
-                  style={{ fontSize: 14, color: '#161618' }}
-                >
+                <Text className="font-num font-bold" style={{ fontSize: 14, color: '#161618' }}>
                   {Math.abs(ELO_DELTA)}
                 </Text>
               </View>
@@ -428,10 +419,7 @@ export default function HomeScreen() {
                 {lp.next ? `${lp.next.name}'e ilerleme` : 'Maks seviye'}
               </Text>
               {lp.next ? (
-                <Text
-                  className="font-sans font-extrabold text-white"
-                  style={{ fontSize: 12 }}
-                >
+                <Text className="font-sans font-extrabold text-white" style={{ fontSize: 12 }}>
                   {lp.toNext} PUAN KALDI
                 </Text>
               ) : null}
@@ -489,10 +477,7 @@ export default function HomeScreen() {
         <OpponentSuggestStrip category={primaryCat} variant="compact" />
 
         {/* Aktif maçlar */}
-        <SectionTitle
-          action="Tümü"
-          onActionPress={() => router.push('/(tabs)/matches' as never)}
-        >
+        <SectionTitle action="Tümü" onActionPress={() => router.push('/(tabs)/matches' as never)}>
           Aktif maçlar
         </SectionTitle>
         {ACTIVE_MATCHES.length === 0 ? (
@@ -512,10 +497,7 @@ export default function HomeScreen() {
         )}
 
         {/* Son sonuçlar */}
-        <SectionTitle
-          action="Geçmiş"
-          onActionPress={() => router.push('/match/history' as never)}
-        >
+        <SectionTitle action="Geçmiş" onActionPress={() => router.push('/match/history' as never)}>
           Son sonuçlar
         </SectionTitle>
         {RECENT_MATCHES.length === 0 ? (
@@ -561,10 +543,7 @@ export default function HomeScreen() {
               <Icon name="trophy" size={23} color={colors.clayText} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text
-                className="font-sans font-extrabold text-text"
-                style={{ fontSize: 14.5 }}
-              >
+              <Text className="font-sans font-extrabold text-text" style={{ fontSize: 14.5 }}>
                 Güz Sezonu finali yaklaşıyor
               </Text>
               <Text
@@ -572,10 +551,7 @@ export default function HomeScreen() {
                 style={{ fontSize: 12, marginTop: 2 }}
               >
                 finale{' '}
-                <Text
-                  className="font-num font-extrabold"
-                  style={{ color: colors.clayText }}
-                >
+                <Text className="font-num font-extrabold" style={{ color: colors.clayText }}>
                   {SEASON_DAYS_LEFT} gün
                 </Text>{' '}
                 kaldı
@@ -613,10 +589,7 @@ function SectionTitle({ children, action, onActionPress }: SectionTitleProps) {
       </Text>
       {action ? (
         <Pressable onPress={onActionPress} hitSlop={8}>
-          <Text
-            className="font-sans font-bold text-text-3"
-            style={{ fontSize: 12.5 }}
-          >
+          <Text className="font-sans font-bold text-text-3" style={{ fontSize: 12.5 }}>
             {action}
           </Text>
         </Pressable>
@@ -671,7 +644,12 @@ function SectionEmpty({ icon, text }: { icon: IconName; text: string }) {
 interface ActiveMatchCardProps {
   match: ActiveMatchRow;
   myUserId: string;
-  resolveOpponent: (match: ActiveMatchRow) => { ids: string[]; name: string; primaryId: string | null; primaryName: string };
+  resolveOpponent: (match: ActiveMatchRow) => {
+    ids: string[];
+    name: string;
+    primaryId: string | null;
+    primaryName: string;
+  };
 }
 
 function ActiveMatchCard({ match, myUserId: _myUserId, resolveOpponent }: ActiveMatchCardProps) {
@@ -699,10 +677,7 @@ function ActiveMatchCard({ match, myUserId: _myUserId, resolveOpponent }: Active
       <Avatar name={opponent.primaryName} size={44} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
-          <Text
-            className="font-sans font-bold text-text"
-            style={{ fontSize: 14.5 }}
-          >
+          <Text className="font-sans font-bold text-text" style={{ fontSize: 14.5 }}>
             {opponent.name}
           </Text>
           <View
@@ -747,7 +722,12 @@ function ActiveMatchCard({ match, myUserId: _myUserId, resolveOpponent }: Active
 interface RecentMatchCardProps {
   match: ActiveMatchRow;
   myUserId: string;
-  resolveOpponent: (match: ActiveMatchRow) => { ids: string[]; name: string; primaryId: string | null; primaryName: string };
+  resolveOpponent: (match: ActiveMatchRow) => {
+    ids: string[];
+    name: string;
+    primaryId: string | null;
+    primaryName: string;
+  };
 }
 
 function RecentMatchCard({ match, myUserId, resolveOpponent }: RecentMatchCardProps) {
@@ -793,10 +773,7 @@ function RecentMatchCard({ match, myUserId, resolveOpponent }: RecentMatchCardPr
         </Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text
-          className="font-sans font-bold text-text"
-          style={{ fontSize: 14 }}
-        >
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 14 }}>
           {opponent.name}
         </Text>
         <Text
@@ -806,10 +783,7 @@ function RecentMatchCard({ match, myUserId, resolveOpponent }: RecentMatchCardPr
           {whenLabel}
         </Text>
       </View>
-      <Text
-        className="font-num font-extrabold text-text"
-        style={{ fontSize: 18 }}
-      >
+      <Text className="font-num font-extrabold text-text" style={{ fontSize: 18 }}>
         {score}
       </Text>
       <View

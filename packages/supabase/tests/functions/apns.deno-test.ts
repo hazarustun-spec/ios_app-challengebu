@@ -92,8 +92,21 @@ Deno.test('sendLiveActivityStartPush: builds a start payload with attributes + c
     return Promise.resolve(new Response('', { status: 200 }));
   };
   try {
-    const attributes = { matchId: 'm1', youSide: 'b', nameA: 'Sen', nameB: 'Ali', categoryLabel: null };
-    const contentState = { gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: 'ongoing', winner: null };
+    const attributes = {
+      matchId: 'm1',
+      youSide: 'b',
+      nameA: 'Sen',
+      nameB: 'Ali',
+      categoryLabel: null,
+    };
+    const contentState = {
+      gamesA: 0,
+      gamesB: 0,
+      pointsA: 0,
+      pointsB: 0,
+      phase: 'ongoing',
+      winner: null,
+    };
     const alert = { title: 'Maç başladı', body: 'Ali maçı başlattı' };
     const r = await sendLiveActivityStartPush({
       host: 'https://api.sandbox.push.apple.com',

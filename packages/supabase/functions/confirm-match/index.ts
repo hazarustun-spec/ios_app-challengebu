@@ -1,10 +1,16 @@
 import { z } from 'zod';
-import { handleCors } from '../_shared/cors.ts';
-import { conflict, errorResponse, forbidden, internalError, jsonResponse } from '../_shared/errors.ts';
-import { getServiceClient } from '../_shared/supabase-client.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
 import { applyEloForMatch } from '../_shared/apply-elo.ts';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { handleCors } from '../_shared/cors.ts';
 import type { MatchFormat } from '../_shared/elo.ts';
+import {
+  conflict,
+  errorResponse,
+  forbidden,
+  internalError,
+  jsonResponse,
+} from '../_shared/errors.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
 
 const inputSchema = z.object({ matchId: z.string().uuid() });
 
@@ -62,11 +68,14 @@ Deno.serve(async (req) => {
     }
 
     const newStatus = match.winner_team === 'void' ? 'voided' : 'confirmed';
-    await supa.from('matches').update({
-      confirmed_by: newConfirmed,
-      confirmed_at: new Date().toISOString(),
-      status: newStatus,
-    }).eq('id', match.id);
+    await supa
+      .from('matches')
+      .update({
+        confirmed_by: newConfirmed,
+        confirmed_at: new Date().toISOString(),
+        status: newStatus,
+      })
+      .eq('id', match.id);
 
     let awarded: AwardedPerUser[] = [];
     if (newStatus === 'confirmed') {

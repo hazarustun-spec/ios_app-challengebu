@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLevel, levelChanged } from '@tennis/shared';
+import { type getLevel, levelChanged } from '@tennis/shared';
 import { invokeFunction } from '../lib/invoke-function';
 import { queryKeys } from '../lib/query-keys';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth-store';
 import {
-  useCelebrationStore,
   type AwardedBadgeView,
   type CelebrationItem,
+  useCelebrationStore,
 } from '../stores/post-match-celebration-store';
 
 interface AwardedPayload {
