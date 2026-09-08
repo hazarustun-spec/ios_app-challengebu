@@ -30,6 +30,22 @@ values
 -- erkek_tek ladder: p3=1600 > p1=1500 > p2=1400 > admin=1300
 --   -> ranks 1,2,3,4 respectively.
 -- p1 also sits in open_tek at 1700 (highest there -> rank 1).
+-- The profiles insert above fires trg_seed_elo_ratings (migration
+-- 20260714000001), which creates a 1200-rated row for EVERY category each
+-- player is eligible in — for an 'erkek' player that is erkek_tek, open_tek,
+-- erkek_cift and open_cift. The trigger did not exist when this test was
+-- written, so the insert below hit
+--   duplicate key value violates unique constraint
+--   "elo_ratings_profile_id_category_key"
+--
+-- An upsert would not be enough: get_user_rankings has no matches_played
+-- filter (20260608000003_rankings_rpc.sql), so the two extra doubles rows
+-- would still count and the "p1 is rated in exactly 2 categories" assertion
+-- below would read 4. Clear the seeded rows for these four profiles and let
+-- the fixture state the ladder exactly. Rolled back with the transaction.
+delete from public.elo_ratings
+where profile_id in (:'admin', :'p1', :'p2', :'p3');
+
 insert into public.elo_ratings (profile_id, category, rating, matches_played)
 values
   (:'p3','erkek_tek',1600,12),

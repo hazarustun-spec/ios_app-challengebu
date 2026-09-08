@@ -36,6 +36,15 @@ values
   (:'p7','player','P7','TB','p7_tb@test.local','she/her','kadin','4','orta','sag'),
   (:'p8','player','P8','TB','p8_tb@test.local','she/her','kadin','4','orta','sag');
 
+-- A partial unique index (seasons_one_active_idx, migration 20260609000001)
+-- allows at most ONE season in status 'active' or 'finale' at a time, and the
+-- seed ships an active one — so this insert collided with it:
+--   duplicate key value violates unique constraint "seasons_one_active_idx"
+-- Neutralise the seeded season the same way season-lifecycle.test.sql does.
+-- The UPDATE is rolled back with the surrounding transaction.
+update public.seasons set status = 'closed'
+where status in ('active', 'finale');
+
 -- One season in finale status; a singles and a doubles tournament.
 insert into public.seasons
   (id, name, year, starts_at, ends_at, finale_starts_at, finale_ends_at, status)

@@ -51,7 +51,11 @@ jobs:
 
       - name: Test (mobile)
         working-directory: apps/mobile
-        run: bun test
+        # `bun run test`, not `bun test`: the package script points at
+        # scripts/test.sh, which runs one file per process. `bun test` bypasses
+        # it and puts every suite back in one process, where the per-file
+        # `mock.module('react-native', …)` stubs overwrite each other.
+        run: bun run test
 
   supabase-integration:
     runs-on: ubuntu-latest
