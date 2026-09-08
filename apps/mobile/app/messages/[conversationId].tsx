@@ -262,11 +262,11 @@ export default function ConversationScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Mark conversation read on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: marks the thread read once per conversation; markRead is a mutation object that changes identity on every render
   useEffect(() => {
     if (conversationId) {
       markRead.mutate(conversationId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
   // ---------------------------------------------------------------------------

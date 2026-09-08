@@ -46,6 +46,7 @@ export function useRealtimeChannel({
   const qc = useQueryClient();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: configs and invalidateKeys are compared by JSON.stringify in the dep array — listing the objects themselves would tear down and resubscribe the channel on every render
   useEffect(() => {
     if (!enabled || configs.length === 0) return;
     const schedule = () => {

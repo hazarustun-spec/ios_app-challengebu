@@ -86,7 +86,7 @@ Deno.test('notif categories: default prefs trigger seeds 9 categories per new pr
       .eq('profile_id', user.userId);
 
     const allOn = (data ?? []).every((r) => r.enabled === true);
-    assertEquals(allOn, true, `expected all default prefs to be enabled=true`);
+    assertEquals(allOn, true, 'expected all default prefs to be enabled=true');
 
     const cats = (data ?? []).map((r) => r.category).sort();
     assertEquals(cats.length, 9, `expected 9 default prefs, got ${cats.length}`);

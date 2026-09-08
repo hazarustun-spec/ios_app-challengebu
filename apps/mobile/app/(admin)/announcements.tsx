@@ -99,7 +99,7 @@ function AnnouncementRow({ item }: { item: PublishedAnnouncement }) {
           width: 34,
           height: 34,
           borderRadius: 10,
-          backgroundColor: colors.acPurple + '21',
+          backgroundColor: `${colors.acPurple}21`,
           alignItems: 'center',
           justifyContent: 'center',
         }}

@@ -50,6 +50,7 @@ function ConfettiPiece({
 }: ConfettiPieceProps) {
   const progress = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one flight per piece; progress is a stable SharedValue ref
   useEffect(() => {
     progress.value = withDelay(delay, withTiming(1, { duration, easing: Easing.linear }));
   }, []);
@@ -113,6 +114,7 @@ export function Confetti({ count = 42 }: ConfettiProps) {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {pieces.map((p, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: confetti pieces are interchangeable and never reordered
         <ConfettiPiece key={i} {...p} />
       ))}
     </View>

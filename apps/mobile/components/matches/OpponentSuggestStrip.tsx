@@ -60,6 +60,7 @@ export function OpponentSuggestStrip({ category, variant = 'full' }: OpponentSug
       >
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <View
+            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders from Array.from — there is no id to key on, and they are replaced wholesale when the data lands
             key={i}
             style={{
               width: cardWidth,

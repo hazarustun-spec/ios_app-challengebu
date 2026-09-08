@@ -25,6 +25,7 @@ export function PinnedBadges({ pinned, editable = false, onEditPress }: Props) {
     >
       {slots.map((b, i) => (
         <View
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed pin slots, empty ones included — the slot number is the identity, not the badge in it
           key={i}
           className="h-12 w-12 items-center justify-center rounded-lg border border-gray-300 bg-white"
         >

@@ -25,6 +25,7 @@ export function Dots({ size = 40, color = colors.pink, style }: DotsProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 40 40" fill={color} style={style}>
       {POSITIONS.map(([cx, cy], i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: a decorative dot grid
         <Circle key={i} cx={cx} cy={cy} r={i % 2 ? 2 : 2.8} fill={color} />
       ))}
     </Svg>

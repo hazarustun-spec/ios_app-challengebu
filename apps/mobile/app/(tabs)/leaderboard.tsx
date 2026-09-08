@@ -60,6 +60,7 @@ import { shadows } from '../../theme/shadows';
 
 function PulsingDot() {
   const opacity = useSharedValue(1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: starts an infinite pulse once; opacity is a stable SharedValue ref
   useEffect(() => {
     opacity.value = withRepeat(
       withSequence(withTiming(0.3, { duration: 900 }), withTiming(1, { duration: 900 })),
@@ -355,6 +356,7 @@ export default function Leaderboard() {
           }}
         >
           {([80, 96, 72, 88] as const).map((w, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows — no id exists until the ladder loads
             <Skeleton key={i} width={w} height={38} radius={9999} />
           ))}
         </View>

@@ -27,6 +27,7 @@ export function FormDots({ form, size = 9, gap = 3 }: FormDotsProps) {
     <View className="flex-row" style={{ gap }}>
       {form.map((r, i) => (
         <View
+          // biome-ignore lint/suspicious/noArrayIndexKey: the last-N form window is display-only with no per-item state, so a shifting window cannot attach the wrong state to a dot
           key={i}
           style={{
             width: size,

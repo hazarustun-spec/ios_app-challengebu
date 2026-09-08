@@ -38,6 +38,7 @@ function ExplosionRing({ index }: { index: number }) {
   const progress = useSharedValue(0);
   const delay = index * 80;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one ring, one flight — delay is fixed for a given index and re-running would restart the burst mid-animation
   useEffect(() => {
     progress.value = withDelay(
       500 + delay,
@@ -104,6 +105,7 @@ export function MatchStartBurst({ onDone }: MatchStartBurstProps) {
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the whole start sequence plays once per mount; every value it writes is a stable SharedValue ref
   useEffect(() => {
     // 1. Background
     bgOpacity.value = withTiming(1, { duration: 200 });
@@ -170,6 +172,7 @@ export function MatchStartBurst({ onDone }: MatchStartBurstProps) {
       {/* Explosion rings (centred) */}
       <View style={{ alignItems: 'center', justifyContent: 'center' }}>
         {Array.from({ length: RING_COUNT }, (_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: a fixed number of burst rings, distinguished only by their index
           <ExplosionRing key={i} index={i} />
         ))}
 

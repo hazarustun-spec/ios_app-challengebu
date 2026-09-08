@@ -34,8 +34,8 @@ Deno.test('expire_suspensions: clears past-due suspended_until + status=active',
       .select('status, suspended_until')
       .eq('user_id', user.userId)
       .single();
-    assertEquals(data!.status, 'active');
-    assertEquals(data!.suspended_until, null);
+    assertEquals(data?.status, 'active');
+    assertEquals(data?.suspended_until, null);
   } finally {
     await teardownUsers([user.userId]);
   }
@@ -63,10 +63,10 @@ Deno.test('expire_suspensions: leaves future suspended_until alone', async () =>
       .select('status, suspended_until')
       .eq('user_id', user.userId)
       .single();
-    assertEquals(data!.status, 'suspended');
-    assertExists(data!.suspended_until);
+    assertEquals(data?.status, 'suspended');
+    assertExists(data?.suspended_until);
     assertEquals(
-      new Date(data!.suspended_until as string).getTime(),
+      new Date(data?.suspended_until as string).getTime(),
       new Date(futureIso).getTime(),
     );
   } finally {
@@ -95,8 +95,8 @@ Deno.test('expire_suspensions: NULL suspended_until (permanent ban) stays suspen
       .select('status, suspended_until')
       .eq('user_id', user.userId)
       .single();
-    assertEquals(data!.status, 'suspended');
-    assertEquals(data!.suspended_until, null);
+    assertEquals(data?.status, 'suspended');
+    assertEquals(data?.suspended_until, null);
   } finally {
     await teardownUsers([user.userId]);
   }
@@ -271,7 +271,7 @@ Deno.test('admin_reorder_bracket_seeds: rewrites season_standings.rank by player
       .eq('category', 'erkek_tek')
       .eq('rank', 1)
       .single();
-    assertEquals(seed1!.profile_id, reversed[0]);
+    assertEquals(seed1?.profile_id, reversed[0]);
 
     const { data: seed8 } = await supa
       .from('season_standings')
@@ -280,7 +280,7 @@ Deno.test('admin_reorder_bracket_seeds: rewrites season_standings.rank by player
       .eq('category', 'erkek_tek')
       .eq('rank', 8)
       .single();
-    assertEquals(seed8!.profile_id, reversed[7]);
+    assertEquals(seed8?.profile_id, reversed[7]);
   } finally {
     await teardownUsers([admin.userId, ...playerIds], { seasonIds: [seasonId] });
   }
@@ -363,7 +363,7 @@ Deno.test('admin_reorder_bracket_seeds: doubles tournament rejected (0A000)', as
 Deno.test('admin_reorder_bracket_seeds: duplicate IDs rejected (22023)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const admin = await createTestUser({ email: `reorder-dup-${s}@test.local`, role: 'admin' });
-  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(s + 'dup');
+  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(`${s}dup`);
   try {
     const dup = Array.from({ length: 8 }, () => playerIds[0]);
     const { error } = await jwtClient(admin.accessToken).rpc('admin_reorder_bracket_seeds', {
@@ -380,7 +380,7 @@ Deno.test('admin_reorder_bracket_seeds: duplicate IDs rejected (22023)', async (
 Deno.test('admin_reorder_bracket_seeds: NULL in array rejected (22023)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const admin = await createTestUser({ email: `reorder-null-${s}@test.local`, role: 'admin' });
-  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(s + 'nul');
+  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(`${s}nul`);
   try {
     const withNull: (string | null)[] = [...playerIds];
     withNull[7] = null;
@@ -398,7 +398,7 @@ Deno.test('admin_reorder_bracket_seeds: NULL in array rejected (22023)', async (
 Deno.test('admin_reorder_bracket_seeds: non-member UUID rejected (P0002)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const admin = await createTestUser({ email: `reorder-stranger-${s}@test.local`, role: 'admin' });
-  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(s + 'str');
+  const { tournamentId, seasonId, playerIds } = await seedFinaleBracket(`${s}str`);
   try {
     const stranger = [...playerIds];
     stranger[3] = '00000000-0000-0000-0000-0000000000aa';

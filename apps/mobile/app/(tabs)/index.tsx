@@ -131,7 +131,7 @@ export default function HomeScreen() {
   const ME_RANK = primaryRanking?.rank ?? 0;
 
   // ELO trend (last 10 points in primary category)
-  const catPoints = (eloHistoryQ.data?.byCategory ?? {})[primaryCat] ?? [];
+  const catPoints = eloHistoryQ.data?.byCategory?.[primaryCat] ?? [];
   const ELO_TREND: number[] =
     catPoints.length > 0 ? catPoints.slice(-10).map((p) => p.elo) : [ME_ELO]; // single-point fallback keeps the sparkline stable
 
@@ -146,6 +146,7 @@ export default function HomeScreen() {
   // ELO hero count-up: start 120 below ME_ELO, ease-out to exact value.
   // Hooks are always called (before the isLoading early return) per React rules.
   const eloCounter = useSharedValue(Math.max(1000, ME_ELO - 120));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: eloCounter is a stable SharedValue ref; a new rating is the only thing that should restart the count-up
   useEffect(() => {
     eloCounter.value = Math.max(1000, ME_ELO - 120);
     eloCounter.value = withTiming(ME_ELO, {
@@ -153,9 +154,12 @@ export default function HomeScreen() {
       easing: Easing.out(Easing.cubic),
     });
     // eloCounter is a stable SharedValue ref — safe to omit from deps.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ME_ELO]);
   const animatedEloProps = useAnimatedProps(
+    // `text` is a TextInput prop reanimated drives directly on the native side;
+    // its AnimatedProps type does not model it, so there is no concrete type to
+    // cast to here.
+    // biome-ignore lint/suspicious/noExplicitAny: reanimated does not type the native-driven `text` prop
     () => ({ text: String(Math.round(eloCounter.value)) }) as any,
   );
 
@@ -163,13 +167,13 @@ export default function HomeScreen() {
   // count-up starts so the eye reads "ELO → then the change".
   const deltaOpacity = useSharedValue(0);
   const deltaTranslateX = useSharedValue(10);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deltaOpacity / deltaTranslateX are stable SharedValue refs; a new rating is the only thing that should replay the delta
   useEffect(() => {
     deltaOpacity.value = 0;
     deltaTranslateX.value = 10;
     deltaOpacity.value = withDelay(820, withTiming(1, { duration: 380 }));
     deltaTranslateX.value = withDelay(820, withSpring(0, { damping: 18, stiffness: 200 }));
     // deltaOpacity/deltaTranslateX are stable SharedValue refs — safe to omit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ME_ELO]);
   const animatedDeltaStyle = useAnimatedStyle(() => ({
     opacity: deltaOpacity.value,
@@ -218,6 +222,7 @@ export default function HomeScreen() {
 
   // Flame icon looping pulse — active only when streak >= 3.
   const flameScale = useSharedValue(1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: flameScale is a stable SharedValue ref; the streak crossing 3 is the only thing that should start or stop the pulse
   useEffect(() => {
     if (WIN_STREAK >= 3) {
       flameScale.value = withRepeat(
@@ -229,7 +234,6 @@ export default function HomeScreen() {
       flameScale.value = withTiming(1, { duration: 300 });
     }
     // flameScale is a stable SharedValue ref — safe to omit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [WIN_STREAK]);
   const animatedFlameStyle = useAnimatedStyle(() => ({
     transform: [{ scale: flameScale.value }],
@@ -394,6 +398,7 @@ export default function HomeScreen() {
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {FORM_DOTS.map((result, i) => (
                 <View
+                  // biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders — no id exists, and they are replaced wholesale when the data lands
                   key={i}
                   style={{
                     width: 10,

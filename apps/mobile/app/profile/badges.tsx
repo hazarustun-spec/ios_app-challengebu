@@ -51,6 +51,7 @@ function BadgeGridItem({ b, index, has, isPin, earned, togglePin, onShare }: Bad
   // locked badges stay at 1 and never animate.
   const popScale = useSharedValue(has ? 0.9 : 1);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pop-in plays once on mount; popScale is a stable SharedValue ref
   useEffect(() => {
     if (has) {
       popScale.value = withSpring(1, { damping: 6, stiffness: 220 });
@@ -196,12 +197,12 @@ export default function Badges() {
   const [pinned, setPinned] = useState<string[]>(initialPinned);
 
   // Sync pinned state when earned badges load (after first fetch)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on isSuccess + dataUpdatedAt deliberately — depending on `earned` would loop, since setPinned re-renders and rebuilds that array
   useEffect(() => {
     if (myBadgesQ.isSuccess) {
       const fromServer = earned.filter((b) => b.pinned_at !== null).map((b) => b.badge_id);
       setPinned(fromServer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myBadgesQ.isSuccess, myBadgesQ.dataUpdatedAt]);
 
   const togglePin = (badgeId: string) => {

@@ -32,6 +32,7 @@ import { colors } from '../../theme/colors';
 
 function PulsingDot() {
   const opacity = useSharedValue(1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: starts an infinite pulse once; opacity is a stable SharedValue ref
   useEffect(() => {
     opacity.value = withRepeat(
       withSequence(withTiming(0.3, { duration: 900 }), withTiming(1, { duration: 900 })),

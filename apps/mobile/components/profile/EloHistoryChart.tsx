@@ -127,6 +127,7 @@ export function EloHistoryChart({
         })}
 
         {segments.map((s, idx) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: chart points are positional; the index IS the identity
           <Polyline key={idx} points={s} fill="none" stroke="#1e3a8a" strokeWidth={2} />
         ))}
         {points.map((p, i) => (

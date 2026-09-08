@@ -40,7 +40,7 @@ import { colors } from '../../../theme/colors';
 
 /** Standard ELO expectation for player A vs player B. */
 function expected(myElo: number, oppElo: number): number {
-  return 1 / (1 + Math.pow(10, (oppElo - myElo) / 400));
+  return 1 / (1 + 10 ** ((oppElo - myElo) / 400));
 }
 
 /** Pick the ranking row that best matches the chosen category.
@@ -87,8 +87,8 @@ export default function MatchPreview() {
 
   // ELO prediction deltas (only when both ELOs are known and match is ranked)
   const eloReady = ME_ELO !== null && opp !== null;
-  const winDelta = eloReady ? Math.round(K_FACTOR * (1 - expected(ME_ELO!, opp!.elo))) : null;
-  const lossDelta = eloReady ? -Math.round(K_FACTOR * expected(ME_ELO!, opp!.elo)) : null;
+  const winDelta = eloReady ? Math.round(K_FACTOR * (1 - expected(ME_ELO!, opp?.elo))) : null;
+  const lossDelta = eloReady ? -Math.round(K_FACTOR * expected(ME_ELO!, opp?.elo)) : null;
 
   const rows: Array<[string, string]> = [
     ['Tip', nm.kind === 'ranking' ? 'Sıralama Maçı' : 'Dostluk Maçı'],

@@ -50,7 +50,16 @@ interface TabStateLike {
 
 interface TabNavigationLike {
   navigate: (name: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // React Navigation's real `emit` is generic over the event map with two
+  // conditional intersections on top, and under strictFunctionTypes a
+  // hand-written narrowing is NOT assignable from it — a concrete
+  // `(event: { type: string; ... })` was tried and (tabs)/_layout.tsx stopped
+  // compiling. Importing BottomTabBarProps['navigation'] instead would compile
+  // there and break app/(dev)/gallery.tsx, whose mock cannot satisfy the full
+  // navigator. `any` is what lets the real navigator and the gallery mock share
+  // one prop type; TabBar only ever emits 'tabPress' and reads
+  // `defaultPrevented`.
+  // biome-ignore lint/suspicious/noExplicitAny: see above — no concrete type accepts both React Navigation's generic emit and the dev-gallery mock
   emit: (event: any) => any;
 }
 

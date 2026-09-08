@@ -44,10 +44,10 @@ export default function OtpScreen() {
   const filled = code.length === OTP_LENGTH;
 
   // Auto-submit once the last digit lands.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: auto-submits on the transition to filled only; handleVerify and code are read fresh at that moment, and depending on them would resubmit on every keystroke
   useEffect(() => {
     if (!filled || verifying) return;
     void handleVerify(code);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filled]);
 
   // Raise the keyboard ourselves instead of relying on autoFocus. iOS declines
@@ -178,6 +178,7 @@ export default function OtpScreen() {
               const active = !verifying && i === Math.min(code.length, OTP_LENGTH - 1);
               return (
                 <View
+                  // biome-ignore lint/suspicious/noArrayIndexKey: the OTP cells are fixed positions in a six-digit code
                   key={i}
                   style={{
                     width: 44,

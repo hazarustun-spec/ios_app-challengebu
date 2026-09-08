@@ -28,7 +28,7 @@ async function playedMatch(suffix: string): Promise<{
       isRated: true,
       proposedDate: '2026-07-01',
       proposedTime: '19:00',
-      courtId: court!.id,
+      courtId: court?.id,
     },
     alice.accessToken,
   );
@@ -81,7 +81,7 @@ Deno.test('confirm-match: both confirm → ELO applied', async () => {
 
     const supa = adminClient();
     const { data: m } = await supa.from('matches').select('*').eq('id', matchId).single();
-    assertEquals(m!.status, 'confirmed');
+    assertEquals(m?.status, 'confirmed');
 
     const { data: aliceRating } = await supa
       .from('elo_ratings')
@@ -103,14 +103,14 @@ Deno.test('confirm-match: both confirm → ELO applied', async () => {
       throw new Error(`bob rating ${bobRating.rating} should be < 1200`);
     assertEquals(aliceRating.rating - 1200, 1200 - bobRating.rating);
 
-    if (m!.rating_before_team_a !== 1200)
-      throw new Error(`rating_before_team_a should be 1200, got ${m!.rating_before_team_a}`);
-    if (m!.rating_before_team_b !== 1200)
-      throw new Error(`rating_before_team_b should be 1200, got ${m!.rating_before_team_b}`);
-    if (m!.rating_after_team_a !== aliceRating!.rating)
-      throw new Error(`rating_after_team_a mismatch`);
-    if (m!.rating_after_team_b !== bobRating!.rating)
-      throw new Error(`rating_after_team_b mismatch`);
+    if (m?.rating_before_team_a !== 1200)
+      throw new Error(`rating_before_team_a should be 1200, got ${m?.rating_before_team_a}`);
+    if (m?.rating_before_team_b !== 1200)
+      throw new Error(`rating_before_team_b should be 1200, got ${m?.rating_before_team_b}`);
+    if (m?.rating_after_team_a !== aliceRating?.rating)
+      throw new Error('rating_after_team_a mismatch');
+    if (m?.rating_after_team_b !== bobRating?.rating)
+      throw new Error('rating_after_team_b mismatch');
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
@@ -138,7 +138,7 @@ Deno.test('confirm-match: unrated match → status confirmed, no ELO change', as
         isRated: false,
         proposedDate: '2026-07-01',
         proposedTime: '19:00',
-        courtId: court!.id,
+        courtId: court?.id,
       },
       alice.accessToken,
     );
@@ -169,7 +169,7 @@ Deno.test('confirm-match: unrated match → status confirmed, no ELO change', as
     await invokeFunction('confirm-match', { matchId }, bob.accessToken);
 
     const { data: m } = await supa.from('matches').select('status').eq('id', matchId).single();
-    assertEquals(m!.status, 'confirmed');
+    assertEquals(m?.status, 'confirmed');
 
     // Only these two users' elo_ratings should exist; both must remain at 1200.
     const { data: r } = await supa

@@ -52,10 +52,10 @@ export default function ActiveMatch() {
   const submitScore = useSubmitMatchScore();
   const toast = useToast();
   const { score, error: liveScoreError, awardPoint, undoPoint } = useLiveScore(id);
-  const gA = score?.gamesA ?? 0,
-    gB = score?.gamesB ?? 0;
-  const pA = score?.pointsA ?? 0,
-    pB = score?.pointsB ?? 0;
+  const gA = score?.gamesA ?? 0;
+  const gB = score?.gamesB ?? 0;
+  const pA = score?.pointsA ?? 0;
+  const pB = score?.pointsB ?? 0;
   const isVoid = score?.phase === 'void';
   const someoneWon = score?.phase === 'finished';
 
@@ -78,6 +78,7 @@ export default function ActiveMatch() {
   const scoreRef = useRef({ gA, gB, pA, pB, isVoid, someoneWon });
   scoreRef.current = { gA, gB, pA, pB, isVoid, someoneWon };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: starts the Live Activity exactly once per match — scoreRef exists so the unmount cleanup sees the final score without the score being a dependency here
   useEffect(() => {
     // Wait for userId before starting: youSide (perspective) and the App-Group
     // accessToken both derive from it. Starting before userId arrives would lock
@@ -112,9 +113,9 @@ export default function ActiveMatch() {
         winner: s.someoneWon ? (s.gA === 4 ? 'a' : 'b') : null,
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match?.id, userId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateMatchActivity is a module function, not state; the score values it sends are already the deps
   useEffect(() => {
     if (!match) return;
     const phase: 'ongoing' | 'void' | 'finished' = isVoid
@@ -131,13 +132,12 @@ export default function ActiveMatch() {
       phase,
       winner,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gA, gB, pA, pB, isVoid, someoneWon, match?.id]);
 
   // Surface a non-blocking error if the live score failed to load.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fires the toast on a new error only; toast is a stable context value and listing it would re-show the message on every render
   useEffect(() => {
     if (liveScoreError) toast.show('Canlı skor yüklenemedi', 'error');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveScoreError]);
 
   // Award a point, surfacing RPC failures so a tap that didn't register is

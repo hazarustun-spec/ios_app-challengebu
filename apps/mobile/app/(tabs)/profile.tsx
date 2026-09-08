@@ -150,7 +150,7 @@ export default function ProfileTab() {
 
   // --- ELO history for delta ---
   const eloHistoryQ = useEloHistory(userId);
-  const catPoints = (eloHistoryQ.data?.byCategory ?? {})[primaryCat] ?? [];
+  const catPoints = eloHistoryQ.data?.byCategory?.[primaryCat] ?? [];
   const latestPoint = catPoints.length > 0 ? catPoints[catPoints.length - 1] : null;
   const ELO_DELTA = latestPoint ? latestPoint.elo - latestPoint.eloBefore : 0;
 

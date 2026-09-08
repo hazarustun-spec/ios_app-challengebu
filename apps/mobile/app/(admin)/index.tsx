@@ -34,7 +34,7 @@ interface TileConfig {
 // 13% alpha tint of the icon color (matches the design bundle's
 // `color-mix(in srgb, COLOR 13%, transparent)` background).
 function tintFor(hex: string): string {
-  return hex + '21'; // 0x21 ≈ 33/255 = 13%
+  return `${hex}21`; // 0x21 ≈ 33/255 = 13%
 }
 
 /** Returns the number of calendar days from now until `isoDate` (0-clamped). */

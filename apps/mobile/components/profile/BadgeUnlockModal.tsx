@@ -46,6 +46,7 @@ export function BadgeUnlockModal({ visible, badge, onClose }: Props) {
   // Guard: haptic fires exactly once per modal appearance
   const hapticFired = useRef(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per modal mount; the SharedValues are stable refs and re-running would replay the reveal
   useEffect(() => {
     // Reset animation values for each fresh mount
     cardProgress.value = 0;

@@ -79,7 +79,8 @@ mock.module('react-native-reanimated', () => {
     runOnJS: (fn: unknown) => fn,
     cancelAnimation: () => {},
     interpolate: () => 0,
-    FadeIn: {}, FadeOut: {},
+    FadeIn: {},
+    FadeOut: {},
   };
 });
 

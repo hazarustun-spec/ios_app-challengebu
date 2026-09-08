@@ -115,6 +115,7 @@ export default function FormatRules() {
         </Text>
         <View style={{ gap: 10 }}>
           {rules.map((r, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a format's rule lines are a fixed literal list — nothing is inserted, removed or reordered
             <View key={i} className="flex-row" style={{ gap: 12 }}>
               <View
                 style={{

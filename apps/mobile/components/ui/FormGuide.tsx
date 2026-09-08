@@ -34,6 +34,7 @@ export function FormGuide({ results, size = 22 }: FormGuideProps) {
         const { bg, letter, textColor } = CONFIG[r];
         return (
           <View
+            // biome-ignore lint/suspicious/noArrayIndexKey: same fixed-width form window as FormDots — display only, no per-item state
             key={i}
             style={{
               width: size,

@@ -58,6 +58,7 @@ export function FormatRulesModal({ visible, format, onAcknowledge }: Props) {
         <Text className="mb-4 text-2xl font-bold text-gray-900">{rules.title}</Text>
         <ScrollView className="flex-1">
           {rules.bullets.map((b, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static bullet copy for the chosen format — never reordered
             <View key={i} className="mb-3 flex-row gap-2">
               <Text className="text-base text-primary">•</Text>
               <Text className="flex-1 text-base text-gray-800">{b}</Text>

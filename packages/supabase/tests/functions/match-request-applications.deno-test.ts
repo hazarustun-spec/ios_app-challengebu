@@ -76,13 +76,11 @@ Deno.test('match_request_applications: applicant insert + duplicate rejected', a
     const requestId = await seedOpenCall(creator.userId);
     const supa = adminClient();
 
-    const { error: firstErr } = await supa
-      .from('match_request_applications')
-      .insert({
-        request_id: requestId,
-        applicant_id: applicant.userId,
-        note: 'Cuma akşam müsaitim',
-      });
+    const { error: firstErr } = await supa.from('match_request_applications').insert({
+      request_id: requestId,
+      applicant_id: applicant.userId,
+      note: 'Cuma akşam müsaitim',
+    });
     assertEquals(firstErr, null);
 
     const { error: dupErr } = await supa
@@ -124,9 +122,9 @@ Deno.test('accept_match_application: updates match_requests atomically', async (
       .select('status, target_id, accepted_at')
       .eq('id', requestId)
       .single();
-    assertEquals(req!.status, 'accepted');
-    assertEquals(req!.target_id, applicant.userId);
-    if (!req!.accepted_at) throw new Error('accepted_at should be set');
+    assertEquals(req?.status, 'accepted');
+    assertEquals(req?.target_id, applicant.userId);
+    if (!req?.accepted_at) throw new Error('accepted_at should be set');
   } finally {
     await teardownUsers([creator.userId, applicant.userId]);
   }
@@ -209,8 +207,8 @@ Deno.test('accept_match_application: already-accepted request rejected', async (
       .select('status, target_id')
       .eq('id', requestId)
       .single();
-    assertEquals(req!.status, 'accepted');
-    assertEquals(req!.target_id, applicantA.userId);
+    assertEquals(req?.status, 'accepted');
+    assertEquals(req?.target_id, applicantA.userId);
   } finally {
     await teardownUsers([creator.userId, applicantA.userId, applicantB.userId]);
   }

@@ -183,7 +183,7 @@ export default function EloHistory() {
 
   const effectiveCat = cat ?? primaryCat;
 
-  const catPoints: EloPoint[] = (data?.byCategory ?? {})[effectiveCat] ?? [];
+  const catPoints: EloPoint[] = data?.byCategory?.[effectiveCat] ?? [];
   const eloValues: number[] = catPoints.map((p) => p.elo);
   const seasonBoundaries: SeasonBoundary[] = data?.seasonBoundaries ?? [];
 
@@ -206,6 +206,7 @@ export default function EloHistory() {
   const pathLenSV = useSharedValue(pathLen);
   const drawProgress = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathLenSV / drawProgress are stable SharedValue refs; re-running would restart the stroke animation mid-draw
   useEffect(() => {
     if (eloValues.length === 0) return;
     pathLenSV.value = pathLen;
@@ -215,7 +216,6 @@ export default function EloHistory() {
       easing: Easing.out(Easing.cubic),
     });
     // pathLenSV / drawProgress are stable SharedValue refs — safe to omit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveCat, eloValues.length]);
 
   // strokeDashoffset: pathLen (hidden) → 0 (fully drawn)
@@ -390,6 +390,7 @@ export default function EloHistory() {
                 const bx = pts[s]?.x ?? 0;
                 return (
                   <Line
+                    // biome-ignore lint/suspicious/noArrayIndexKey: grid lines are positional; the index IS the identity
                     key={i}
                     x1={bx}
                     y1={PAD}
@@ -448,6 +449,7 @@ export default function EloHistory() {
               {/* Dots + tap targets */}
               {pts.map((pt, i) => (
                 <Circle
+                  // biome-ignore lint/suspicious/noArrayIndexKey: chart points are positional; the index IS the identity
                   key={i}
                   cx={pt.x}
                   cy={pt.y}

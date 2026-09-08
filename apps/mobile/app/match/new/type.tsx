@@ -62,6 +62,7 @@ export default function NewMatchType() {
   // Pre-seed the wizard's category with a gender-appropriate default so that
   // female (kadin) and open_only users don't see "Erkek Tek" pre-selected.
   const myProfileQ = useMyProfile();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setField is a stable zustand action; the profile's gender_category is the only thing that should re-seed the category
   useEffect(() => {
     if (myProfileQ.data?.gender_category) {
       setField(

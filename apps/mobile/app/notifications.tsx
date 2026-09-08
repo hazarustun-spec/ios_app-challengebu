@@ -173,7 +173,6 @@ export default function NotificationsScreen() {
         // The messages inbox at least lets the user open the thread manually.
         router.push('/messages');
         return;
-      case 'community_announcements':
       default:
         // No community feed yet — stay on the notification center.
         return;

@@ -72,7 +72,7 @@ export async function loadProfile(_userId?: string) {
     }
     lastError = error;
     if (attempt < LOAD_PROFILE_ATTEMPTS - 1) {
-      await delay(LOAD_PROFILE_BASE_DELAY_MS * Math.pow(2, attempt));
+      await delay(LOAD_PROFILE_BASE_DELAY_MS * 2 ** attempt);
     }
   }
   // Retries exhausted — flag the error but leave any previously loaded

@@ -146,6 +146,7 @@ export default function MatchResult() {
   const targetElo = startElo + deltaDisplay;
   const counter = useSharedValue(startElo);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: counter is a stable SharedValue ref; adding it would restart the ELO count-up on every frame it writes
   useEffect(() => {
     counter.value = startElo;
     if (isVoid || deltaDisplay === 0 || startElo === 0) return;
@@ -157,9 +158,8 @@ export default function MatchResult() {
 
   const animatedEloProps = useAnimatedProps(
     () =>
-      ({
-        text: String(Math.round(counter.value)),
-      }) as any /* RN TextInput `text` prop driven by reanimated */,
+      // biome-ignore lint/suspicious/noExplicitAny: reanimated does not type the native-driven `text` prop
+      ({ text: String(Math.round(counter.value)) }) as any,
   );
 
   // Win celebration — ref-guarded so realtime refetches never retrigger it.
@@ -170,6 +170,7 @@ export default function MatchResult() {
   const tagScale = useSharedValue(1);
   const glow = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one-shot celebration, guarded by celebrationFiredRef; the SharedValues it drives are stable refs
   useEffect(() => {
     if (isWin && !isVoid && !celebrationFiredRef.current) {
       celebrationFiredRef.current = true;

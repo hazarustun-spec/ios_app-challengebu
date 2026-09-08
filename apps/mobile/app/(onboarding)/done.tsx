@@ -150,6 +150,7 @@ export default function ObDone() {
   // Trigger the ball pop in a side effect keyed on `submitted` — mutating
   // shared values in the render body (as this used to do) violates React's
   // rules and can double-fire on strict-mode re-renders.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: plays the success animation on the transition to submitted; the SharedValues it writes are stable refs
   useEffect(() => {
     if (!submitted) return;
     ballOpacity.value = withTiming(1, { duration: 220 });

@@ -34,8 +34,6 @@ function iconColorFor(variant: ToastVariant): string {
   switch (variant) {
     case 'error':
       return colors.loss;
-    case 'info':
-    case 'success':
     default:
       // Both info + success use the lime accent on the ink pill — the
       // dark surface already carries the semantic weight; the lime check

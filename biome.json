@@ -51,6 +51,16 @@
   },
   "overrides": [
     {
+      "include": ["packages/supabase/tests/**/*.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
       "include": ["**/maestro/**/*.js", "**/.maestro/**/*.js"],
       "linter": {
         "rules": {
@@ -60,6 +70,9 @@
           },
           "correctness": {
             "noInnerDeclarations": "off"
+          },
+          "complexity": {
+            "useOptionalChain": "off"
           }
         }
       }

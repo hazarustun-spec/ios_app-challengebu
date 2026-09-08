@@ -37,6 +37,7 @@ export interface ScreenEnterProps {
 export function ScreenEnter({ children, className, style, delay = 0 }: ScreenEnterProps) {
   const p = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: screen entry animation runs once; p is a stable SharedValue ref
   useEffect(() => {
     p.value = withDelay(
       delay,
@@ -45,7 +46,6 @@ export function ScreenEnter({ children, className, style, delay = 0 }: ScreenEnt
         easing: Easing.out(Easing.cubic),
       }),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animStyle = useAnimatedStyle(() => ({

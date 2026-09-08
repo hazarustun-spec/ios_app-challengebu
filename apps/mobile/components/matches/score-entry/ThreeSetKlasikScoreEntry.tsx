@@ -112,6 +112,7 @@ export function ThreeSetKlasikScoreEntry({ matchId, myLetter, onSubmit, submitti
     <View className="flex-1 gap-3">
       <Text className="text-sm text-gray-700">Her set için sayıyı gir.</Text>
       {sets.map((s, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: the three sets are fixed slots addressed by number
         <View key={i} className="rounded-lg bg-gray-50 p-3">
           <Text className="mb-2 text-sm font-medium text-gray-700">{i + 1}. Set</Text>
           <View className="flex-row gap-3">

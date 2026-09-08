@@ -150,6 +150,7 @@ export default function MatchStartLobby() {
   // -------------------------------------------------------------------------
 
   // If match already has a winner (already scored), go straight to score/result.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: redirects once when a winner appears; navigatedRef guards it and router/id are stable for the life of the screen
   useEffect(() => {
     if (!match) return;
     if (match.winner_team != null && !navigatedRef.current) {

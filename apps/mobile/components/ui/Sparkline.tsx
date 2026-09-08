@@ -82,6 +82,7 @@ export function Sparkline({ data, color = 'auto', w = 60, h = 20, stroke = 2 }: 
   const drawProgress = useSharedValue(0);
 
   // Draw left→right on mount and whenever the data set changes size.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathLenSV / drawProgress are stable SharedValue refs; re-running would restart the stroke animation
   useEffect(() => {
     if (!hasData) return;
     pathLenSV.value = pathLen;
@@ -91,7 +92,6 @@ export function Sparkline({ data, color = 'auto', w = 60, h = 20, stroke = 2 }: 
       easing: Easing.out(Easing.cubic),
     });
     // pathLenSV / drawProgress are stable SharedValue refs — safe to omit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.length]);
 
   // strokeDashoffset: pathLen (hidden) → 0 (fully drawn), mirroring elo-history.
