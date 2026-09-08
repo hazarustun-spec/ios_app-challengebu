@@ -1,5 +1,13 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { ANON_KEY, FUNCTIONS_URL, SERVICE_ROLE_KEY, adminClient, closeOpenSeasons, createTestUser, teardownUsers } from './helpers.ts';
+import {
+  ANON_KEY,
+  FUNCTIONS_URL,
+  SERVICE_ROLE_KEY,
+  adminClient,
+  closeOpenSeasons,
+  createTestUser,
+  teardownUsers,
+} from './helpers.ts';
 
 async function invokeAdvanceBracket(body: unknown): Promise<{ status: number; body: unknown }> {
   const res = await fetch(`${FUNCTIONS_URL}/advance-tournament-bracket`, {

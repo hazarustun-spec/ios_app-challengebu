@@ -1,6 +1,13 @@
 import { assertEquals, assertExists } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
-import { ANON_KEY, SUPABASE_URL, adminClient, closeOpenSeasons, createTestUser, teardownUsers } from './helpers.ts';
+import {
+  ANON_KEY,
+  SUPABASE_URL,
+  adminClient,
+  closeOpenSeasons,
+  createTestUser,
+  teardownUsers,
+} from './helpers.ts';
 
 /**
  * Plan 8 Task A4 — Admin paneli backend uzantıları.

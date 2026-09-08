@@ -1,5 +1,11 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, closeOpenSeasons, createTestUser, invokeFunction, teardownUsers } from './helpers.ts';
+import {
+  adminClient,
+  closeOpenSeasons,
+  createTestUser,
+  invokeFunction,
+  teardownUsers,
+} from './helpers.ts';
 
 async function seedRatings(
   suffix: string,

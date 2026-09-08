@@ -92,6 +92,20 @@ jobs:
           echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status --output json | jq -r .SERVICE_ROLE_KEY)" >> $GITHUB_ENV
           echo "SUPABASE_ANON_KEY=$(supabase status --output json | jq -r .ANON_KEY)" >> $GITHUB_ENV
 
+      # `supabase functions serve` watches the functions directory. deno.lock is
+      # git-ignored, so on a fresh checkout it does not exist and Deno writes it
+      # while handling the FIRST request:
+      #
+      #   File change detected: .../packages/supabase/functions/deno.lock (CREATE)
+      #
+      # The watcher restarts the runtime on that event and the in-flight request
+      # dies with a 502 — which is exactly how accept-match-request's first test
+      # failed, and why it looked like a runtime fault rather than a race.
+      # Writing the lockfile before the server starts removes the event.
+      - name: Pre-cache Edge Function deps (writes functions/deno.lock)
+        working-directory: packages/supabase
+        run: deno cache --config functions/deno.json functions/*/index.ts
+
       - name: Serve Edge Functions
         working-directory: packages/supabase
         # --env-file, same as the maestro job: review-login refuses to run
