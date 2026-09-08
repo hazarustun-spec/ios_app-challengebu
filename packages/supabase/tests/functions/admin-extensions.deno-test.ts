@@ -152,15 +152,22 @@ async function seedFinaleBracket(suffix: string): Promise<{
 
   // One 'active' or 'finale' season may exist at a time — see helpers.ts.
   await closeOpenSeasons();
+  // One clock reading for all four timestamps. `ends_at` and `finale_ends_at`
+  // are both "now + 90 days", and calling Date.now() twice made them differ by
+  // however long the two lines took — so whenever the millisecond ticked in
+  // between, finale_ends_at landed past ends_at and the insert died on
+  //   new row for relation "seasons" violates check constraint "finale_within_season"
+  // which is exactly the kind of failure that shows up once in every few runs.
+  const t0 = Date.now();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({
       name: 'bahar',
       year: 2099,
-      starts_at: new Date().toISOString(),
-      ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
-      finale_starts_at: new Date(Date.now() + 60 * 86_400_000).toISOString(),
-      finale_ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
+      starts_at: new Date(t0).toISOString(),
+      ends_at: new Date(t0 + 90 * 86_400_000).toISOString(),
+      finale_starts_at: new Date(t0 + 60 * 86_400_000).toISOString(),
+      finale_ends_at: new Date(t0 + 90 * 86_400_000).toISOString(),
       status: 'finale',
     })
     .select('id')
@@ -332,15 +339,22 @@ Deno.test('admin_reorder_bracket_seeds: doubles tournament rejected (0A000)', as
 
   // One 'active' or 'finale' season may exist at a time — see helpers.ts.
   await closeOpenSeasons();
+  // One clock reading for all four timestamps. `ends_at` and `finale_ends_at`
+  // are both "now + 90 days", and calling Date.now() twice made them differ by
+  // however long the two lines took — so whenever the millisecond ticked in
+  // between, finale_ends_at landed past ends_at and the insert died on
+  //   new row for relation "seasons" violates check constraint "finale_within_season"
+  // which is exactly the kind of failure that shows up once in every few runs.
+  const t0 = Date.now();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({
       name: 'bahar',
       year: 2098,
-      starts_at: new Date().toISOString(),
-      ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
-      finale_starts_at: new Date(Date.now() + 60 * 86_400_000).toISOString(),
-      finale_ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString(),
+      starts_at: new Date(t0).toISOString(),
+      ends_at: new Date(t0 + 90 * 86_400_000).toISOString(),
+      finale_starts_at: new Date(t0 + 60 * 86_400_000).toISOString(),
+      finale_ends_at: new Date(t0 + 90 * 86_400_000).toISOString(),
       status: 'finale',
     })
     .select('id')
