@@ -31,7 +31,11 @@ hiçbir test aslında kapı bekçiliği yapmıyordu. Dört ayrı sebep vardı:
       tarıyordu, ve 391 dosya formatter'la uyumsuzdu. Kapsam daraltıldı,
       `--write` ile güvenli düzeltmeler uygulandı, `**/maestro/**/*.js` için
       override (Maestro'nun kendi ES5-ish motoru — `var`/string concat orada
-      doğru). **1999 → 153.**
+      doğru). **1999 → 150.**
+      - ⚠️ Formatter `website/challengebu/style.css`'i de yeniden biçimlendirmişti;
+        o dosya canlıyla birebir eşleşen deploy içeriği. Geri alındı ve `website/**`
+        biome kapsamı dışına çıkarıldı — deploy edilen dosyaları formatter'a
+        oynatmıyoruz, yoksa repo sessizce canlıdan ayrışır.
 - [x] **mobile-tests / Typecheck** — `TS2882: Cannot find module '../global.css'`.
       `expo-env.d.ts`'i Expo CLI üretiyor ve gitignore'da; CI hiç Expo
       başlatmıyor, dosya orada yok. Takip edilen `expo-types.d.ts` eklendi

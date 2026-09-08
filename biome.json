@@ -14,7 +14,8 @@
       "**/build/**",
       "**/.expo/**",
       "**/.claude/worktrees/**",
-      "docs/superpowers/specs/plan-8-design-bundle/**"
+      "docs/superpowers/specs/plan-8-design-bundle/**",
+      "website/**"
     ]
   },
   "formatter": {
