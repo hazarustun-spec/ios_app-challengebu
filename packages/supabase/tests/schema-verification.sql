@@ -10,7 +10,10 @@ declare
   -- new table is the normal case, not a regression. The RLS sweep below is
   -- what actually guards new tables, and it needs no number at all.
   expected_table_min_count constant int := 32;
-  expected_court_count constant int := 3;
+  -- Also a floor, for the same reason as the table count above: the courts
+  -- seed has grown from 3 to 7 and an equality assert turns every added court
+  -- into a CI failure. What matters is that the seed ran at all.
+  expected_court_min_count constant int := 7;
   expected_dept_min_count constant int := 30;
   expected_badge_min_count constant int := 30;
   actual int;
@@ -40,8 +43,9 @@ begin
 
   -- Courts seed
   select count(*) into actual from public.courts;
-  if actual <> expected_court_count then
-    raise exception 'Expected % courts, got %', expected_court_count, actual;
+  if actual < expected_court_min_count then
+    raise exception 'Expected at least % courts, got % — the courts seed did not run',
+      expected_court_min_count, actual;
   end if;
   raise notice 'PASS: % courts seeded', actual;
 
