@@ -1,5 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, createTestUser, invokeFunction, teardownUsers } from './helpers.ts';
+import { adminClient, closeOpenSeasons, createTestUser, invokeFunction, teardownUsers } from './helpers.ts';
 
 async function seedRatings(
   suffix: string,
@@ -37,6 +37,8 @@ async function seedRatings(
   }
 
   const year = 3000 + Number.parseInt(suffix.slice(0, 4), 16);
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({

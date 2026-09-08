@@ -225,3 +225,32 @@ export async function cleanupTestData(): Promise<void> {
     }
   }
 }
+
+/**
+ * Close every season currently in 'active' or 'finale'.
+ *
+ * `seasons_one_active_idx` (migration 20260609000001) is a partial UNIQUE index
+ * on a constant, so at most ONE season may be 'active' or 'finale' across the
+ * whole database. The seed ships an active season, so any test that creates its
+ * own finale/active season collided with it:
+ *
+ *   duplicate key value violates unique constraint "seasons_one_active_idx"
+ *
+ * and, because the fixture threw before the test body ran, the whole
+ * season/tournament half of this suite reported as failed — close-season,
+ * start-season-finale, advance-tournament-bracket and admin_reorder_bracket_seeds
+ * together. Call this immediately before inserting an 'active' or 'finale'
+ * season. Not needed for a 'closed' one, which the index ignores.
+ *
+ * Safe to run repeatedly and safe to run on the seeded season: cleanupTestData()
+ * deletes the seasons table wholesale already, so these tests never treated the
+ * seeded row as something to preserve.
+ */
+export async function closeOpenSeasons(): Promise<void> {
+  const supa = adminClient();
+  const { error } = await supa
+    .from('seasons')
+    .update({ status: 'closed' })
+    .in('status', ['active', 'finale']);
+  if (error) throw new Error(`closeOpenSeasons failed: ${error.message}`);
+}

@@ -1,10 +1,12 @@
 import { assertEquals } from 'jsr:@std/assert';
-import { adminClient, createTestUser, invokeFunction, teardownUsers } from './helpers.ts';
+import { adminClient, closeOpenSeasons, createTestUser, invokeFunction, teardownUsers } from './helpers.ts';
 
 async function makeSeason(opts: { status: string; suffix: string }): Promise<string> {
   const supa = adminClient();
   // Unique year derived from UUID suffix — avoids (name, year) unique constraint collision
   const year = 3000 + Number.parseInt(opts.suffix.slice(0, 4), 16);
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({
@@ -127,6 +129,8 @@ Deno.test('close-season: awards seasonal badges to standings + final winners', a
   // without per-run year isolation, orphaned matches from aborted previous runs (profile deleted,
   // match row surviving) can cause the user_badges FK upsert to fail silently (badgesAwarded=0).
   const csYear = 3000 + Number.parseInt(s.slice(0, 4), 16);
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({

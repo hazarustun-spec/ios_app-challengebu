@@ -1,12 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert';
-import {
-  ANON_KEY,
-  FUNCTIONS_URL,
-  SERVICE_ROLE_KEY,
-  adminClient,
-  createTestUser,
-  teardownUsers,
-} from './helpers.ts';
+import { ANON_KEY, FUNCTIONS_URL, SERVICE_ROLE_KEY, adminClient, closeOpenSeasons, createTestUser, teardownUsers } from './helpers.ts';
 
 async function invokeAdvanceBracket(body: unknown): Promise<{ status: number; body: unknown }> {
   const res = await fetch(`${FUNCTIONS_URL}/advance-tournament-bracket`, {
@@ -35,6 +28,8 @@ Deno.test('advance-tournament-bracket: writes winner seed into parent slot', asy
   const supa = adminClient();
 
   const atbYear1 = 3000 + Number.parseInt(s.slice(0, 4), 16);
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr1 } = await supa
     .from('seasons')
     .insert({
@@ -140,6 +135,8 @@ Deno.test('advance-tournament-bracket: doubles (size 4) Final flips tournament t
   const supa = adminClient();
 
   const atbYear2 = 3000 + Number.parseInt(s.slice(0, 4), 16);
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr2 } = await supa
     .from('seasons')
     .insert({

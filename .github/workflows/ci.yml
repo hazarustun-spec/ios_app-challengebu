@@ -94,7 +94,10 @@ jobs:
 
       - name: Serve Edge Functions
         working-directory: packages/supabase
-        run: nohup supabase functions serve --no-verify-jwt > /tmp/functions-serve.log 2>&1 &
+        # --env-file, same as the maestro job: review-login refuses to run
+        # without REVIEW_OTP_CODE and its integration test failed on every run
+        # for want of a secret that is committed two directories away.
+        run: nohup supabase functions serve --no-verify-jwt --env-file functions/.env.test > /tmp/functions-serve.log 2>&1 &
 
       - name: Wait for Edge Functions ready
         run: |

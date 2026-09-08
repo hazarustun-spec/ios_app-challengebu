@@ -1,6 +1,6 @@
 import { assertEquals, assertExists } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
-import { ANON_KEY, SUPABASE_URL, adminClient, createTestUser, teardownUsers } from './helpers.ts';
+import { ANON_KEY, SUPABASE_URL, adminClient, closeOpenSeasons, createTestUser, teardownUsers } from './helpers.ts';
 
 /**
  * Plan 8 Task A4 — Admin paneli backend uzantıları.
@@ -143,6 +143,8 @@ async function seedFinaleBracket(suffix: string): Promise<{
     ),
   );
 
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({
@@ -321,6 +323,8 @@ Deno.test('admin_reorder_bracket_seeds: doubles tournament rejected (0A000)', as
   const admin = await createTestUser({ email: `reorder-doubles-${s}@test.local`, role: 'admin' });
   const supa = adminClient();
 
+  // One 'active' or 'finale' season may exist at a time — see helpers.ts.
+  await closeOpenSeasons();
   const { data: season, error: seasonErr } = await supa
     .from('seasons')
     .insert({
