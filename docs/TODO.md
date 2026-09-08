@@ -22,6 +22,36 @@ Build 40. Apple onayladı, App Store'da canlı.
 
 ---
 
+## 🔴 KULLANICI BİLDİRİMLERİ (5 Eyl 2026, canlıdan)
+
+Operatörün kendi kullanımından + kullanıcı geri bildirimlerinden çıkan 11 madde.
+
+### A. Oturum düşmesi — EN KRİTİK
+- [x] **#1 Bir süre girilmeyince tekrar OTP istiyor.** Sebep: `autoRefreshToken: true` vardı ama `AppState` dinleyicisi yoktu. RN'de yenileme zamanlayıcısı bir JS interval'i; uygulama arka plana geçince OS onu askıya alıyor. Refresh token geçerli kalıyor ama kimse harcamıyor → access token ölüyor → sign-in ekranı → OTP-only uygulamada yeni bir mail kodu beklemek demek. `lib/supabase.ts`'e AppState tabanlı start/stop + cold start için tek seferlik `startAutoRefresh()` eklendi.
+  - ⚠️ Cihazda doğrulanmalı: uygulamayı 1+ saat arka planda bırak, geri dön, oturum durmalı.
+
+### B. UI bug'ları (JS-only)
+- [ ] **#3 Avatar dairelerinin altındaki isimler ortalı değil.** Ana sayfa "sana uygun rakipler", Maçlar → aynı bölüm, Teklifler, İlanlar — hepsinde.
+- [ ] **#5 "Reddedildi" yazısı ekran dışına taşıyor** — Gönderdiğim teklifler bölümü.
+- [ ] **#9 "Finale bracket'ini gör"** — Yaz 2026 Sezonu sayfası. "Finale" diye bir kelime yok; Türkçesi "final".
+
+### C. Eksik özellikler (JS-only)
+- [ ] **#7 "Sana uygun rakipler" 3 slotla sınırlı** — kaydırılabilir olsun, olabildiğince oyuncu göstersin.
+- [ ] **#8 Teklifler/İlanlar sekmelerine kırmızı bildirim noktası** — bekleyen teklif veya açık ilan varsa.
+- [ ] **#10 Profilde son maçlar görünsün** — rakip adı, skor, tarih.
+- [ ] **#11 Onboarding sınıf seçeneklerine "4+"** (okulu uzayanlar). DB enum değişikliği de gerekiyor (`class_year`).
+
+### D. Backend
+- [ ] **#4 İlan açılınca uygun kategorideki herkese bildirim.** Erkek Tek ilanı → erkek kategorisindekilere, Open Çift → open'dakilere. Şu an yalnızca direkt meydan okumada bildirim gidiyor; açık ilanlar sessiz.
+
+### E. Tasarım
+- [ ] **#2 Açılış ekranı animasyonu.** Mevcut `(auth)/splash.tsx` var (ball mark + üç nabız atan nokta). Daha iyisi isteniyor — ne yönde olacağı konuşulmalı.
+
+### Cevaplanan
+- **#6 Rozetler çalışıyor mu?** Altyapı tam: `award-badges` edge function'ı `confirm-match` sonrası çalışıyor, client'ta Profil → Rozetler sekmesi + rozet sanatı + profile sabitleme + kilit açılma animasyonu var. Ama **hiç rozet kazanılmadı**, çünkü rozet yalnızca maç onaylandığında veriliyor ve henüz hiç maç tamamlanmadı (herkes 1200 ELO / 0 maç). Kod hazır, hiç çalışmadı.
+
+---
+
 ## 🟡 BU HAFTA
 
 ### 5. Audit Dalga 2 — veri koruma (5 item) ✅ e22d95a
