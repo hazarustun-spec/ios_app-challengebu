@@ -332,7 +332,7 @@ export default function Season() {
                 {myCategoryLabel} · {myRank}. sırada
               </Text>
               <Text className="font-sans text-text-2" style={{ fontSize: 12.5, marginTop: 2 }}>
-                {inTop8 ? "Finale için ilk 8'desin 🎯" : "Finale için ilk 8'i zorla"}
+                {inTop8 ? "Final için ilk 8'desin 🎯" : "Final için ilk 8'i zorla"}
               </Text>
             </View>
             <Icon name="chevR" size={18} color={colors.text3} />
@@ -344,7 +344,7 @@ export default function Season() {
           className="font-sans font-extrabold text-text-3"
           style={{ fontSize: 12, letterSpacing: 0.6 }}
         >
-          FİNALE TAKVİMİ
+          FİNAL TAKVİMİ
         </Text>
         <View
           className="rounded-lg overflow-hidden"
@@ -397,7 +397,7 @@ export default function Season() {
           icon={<Icon name="trophy" size={17} color={colors.text} />}
           onPress={() => router.push('/season/bracket' as never)}
         >
-          Finale bracket'ını gör
+          Final eşleşmelerini gör
         </Button>
         <Pressable
           onPress={() => router.push('/season/annual-champion' as never)}

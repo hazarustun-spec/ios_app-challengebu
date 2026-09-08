@@ -3,9 +3,10 @@
 // Other-player preview at `/user/[userId]`. Wired to live Supabase data via:
 //   - useOtherPlayerProfile(userId)  — hero (name, pronoun, dept, status)
 //   - useUserRankings(userId)        — ELO / rank per category
-//   - useUserMatchHistory(userId)    — recent confirmed matches
+//   - useUserMatchHistory(userId)    — recent confirmed matches (win/loss,
+//                                      form guide; the row list itself lives
+//                                      in components/profile/RecentMatches)
 //   - useHeadToHead(userId)          — head-to-head record vs. current user
-//   - useOpponentNames()             — opponent names in match rows
 //
 // Hero stack (avatar + name + pronoun chip + level chip + dept/year),
 // 2×2 stats grid (rank/wins/losses/H2H), ELO card, optional frozen banner,
@@ -15,7 +16,7 @@
 // pushes to `/match/new/detail` so the wizard lands on detail with the
 // opponent already chosen.
 
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { NavHeader } from '../../components/ui/NavHeader';
 import { Avatar } from '../../components/ui/Avatar';
@@ -23,11 +24,11 @@ import { LevelIcon } from '../../components/ui/LevelIcon';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/ui/Icon';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { RecentMatches } from '../../components/profile/RecentMatches';
 import { FormGuide } from '../../components/ui/FormGuide';
 import type { FormResult } from '../../components/ui/FormGuide';
 import { levelForElo } from '../../lib/levels';
 import { myPerspective } from '../../lib/match-opponent';
-import { FORMATS, DB_TO_UI_FORMAT } from '../../lib/formats';
 import { formatClassYear } from '../../lib/class-year';
 import { useNewMatchStore } from '../../stores/new-match-store';
 import { useAuthStore } from '../../stores/auth-store';
@@ -35,7 +36,6 @@ import { useOtherPlayerProfile } from '../../hooks/use-other-player-profile';
 import { useUserRankings } from '../../hooks/use-my-rankings';
 import { useUserMatchHistory } from '../../hooks/use-match-history';
 import { useHeadToHead } from '../../hooks/use-head-to-head';
-import { useOpponentNames } from '../../hooks/use-opponent-names';
 import { useMessageableContacts } from '../../hooks/use-messageable-contacts';
 import { useStartConversation } from '../../hooks/use-start-conversation';
 import { colors } from '../../theme/colors';
@@ -53,11 +53,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   karma_cift: 'Karma Çift',
   open_cift: 'Open Çift',
 };
-
-function formatMatchDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-}
 
 /** Pick the "primary" ranking row for the hero ELO chip.
  *  Priority: erkek_tek > kadin_tek > open_tek > first row returned. */
@@ -95,7 +90,6 @@ export default function PlayerPreview() {
   const rankingsQ = useUserRankings(userId);
   const historyQ = useUserMatchHistory(userId);
   const h2hQ = useHeadToHead(userId);
-  const opponentNames = useOpponentNames();
 
   // Messaging is gated on a shared match_request — get_or_create_conversation
   // takes a request_id, and list_messageable_contacts only returns players you
@@ -460,104 +454,8 @@ export default function PlayerPreview() {
           </View>
         )}
 
-        {/* Recent match history */}
-        {historyQ.isLoading ? (
-          <View style={{ padding: 16, alignItems: 'center' }}>
-            <ActivityIndicator color={colors.clay} />
-          </View>
-        ) : matches.length > 0 ? (
-          <View style={{ gap: 8 }}>
-            <Text
-              className="font-sans font-extrabold text-text-3"
-              style={{ fontSize: 11, letterSpacing: 0.66, paddingLeft: 2 }}
-            >
-              SON MAÇLAR
-            </Text>
-            {matches.slice(0, 5).map((m) => {
-              const perspective = myPerspective(m, userId ?? '');
-              const isVoid = m.winner_team === 'void';
-              const win = perspective.won === true;
-              const score = `${perspective.myScore}-${perspective.oppScore}`;
-              const delta = perspective.eloDelta ?? 0;
-
-              const stripColor = isVoid
-                ? colors.warn
-                : win
-                  ? colors.win
-                  : colors.loss;
-
-              const uiFormatKey = DB_TO_UI_FORMAT[m.format] ?? null;
-              const fmt = uiFormatKey ? FORMATS.find((f) => f.key === uiFormatKey) : null;
-              const fmtName = fmt?.name ?? m.format;
-              const dateLabel = formatMatchDate(m.played_at);
-              const catLabel = CATEGORY_LABELS[m.category] ?? m.category;
-              const opponent = opponentNames.resolve(m);
-
-              return (
-                <Pressable
-                  key={m.id}
-                  onPress={() => router.push(`/match/${m.id}` as never)}
-                  className="flex-row items-center bg-surface rounded-md"
-                  style={{
-                    padding: 12,
-                    paddingHorizontal: 14,
-                    gap: 12,
-                    borderWidth: 1,
-                    borderColor: colors.borderStrong,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 6,
-                      alignSelf: 'stretch',
-                      borderRadius: 3,
-                      backgroundColor: stripColor,
-                    }}
-                  />
-                  <Avatar name={opponent.primaryName} size={40} />
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text
-                      className="font-sans font-bold text-text"
-                      style={{ fontSize: 14.5 }}
-                    >
-                      {opponent.name}
-                    </Text>
-                    <Text
-                      className="font-sans text-text-3"
-                      style={{ fontSize: 12, marginTop: 2 }}
-                    >
-                      {fmtName} · {catLabel} · {dateLabel}
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text
-                      className="font-num font-bold text-text"
-                      style={{ fontSize: 17 }}
-                    >
-                      {score}
-                    </Text>
-                    <Text
-                      className="font-num font-bold"
-                      style={{
-                        fontSize: 12,
-                        marginTop: 1,
-                        color: isVoid
-                          ? colors.warn
-                          : delta > 0
-                            ? colors.win
-                            : delta < 0
-                              ? colors.loss
-                              : colors.text3,
-                      }}
-                    >
-                      {isVoid ? 'voided' : `${delta > 0 ? '+' : ''}${delta}`}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
+        {/* Recent match history — shared with the own-profile tab. */}
+        <RecentMatches userId={userId} limit={5} />
       </ScrollView>
 
       {!isSelf && (

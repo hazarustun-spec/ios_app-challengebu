@@ -74,6 +74,7 @@ const YEAR_LABEL: Record<ClassYear, string> = {
   '2': '2. Sınıf',
   '3': '3. Sınıf',
   '4': '4. Sınıf',
+  '4_plus': '4+ Sınıf',
   yl: 'Yüksek Lisans',
   doktora: 'Doktora',
   mezun: 'Mezun',

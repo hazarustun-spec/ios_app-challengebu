@@ -311,13 +311,15 @@ export default function SeasonArchive() {
             return (
               <Pressable
                 key={season.id}
-                className="bg-surface rounded-lg"
-                style={({ pressed }) => ({
+                className="bg-surface rounded-lg active:opacity-75"
+                // Plain object: NativeWind's interop spreads the style prop,
+                // and spreading a function yields {}, silently dropping every
+                // rule. Press feedback moves to `active:` on the className.
+                style={{
                   padding: 16,
                   borderWidth: 1,
                   borderColor: colors.borderStrong,
-                  opacity: pressed ? 0.75 : 1,
-                })}
+                }}
                 onPress={() => router.push(`/tournament/${tournamentId}`)}
               >
                 {cardContent}

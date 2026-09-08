@@ -97,7 +97,7 @@ export default function AnnualChamp() {
   const header = (
     <NavHeader
       title="Yıllık Şampiyonluk"
-      subtitle={`${academicYear} · finale puanları`}
+      subtitle={`${academicYear} · final puanları`}
       onBack={() => router.back()}
     />
   );

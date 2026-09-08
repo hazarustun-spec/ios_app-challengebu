@@ -524,7 +524,7 @@ export default function ConversationScreen() {
           onPress={handleSend}
           disabled={!canSend}
           hitSlop={6}
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          className="active:opacity-70"
           accessibilityRole="button"
           accessibilityLabel="Gönder"
           accessibilityState={{ disabled: !canSend }}
@@ -556,18 +556,21 @@ export default function ConversationScreen() {
           {/* Report */}
           <Pressable
             onPress={otherUserId ? handleReport : undefined}
-            style={({ pressed }) => ({
+            // Plain object, not `({ pressed }) => …`: NativeWind's interop
+            // spreads the style prop, and spreading a function yields {} —
+            // which then overwrites the real styles. Press feedback goes
+            // through `active:` instead, which the className path handles.
+            className="active:opacity-70"
+            style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
               paddingVertical: 14,
               paddingHorizontal: 16,
               borderRadius: 14,
-              backgroundColor: pressed && otherUserId
-                ? colors.pinkSoft
-                : colors.surface2,
+              backgroundColor: colors.surface2,
               opacity: otherUserId ? 1 : 0.4,
-            })}
+            }}
             accessibilityRole="button"
             accessibilityLabel="Şikayet et"
           >
@@ -608,18 +611,17 @@ export default function ConversationScreen() {
           {/* Block */}
           <Pressable
             onPress={otherUserId ? handleBlock : undefined}
-            style={({ pressed }) => ({
+            className="active:opacity-70"
+            style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
               paddingVertical: 14,
               paddingHorizontal: 16,
               borderRadius: 14,
-              backgroundColor: pressed && otherUserId
-                ? `${colors.loss}14`
-                : colors.surface2,
+              backgroundColor: colors.surface2,
               opacity: otherUserId ? 1 : 0.4,
-            })}
+            }}
             accessibilityRole="button"
             accessibilityLabel="Engelle"
           >
@@ -660,13 +662,14 @@ export default function ConversationScreen() {
           {/* Cancel */}
           <Pressable
             onPress={() => setMenuOpen(false)}
-            style={({ pressed }) => ({
+            className="active:opacity-70"
+            style={{
               alignItems: 'center',
               paddingVertical: 14,
               borderRadius: 14,
-              backgroundColor: pressed ? colors.surface3 : colors.surface2,
+              backgroundColor: colors.surface2,
               marginTop: 4,
-            })}
+            }}
             accessibilityRole="button"
             accessibilityLabel="Vazgeç"
           >

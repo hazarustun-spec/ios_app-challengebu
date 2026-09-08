@@ -4,8 +4,17 @@
 //
 // Props:
 //   category — the ranking category key to suggest opponents for
-//   variant  — 'compact' (top 3, tighter card) for Home;
-//              'full'    (all 5, standard card) for Matches hub
+//   variant  — 'compact' (tighter card) for Home;
+//              'full'    (standard card) for Matches hub
+//
+// Both variants render the SAME list — up to MAX_SUGGESTIONS (24) scored
+// candidates — in a horizontally scrollable FlatList. The strip used to be
+// clipped to the top 3 / top 5, which meant a player who had already played
+// (or didn't fancy) those few had nothing left to do here. `variant` now only
+// controls card metrics, not how many opponents you get to see.
+//
+// FlatList (not ScrollView + map) so the off-screen cards are virtualized —
+// each card renders an Avatar and a level lookup, and there can be two dozen.
 //
 // Data source: useOpponentSuggestions(category)
 //   Returns { suggestions: SuggestionItem[], isLoading }
@@ -18,12 +27,15 @@
 // Empty: returns null (no empty box shown).
 // Loading: skeleton cards.
 
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Avatar } from '../ui/Avatar';
 import { Skel } from '../ui/Skel';
 import { levelForElo } from '../../lib/levels';
-import { useOpponentSuggestions } from '../../hooks/use-opponent-suggestions';
+import {
+  useOpponentSuggestions,
+  type SuggestionItem,
+} from '../../hooks/use-opponent-suggestions';
 import { useNewMatchStore } from '../../stores/new-match-store';
 import { colors } from '../../theme/colors';
 
@@ -39,7 +51,8 @@ export function OpponentSuggestStrip({
   const setField = useNewMatchStore((s) => s.setField);
   const { suggestions, isLoading } = useOpponentSuggestions(category);
 
-  const limit = variant === 'compact' ? 3 : 5;
+  // Skeleton count only — the real list is capped by the hook, not here.
+  const skeletonCount = variant === 'compact' ? 3 : 5;
   const cardWidth = variant === 'compact' ? 124 : 140;
   const cardPadding = variant === 'compact' ? 10 : 13;
 
@@ -51,7 +64,7 @@ export function OpponentSuggestStrip({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingHorizontal: 0 }}
       >
-        {Array.from({ length: limit }).map((_, i) => (
+        {Array.from({ length: skeletonCount }).map((_, i) => (
           <View
             key={i}
             style={{
@@ -76,8 +89,7 @@ export function OpponentSuggestStrip({
   }
 
   // Empty — render nothing
-  const visible = suggestions.slice(0, limit);
-  if (visible.length === 0) return null;
+  if (suggestions.length === 0) return null;
 
   function handleMeydanOku(userId: string, name: string, rating: number) {
     // Mirror exactly what user/[userId].tsx does in meydanOku():
@@ -91,107 +103,133 @@ export function OpponentSuggestStrip({
     router.push('/match/new/detail' as never);
   }
 
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ gap: 8, paddingHorizontal: 0 }}
-    >
-      {visible.map((s) => {
-        const lv = levelForElo(s.rating);
+  function renderCard({ item: s }: { item: SuggestionItem }) {
+    const lv = levelForElo(s.rating);
+    // Names are built as `${first_name} ${last_name}`, so a profile with an
+    // empty last_name arrives as "Ada " — the trailing space is measured but
+    // never drawn, which pushes the glyphs left of centre.
+    const name = s.name.trim();
 
-        return (
-          <View
-            key={s.userId}
+    return (
+      <View
+        style={{
+          width: cardWidth,
+          backgroundColor: colors.surface,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: colors.borderStrong,
+          padding: cardPadding,
+          alignItems: 'center',
+          gap: variant === 'compact' ? 6 : 8,
+        }}
+      >
+        {/* Avatar + name open the player's profile. The Meydan oku button
+            below stays the card's primary action; this is the secondary
+            "who is this?" path.
+
+            Layout notes (this block used to render the name off-centre):
+              - `alignSelf: 'stretch'` makes this column exactly as wide as the
+                card's content box. Without it the column shrink-wrapped to the
+                widest child, so a name wider than the avatar left the avatar
+                pinned to the column's leading edge while the name filled it —
+                the two never lined up on the same centre.
+              - The name then also stretches, so its text box is the full card
+                width and `textAlign: 'center'` is what actually centres the
+                glyphs, instead of the result depending on Yoga's intrinsic
+                measurement of the string.
+              - Press feedback moved from a `style` callback to `active:` so it
+                survives NativeWind's className/style interop. */}
+        <Pressable
+          onPress={() => router.push(`/user/${s.userId}` as never)}
+          accessibilityRole="button"
+          accessibilityLabel={`${name} profilini aç`}
+          className="active:opacity-60"
+          style={{
+            alignSelf: 'stretch',
+            alignItems: 'center',
+            gap: variant === 'compact' ? 6 : 8,
+          }}
+        >
+          <Avatar name={name} size={variant === 'compact' ? 38 : 44} ring={lv.color} />
+          <Text
+            className="font-sans font-bold text-text"
             style={{
-              width: cardWidth,
-              backgroundColor: colors.surface,
-              borderRadius: 18,
-              borderWidth: 1,
-              borderColor: colors.borderStrong,
-              padding: cardPadding,
-              alignItems: 'center',
-              gap: variant === 'compact' ? 6 : 8,
+              alignSelf: 'stretch',
+              fontSize: variant === 'compact' ? 12.5 : 13.5,
+              textAlign: 'center',
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {name}
+          </Text>
+        </Pressable>
+
+        {/* ELO pill — uses the same inline pill pattern as OffersList / FeedList */}
+        <View
+          style={{
+            paddingHorizontal: 8,
+            paddingVertical: 2,
+            borderRadius: 9999,
+            backgroundColor: `${lv.color}22`,
+          }}
+        >
+          <Text
+            className="font-num font-extrabold"
+            style={{
+              fontSize: variant === 'compact' ? 11 : 12,
+              color: lv.color,
             }}
           >
-            {/* Avatar + name open the player's profile. The Meydan oku button
-                below stays the card's primary action; this is the secondary
-                "who is this?" path. */}
-            <Pressable
-              onPress={() => router.push(`/user/${s.userId}` as never)}
-              accessibilityRole="button"
-              accessibilityLabel={`${s.name} profilini aç`}
-              style={({ pressed }) => ({
-                alignItems: 'center',
-                gap: variant === 'compact' ? 6 : 8,
-                opacity: pressed ? 0.6 : 1,
-              })}
-            >
-              <Avatar name={s.name} size={variant === 'compact' ? 38 : 44} ring={lv.color} />
-              <Text
-                className="font-sans font-bold text-text"
-                style={{
-                  fontSize: variant === 'compact' ? 12.5 : 13.5,
-                  textAlign: 'center',
-                }}
-                numberOfLines={1}
-              >
-                {s.name}
-              </Text>
-            </Pressable>
+            {s.rating}
+          </Text>
+        </View>
 
-            {/* ELO pill — uses the same inline pill pattern as OffersList / FeedList */}
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 9999,
-                backgroundColor: `${lv.color}22`,
-              }}
-            >
-              <Text
-                className="font-num font-extrabold"
-                style={{
-                  fontSize: variant === 'compact' ? 11 : 12,
-                  color: lv.color,
-                }}
-              >
-                {s.rating}
-              </Text>
-            </View>
+        {/* Meydan oku button */}
+        <Pressable
+          onPress={() => handleMeydanOku(s.userId, name, s.rating)}
+          accessibilityRole="button"
+          accessibilityLabel={`${name}'e meydan oku`}
+          className="active:opacity-80"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            width: '100%',
+            height: variant === 'compact' ? 30 : 34,
+            borderRadius: 9999,
+            borderWidth: 1,
+            borderColor: colors.borderStrong,
+            backgroundColor: colors.lime,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: 'PlusJakartaSans-ExtraBold',
+              fontSize: variant === 'compact' ? 11 : 12,
+              color: colors.onLime,
+            }}
+          >
+            Meydan oku
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
 
-            {/* Meydan oku button */}
-            <Pressable
-              onPress={() => handleMeydanOku(s.userId, s.name, s.rating)}
-              accessibilityRole="button"
-              accessibilityLabel={`${s.name}'e meydan oku`}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4,
-                width: '100%',
-                height: variant === 'compact' ? 30 : 34,
-                borderRadius: 9999,
-                borderWidth: 1,
-                borderColor: colors.borderStrong,
-                backgroundColor: colors.lime,
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Text
-                style={{
-                  fontFamily: 'PlusJakartaSans-ExtraBold',
-                  fontSize: variant === 'compact' ? 11 : 12,
-                  color: colors.onLime,
-                }}
-              >
-                Meydan oku
-              </Text>
-            </Pressable>
-          </View>
-        );
-      })}
-    </ScrollView>
+  return (
+    <FlatList
+      data={suggestions}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      keyExtractor={(s) => s.userId}
+      renderItem={renderCard}
+      contentContainerStyle={{ gap: 8, paddingHorizontal: 0 }}
+      // Roughly one screen's worth up front; the rest mounts as you swipe.
+      initialNumToRender={4}
+      windowSize={5}
+      removeClippedSubviews={false}
+    />
   );
 }

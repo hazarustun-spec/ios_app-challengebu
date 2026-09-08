@@ -1,4 +1,13 @@
-export type ClassYearValue = 'hazirlik' | '1' | '2' | '3' | '4' | 'yl' | 'doktora' | 'mezun';
+export type ClassYearValue =
+  | 'hazirlik'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '4_plus'
+  | 'yl'
+  | 'doktora'
+  | 'mezun';
 
 const CLASS_YEAR_LABELS: Record<ClassYearValue, string> = {
   hazirlik: 'Hazırlık',
@@ -6,6 +15,7 @@ const CLASS_YEAR_LABELS: Record<ClassYearValue, string> = {
   '2': '2. sınıf',
   '3': '3. sınıf',
   '4': '4. sınıf',
+  '4_plus': '4+ sınıf',
   yl: 'Yüksek Lisans',
   doktora: 'Doktora',
   mezun: 'Mezun',

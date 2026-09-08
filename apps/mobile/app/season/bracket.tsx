@@ -191,7 +191,7 @@ export default function Bracket() {
         {header}
         <View className="flex-1 items-center justify-center" style={{ gap: 12 }}>
           <Text className="font-sans text-text-3" style={{ fontSize: 14 }}>
-            Bracket yüklenemedi.
+            Eşleşmeler yüklenemedi.
           </Text>
           <Pressable
             onPress={() => {
@@ -223,7 +223,7 @@ export default function Bracket() {
             className="font-sans text-text-3"
             style={{ fontSize: 14, textAlign: 'center', paddingHorizontal: 32 }}
           >
-            Finale bracket henüz ekilmedi.
+            Final eşleşmeleri henüz belirlenmedi.
           </Text>
         </View>
       </View>

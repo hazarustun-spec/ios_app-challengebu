@@ -9,6 +9,8 @@
 //   - each option = flex-1 button
 //   - selected = surface background + 1.5px ink border + text (ink)
 //   - unselected = transparent + text-2
+//   - an option with `badge: true` also gets a 7px red (loss) dot after its
+//     label — used by the Maçlar hub to flag pending offers / open calls.
 //
 // Sizes (per design bundle):
 //   - sm → 38px height + 13px font
@@ -18,12 +20,26 @@
 // profile edit zamir/level selectors.
 
 import { Pressable, Text, View } from 'react-native';
+import { colors } from '../../theme/colors';
 
 export type SegmentedSize = 'sm' | 'md';
 
 export interface SegmentedOption<T extends string | number> {
   value: T;
   label: string;
+  /**
+   * When true, a small red dot is drawn after the label — "there is something
+   * new behind this segment". Purely decorative: it carries no press
+   * behaviour, and an undefined/false value renders nothing at all so existing
+   * consumers are byte-identical.
+   *
+   * Same semantic red as a lost match (`colors.loss`), the app's one "needs
+   * you" colour. It sits superscript to the label rather than pinned to the
+   * segment corner: a corner pip would collide with the 1.5px ink border the
+   * selected segment draws, and this one reads on both the selected (surface)
+   * and unselected (surface-2) background without a ring.
+   */
+  badge?: boolean;
 }
 
 export interface SegmentedProps<T extends string | number> {
@@ -80,6 +96,20 @@ export function Segmented<T extends string | number>({
             >
               {o.label}
             </Text>
+            {o.badge ? (
+              <View
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: 3.5,
+                  marginLeft: 5,
+                  marginTop: -6,
+                  backgroundColor: colors.loss,
+                }}
+              />
+            ) : null}
           </Pressable>
         );
       })}

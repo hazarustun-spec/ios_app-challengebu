@@ -15,6 +15,8 @@ const YEARS: { value: ClassYear; label: string }[] = [
   { value: '2', label: '2' },
   { value: '3', label: '3' },
   { value: '4', label: '4' },
+  // Students whose degree runs past the fourth year.
+  { value: '4_plus', label: '4+' },
   { value: 'yl', label: 'Yüksek Lisans' },
   { value: 'doktora', label: 'Doktora' },
   { value: 'mezun', label: 'Mezun' },

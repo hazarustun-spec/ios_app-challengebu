@@ -1,4 +1,4 @@
-// hooks/use-opponent-suggestions.ts — Top-5 opponent suggestions for a given category.
+// hooks/use-opponent-suggestions.ts — Ranked opponent suggestions for a category.
 //
 // Feeds the pure scorer `lib/opponent-suggest.ts` with live data:
 //   - My ELO rating for the category    → useMyRankings()
@@ -48,6 +48,16 @@ export interface SuggestionItem {
   rating: number;
   score: number;
 }
+
+/**
+ * Hard ceiling on how many scored candidates the hook hands back.
+ *
+ * The strip is horizontally scrollable, so it can show more than the old
+ * top-5 — but an unbounded list is pointless: scoring is done client-side
+ * over the whole roster and nobody swipes past ~two dozen cards. 24 keeps
+ * the render cheap while giving the swipe somewhere to go.
+ */
+export const MAX_SUGGESTIONS = 24;
 
 export function useOpponentSuggestions(category: string): {
   suggestions: SuggestionItem[];
@@ -164,8 +174,8 @@ export function useOpponentSuggestions(category: string): {
 
     const scored = scoreCandidates(me, candidates);
 
-    // Return top 5 mapped to the public shape.
-    return scored.slice(0, 5).map((c) => ({
+    // Return the top MAX_SUGGESTIONS mapped to the public shape.
+    return scored.slice(0, MAX_SUGGESTIONS).map((c) => ({
       userId: c.userId,
       name: c.name,
       rating: c.rating,

@@ -1,0 +1,13 @@
+-- Add "4+" as a class_year option — students whose degree runs past the
+-- fourth year (an extended undergrad) had to pick either "4" or "Mezun",
+-- and neither is true. Requested by live users after v1.1.1.
+--
+-- The enum literal is the slug '4_plus', not '4+': the label shown in the
+-- app ("4+") lives in apps/mobile/lib/class-year.ts, so the stored value
+-- stays a plain identifier like every other member of this enum.
+--
+-- Postgres appends new enum values at the end of the type's sort order.
+-- Nothing orders by class_year in SQL (the pickers carry their own order:
+-- hazirlik, 1, 2, 3, 4, 4_plus, yl, doktora, mezun), so no `before`/`after`
+-- clause is needed — matching how 'mezun' was added in 20260714000002.
+alter type class_year add value if not exists '4_plus';

@@ -43,7 +43,24 @@ export function isReviewEmail(email: string): boolean {
 
 export const PRONOUN_VALUES = ['he/him', 'she/her', 'they/them', 'other'] as const;
 export const GENDER_CATEGORY_VALUES = ['erkek', 'kadin', 'open_only'] as const;
-export const CLASS_YEAR_VALUES = ['hazirlik', '1', '2', '3', '4', 'yl', 'doktora'] as const;
+// Mirrors the `class_year` Postgres enum. Kept in sync by hand:
+//   'mezun'  — added by migration 20260714000002 (was missing here)
+//   '4_plus' — added by migration 20260908000001; the label users see is "4+"
+//              (for students whose degree runs past the fourth year). The slug
+//              avoids a '+' inside an enum literal.
+// Order matters for the pickers that iterate it: '4_plus' sits between '4'
+// and 'yl'.
+export const CLASS_YEAR_VALUES = [
+  'hazirlik',
+  '1',
+  '2',
+  '3',
+  '4',
+  '4_plus',
+  'yl',
+  'doktora',
+  'mezun',
+] as const;
 export const SKILL_VALUES = ['baslangic', 'orta', 'ileri'] as const;
 export const HAND_VALUES = ['sag', 'sol'] as const;
 export const AVAILABILITY_VALUES = [

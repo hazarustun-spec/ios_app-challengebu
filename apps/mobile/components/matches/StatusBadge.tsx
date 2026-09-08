@@ -12,8 +12,12 @@ const COLORS: Record<RequestStatus, { bg: string; text: string; label: string }>
 export function StatusBadge({ status }: { status: RequestStatus }) {
   const c = COLORS[status];
   return (
-    <View className={`${c.bg} self-start rounded-full px-2 py-0.5`}>
-      <Text className={`${c.text} text-xs font-medium`}>{c.label}</Text>
+    // `shrink` + a single-line label keep the longest statuses ("Süresi
+    // doldu", "Reddedildi") inside their row instead of pushing past its edge.
+    <View className={`${c.bg} shrink self-start rounded-full px-2 py-0.5`}>
+      <Text className={`${c.text} text-xs font-medium`} numberOfLines={1}>
+        {c.label}
+      </Text>
     </View>
   );
 }

@@ -8,6 +8,8 @@
 //   - Hero: LevelRing avatar + name + pronoun chip + level row +
 //     dept/year/hand line + level progress bar to next level.
 //   - Vitrin (3 showcased badges) with "Düzenle" → /profile/badges.
+//   - Son maçlar: last 5 completed matches (components/profile/RecentMatches),
+//     the same rows the /user/[userId] preview shows.
 //   - Scroll pill tab strip (Sıralamalar / İstatistikler / Rozetler /
 //     ELO / Maçlar). Only "Sıralamalar" stays in-screen — every other
 //     tab navigates into the matching sub-screen.
@@ -39,6 +41,7 @@ import { useMyBadges, type MyBadgeRow } from '../../hooks/use-my-badges';
 import { useMyProfile } from '../../hooks/use-profile';
 import { formatClassYear } from '../../lib/class-year';
 import { ListRow } from '../../components/ui/ListRow';
+import { RecentMatches } from '../../components/profile/RecentMatches';
 import { shadows } from '../../theme/shadows';
 
 // ---------------------------------------------------------------------------
@@ -358,6 +361,28 @@ export default function ProfileTab() {
               ))}
             </View>
           )}
+        </View>
+
+        {/* Son maçlar — last 5 completed matches, same rows as the player
+            preview at /user/[userId]. "Tümü" opens the full history. */}
+        <View style={{ paddingHorizontal: 20, paddingBottom: 16, gap: 8 }}>
+          <View className="flex-row items-center justify-between">
+            <Text
+              className="font-sans font-extrabold text-text-3"
+              style={{ fontSize: 11, letterSpacing: 0.66 }}
+            >
+              SON MAÇLAR
+            </Text>
+            <Pressable onPress={() => router.push('/match/history' as never)}>
+              <Text
+                className="font-sans font-bold"
+                style={{ fontSize: 12.5, color: colors.clay }}
+              >
+                Tümü
+              </Text>
+            </Pressable>
+          </View>
+          <RecentMatches userId={userId} limit={5} title={null} />
         </View>
 
         {/* Navigation section — clearly-navigational rows to the four sub-screens */}

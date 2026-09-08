@@ -218,8 +218,23 @@ export default function MatchesTab() {
           onChange={setView}
           options={[
             { value: 'upcoming', label: 'Yaklaşan' },
-            { value: 'offers', label: 'Teklifler' },
-            { value: 'feed', label: 'İlanlar' },
+            // Red dot while there is something waiting, and only while the
+            // user is looking elsewhere — leaving it lit on the open tab
+            // would make it decoration rather than a signal.
+            {
+              value: 'offers',
+              label: 'Teklifler',
+              badge:
+                view !== 'offers' &&
+                (requestsQ.data ?? []).some((r) => r.status === 'pending'),
+            },
+            {
+              value: 'feed',
+              label: 'İlanlar',
+              // useOpenCallsFeed is already filtered to pending and excludes
+              // the user's own calls, so a non-empty list is the signal.
+              badge: view !== 'feed' && (feedQ.data ?? []).length > 0,
+            },
           ]}
         />
       </View>
@@ -742,12 +757,8 @@ function OffersList({ requestsQ, accept, reject, ratingOf }: OffersListProps) {
               onPress={() => router.push(`/user/${m.creator_id}` as never)}
               accessibilityRole="button"
               accessibilityLabel={`${creatorName} profilini aç`}
-              className="flex-row items-center"
-              style={({ pressed }) => ({
-                gap: 12,
-                marginBottom: 12,
-                opacity: pressed ? 0.6 : 1,
-              })}
+              className="flex-row items-center active:opacity-60"
+              style={{ gap: 12, marginBottom: 12 }}
             >
               <Avatar name={creatorName} size={46} />
               <View style={{ flex: 1 }}>
@@ -933,7 +944,13 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
               style={{ gap: 12, marginBottom: 12 }}
             >
               {/* Identity strip opens the target's profile. Open calls have no
-                  target_id, so it stays inert there. */}
+                  target_id, so it stays inert there.
+
+                  `flex: 1` has to live in a plain style object: NativeWind's
+                  className/style interop drops a `style` callback, and without
+                  the flex the strip sized itself to the untruncated name and
+                  shoved the status chip past the card's right edge. Press
+                  feedback moved to `active:` for the same reason. */}
               <Pressable
                 onPress={() =>
                   m.target_id && router.push(`/user/${m.target_id}` as never)
@@ -941,12 +958,8 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                 disabled={!m.target_id}
                 accessibilityRole="button"
                 accessibilityLabel={`${targetName} profilini aç`}
-                className="flex-row items-center"
-                style={({ pressed }) => ({
-                  flex: 1,
-                  gap: 12,
-                  opacity: pressed && m.target_id ? 0.6 : 1,
-                })}
+                className="flex-row items-center active:opacity-60"
+                style={{ flex: 1, gap: 12 }}
               >
                 <Avatar
                   name={targetName}
@@ -957,20 +970,27 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                   <Text
                     className="font-sans font-bold text-text"
                     style={{ fontSize: 15.5 }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                   >
                     {targetName}
                   </Text>
                   <Text
                     className="font-sans text-text-3"
                     style={{ fontSize: 12.5, marginTop: 2 }}
+                    numberOfLines={1}
                   >
                     meydan okudun · {catLabel}
                   </Text>
                 </View>
               </Pressable>
+              {/* Status chip — never the thing that overflows: it may shrink,
+                  and its label stays on one line ("Yanıt bekleniyor" is the
+                  longest of the five). */}
               <View
                 className="rounded-pill"
                 style={{
+                  flexShrink: 1,
                   paddingHorizontal: 10,
                   paddingVertical: 4,
                   backgroundColor: `${status.color}1F`,
@@ -979,6 +999,9 @@ function SentOffersList({ outgoingQ }: SentOffersListProps) {
                 <Text
                   className="font-sans font-bold"
                   style={{ fontSize: 11.5, color: status.color }}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
                 >
                   {status.label}
                 </Text>
