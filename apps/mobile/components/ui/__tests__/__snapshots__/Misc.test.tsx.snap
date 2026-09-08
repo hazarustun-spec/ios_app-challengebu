@@ -60,25 +60,36 @@ exports[`GreetHeader renders name + sub + bell 1`] = `
     {
       "children": [
         {
-          "children": [],
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "count": 3,
+              },
+              "type": "BellWithBadge",
+            },
+          ],
           "props": {
-            "count": 3,
+            "accessibilityLabel": "Bildirimler",
+            "accessibilityRole": "button",
+            "className": "items-center justify-center",
+            "onPress": "[Function]",
+            "style": {
+              "height": 44,
+              "marginRight": -8,
+              "width": 44,
+            },
           },
-          "type": "BellWithBadge",
+          "type": "Pressable",
         },
       ],
       "props": {
-        "accessibilityLabel": "Bildirimler",
-        "accessibilityRole": "button",
-        "className": "items-center justify-center",
-        "onPress": "[Function]",
+        "className": "flex-row items-center",
         "style": {
-          "height": 44,
-          "marginRight": -8,
-          "width": 44,
+          "gap": 6,
         },
       },
-      "type": "Pressable",
+      "type": "View",
     },
   ],
   "props": {
@@ -138,25 +149,36 @@ exports[`GreetHeader without sub line 1`] = `
     {
       "children": [
         {
-          "children": [],
+          "children": [
+            {
+              "children": [],
+              "props": {
+                "count": 0,
+              },
+              "type": "BellWithBadge",
+            },
+          ],
           "props": {
-            "count": 0,
+            "accessibilityLabel": "Bildirimler",
+            "accessibilityRole": "button",
+            "className": "items-center justify-center",
+            "onPress": undefined,
+            "style": {
+              "height": 44,
+              "marginRight": -8,
+              "width": 44,
+            },
           },
-          "type": "BellWithBadge",
+          "type": "Pressable",
         },
       ],
       "props": {
-        "accessibilityLabel": "Bildirimler",
-        "accessibilityRole": "button",
-        "className": "items-center justify-center",
-        "onPress": undefined,
+        "className": "flex-row items-center",
         "style": {
-          "height": 44,
-          "marginRight": -8,
-          "width": 44,
+          "gap": 6,
         },
       },
-      "type": "Pressable",
+      "type": "View",
     },
   ],
   "props": {
@@ -196,9 +218,9 @@ exports[`LevelRing mid-tier ELO renders Avatar (no ring prop) + SVG overlay 1`] 
             "fill": "none",
             "r": 39.36,
             "stroke": "#2742A0",
-            "strokeDasharray": 247.3228931048462,
+            "strokeDasharray": 247.3061736905885,
             "strokeLinecap": "round",
-            "strokeWidth": 3.28,
+            "strokeWidth": 3.2800000000000002,
             "transform": "rotate(-90 41 41)",
           },
           "type": "Circle",
@@ -222,6 +244,94 @@ exports[`LevelRing mid-tier ELO renders Avatar (no ring prop) + SVG overlay 1`] 
       "height": 82,
       "width": 82,
     },
+  },
+  "type": "View",
+}
+`;
+
+exports[`Skel default size 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "style": [
+          {
+            "backgroundColor": "rgba(255,255,255,0.65)",
+            "borderRadius": 4,
+            "bottom": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": 80,
+          },
+          {
+            "transform": [
+              {
+                "translateX": 80,
+              },
+            ],
+          },
+        ],
+      },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "onLayout": "[Function]",
+    "style": [
+      {
+        "backgroundColor": "#F3F3F1",
+        "borderRadius": 6,
+        "height": 16,
+        "overflow": "hidden",
+        "width": "100%",
+      },
+      undefined,
+    ],
+  },
+  "type": "View",
+}
+`;
+
+exports[`Skel custom dimensions 1`] = `
+{
+  "children": [
+    {
+      "children": [],
+      "props": {
+        "style": [
+          {
+            "backgroundColor": "rgba(255,255,255,0.65)",
+            "borderRadius": 4,
+            "bottom": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": 80,
+          },
+          {
+            "transform": [
+              {
+                "translateX": 80,
+              },
+            ],
+          },
+        ],
+      },
+      "type": "Animated.View",
+    },
+  ],
+  "props": {
+    "onLayout": "[Function]",
+    "style": [
+      {
+        "backgroundColor": "#F3F3F1",
+        "borderRadius": 16,
+        "height": 32,
+        "overflow": "hidden",
+        "width": 120,
+      },
+      undefined,
+    ],
   },
   "type": "View",
 }
@@ -681,93 +791,5 @@ exports[`ScoreInput disabled drops onPress + adds opacity-50 1`] = `
     },
   },
   "type": "Pressable",
-}
-`;
-
-exports[`Skel default size 1`] = `
-{
-  "children": [
-    {
-      "children": [],
-      "props": {
-        "style": [
-          {
-            "backgroundColor": "rgba(255,255,255,0.65)",
-            "borderRadius": 4,
-            "bottom": 0,
-            "position": "absolute",
-            "top": 0,
-            "width": 80,
-          },
-          {
-            "transform": [
-              {
-                "translateX": 80,
-              },
-            ],
-          },
-        ],
-      },
-      "type": "Animated.View",
-    },
-  ],
-  "props": {
-    "onLayout": "[Function]",
-    "style": [
-      {
-        "backgroundColor": "#F3F3F1",
-        "borderRadius": 6,
-        "height": 16,
-        "overflow": "hidden",
-        "width": "100%",
-      },
-      undefined,
-    ],
-  },
-  "type": "View",
-}
-`;
-
-exports[`Skel custom dimensions 1`] = `
-{
-  "children": [
-    {
-      "children": [],
-      "props": {
-        "style": [
-          {
-            "backgroundColor": "rgba(255,255,255,0.65)",
-            "borderRadius": 4,
-            "bottom": 0,
-            "position": "absolute",
-            "top": 0,
-            "width": 80,
-          },
-          {
-            "transform": [
-              {
-                "translateX": 80,
-              },
-            ],
-          },
-        ],
-      },
-      "type": "Animated.View",
-    },
-  ],
-  "props": {
-    "onLayout": "[Function]",
-    "style": [
-      {
-        "backgroundColor": "#F3F3F1",
-        "borderRadius": 16,
-        "height": 32,
-        "overflow": "hidden",
-        "width": 120,
-      },
-      undefined,
-    ],
-  },
-  "type": "View",
 }
 `;

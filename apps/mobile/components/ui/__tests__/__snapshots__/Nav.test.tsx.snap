@@ -17,6 +17,9 @@ exports[`Avatar initials from "Aleyna Kaya" → AK 1`] = `
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 17,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 17,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -76,6 +79,9 @@ exports[`Avatar initials from single name → A 1`] = `
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 17,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 17,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -135,6 +141,9 @@ exports[`Avatar size 92 (large profile) scales the box + font 1`] = `
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 35,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 35,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -194,6 +203,9 @@ exports[`Avatar with ring renders a colored outer container with 3px padding 1`]
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 14,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 14,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -253,6 +265,9 @@ exports[`Avatar with number badge renders pink-deep circle + numeric text 1`] = 
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 17,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 17,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -346,6 +361,9 @@ exports[`Avatar with frozen badge renders snow icon over frozen color 1`] = `
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 17,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 17,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -436,6 +454,9 @@ exports[`Avatar with level badge renders the supplied icon + color 1`] = `
                   "fontFamily": "PlusJakartaSans-ExtraBold",
                   "fontSize": 17,
                   "fontWeight": "800",
+                  "includeFontPadding": false,
+                  "lineHeight": 17,
+                  "textAlign": "center",
                 },
               },
               "type": "Text",
@@ -503,168 +524,6 @@ exports[`Avatar with level badge renders the supplied icon + color 1`] = `
     "style": {
       "height": 44,
       "width": 44,
-    },
-  },
-  "type": "View",
-}
-`;
-
-exports[`TabBar renders 5 slots with index active 1`] = `
-{
-  "children": [
-    {
-      "children": [
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#FFFFFF",
-                "name": "home",
-                "size": 23,
-                "stroke": 2.4,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "index",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": true,
-            },
-            "className": "items-center justify-center rounded-full bg-court",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "matches",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "matches",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#FFFFFF",
-                "name": "plus",
-                "size": 25,
-                "stroke": 2.7,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "new-match",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-court border-2 border-white",
-            "onPress": "[Function]",
-            "style": {
-              "height": 52,
-              "width": 52,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "ranking",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "leaderboard",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-        {
-          "children": [
-            {
-              "children": [],
-              "props": {
-                "color": "#161618",
-                "name": "user",
-                "size": 23,
-                "stroke": 2.1,
-              },
-              "type": "Icon",
-            },
-          ],
-          "props": {
-            "accessibilityLabel": "profile",
-            "accessibilityRole": "button",
-            "accessibilityState": {
-              "selected": false,
-            },
-            "className": "items-center justify-center rounded-full bg-transparent",
-            "onPress": "[Function]",
-            "style": {
-              "height": 48,
-              "width": 48,
-            },
-          },
-          "type": "Pressable",
-        },
-      ],
-      "props": {
-        "className": "h-16 flex-row items-center justify-between rounded-pill border-base border-border-strong bg-lime px-2",
-      },
-      "type": "View",
-    },
-  ],
-  "props": {
-    "className": "px-4 pt-2",
-    "style": {
-      "paddingBottom": 42,
     },
   },
   "type": "View",

@@ -266,7 +266,10 @@ exports[`NavHeader standard with back + title 1`] = `
     },
   ],
   "props": {
-    "className": "pt-2 pb-1 px-3.5",
+    "className": "pb-1 px-3.5",
+    "style": {
+      "paddingTop": 8,
+    },
   },
   "type": "View",
 }
@@ -311,7 +314,10 @@ exports[`NavHeader large with title + subtitle 1`] = `
     },
   ],
   "props": {
-    "className": "pt-1.5 pb-1 px-4.5",
+    "className": "pb-1 px-4.5",
+    "style": {
+      "paddingTop": 6,
+    },
   },
   "type": "View",
 }
@@ -386,7 +392,10 @@ exports[`NavHeader close icon (modal) + action text 1`] = `
     },
   ],
   "props": {
-    "className": "pt-2 pb-1 px-3.5",
+    "className": "pb-1 px-3.5",
+    "style": {
+      "paddingTop": 8,
+    },
   },
   "type": "View",
 }
@@ -441,7 +450,10 @@ exports[`NavHeader action icon variant on large header 1`] = `
     },
   ],
   "props": {
-    "className": "pt-1.5 pb-1 px-4.5",
+    "className": "pb-1 px-4.5",
+    "style": {
+      "paddingTop": 6,
+    },
   },
   "type": "View",
 }

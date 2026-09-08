@@ -8,22 +8,35 @@ exports[`Button renders text in primary variant md size 1`] = `
         "Maç oluştur",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "Maç oluştur",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": "[Function]",
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -35,12 +48,16 @@ exports[`Button renders disabled state 1`] = `
         "Disabled",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "Disabled",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
@@ -49,8 +66,17 @@ exports[`Button renders disabled state 1`] = `
     "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill opacity-50",
     "disabled": true,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -70,12 +96,16 @@ exports[`Button renders loading state with ActivityIndicator 1`] = `
         "Yükleniyor",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "Yükleniyor",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": true,
@@ -84,8 +114,17 @@ exports[`Button renders loading state with ActivityIndicator 1`] = `
     "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill opacity-50",
     "disabled": true,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -97,22 +136,35 @@ exports[`Button renders primary variant 1`] = `
         "primary",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "primary",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -124,22 +176,35 @@ exports[`Button renders secondary variant 1`] = `
         "secondary",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-text",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "secondary",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-surface border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-surface border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -151,22 +216,35 @@ exports[`Button renders danger variant 1`] = `
         "danger",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-white",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "danger",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-loss border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-loss border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -178,22 +256,35 @@ exports[`Button renders dark variant 1`] = `
         "dark",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-white",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "dark",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-clay border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-clay border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -205,22 +296,35 @@ exports[`Button renders ghost variant 1`] = `
         "ghost",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-text",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "ghost",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-transparent border-0 h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-transparent border-0 h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -232,22 +336,35 @@ exports[`Button renders tonal variant 1`] = `
         "tonal",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-text-2",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "tonal",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-surface-2 border-0 h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-surface-2 border-0 h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -259,22 +376,35 @@ exports[`Button renders sm size 1`] = `
         "sm",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[13px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "sm",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-9 px-3 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-9 px-3 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -286,22 +416,35 @@ exports[`Button renders md size 1`] = `
         "md",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "md",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -313,22 +456,35 @@ exports[`Button renders lg size 1`] = `
         "lg",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[15.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "lg",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-14 px-5 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-14 px-5 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -340,22 +496,35 @@ exports[`Button full width prop applies w-full 1`] = `
         "Full",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
   ],
   "props": {
+    "accessibilityLabel": "Full",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill w-full active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill w-full",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
 
@@ -367,7 +536,10 @@ exports[`Button arrow prop renders the chevron after children 1`] = `
         "İleri",
       ],
       "props": {
+        "adjustsFontSizeToFit": true,
         "className": "font-display font-extrabold text-[14.5px] text-on-lime",
+        "minimumFontScale": 0.75,
+        "numberOfLines": 1,
       },
       "type": "Text",
     },
@@ -382,15 +554,25 @@ exports[`Button arrow prop renders the chevron after children 1`] = `
     },
   ],
   "props": {
+    "accessibilityLabel": "İleri",
     "accessibilityRole": "button",
     "accessibilityState": {
       "busy": undefined,
       "disabled": undefined,
     },
-    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill active:opacity-80",
+    "className": "flex-row items-center justify-center gap-2 bg-lime border-base border-border-strong h-11 px-4 rounded-pill",
     "disabled": undefined,
     "onPress": undefined,
+    "onPressIn": [Function],
+    "onPressOut": [Function],
+    "style": {
+      "transform": [
+        {
+          "scale": 1,
+        },
+      ],
+    },
   },
-  "type": "Pressable",
+  "type": "Animated.View",
 }
 `;
