@@ -202,13 +202,35 @@ cinsinden, yeni kural onları oyun sayardı ve birine anında galibiyet verirdi.
 Dürüst bir dönüşüm yok — oyuncular kortta gördükleri skoru tekrar girecek.
 Bitmiş maçlara dokunulmuyor.
 
-### ⚠️ Açık kalan bir soru: yarıda kesilen maç
-Klasik'ten berabere kalkınca, **bitmemiş bir maçı kapatmanın yolu kalmadı**.
-Eskiden 3-3'e gelirsen "Berabere — Maçı kapat" çıkıyordu; artık maç ancak
-formatın kazanma şartı sağlanınca bitiyor. Yağmur yağarsa, biri sakatlanırsa
-ya da 2-1'de bırakırlarsa skor ekranından çıkış yok. (Şu an tek çıkış: itiraz
-akışı — ki artık skorsuz da çalışıyor.) Ne yapılsın: "Maçı yarıda kes"
-düğmesi mi, yoksa itiraz akışı yeterli mi? Karar senin.
+### Sonradan eklenenler (9 Eyl, ikinci tur)
+- [x] **Maçı yarıda kes.** Berabere kalkınca bitmemiş maçın çıkışı kalmamıştı.
+      Skor ekranına eklendi; `submit-match-score` artık void'de eşit skor şartı
+      koşmuyor — yarıda kesilen maçın kısmi skoru zaten eşit değil, ve tam da
+      o yüzden kaydedilmeye değer.
+- [x] **Live Activity hiç görünmüyordu — sebebi bulundu.** Kart yalnızca
+      `score.tsx`'ten başlatılıyordu ve **bileşen unmount olunca
+      sonlandırılıyordu**. Skor ekranından çıktığın an kart yok oluyordu; oysa
+      Live Activity'nin varlık sebebi ekranı açık tutmak zorunda kalmamak.
+      Ömrü artık ekrana değil **maça** bağlı. Ayrıca köprüdeki üç fonksiyon
+      her hatayı sessizce yutuyordu — Sentry'ye rapor ediyorlar, cihaz
+      desteklemiyorsa da bilgi düşüyor.
+- [x] **Takvime ekle** (`expo-calendar` 56.0.10). Apple Takvim (write-only izin
+      — sadece yazıyoruz, kullanıcının takvimini okumaya gerek yok) + Google
+      Takvim URL'i. Süre formata göre: Klasik 60dk, Tiebreak 30dk, Pro Set
+      90dk, 3 Set 150dk. URL kurucusu native bağımlılıklardan ayrıldı, 5 test.
+- [x] **`admin-record-match`** edge function — uygulamada kaydedilemeyen maçları
+      admin girer. ELO'yu `applyEloForMatch` ile uyguluyor, matematiği tekrar
+      yazmıyor. `audit_log`'a düşüyor. **Admin ekranı henüz yok** (v2).
+- [x] Kapalı-birlik totality testleri (`format-totality.test.ts`) — DB'ye yeni
+      format eklenip istemci geride kalırsa `formatByKey(...)!` `undefined`
+      döner ve ekran çöker. `class_year`/'mezun' kaymasının aynısı.
+
+### ⚠️ KVKK linki — DEĞİŞTİRİLMEDİ, sebebi
+Uygulamanın linki `gizlilik.html`'e gidiyor. `kvkk.html` daha resmî biçimli ama
+**daha az kapsıyor**: saklama süresi, hesap silme, güvenlik ve çocukların
+gizliliği bölümleri onda yok. Şu anki link zaten daha eksiksiz belgeye gidiyor.
+İki ayrı metin tutmak, zamanla çelişmeleri demek. Değiştirmek istersen tek satır:
+`apps/mobile/lib/legal.ts` → `kvkk: ${LEGAL_BASE}/kvkk.html`.
 
 ### Cihazda doğrulanacak (henüz yapılmadı)
 - [ ] İki gerçek telefonla Klasik maç: skorlar **aynı** görünüyor mu?
@@ -216,6 +238,10 @@ düğmesi mi, yoksa itiraz akışı yeterli mi? Karar senin.
 - [ ] İki oyuncunun gönderdiği skor **eşleşiyor** mu? (asıl kırılan şey buydu)
 - [ ] Dynamic Island ve kilit ekranındaki −/+ doğru tarafa yazıyor mu?
 - [ ] Skor girmeden "İtiraz et" çalışıyor mu?
+- [ ] **Live Activity kilit ekranında duruyor mu?** Skor ekranından çıkıp
+      telefonu kilitle — kart durmalı. Eskiden tam burada yok oluyordu.
+- [ ] "Maçı yarıda kes" → sonuç ekranı → iki taraf da onaylayınca ELO değişmiyor.
+- [ ] Takvime ekle: Apple izni + Google Takvim'in tarayıcıda açılması.
 
 ---
 

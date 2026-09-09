@@ -72,3 +72,16 @@ export function captureException(err: unknown, context?: Record<string, unknown>
   if (!DSN) return;
   Sentry.captureException(err, context ? { extra: context } : undefined);
 }
+
+/**
+ * Report something that is not an error but is worth knowing about — a device
+ * that cannot show Live Activities, say. Kept separate from captureException so
+ * these never look like crashes in the Sentry issue list.
+ */
+export function captureMessage(message: string, context?: Record<string, unknown>) {
+  if (!DSN) return;
+  Sentry.captureMessage(message, {
+    level: 'info',
+    ...(context ? { extra: context } : {}),
+  });
+}

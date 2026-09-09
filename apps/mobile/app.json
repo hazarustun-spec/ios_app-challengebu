@@ -51,6 +51,14 @@
         }
       ],
       [
+        "expo-calendar",
+        {
+          "calendarPermission": "ChallengeBu! kabul ettiğin maçları takvimine eklemek için izin istiyor.",
+          "writeOnlyCalendarPermission": "ChallengeBu! kabul ettiğin maçları takvimine eklemek için izin istiyor. Mevcut etkinliklerini okumaz.",
+          "writeOnlyAccess": true
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",

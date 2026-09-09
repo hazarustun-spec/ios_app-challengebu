@@ -26,7 +26,14 @@ const inputSchema = z
   })
   .refine(
     (data) => {
-      if (data.winnerTeam === 'void') return data.scoreTeamA === data.scoreTeamB;
+      // 'void' covers a match that produced no winner, and the score it stopped
+      // at is not required to be level. It used to be: the only way to reach
+      // 'void' was BÜ Klasik's 3-3 draw, so equal scores were the only case
+      // there was. That draw is gone (migration 20260909000001) and 'void' now
+      // carries abandoned matches — rain, an injury, two people calling it at
+      // 8-4 — where the partial score is worth recording precisely BECAUSE it
+      // is uneven. Nobody wins either way and no ELO moves.
+      if (data.winnerTeam === 'void') return true;
       if (data.winnerTeam === 'a') return data.scoreTeamA > data.scoreTeamB;
       return data.scoreTeamB > data.scoreTeamA;
     },

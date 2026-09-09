@@ -19,6 +19,7 @@
     "@tennis/shared": "workspace:*",
     "expo": "~56.0.9",
     "expo-build-properties": "~56.0.19",
+    "expo-calendar": "~56.0.10",
     "expo-constants": "~56.0.17",
     "expo-device": "~56.0.4",
     "expo-file-system": "~56.0.7",

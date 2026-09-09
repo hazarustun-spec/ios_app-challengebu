@@ -9,17 +9,24 @@
 // Wired to live data via useMatchDetail(id) + useOpponentNames().
 
 import { router, useLocalSearchParams } from 'expo-router';
-import type { ReactNode } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { FormatChip } from '../../../components/ui/FormatChip';
 import { Icon } from '../../../components/ui/Icon';
 import { NavHeader } from '../../../components/ui/NavHeader';
+import { Sheet } from '../../../components/ui/Sheet';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useStartConversation } from '../../../hooks/use-start-conversation';
 import { DB_TO_UI_FORMAT } from '../../../lib/formats';
+import {
+  type MatchCalendarEvent,
+  addMatchToDeviceCalendar,
+  deviceCalendarSupported,
+  openInGoogleCalendar,
+} from '../../../lib/match-calendar';
 import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
@@ -111,6 +118,18 @@ export default function MatchDetail() {
 
   // Date / time.
   const whenLabel = formatPlayedAt(m.played_at);
+
+  // A match is an appointment with another person; the reason to put it in a
+  // calendar is that the app is not where anyone checks what their afternoon
+  // looks like.
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const calendarEvent: MatchCalendarEvent = {
+    title: `${opponent.name} ile maç 🎾`,
+    startsAt: new Date(m.played_at),
+    format: m.format,
+    courtName: m.court?.name ?? null,
+    notes: 'ChallengeBu!',
+  };
 
   // Court label.
   const courtLabel = m.court?.name ?? '—';
@@ -237,6 +256,19 @@ export default function MatchDetail() {
             Mesaj
           </Button>
         )}
+        {/* Only for a match that has not been played yet — adding a finished
+            match to a calendar is noise. */}
+        {m.winner_team == null && (
+          <Button
+            full
+            size="md"
+            variant="secondary"
+            icon={<Icon name="calendar" size={16} color={colors.text} />}
+            onPress={() => setCalendarOpen(true)}
+          >
+            Takvime ekle
+          </Button>
+        )}
         <Button
           full
           size="md"
@@ -246,7 +278,87 @@ export default function MatchDetail() {
           İtiraz et
         </Button>
       </View>
+
+      <Sheet visible={calendarOpen} onClose={() => setCalendarOpen(false)} title="Takvime ekle">
+        <View style={{ gap: 8, paddingBottom: 4 }}>
+          {deviceCalendarSupported() && (
+            <CalendarOption
+              label="Apple Takvim"
+              hint="Telefonunun takvimine doğrudan eklenir"
+              onPress={async () => {
+                setCalendarOpen(false);
+                const r = await addMatchToDeviceCalendar(calendarEvent);
+                if (r.ok) {
+                  Alert.alert('Eklendi', 'Maç takvimine eklendi. Bir saat önce hatırlatacak.');
+                } else if (r.reason === 'permission') {
+                  // Naming Settings matters: iOS only shows the prompt once, so
+                  // after a refusal the only way back is through Settings and
+                  // "try again" would just fail silently forever.
+                  Alert.alert(
+                    'Takvim izni yok',
+                    'Ayarlar → ChallengeBu! → Takvimler bölümünden izin verebilirsin.',
+                  );
+                } else {
+                  Alert.alert(
+                    'Eklenemedi',
+                    "Maç takvime eklenemedi. Google Takvim'i deneyebilirsin.",
+                  );
+                }
+              }}
+            />
+          )}
+          <CalendarOption
+            label="Google Takvim"
+            hint="Tarayıcıda açılır, sen kaydedersin"
+            onPress={async () => {
+              setCalendarOpen(false);
+              const ok = await openInGoogleCalendar(calendarEvent);
+              if (!ok) Alert.alert('Açılamadı', 'Google Takvim açılamadı.');
+            }}
+          />
+        </View>
+      </Sheet>
     </View>
+  );
+}
+
+function CalendarOption({
+  label,
+  hint,
+  onPress,
+}: {
+  label: string;
+  hint: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      // Plain object, not a function: NativeWind's interop spreads the style
+      // prop and spreading a function yields {}.
+      className="active:opacity-70"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderRadius: 14,
+        backgroundColor: colors.surface2,
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Icon name="calendar" size={18} color={colors.court} />
+      <View style={{ flex: 1 }}>
+        <Text className="font-sans font-bold text-text" style={{ fontSize: 15 }}>
+          {label}
+        </Text>
+        <Text className="font-sans text-text-2" style={{ fontSize: 12.5, marginTop: 1 }}>
+          {hint}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 

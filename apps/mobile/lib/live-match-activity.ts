@@ -3,6 +3,7 @@ import Native, { type LiveMatchSubscription } from '../modules/live-match-activi
 import { useAuthStore } from '../stores/auth-store';
 import { env } from './env';
 import { invokeFunction } from './invoke-function';
+import { captureException, captureMessage } from './sentry';
 
 export type LiveMatchAttrs = {
   matchId: string;
@@ -48,31 +49,65 @@ export function isSupported(): boolean {
   }
 }
 
-export async function startMatchActivity(a: LiveMatchAttrs): Promise<void> {
-  if (!Native || !isSupported()) return;
+// A Live Activity failure must never break scoring — but it must not be
+// invisible either. Two players reported that no card ever appeared on either
+// lock screen and there was nothing to go on, because every failure here was
+// caught and dropped on the floor. The native side throws real, specific errors
+// ("areActivitiesEnabled = false", "iOS < 16.2", ActivityKit's own), so they go
+// to Sentry now and the flow still continues.
+async function guarded(where: string, run: () => Promise<void>): Promise<void> {
   try {
-    await Native.start(a);
-  } catch {
-    // A Live Activity failure must never break the scoring flow.
+    await run();
+  } catch (err) {
+    captureException(err, { where });
   }
+}
+
+export async function startMatchActivity(a: LiveMatchAttrs): Promise<void> {
+  const native = Native;
+  if (!native) return;
+  if (!isSupported()) {
+    // Not an error — an iOS 16.1 phone, or Live Activities switched off in
+    // Settings. Worth knowing when nobody in a match sees a card.
+    captureMessage('live-activity: unsupported or disabled on this device');
+    return;
+  }
+  await guarded('startMatchActivity', () => native.start(a));
+}
+
+/**
+ * Send the score under BOTH the new and the old key names.
+ *
+ * This JS ships over the air, but the native module and the widget only change
+ * with a native build — so for as long as it takes App Review to clear, this
+ * code is running inside the previous binary, which reads `gamesA`/`gamesB` and
+ * would render every match 0-0. The extra keys cost nothing and the new native
+ * side ignores them.
+ *
+ * Delete once the store build carrying units is the oldest one in the wild.
+ */
+function withLegacyKeys(s: LiveMatchState): Record<string, unknown> {
+  return {
+    ...s,
+    gamesA: s.unitsA,
+    gamesB: s.unitsB,
+    // The old ContentState requires these; rally points no longer exist, and
+    // zero is what the old widget renders as "0" next to the game count.
+    pointsA: 0,
+    pointsB: 0,
+  };
 }
 
 export async function updateMatchActivity(s: LiveMatchState): Promise<void> {
-  if (!Native) return;
-  try {
-    await Native.update(s);
-  } catch {
-    // never break scoring
-  }
+  const native = Native;
+  if (!native) return;
+  await guarded('updateMatchActivity', () => native.update(withLegacyKeys(s)));
 }
 
 export async function endMatchActivity(s: LiveMatchState): Promise<void> {
-  if (!Native) return;
-  try {
-    await Native.end(s);
-  } catch {
-    // never break scoring
-  }
+  const native = Native;
+  if (!native) return;
+  await guarded('endMatchActivity', () => native.end(withLegacyKeys(s)));
 }
 
 // Subscribe to the activity's APNs push token and register it with the backend

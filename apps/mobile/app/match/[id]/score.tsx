@@ -87,12 +87,7 @@ export default function ActiveMatch() {
   const nameA = mySide === 'a' ? 'Sen' : oppFirstName;
   const nameB = mySide === 'a' ? oppFirstName : 'Sen';
 
-  // Latest score in a ref so the unmount cleanup ends the activity with the
-  // final state (the start/end effect only runs once per match).
-  const scoreRef = useRef({ unitsA, unitsB, isVoid, someoneWon, winner: score?.winner ?? null });
-  scoreRef.current = { unitsA, unitsB, isVoid, someoneWon, winner: score?.winner ?? null };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: starts the Live Activity exactly once per match — scoreRef exists so the unmount cleanup sees the final score without the score being a dependency here
+  // biome-ignore lint/correctness/useExhaustiveDependencies: starts the Live Activity exactly once per match; the score is pushed by the update effect below, not by this one
   useEffect(() => {
     // Wait for userId before starting: mySide (perspective) and the App-Group
     // accessToken both derive from it. Starting before userId arrives would
@@ -113,17 +108,33 @@ export default function ActiveMatch() {
       accessToken,
       refreshToken,
     });
+    // NOTE: the cleanup only detaches the token listener. It deliberately does
+    // NOT end the activity.
+    //
+    // It used to. That bound the card's lifetime to this SCREEN's mount, so
+    // walking back to the matches list dismissed it — and a Live Activity
+    // exists precisely so you do not have to keep a screen open. Two players
+    // reported that no card ever showed on either lock screen during a real
+    // match; this is why. The activity now ends when the MATCH ends, in the
+    // effect below.
     return () => {
       tokenSub?.remove();
-      const s = scoreRef.current;
-      endMatchActivity({
-        unitsA: s.unitsA,
-        unitsB: s.unitsB,
-        phase: s.isVoid ? 'void' : 'finished',
-        winner: s.winner,
-      });
     };
   }, [match?.id, userId]);
+
+  // End the card when the match does — not when the screen closes. Guarded by
+  // a ref so a re-render after the match ends does not try to end it twice.
+  const endedRef = useRef(false);
+  useEffect(() => {
+    if (!matchOver || endedRef.current) return;
+    endedRef.current = true;
+    endMatchActivity({
+      unitsA,
+      unitsB,
+      phase: isVoid ? 'void' : 'finished',
+      winner: score?.winner ?? null,
+    });
+  }, [matchOver, isVoid, unitsA, unitsB, score?.winner]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: updateMatchActivity is a module function, not state; the score values it sends are already the deps
   useEffect(() => {
@@ -154,6 +165,39 @@ export default function ActiveMatch() {
   const handleRevoke = (side: 'a' | 'b') => {
     if (!sides.resolved) return;
     revokeUnit(side).catch((e) => toast.show(userMessage(e, 'Geri alınamadı.'), 'error'));
+  };
+
+  /**
+   * Stop a match that will not be finished — rain, an injury, or two people
+   * calling it at 8-4. Records the score it stopped at and settles it as a
+   * no-result, so no ELO moves.
+   *
+   * This exists because removing Klasik's 3-3 draw also removed the only exit
+   * an unfinished match had: before, you played to 3-3 and the screen offered
+   * "Berabere — Maçı kapat". Without it the score screen could only be left
+   * through the dispute flow, which is a complaint, not a way to stop playing.
+   */
+  const abandon = () => {
+    if (!id || submitScore.isPending) return;
+    Alert.alert(
+      'Maçı yarıda kes',
+      `Maç ${myUnits}-${oppUnits} durumunda kapatılacak. Kazanan olmaz, kimsenin ELO'su değişmez. Rakibinin de onaylaması gerekir.`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Yarıda kes',
+          style: 'destructive',
+          onPress: () =>
+            submitScore.mutate(
+              { matchId: id, scoreTeamA: unitsA, scoreTeamB: unitsB, winnerTeam: 'void' },
+              {
+                onSuccess: () => router.replace(`/match/${id}/result` as never),
+                onError: (e) => Alert.alert('Gönderilemedi', userMessage(e, 'Lütfen tekrar dene.')),
+              },
+            ),
+        },
+      ],
+    );
   };
 
   const finish = () => {
@@ -281,7 +325,7 @@ export default function ActiveMatch() {
         )}
       </ScrollView>
 
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 16, gap: 10 }}>
         <Button
           full
           size="lg"
@@ -290,12 +334,15 @@ export default function ActiveMatch() {
           icon={<Icon name="flag" size={17} color={matchOver ? colors.onLime : colors.text} />}
           onPress={finish}
         >
-          {submitScore.isPending
-            ? 'Gönderiliyor…'
-            : isVoid
-              ? 'Berabere — Maçı kapat'
-              : 'Maçı Bitir'}
+          {submitScore.isPending ? 'Gönderiliyor…' : 'Maçı Bitir'}
         </Button>
+        {/* Only offered while the match is still live: once it has a result,
+            "abandon" is not a thing that can happen to it any more. */}
+        {!matchOver && sides.resolved && (
+          <Button full size="md" variant="ghost" disabled={submitScore.isPending} onPress={abandon}>
+            Maçı yarıda kes
+          </Button>
+        )}
       </View>
     </View>
   );
