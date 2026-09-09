@@ -202,6 +202,14 @@ cinsinden, yeni kural onları oyun sayardı ve birine anında galibiyet verirdi.
 Dürüst bir dönüşüm yok — oyuncular kortta gördükleri skoru tekrar girecek.
 Bitmiş maçlara dokunulmuyor.
 
+### ⚠️ Açık kalan bir soru: yarıda kesilen maç
+Klasik'ten berabere kalkınca, **bitmemiş bir maçı kapatmanın yolu kalmadı**.
+Eskiden 3-3'e gelirsen "Berabere — Maçı kapat" çıkıyordu; artık maç ancak
+formatın kazanma şartı sağlanınca bitiyor. Yağmur yağarsa, biri sakatlanırsa
+ya da 2-1'de bırakırlarsa skor ekranından çıkış yok. (Şu an tek çıkış: itiraz
+akışı — ki artık skorsuz da çalışıyor.) Ne yapılsın: "Maçı yarıda kes"
+düğmesi mi, yoksa itiraz akışı yeterli mi? Karar senin.
+
 ### Cihazda doğrulanacak (henüz yapılmadı)
 - [ ] İki gerçek telefonla Klasik maç: skorlar **aynı** görünüyor mu?
 - [ ] Takım B'deki oyuncunun "+" tuşu kendi skorunu mu artırıyor?
