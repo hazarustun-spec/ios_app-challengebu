@@ -232,6 +232,29 @@ gizliliği bölümleri onda yok. Şu anki link zaten daha eksiksiz belgeye gidiy
 İki ayrı metin tutmak, zamanla çelişmeleri demek. Değiştirmek istersen tek satır:
 `apps/mobile/lib/legal.ts` → `kvkk: ${LEGAL_BASE}/kvkk.html`.
 
+### ✅ Prod'a giden (9-10 Eyl)
+- [x] 3 migration: `4_plus`, `live_score_units_by_format`, `dispute_claimed_score`.
+      **0 devam eden maç sıfırlandı** — kimsenin maçı bozulmadı.
+- [x] 6 edge function: `raise-dispute`, `push-live-score`, `start-opponent-activity`,
+      `submit-match-score`, `admin-record-match`, (+ önceki `create-match-request`).
+- [x] **OTA yayında** — grup `f486aa0c`, runtime 1.1.1, production kanalı.
+      Skor perspektifi, birim girişi, Live Activity ömrü, yarıda kes, takvim
+      (Google kısmı) bugün herkeste.
+      - `expo-calendar` **tembel yükleniyor**: modül gövdesi `requireNativeModule`
+        çağırıyor ve modül yoksa fırlatıyor. Statik import olsaydı OTA indiği an
+        mağazadaki binary'de maç ekranı çökerdi. Yeni build çıkana kadar Apple
+        Takvim seçeneği gizli, Google Takvim çalışıyor.
+      - Live Activity yükü hem `unitsA` hem `gamesA` gönderiyor; yoksa eski
+        native kod skoru 0-0 gösterirdi.
+
+### ⏳ Yeni build bekleyenler (App Review)
+Widget Swift'i, `expo-calendar` native modülü, Apple Takvim seçeneği.
+
+### ⚠️ maestro-e2e hâlâ tamamlanmadı
+colima kalkıyor (`vz` sürücüsü runner'da VM açamıyor → `qemu` + `brew install qemu`
+gerekti), ama QEMU içinde Supabase imajlarını çekmek 90 dk job limitini aşıyor.
+Gerçek çözüm self-hosted runner ya da imaj önbelleği. Her push'ta koşmuyor.
+
 ### Cihazda doğrulanacak (henüz yapılmadı)
 - [ ] İki gerçek telefonla Klasik maç: skorlar **aynı** görünüyor mu?
 - [ ] Takım B'deki oyuncunun "+" tuşu kendi skorunu mu artırıyor?
