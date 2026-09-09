@@ -21,13 +21,26 @@
 --
 -- HOW TO RUN
 --   Supabase Dashboard → SQL Editor → paste the WHOLE file → Run.
+--   Players are identified by LOGIN E-MAIL — see the constants at the top of
+--   the DO block.
 -- If either player cannot be identified unambiguously it raises and writes
 -- nothing. The SELECT at the bottom then shows what was recorded — the
 -- Dashboard's editor does not surface `raise notice`, so the result set is the
 -- only confirmation you actually get to see.
 
+-- ── EDIT THESE TWO IF YOU RUN IT FOR A DIFFERENT MATCH ─────────────────────
+--   Identify by LOGIN E-MAIL, not by name. The first attempt matched on
+--   first_name like 'yunus%' and would have found nobody: Yunus Emre's profile
+--   reads first_name "Emre", last_name "Y". A display name is whatever someone
+--   typed during onboarding; the login address is the thing the account is.
 do $$
 declare
+  -- Winner (team A, 8 games).
+  c_winner_email constant text := 'emre.yuksel@std.bogazici.edu.tr';
+  -- Loser (team B, 4 games). Left as a pattern because the operator's own
+  -- address is not in front of me; the guard below refuses anything ambiguous.
+  c_loser_pattern constant text := 'hazar%';
+
   v_yunus uuid;
   v_hazar uuid;
   v_yunus_gender text;
@@ -38,26 +51,46 @@ declare
   v_count int;
 begin
   -- ── Identify the players ──────────────────────────────────────────────────
-  -- Matched on first name, case- and accent-insensitively enough for these two.
-  -- The count checks below are the point: recording a rated match against the
-  -- wrong person is not something you notice until their ladder position moves.
-  select count(*) into v_count from public.profiles
-   where lower(first_name) like 'yunus%' and status = 'active';
+  -- Read through auth.users, which is where the login address actually lives.
+  -- profiles.email is only written on the signup INSERT and RLS revokes UPDATE
+  -- on it, so it can be stale or blank on an account that was ever repaired by
+  -- hand — that exact mismatch silently matched 0 rows once already.
+  select count(*) into v_count
+    from public.profiles p
+    join auth.users u on u.id = p.user_id
+   where lower(u.email) = lower(c_winner_email) and p.status = 'active';
   if v_count <> 1 then
-    raise exception 'Expected exactly 1 active player whose first name starts with "Yunus", found %', v_count;
+    raise exception 'Expected exactly 1 active player with e-mail %, found %',
+      c_winner_email, v_count;
   end if;
-  select user_id, gender_category into v_yunus, v_yunus_gender
-    from public.profiles
-   where lower(first_name) like 'yunus%' and status = 'active';
+  select p.user_id, p.gender_category into v_yunus, v_yunus_gender
+    from public.profiles p
+    join auth.users u on u.id = p.user_id
+   where lower(u.email) = lower(c_winner_email) and p.status = 'active';
 
-  select count(*) into v_count from public.profiles
-   where lower(first_name) like 'hazar%' and status = 'active';
+  -- The loser is matched on e-mail OR first name, so a pattern like 'hazar%'
+  -- finds the account whichever of the two it happens to sit in.
+  select count(*) into v_count
+    from public.profiles p
+    join auth.users u on u.id = p.user_id
+   where (lower(u.email) like lower(c_loser_pattern)
+          or lower(p.first_name) like lower(c_loser_pattern))
+     and p.status = 'active';
   if v_count <> 1 then
-    raise exception 'Expected exactly 1 active player whose first name starts with "Hazar", found %', v_count;
+    raise exception
+      'Expected exactly 1 active player matching %, found % — narrow it to an exact e-mail',
+      c_loser_pattern, v_count;
   end if;
-  select user_id, gender_category into v_hazar, v_hazar_gender
-    from public.profiles
-   where lower(first_name) like 'hazar%' and status = 'active';
+  select p.user_id, p.gender_category into v_hazar, v_hazar_gender
+    from public.profiles p
+    join auth.users u on u.id = p.user_id
+   where (lower(u.email) like lower(c_loser_pattern)
+          or lower(p.first_name) like lower(c_loser_pattern))
+     and p.status = 'active';
+
+  if v_yunus = v_hazar then
+    raise exception 'Both identifiers matched the same account (%)', v_yunus;
+  end if;
 
   -- ── Category has to be one both players are actually rated in ─────────────
   -- A player only holds an elo_ratings row for the categories their gender
