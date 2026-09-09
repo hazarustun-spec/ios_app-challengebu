@@ -9,7 +9,7 @@
 --
 -- Run: supabase test db tests/database/live-score-formats.test.sql
 begin;
-select plan(22);
+select plan(24);
 
 -- ── Fixtures ────────────────────────────────────────────────────────────────
 \set pa '10000000-0000-0000-0000-0000000000aa'
