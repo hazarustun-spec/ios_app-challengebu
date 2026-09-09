@@ -20,9 +20,11 @@
 -- That also means neither player has a result imposed on them without seeing it.
 --
 -- HOW TO RUN
---   Supabase Dashboard → SQL Editor → paste → Run.
--- It prints what it matched before it writes, and rolls itself back if the two
--- players cannot be identified unambiguously.
+--   Supabase Dashboard → SQL Editor → paste the WHOLE file → Run.
+-- If either player cannot be identified unambiguously it raises and writes
+-- nothing. The SELECT at the bottom then shows what was recorded — the
+-- Dashboard's editor does not surface `raise notice`, so the result set is the
+-- only confirmation you actually get to see.
 
 do $$
 declare
@@ -119,3 +121,27 @@ begin
 
   raise notice 'Recorded match % — both players must now press "Sonucu Onayla" in the app for ELO to apply.', v_match;
 end $$;
+
+-- ── What was recorded ───────────────────────────────────────────────────────
+-- Read this back before telling anyone the match is in. The rating_after_*
+-- columns stay NULL until BOTH players press "Sonucu Onayla" in the app —
+-- that is expected here, not a failure: confirm-match is what applies ELO.
+select
+  m.id                       as match_id,
+  m.status,
+  m.category,
+  m.format,
+  pa.first_name || ' ' || pa.last_name || ' (' || m.score_team_a || ')' as team_a,
+  pb.first_name || ' ' || pb.last_name || ' (' || m.score_team_b || ')' as team_b,
+  m.winner_team,
+  cardinality(m.confirmed_by) as confirmations,
+  m.rating_after_team_a,
+  m.rating_after_team_b,
+  m.played_at
+from public.matches m
+join public.profiles pa on pa.user_id = m.team_a_player_ids[1]
+join public.profiles pb on pb.user_id = m.team_b_player_ids[1]
+where m.format = 'pro_set_8'
+  and m.score_team_a = 8 and m.score_team_b = 4
+order by m.created_at desc
+limit 5;
