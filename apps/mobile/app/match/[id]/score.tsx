@@ -45,6 +45,7 @@ import {
   startMatchActivity,
   updateMatchActivity,
 } from '../../../lib/live-match-activity';
+import { resolveMatchSides, toPerspective } from '../../../lib/match-sides';
 import { userMessage } from '../../../lib/user-message';
 import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
@@ -70,13 +71,12 @@ export default function ActiveMatch() {
   const someoneWon = score?.phase === 'finished';
   const matchOver = isVoid || someoneWon;
 
-  // THE mapping. Everything below reads through it; nothing reads 'a'/'b'
-  // directly. Defaults to 'b' only while `match` is still loading, and the
-  // screen renders a spinner until then.
-  const mySide: 'a' | 'b' = userId && match?.team_a_player_ids?.includes(userId) ? 'a' : 'b';
-  const oppSide: 'a' | 'b' = mySide === 'a' ? 'b' : 'a';
-  const myUnits = mySide === 'a' ? unitsA : unitsB;
-  const oppUnits = mySide === 'a' ? unitsB : unitsA;
+  // THE mapping, and the only one — lib/match-sides.ts. Nothing below reads
+  // 'a'/'b' out of the match itself.
+  const sides = resolveMatchSides(match, userId);
+  const mySide = sides.mine;
+  const oppSide = sides.theirs;
+  const { mine: myUnits, theirs: oppUnits } = toPerspective(sides, unitsA, unitsB);
 
   const opponent = match ? opponentNames.resolve(match) : null;
   const oppName: string = opponent?.name ?? 'Rakip';
@@ -144,10 +144,15 @@ export default function ActiveMatch() {
     if (liveScoreError) toast.show('Canlı skor yüklenemedi', 'error');
   }, [liveScoreError]);
 
+  // `sides.resolved` guards the write path: until the match row says which team
+  // this player is on, a tap has no correct side to land on and must not guess.
+  // Guessing is precisely what the old screen did.
   const handleAward = (side: 'a' | 'b') => {
+    if (!sides.resolved) return;
     awardUnit(side).catch((e) => toast.show(userMessage(e, 'Skor kaydedilemedi.'), 'error'));
   };
   const handleRevoke = (side: 'a' | 'b') => {
+    if (!sides.resolved) return;
     revokeUnit(side).catch((e) => toast.show(userMessage(e, 'Geri alınamadı.'), 'error'));
   };
 
@@ -246,7 +251,7 @@ export default function ActiveMatch() {
                   mine={r.me}
                   ownerLabel={r.name}
                   unitLabel={rule.unit}
-                  disabled={matchOver}
+                  disabled={matchOver || !sides.resolved}
                   onIncrement={() => handleAward(r.side)}
                   onDecrement={() => handleRevoke(r.side)}
                 />

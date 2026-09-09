@@ -24,6 +24,7 @@ import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
 import { liveFormatRule } from '../../../lib/live-format';
+import { resolveMatchSides, toTeams } from '../../../lib/match-sides';
 import { userMessage } from '../../../lib/user-message';
 import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
@@ -62,9 +63,9 @@ export default function DisputeForm() {
   const rule = liveFormatRule(match?.format);
 
   // Same single mapping the score screen uses. The claimed score is stored
-  // against the match's fixed team sides, so it must be translated out of
-  // "mine"/"theirs" exactly once, here.
-  const mySide: 'a' | 'b' = userId && match?.team_a_player_ids?.includes(userId) ? 'a' : 'b';
+  // against the match's fixed team sides, so it is translated out of
+  // "mine"/"theirs" exactly once, by toTeams below.
+  const sides = resolveMatchSides(match, userId);
 
   // A score is only claimed when BOTH boxes are filled — half a score is worse
   // than none, since an admin cannot tell which half is missing.
@@ -75,12 +76,11 @@ export default function DisputeForm() {
   const handleSubmit = () => {
     if (!reason || !id) return;
     const payload = note.trim() ? `${reason}: ${note.trim()}` : reason;
-    const claim =
-      showScoreClaim && claimComplete
-        ? mySide === 'a'
-          ? { claimedScoreA: Number(myScore), claimedScoreB: Number(oppScore) }
-          : { claimedScoreA: Number(oppScore), claimedScoreB: Number(myScore) }
-        : {};
+    let claim: { claimedScoreA?: number; claimedScoreB?: number } = {};
+    if (showScoreClaim && claimComplete && sides.resolved) {
+      const { a, b } = toTeams(sides, Number(myScore), Number(oppScore));
+      claim = { claimedScoreA: a, claimedScoreB: b };
+    }
     raiseDispute.mutate(
       { matchId: id, reason: payload, ...claim },
       {

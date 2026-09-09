@@ -181,6 +181,17 @@ Aynı maçın widget'ı ile ekranı ters taraflara yazıyordu.
       iki oyuncuya tek tek sormak zorunda değil.
 - [x] Widget/Dynamic Island: birim gösterimi + taraf başına −/+ (Swift).
 - [x] Sayı sayı giriş **v2'ye, Apple Watch'a** taşındı (`v2-backlog.md` 3b).
+- [x] Perspektif eşlemesi tek yere alındı (`lib/match-sides.ts`) + 12 test.
+      Bug'ın sınıfı buydu: eşleme ekranın içinde satır içiydi ve üç kopyası
+      vardı. Testler **kasten takım B'nin gözünden** yazıldı — operatör kendi
+      açtığı maçlarda takım A'da olduğu için göremediği yarı orası.
+
+### Doğrulananlar (CI, gerçek veritabanı)
+- Dört formatın kural motoru: 24 pgTAP iddiası — Klasik 3-3 → 4-3 karar oyunu,
+  Pro Set 8-7 devam / 9-8 biter, Tiebreak 12-10, 3 Set 2-1.
+- `revoke_unit` taraf başına; maçı bitiren birimi geri alınca maç açılıyor.
+- Skorsuz itiraz 200 dönüyor; iddia edilen skor sabit takım tarafına yazılıyor.
+- 173 deno entegrasyon testi + eski build'lerin çağırdığı `award_point` takma adı.
 
 ### ⚠️ Bu sürüm OTA ile gitmez
 Widget Swift'i değişti → **yeni build + App Review**.
