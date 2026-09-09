@@ -12,8 +12,16 @@
 // SDK 56 note: expo-calendar moved to instance methods. `createEventAsync` and
 // friends now throw at runtime — the calendar object's `createEvent` is the
 // supported path (docs.expo.dev/versions/v56.0.0/sdk/calendar).
+//
+// expo-calendar is imported LAZILY, and that is not a style choice. Its module
+// body calls `requireNativeModule('CalendarNext')`, which THROWS when the
+// native module is absent — and JS ships over the air while native code only
+// ships with a build. A static import here would crash the match detail screen
+// on every phone running the current App Store binary the moment this update
+// landed. So: probe for the native module to decide what to offer, and only
+// pull the JS in once we know it is there.
 
-import * as Calendar from 'expo-calendar';
+import { requireOptionalNativeModule } from 'expo';
 import { Linking, Platform } from 'react-native';
 import { type MatchCalendarEvent, buildGoogleCalendarUrl, matchEndsAt } from './calendar-event';
 import { captureException } from './sentry';
@@ -32,7 +40,9 @@ export type AddResult =
  * calendar — there is no reason to ask for something we will not read.
  */
 export async function addMatchToDeviceCalendar(e: MatchCalendarEvent): Promise<AddResult> {
+  if (!deviceCalendarSupported()) return { ok: false, reason: 'no-calendar' };
   try {
+    const Calendar = await import('expo-calendar');
     const { granted } = await Calendar.requestCalendarPermissions(true);
     if (!granted) return { ok: false, reason: 'permission' };
 
@@ -71,5 +81,10 @@ export async function openInGoogleCalendar(e: MatchCalendarEvent): Promise<boole
 export function deviceCalendarSupported(): boolean {
   // getDefaultCalendarSync is iOS-only. Android would need a calendar picker,
   // and the Android build is a v2 item.
-  return Platform.OS === 'ios';
+  if (Platform.OS !== 'ios') return false;
+  // The optional variant returns null instead of throwing, which is what makes
+  // it safe to ask this question from a binary that predates the module. Until
+  // the build carrying expo-calendar ships, this is false and the sheet offers
+  // Google Calendar only — which needs nothing native at all.
+  return requireOptionalNativeModule('CalendarNext') != null;
 }
