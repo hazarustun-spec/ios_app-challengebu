@@ -10,10 +10,19 @@ import {
 } from '../_shared/errors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 
-const inputSchema = z.object({
-  matchId: z.string().uuid(),
-  reason: z.string().trim().min(1).max(500),
-});
+const inputSchema = z
+  .object({
+    matchId: z.string().uuid(),
+    reason: z.string().trim().min(1).max(500),
+    // What the reporter says the score actually was, in the format's own unit.
+    // Optional and only meaningful as a pair — a "this match was never played"
+    // report has no score to claim.
+    claimedScoreA: z.number().int().min(0).max(99).optional(),
+    claimedScoreB: z.number().int().min(0).max(99).optional(),
+  })
+  .refine((v) => (v.claimedScoreA === undefined) === (v.claimedScoreB === undefined), {
+    message: 'claimedScoreA and claimedScoreB must be sent together',
+  });
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -36,9 +45,10 @@ Deno.serve(async (req) => {
     if (match.status === 'confirmed' || match.status === 'voided' || match.status === 'disputed') {
       return conflict(`Match is ${match.status} — cannot dispute`);
     }
-    if (!match.winner_team) {
-      return errorResponse('Scores must be submitted before a dispute can be raised', 400);
-    }
+    // No score gate. This used to refuse unless `winner_team` was set, which
+    // meant the one situation the button most needed to cover — the score can't
+    // be entered at all — was the one it rejected. A participant may report a
+    // match at any point before it is settled.
 
     const { data: dispute, error } = await supa
       .from('disputes')
@@ -46,6 +56,8 @@ Deno.serve(async (req) => {
         match_id: match.id,
         raised_by: auth.userId,
         reason: parsed.data.reason,
+        claimed_score_a: parsed.data.claimedScoreA ?? null,
+        claimed_score_b: parsed.data.claimedScoreB ?? null,
       })
       .select('id')
       .single();

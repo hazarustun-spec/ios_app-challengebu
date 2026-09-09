@@ -2,6 +2,15 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
+// Live Activity for a match in progress.
+//
+// The score it shows is the unit count for the match's format — games in
+// Klasik and Pro Set, tiebreak points in Hızlı Tiebreak, sets in 3 Set Klasik.
+// The 15/30/40 column is gone along with rally scoring.
+//
+// Every control writes through `Sides`, which resolves the wearer's own team
+// side from `youSide`. Hard-coding a side here would reproduce the bug that
+// made the score screen award the opponent's points for half the players.
 struct LiveMatchLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: LiveMatchAttributes.self) { context in
@@ -10,37 +19,14 @@ struct LiveMatchLiveActivity: Widget {
       let s = Sides(context.attributes, context.state)
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          PlayerRow(name: s.youName, games: s.youGames, point: s.youPoints,
-                    color: ScoreFormat.lime)
+          PlayerRow(name: s.youName, units: s.youUnits, color: ScoreFormat.lime)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          PlayerRow(name: s.oppName, games: s.oppGames, point: s.oppPoints,
-                    color: ScoreFormat.court)
+          PlayerRow(name: s.oppName, units: s.oppUnits, color: ScoreFormat.court)
         }
         DynamicIslandExpandedRegion(.bottom) {
-          if context.state.phase == "ongoing" {
-            if #available(iOS 17.0, *) {
-              HStack(spacing: 8) {
-                Button(intent: AwardPointIntent(side: context.attributes.youSide, matchId: context.attributes.matchId)) {
-                  Text("Sen +1").font(.system(.caption, design: .rounded).bold())
-                    .frame(maxWidth: .infinity).padding(.vertical, 6)
-                }.tint(ScoreFormat.lime)
-                Button(intent: AwardPointIntent(side: context.attributes.youSide == "a" ? "b" : "a", matchId: context.attributes.matchId)) {
-                  Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
-                    .frame(maxWidth: .infinity).padding(.vertical, 6)
-                }.tint(ScoreFormat.court)
-                Button(intent: UndoPointIntent(matchId: context.attributes.matchId)) {
-                  Image(systemName: "arrow.uturn.backward")
-                    .font(.system(.caption, design: .rounded).bold())
-                    .padding(.vertical, 6).padding(.horizontal, 4)
-                }.tint(ScoreFormat.ink)
-              }
-              .buttonStyle(.borderedProminent)
-            } else {
-              Text(statusText(context.state))
-                .font(.system(.caption2, design: .rounded))
-                .foregroundStyle(.secondary)
-            }
+          if context.state.phase == "ongoing", #available(iOS 17.0, *) {
+            ScoreControls(attributes: context.attributes, sides: s)
           } else {
             Text(statusText(context.state))
               .font(.system(.caption2, design: .rounded))
@@ -50,11 +36,11 @@ struct LiveMatchLiveActivity: Widget {
       } compactLeading: {
         Text("🎾")
       } compactTrailing: {
-        Text("\(s.youGames)–\(s.oppGames)")
+        Text("\(s.youUnits)–\(s.oppUnits)")
           .font(.system(.caption, design: .rounded).bold())
           .foregroundStyle(ScoreFormat.lime)
       } minimal: {
-        Text("\(s.youGames)–\(s.oppGames)")
+        Text("\(s.youUnits)–\(s.oppUnits)")
           .font(.system(.caption2, design: .rounded).bold())
       }
     }
@@ -63,16 +49,55 @@ struct LiveMatchLiveActivity: Widget {
   func statusText(_ s: LiveMatchAttributes.ContentState) -> String {
     switch s.phase {
     case "finished": return "Bitti 🎾"
-    case "void": return "Berabere · void"
+    case "void": return "Berabere"
     default: return "Maç sürüyor"
+    }
+  }
+}
+
+// A +/− pair per side, in the same order as the two score rows, so the button
+// you press sits under the number it changes. `−` is per-side on purpose: the
+// old single "undo" reversed whichever side scored last, so correcting your own
+// mistake could delete your opponent's game.
+@available(iOS 17.0, *)
+struct ScoreControls: View {
+  let attributes: LiveMatchAttributes
+  let sides: Sides
+
+  var body: some View {
+    HStack(spacing: 6) {
+      stepper(side: sides.youSide, label: "Sen", tint: ScoreFormat.lime)
+      stepper(side: sides.oppSide, label: sides.oppName, tint: ScoreFormat.court)
+    }
+    .buttonStyle(.borderedProminent)
+  }
+
+  private func stepper(side: String, label: String, tint: Color) -> some View {
+    HStack(spacing: 4) {
+      Button(intent: RevokeUnitIntent(side: side, matchId: attributes.matchId)) {
+        Image(systemName: "minus")
+          .font(.system(.caption2, design: .rounded).bold())
+          .padding(.vertical, 6).padding(.horizontal, 2)
+      }
+      .tint(ScoreFormat.ink)
+      .accessibilityLabel("\(label): bir \(attributes.unitLabel) geri al")
+
+      Button(intent: AwardUnitIntent(side: side, matchId: attributes.matchId)) {
+        Text("\(label) +1")
+          .font(.system(.caption, design: .rounded).bold())
+          .lineLimit(1)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 6)
+      }
+      .tint(tint)
+      .accessibilityLabel("\(label): bir \(attributes.unitLabel) ekle")
     }
   }
 }
 
 struct PlayerRow: View {
   let name: String
-  let games: Int
-  let point: Int
+  let units: Int
   let color: Color
 
   var body: some View {
@@ -81,14 +106,9 @@ struct PlayerRow: View {
         .font(.system(.caption2, design: .rounded))
         .foregroundStyle(.secondary)
         .lineLimit(1)
-      HStack(spacing: 6) {
-        Text("\(games)")
-          .font(.system(.title3, design: .rounded).bold())
-          .foregroundStyle(color)
-        Text(ScoreFormat.point(point))
-          .font(.system(.caption, design: .rounded))
-          .foregroundStyle(.secondary)
-      }
+      Text("\(units)")
+        .font(.system(.title3, design: .rounded).bold())
+        .foregroundStyle(color)
     }
   }
 }
@@ -105,31 +125,16 @@ struct LockScreenView: View {
           .font(.system(.caption, design: .rounded).bold())
           .foregroundStyle(.white)
         Spacer()
-        Text(state.phase == "finished" ? "Bitti" : "Maç sürüyor")
+        // Naming the unit here is what stops a 2-1 set score reading like a
+        // 2-1 game score.
+        Text(state.phase == "finished" ? "Bitti" : attributes.unitLabel)
           .font(.system(.caption2, design: .rounded))
           .foregroundStyle(.white.opacity(0.6))
       }
-      scoreRow(s.youName, s.youGames, s.youPoints, ScoreFormat.lime)
-      scoreRow(s.oppName, s.oppGames, s.oppPoints, ScoreFormat.court)
-      if state.phase == "ongoing" {
-        if #available(iOS 17.0, *) {
-          HStack(spacing: 8) {
-            Button(intent: AwardPointIntent(side: attributes.youSide, matchId: attributes.matchId)) {
-              Text("Sen +1").font(.system(.caption, design: .rounded).bold())
-                .frame(maxWidth: .infinity).padding(.vertical, 6)
-            }.tint(ScoreFormat.lime)
-            Button(intent: AwardPointIntent(side: attributes.youSide == "a" ? "b" : "a", matchId: attributes.matchId)) {
-              Text("Rakip +1").font(.system(.caption, design: .rounded).bold())
-                .frame(maxWidth: .infinity).padding(.vertical, 6)
-            }.tint(ScoreFormat.court)
-            Button(intent: UndoPointIntent(matchId: attributes.matchId)) {
-              Image(systemName: "arrow.uturn.backward")
-                .font(.system(.caption, design: .rounded).bold())
-                .padding(.vertical, 6).padding(.horizontal, 4)
-            }.tint(ScoreFormat.ink)
-          }
-          .buttonStyle(.borderedProminent)
-        }
+      scoreRow(s.youName, s.youUnits, ScoreFormat.lime)
+      scoreRow(s.oppName, s.oppUnits, ScoreFormat.court)
+      if state.phase == "ongoing", #available(iOS 17.0, *) {
+        ScoreControls(attributes: attributes, sides: s)
       }
     }
     .padding(14)
@@ -137,7 +142,7 @@ struct LockScreenView: View {
     .activitySystemActionForegroundColor(.white)
   }
 
-  func scoreRow(_ name: String, _ games: Int, _ point: Int, _ color: Color) -> some View {
+  func scoreRow(_ name: String, _ units: Int, _ color: Color) -> some View {
     HStack(spacing: 10) {
       RoundedRectangle(cornerRadius: 2)
         .fill(color)
@@ -147,13 +152,9 @@ struct LockScreenView: View {
         .foregroundStyle(.white)
         .lineLimit(1)
       Spacer()
-      Text("\(games)")
+      Text("\(units)")
         .font(.system(.title3, design: .rounded).bold())
         .foregroundStyle(color)
-      Text(ScoreFormat.point(point))
-        .font(.system(.subheadline, design: .rounded))
-        .foregroundStyle(.white.opacity(0.8))
-        .frame(width: 34, alignment: .trailing)
     }
   }
 }

@@ -39,7 +39,9 @@ Deno.serve(async (req) => {
     // Load the current score row. No row → nothing to push.
     const { data: score, error: scoreErr } = await supa
       .from('live_match_scores')
-      .select('games_a, games_b, points_a, points_b, phase, winner')
+      // games_a/games_b keep their historical names but now hold the format's
+      // unit count; points are no longer tracked (migration 20260909000001).
+      .select('games_a, games_b, phase, winner')
       .eq('match_id', matchId)
       .maybeSingle();
     if (scoreErr) console.error('[push-live-score] score row read failed', scoreErr);
@@ -71,10 +73,8 @@ Deno.serve(async (req) => {
 
     // DB snake_case → Codable camelCase (must match LiveMatchAttributes.ContentState).
     const contentState = {
-      gamesA: score.games_a,
-      gamesB: score.games_b,
-      pointsA: score.points_a,
-      pointsB: score.points_b,
+      unitsA: score.games_a,
+      unitsB: score.games_b,
       phase: score.phase,
       winner: score.winner,
     };

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { makeApnsJwt, sendLiveActivityStartPush } from '../_shared/apns.ts';
 import { handleCors } from '../_shared/cors.ts';
 import { errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
+import { unitLabel } from '../_shared/live-format.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 
 // Auto-starts the OPPONENT's Live Activity when a match begins. Invoked by the
@@ -38,7 +39,7 @@ Deno.serve(async (req) => {
     // Load the match. No row → nothing to start.
     const { data: match, error: matchErr } = await supa
       .from('matches')
-      .select('team_a_player_ids, team_b_player_ids, started_by')
+      .select('team_a_player_ids, team_b_player_ids, started_by, format')
       .eq('id', matchId)
       .maybeSingle();
     if (matchErr) console.error('[start-opponent-activity] match read failed', matchErr);
@@ -119,13 +120,15 @@ Deno.serve(async (req) => {
         youSide,
         nameA,
         nameB,
+        // The card counts whatever this format counts — games, tiebreak
+        // points or sets — and says so.
+        formatKey: match?.format ?? 'bu_klasik',
+        unitLabel: unitLabel(match?.format),
         categoryLabel: null,
       };
       const contentState = {
-        gamesA: 0,
-        gamesB: 0,
-        pointsA: 0,
-        pointsB: 0,
+        unitsA: 0,
+        unitsB: 0,
         phase: 'ongoing',
         winner: null,
       };

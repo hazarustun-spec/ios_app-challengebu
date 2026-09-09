@@ -6,9 +6,19 @@ import { invokeFunction } from './invoke-function';
 
 export type LiveMatchAttrs = {
   matchId: string;
+  /**
+   * Which fixed team side the WEARER of this activity is on. The widget maps
+   * the absolute score back to "you"/"opponent" through it — see the `Sides`
+   * struct in targets/live-activity/ScoreFormat.swift. Getting this right is
+   * what kept the widget correct while the score screen was mirroring itself.
+   */
   youSide: 'a' | 'b';
   nameA: string;
   nameB: string;
+  /** `matches.format` — tells the widget which unit it is counting. */
+  formatKey: string;
+  /** Singular unit name for the widget's controls ("oyun", "sayı", "set"). */
+  unitLabel: string;
   categoryLabel?: string;
   supabaseUrl?: string;
   supabaseAnonKey?: string;
@@ -17,10 +27,14 @@ export type LiveMatchAttrs = {
 };
 
 export type LiveMatchState = {
-  gamesA: number;
-  gamesB: number;
-  pointsA: number;
-  pointsB: number;
+  /**
+   * Units won by each fixed team side. Whether a unit is a game, a tiebreak
+   * point or a set depends on the format (lib/live-format.ts); the widget
+   * labels it from `unitLabel`. Rally points are no longer tracked — see
+   * migration 20260909000001.
+   */
+  unitsA: number;
+  unitsB: number;
   phase: 'ongoing' | 'void' | 'finished';
   winner?: 'a' | 'b' | null;
 };

@@ -55,6 +55,25 @@ finishing it needs, and rough effort.
   native rebuild. EAS cloud build is the clean path for the native side.
 - **Effort:** High (big native).
 
+### 3b. Apple Watch — sayı sayı skor girişi
+
+- **What:** Point-by-point scoring (15 / 30 / 40 / avantaj) on the wrist, syncing
+  into the same `point_events` log the phone writes to.
+- **Why it is here and not in the app:** the phone shipped with rally-by-rally
+  entry and it did not survive contact with a real match — nobody stops between
+  points to dig a phone out of a bag, so scores drifted and were then argued
+  over. On 9 Eyl 2026 the phone was changed to record one UNIT at a time (a game
+  in Klasik and Pro Set, a tiebreak point in Hızlı Tiebreak, a set in 3 Set
+  Klasik). A watch is the only place where a per-rally tap is cheap enough to be
+  worth it.
+- **Status:** Not started. The groundwork exists: scoring is event-sourced
+  (`point_events` + `recompute_live_score`), so a finer-grained event stream can
+  be folded in without changing how the phone reads the score.
+- **Needs:** A watchOS target, a WatchConnectivity or direct-network path to the
+  RPCs, and a per-format point ladder (the deuce/advantage rule that migration
+  20260909000001 removed from the server lives in that migration's history).
+- **Effort:** High (new platform target).
+
 ---
 
 ## 4 · Engagement, retention & growth (product — v1.1+)

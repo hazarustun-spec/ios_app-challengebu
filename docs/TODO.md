@@ -147,6 +147,59 @@ Ayrıca bulunan test altyapısı çürümesi (CI'a hiç ulaşmamıştı çünkü
 
 ---
 
+## 🔴 CANLI SKOR — YENİDEN YAZILDI (9 Eyl 2026)
+
+Operatör kendi maçında yakaladı: iki telefon aynı maçta **ters skor** gösteriyordu.
+
+### Kök sebep (tek cümle)
+`live_match_scores` ve `award_point` **mutlak** — taraf 'a' her zaman takım A.
+Live Activity buna `youSide` ile uyuyordu, **skor ekranı uymuyordu**: "ben"i sabit
+'a' sanıyordu. Takım A'daki oyuncuda ikisi çakıştığı için yıllardır fark
+edilmemiş. Takım B'deki oyuncuda üçü birden ters gidiyordu:
+- gösterim (`Sen` satırında rakibin skoru),
+- yazdığı puan (`"Sana sayı"` → `award_point('a')`, yani rakibe),
+- ve `finish()`'in bunu telafi için yaptığı ters çevirme → iki oyuncu **zıt skor**
+  gönderiyor, maç hiç uzlaşmıyordu. "Eşleşme sağlanamadı"nın sebebi buydu.
+
+Aynı maçın widget'ı ile ekranı ters taraflara yazıyordu.
+
+- [x] **Tek perspektif eşlemesi.** `mySide` — ekranda 'a'/'b' okuyan başka yer yok.
+- [x] **Sayı girişi kalktı, birim girişi geldi.** 15/30/40 yok. Her format kendi
+      biriminde: Klasik/Pro Set **oyun**, Hızlı Tiebreak **sayı**, 3 Set **set**.
+      Satır içi −/+ sayaç; hangi sayıyı değiştirdiğin baktığın sayı.
+- [x] **Dört formatın da kuralı yazıldı.** Motor eskiden SADECE Klasik biliyordu;
+      Pro Set, tiebreak ve 3 Set maçları Klasik kuralıyla puanlanıyordu.
+- [x] **Klasik'in kendi çelişkisi düzeldi.** Kod 3-3'te maçı berabere bitiriyordu
+      ama ekran "EL n / 7" sayıyor, format ekranı "4-3 → 1.0×" ilan ediyordu —
+      yani 4-3 vaat edilip hiç üretilemiyordu. Artık 7 oyun, 3-3'ten sonra karar
+      oyunu, sonuç 4-3. Berabere yok.
+- [x] **`revoke_unit` taraf başına.** Eski `undo_point` "en son kim sayı aldıysa"
+      onu geri alıyordu — kendi hatanı düzeltirken rakibinin oyununu silebiliyordun.
+- [x] **İtiraz artık skor şartı istemiyor.** `raise-dispute` "önce skor gönderin"
+      diyordu; oysa bildirilmek istenen şey skorun girilememesiydi. Ayrıca
+      "gerçek skor" alanı eklendi (`disputes.claimed_score_a/b`) — admin artık
+      iki oyuncuya tek tek sormak zorunda değil.
+- [x] Widget/Dynamic Island: birim gösterimi + taraf başına −/+ (Swift).
+- [x] Sayı sayı giriş **v2'ye, Apple Watch'a** taşındı (`v2-backlog.md` 3b).
+
+### ⚠️ Bu sürüm OTA ile gitmez
+Widget Swift'i değişti → **yeni build + App Review**.
+
+### ⚠️ Devam eden maçlar sıfırlanıyor
+Migration, `phase='ongoing'` maçların olay kaydını siliyor: o kayıtlar sayı
+cinsinden, yeni kural onları oyun sayardı ve birine anında galibiyet verirdi.
+Dürüst bir dönüşüm yok — oyuncular kortta gördükleri skoru tekrar girecek.
+Bitmiş maçlara dokunulmuyor.
+
+### Cihazda doğrulanacak (henüz yapılmadı)
+- [ ] İki gerçek telefonla Klasik maç: skorlar **aynı** görünüyor mu?
+- [ ] Takım B'deki oyuncunun "+" tuşu kendi skorunu mu artırıyor?
+- [ ] İki oyuncunun gönderdiği skor **eşleşiyor** mu? (asıl kırılan şey buydu)
+- [ ] Dynamic Island ve kilit ekranındaki −/+ doğru tarafa yazıyor mu?
+- [ ] Skor girmeden "İtiraz et" çalışıyor mu?
+
+---
+
 ## 🔴 KULLANICI BİLDİRİMLERİ (5 Eyl 2026, canlıdan)
 
 Operatörün kendi kullanımından + kullanıcı geri bildirimlerinden çıkan 11 madde.

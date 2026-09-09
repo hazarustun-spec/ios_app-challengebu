@@ -1,20 +1,28 @@
-// apps/mobile/app/match/[id]/score.tsx — Plan 8 Phase E6.
+// apps/mobile/app/match/[id]/score.tsx — live score entry.
 //
-// Live score entry. Simple one-side flow: tap "+" buttons to award points,
-// games auto-advance, "Maçı Bitir" reveals when somebody wins (4 games,
-// margin ≥ 1) or the 3-3 voided rule fires.
+// Two things this screen used to get wrong, both fixed here.
 //
-// Notes
-//   • The Plan 8 spec removes the live-sync pulse + mismatch UI the design
-//     bundle's `ActiveMatch` shipped with — we keep ONLY the simple
-//     home-device flow.
-//   • Undo exists — server-authoritative + event-sourced. The "Geri Al" button
-//     calls the undo_point RPC, which reverses the most recent point; there is
-//     no client-side snapshot stack.
-//   • Navigates to `/match/[id]/result` with the final state via search
-//     params (no Zustand needed at this stage).
-//   • Opponent name resolved via useOpponentNames() + useMatchDetail(id).
-//   • Wired to live data — no mock constants remain.
+// 1. PERSPECTIVE. `live_match_scores` is absolute: side 'a' is always team A,
+//    for both phones. This screen read it as if side 'a' were "me" — it
+//    rendered `Sen` next to games_a and wired the "Sana sayı" button to
+//    award_point('a'). For a team-A player the two models coincide and it
+//    looked fine. For a team-B player everything mirrored: they saw their
+//    opponent's score under their own name, their taps scored for the
+//    opponent, and `finish()` swapped the numbers to "compensate", so the two
+//    players submitted opposite scores and the match never settled. The Live
+//    Activity had it right all along (LiveMatchAttributes.youSide), so the
+//    widget and the screen disagreed about the same match.
+//
+//    Now there is exactly one mapping — `mySide` — and everything derives from
+//    it. The hook stays absolute, matching the database.
+//
+// 2. UNIT. Entry was rally-by-rally (15/30/40 → a game every four points), and
+//    only ever implemented BÜ Klasik. Nobody picks up a phone between rallies,
+//    and a Pro Set or a tiebreak was being scored under Klasik's rule. Entry is
+//    now one tap per unit of whatever the match's format actually counts —
+//    games, tiebreak points or sets — see lib/live-format.ts.
+//
+// Point-by-point entry is deferred to an Apple Watch mode (docs/roadmap).
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
@@ -23,13 +31,14 @@ import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon';
 import { NavHeader } from '../../../components/ui/NavHeader';
-import { ScoreInput } from '../../../components/ui/ScoreInput';
+import { ScoreStepper } from '../../../components/ui/ScoreStepper';
 import { useToast } from '../../../components/ui/ToastProvider';
 import { useLiveScore } from '../../../hooks/use-live-score';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useSubmitMatchScore } from '../../../hooks/use-submit-match-score';
 import { env } from '../../../lib/env';
+import { liveFormatRule, progressLabel } from '../../../lib/live-format';
 import {
   endMatchActivity,
   registerActivityPushToken,
@@ -40,8 +49,6 @@ import { userMessage } from '../../../lib/user-message';
 import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
-const PTS = ['0', '15', '30', '40', 'Ad'];
-
 export default function ActiveMatch() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchQ = useMatchDetail(id);
@@ -51,51 +58,56 @@ export default function ActiveMatch() {
   const refreshToken = useAuthStore((s) => s.session?.refresh_token);
   const submitScore = useSubmitMatchScore();
   const toast = useToast();
-  const { score, error: liveScoreError, awardPoint, undoPoint } = useLiveScore(id);
-  const gA = score?.gamesA ?? 0;
-  const gB = score?.gamesB ?? 0;
-  const pA = score?.pointsA ?? 0;
-  const pB = score?.pointsB ?? 0;
+  const { score, error: liveScoreError, awardUnit, revokeUnit } = useLiveScore(id);
+
+  const match = matchQ.data ?? null;
+  const rule = liveFormatRule(match?.format);
+
+  // Absolute, exactly as the server holds them.
+  const unitsA = score?.unitsA ?? 0;
+  const unitsB = score?.unitsB ?? 0;
   const isVoid = score?.phase === 'void';
   const someoneWon = score?.phase === 'finished';
+  const matchOver = isVoid || someoneWon;
 
-  // Resolve opponent name from live match data. Falls back to 'Rakip' while
-  // loading or when the match row hasn't arrived yet.
-  const match = matchQ.data ?? null;
+  // THE mapping. Everything below reads through it; nothing reads 'a'/'b'
+  // directly. Defaults to 'b' only while `match` is still loading, and the
+  // screen renders a spinner until then.
+  const mySide: 'a' | 'b' = userId && match?.team_a_player_ids?.includes(userId) ? 'a' : 'b';
+  const oppSide: 'a' | 'b' = mySide === 'a' ? 'b' : 'a';
+  const myUnits = mySide === 'a' ? unitsA : unitsB;
+  const oppUnits = mySide === 'a' ? unitsB : unitsA;
+
   const opponent = match ? opponentNames.resolve(match) : null;
   const oppName: string = opponent?.name ?? 'Rakip';
   const oppFirstName: string = opponent?.primaryName?.split(' ')[0] ?? 'Rakip';
 
-  const total = gA + gB;
-
-  // Live Activity — mirror the live score to the Dynamic Island + Lock Screen.
-  const youSide: 'a' | 'b' = match?.team_a_player_ids?.includes(userId ?? '') ? 'a' : 'b';
-  const nameA = youSide === 'a' ? 'Sen' : oppFirstName;
-  const nameB = youSide === 'a' ? oppFirstName : 'Sen';
+  // Live Activity labels are per-team, because the widget maps them back
+  // through `youSide` itself (targets/live-activity/ScoreFormat.swift `Sides`).
+  const nameA = mySide === 'a' ? 'Sen' : oppFirstName;
+  const nameB = mySide === 'a' ? oppFirstName : 'Sen';
 
   // Latest score in a ref so the unmount cleanup ends the activity with the
   // final state (the start/end effect only runs once per match).
-  const scoreRef = useRef({ gA, gB, pA, pB, isVoid, someoneWon });
-  scoreRef.current = { gA, gB, pA, pB, isVoid, someoneWon };
+  const scoreRef = useRef({ unitsA, unitsB, isVoid, someoneWon, winner: score?.winner ?? null });
+  scoreRef.current = { unitsA, unitsB, isVoid, someoneWon, winner: score?.winner ?? null };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: starts the Live Activity exactly once per match — scoreRef exists so the unmount cleanup sees the final score without the score being a dependency here
   useEffect(() => {
-    // Wait for userId before starting: youSide (perspective) and the App-Group
-    // accessToken both derive from it. Starting before userId arrives would lock
-    // in the wrong perspective ('b' fallback) + empty token and never correct.
-    // userId is in the deps so this (re)runs once it lands; match.id is stable so
-    // the activity still starts exactly once per match.
+    // Wait for userId before starting: mySide (perspective) and the App-Group
+    // accessToken both derive from it. Starting before userId arrives would
+    // lock in the wrong perspective ('b' fallback) and never correct it.
     if (!match || !id || !userId) return;
     // Attach the APNs push-token listener BEFORE starting the activity so a
-    // token emitted during start() can't be missed. The listener reads a fresh
-    // access token at event time, so a late-arriving session still registers.
-    // Never breaks scoring on failure.
+    // token emitted during start() can't be missed.
     const tokenSub = registerActivityPushToken(id);
     startMatchActivity({
       matchId: id,
-      youSide,
+      youSide: mySide,
       nameA,
       nameB,
+      formatKey: match.format,
+      unitLabel: rule.unit,
       supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       accessToken,
@@ -105,12 +117,10 @@ export default function ActiveMatch() {
       tokenSub?.remove();
       const s = scoreRef.current;
       endMatchActivity({
-        gamesA: s.gA,
-        gamesB: s.gB,
-        pointsA: s.pA,
-        pointsB: s.pB,
+        unitsA: s.unitsA,
+        unitsB: s.unitsB,
         phase: s.isVoid ? 'void' : 'finished',
-        winner: s.someoneWon ? (s.gA === 4 ? 'a' : 'b') : null,
+        winner: s.winner,
       });
     };
   }, [match?.id, userId]);
@@ -118,56 +128,38 @@ export default function ActiveMatch() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: updateMatchActivity is a module function, not state; the score values it sends are already the deps
   useEffect(() => {
     if (!match) return;
-    const phase: 'ongoing' | 'void' | 'finished' = isVoid
-      ? 'void'
-      : someoneWon
-        ? 'finished'
-        : 'ongoing';
-    const winner = someoneWon ? (gA === 4 ? 'a' : 'b') : null;
     updateMatchActivity({
-      gamesA: gA,
-      gamesB: gB,
-      pointsA: pA,
-      pointsB: pB,
-      phase,
-      winner,
+      unitsA,
+      unitsB,
+      phase: isVoid ? 'void' : someoneWon ? 'finished' : 'ongoing',
+      // Trust the server's winner rather than re-deriving it from the counts:
+      // each format decides differently, and a second implementation here is a
+      // second thing to get wrong.
+      winner: score?.winner ?? null,
     });
-  }, [gA, gB, pA, pB, isVoid, someoneWon, match?.id]);
+  }, [unitsA, unitsB, isVoid, someoneWon, score?.winner, match?.id]);
 
-  // Surface a non-blocking error if the live score failed to load.
   // biome-ignore lint/correctness/useExhaustiveDependencies: fires the toast on a new error only; toast is a stable context value and listing it would re-show the message on every render
   useEffect(() => {
     if (liveScoreError) toast.show('Canlı skor yüklenemedi', 'error');
   }, [liveScoreError]);
 
-  // Award a point, surfacing RPC failures so a tap that didn't register is
-  // visible instead of silently lost.
   const handleAward = (side: 'a' | 'b') => {
-    awardPoint(side).catch(() => toast.show('Sayı kaydedilemedi', 'error'));
+    awardUnit(side).catch((e) => toast.show(userMessage(e, 'Skor kaydedilemedi.'), 'error'));
   };
-
-  // Undo the last point — server-authoritative (event-sourced) via undo_point.
-  // Surfaces RPC failures the same way handleAward does.
-  const handleUndo = () => {
-    undoPoint().catch(() => toast.show('Geri alınamadı', 'error'));
+  const handleRevoke = (side: 'a' | 'b') => {
+    revokeUnit(side).catch((e) => toast.show(userMessage(e, 'Geri alınamadı.'), 'error'));
   };
-
-  // Point label: when one side has Advantage (4) but the other is still ≤ 2,
-  // render 'Ad'; otherwise look up the standard label table.
-  const ptLabel = (p: number, other: number) => (p === 4 && other < 3 ? 'Ad' : PTS[Math.min(p, 4)]);
 
   const finish = () => {
     if (!id || submitScore.isPending) return;
-    // The UI tracks games as "Sen" (gA) vs opponent (gB), but the backend
-    // records scoreTeamA/scoreTeamB against the match's fixed team sides. Map my
-    // games onto the correct side so BOTH players submit identical team scores
-    // (otherwise the two submissions never match).
-    const iAmTeamA = userId ? (match?.team_a_player_ids.includes(userId) ?? true) : true;
-    const scoreTeamA = iAmTeamA ? gA : gB;
-    const scoreTeamB = iAmTeamA ? gB : gA;
-    const winnerTeam: 'a' | 'b' | 'void' = isVoid ? 'void' : scoreTeamA > scoreTeamB ? 'a' : 'b';
+    // No perspective swap. `unitsA`/`unitsB` are already the match's fixed team
+    // sides, which is exactly what the backend records — the old code mapped
+    // "my games" onto a side and produced mirrored submissions from the two
+    // phones, which is why scores never matched.
+    const winnerTeam: 'a' | 'b' | 'void' = isVoid ? 'void' : (score?.winner ?? 'a');
     submitScore.mutate(
-      { matchId: id, scoreTeamA, scoreTeamB, winnerTeam },
+      { matchId: id, scoreTeamA: unitsA, scoreTeamB: unitsB, winnerTeam },
       {
         onSuccess: () => router.replace(`/match/${id}/result` as never),
         onError: (e) => Alert.alert('Skor gönderilemedi', userMessage(e, 'Lütfen tekrar dene.')),
@@ -176,13 +168,12 @@ export default function ActiveMatch() {
   };
 
   const rows = [
-    { name: 'Sen', g: gA, p: ptLabel(pA, pB), me: true },
-    { name: oppName, g: gB, p: ptLabel(pB, pA), me: false },
+    { name: 'Sen', units: myUnits, side: mySide, me: true },
+    { name: oppName, units: oppUnits, side: oppSide, me: false },
   ];
 
   const navSubtitle = match?.court?.name ? match.court.name : undefined;
 
-  // Loading state — show spinner while match data is in flight
   if (matchQ.isLoading) {
     return (
       <View className="flex-1 bg-bg">
@@ -194,7 +185,6 @@ export default function ActiveMatch() {
     );
   }
 
-  // Error state — graceful fallback
   if (matchQ.isError) {
     return (
       <View className="flex-1 bg-bg">
@@ -232,38 +222,34 @@ export default function ActiveMatch() {
           ) : (
             rows.map((r, i) => (
               <View
-                key={r.name}
+                key={r.side}
                 className="flex-row items-center"
                 style={{
-                  padding: 14,
-                  paddingHorizontal: 16,
-                  gap: 12,
+                  padding: 12,
+                  paddingHorizontal: 14,
+                  gap: 10,
                   borderTopWidth: i ? 1 : 0,
                   borderColor: colors.surface3,
                   backgroundColor: r.me ? colors.claySofter : 'transparent',
                 }}
               >
-                <Avatar name={r.name} size={42} />
-                <Text className="font-sans font-bold text-text" style={{ flex: 1, fontSize: 15.5 }}>
-                  {r.me ? 'Sen' : r.name}
-                </Text>
+                <Avatar name={r.me ? oppName : r.name} size={38} />
                 <Text
-                  className="font-num font-bold text-text-3"
-                  style={{ width: 38, textAlign: 'center', fontSize: 16 }}
+                  className="font-sans font-bold text-text"
+                  numberOfLines={1}
+                  style={{ flex: 1, fontSize: 15 }}
                 >
-                  {r.p}
+                  {r.name}
                 </Text>
-                <Text
-                  className="font-num font-extrabold"
-                  style={{
-                    width: 40,
-                    textAlign: 'center',
-                    fontSize: 36,
-                    color: r.g === 4 ? colors.win : colors.text,
-                  }}
-                >
-                  {r.g}
-                </Text>
+                <ScoreStepper
+                  value={r.units}
+                  mine={r.me}
+                  ownerLabel={r.name}
+                  unitLabel={rule.unit}
+                  disabled={matchOver}
+                  onIncrement={() => handleAward(r.side)}
+                  onDecrement={() => handleRevoke(r.side)}
+                />
               </View>
             ))
           )}
@@ -273,45 +259,19 @@ export default function ActiveMatch() {
           className="font-num font-bold text-text-3"
           style={{ textAlign: 'center', fontSize: 12, marginTop: 4 }}
         >
-          EL {Math.min(total + 1, 7)} / 7 ·{' '}
-          {isVoid ? '3-3 BERABERE' : someoneWon ? 'MAÇ BİTTİ' : 'GÜNCEL'}
+          {progressLabel(rule, unitsA, unitsB)} ·{' '}
+          {isVoid ? 'BERABERE' : someoneWon ? 'MAÇ BİTTİ' : 'GÜNCEL'}
         </Text>
 
-        {!someoneWon && !isVoid && (
-          <>
-            {/* Shared-scoring model: either player can award points; the
-                event-sourced score dedupes + syncs live, so make that explicit
-                instead of leaving users to wonder who "keeps score". */}
-            <View
-              className="flex-row items-center"
-              style={{ justifyContent: 'center', gap: 5, marginTop: 6 }}
-            >
-              <Icon name="refresh" size={12} color={colors.text3} />
-              <Text className="font-sans text-text-3" style={{ fontSize: 11.5 }}>
-                İkiniz de sayı girebilir · anlık eşitlenir
-              </Text>
-            </View>
-            <View className="flex-row" style={{ gap: 12, marginTop: 6 }}>
-              <ScoreInput label="Sana sayı" tint={colors.court} onPress={() => handleAward('a')} />
-              <ScoreInput label={`${oppFirstName} sayı`} onPress={() => handleAward('b')} />
-            </View>
-          </>
-        )}
-
-        {/* Geri Al — reverses the most recent point (server-authoritative,
-            event-sourced). Secondary/ghost so it stays reachable without
-            competing with the +1 buttons. Reachable even after a void/finish
-            so a mistaken match-ending point can be corrected. */}
-        {score != null && (
-          <View className="flex-row" style={{ justifyContent: 'center', marginTop: 2 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Icon name="refresh" size={15} color={colors.text2} />}
-              onPress={handleUndo}
-            >
-              Geri Al
-            </Button>
+        {!matchOver && (
+          <View
+            className="flex-row items-center"
+            style={{ justifyContent: 'center', gap: 5, marginTop: 6 }}
+          >
+            <Icon name="refresh" size={12} color={colors.text3} />
+            <Text className="font-sans text-text-3" style={{ fontSize: 11.5, textAlign: 'center' }}>
+              {`Kazanılan ${rule.unitPlural} sayısını gir · ikiniz de girebilir, anlık eşitlenir`}
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -320,15 +280,9 @@ export default function ActiveMatch() {
         <Button
           full
           size="lg"
-          variant={someoneWon || isVoid ? 'primary' : 'secondary'}
-          disabled={(!someoneWon && !isVoid) || submitScore.isPending}
-          icon={
-            <Icon
-              name="flag"
-              size={17}
-              color={someoneWon || isVoid ? colors.onLime : colors.text}
-            />
-          }
+          variant={matchOver ? 'primary' : 'secondary'}
+          disabled={!matchOver || submitScore.isPending}
+          icon={<Icon name="flag" size={17} color={matchOver ? colors.onLime : colors.text} />}
           onPress={finish}
         >
           {submitScore.isPending

@@ -23,7 +23,9 @@ import { NavHeader } from '../../../components/ui/NavHeader';
 import { useMatchDetail } from '../../../hooks/use-match-detail';
 import { useOpponentNames } from '../../../hooks/use-opponent-names';
 import { useRaiseDispute } from '../../../hooks/use-raise-dispute';
+import { liveFormatRule } from '../../../lib/live-format';
 import { userMessage } from '../../../lib/user-message';
+import { useAuthStore } from '../../../stores/auth-store';
 import { colors } from '../../../theme/colors';
 
 type DisputeReason = 'score' | 'notplayed' | 'format' | 'other';
@@ -35,24 +37,52 @@ const REASONS: Array<{ key: DisputeReason; label: string }> = [
   { key: 'other', label: 'Diğer' },
 ];
 
+/** Digits only, capped at two, so the field can never carry a stray character. */
+function sanitizeScore(raw: string): string {
+  return raw.replace(/\D/g, '').slice(0, 2);
+}
+
 export default function DisputeForm() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [reason, setReason] = useState<DisputeReason | null>(null);
   const [note, setNote] = useState('');
+  // Kept as strings: an empty field has to stay empty, and a number state would
+  // turn it into 0 and claim a score the reporter never entered.
+  const [myScore, setMyScore] = useState('');
+  const [oppScore, setOppScore] = useState('');
 
   const matchQ = useMatchDetail(id);
   const opponentNames = useOpponentNames();
   const raiseDispute = useRaiseDispute();
+  const userId = useAuthStore((s) => s.user?.id);
 
   const match = matchQ.data ?? null;
   const opponentInfo = match ? opponentNames.resolve(match) : null;
   const opponentName = opponentInfo?.name ?? 'Rakip';
+  const rule = liveFormatRule(match?.format);
+
+  // Same single mapping the score screen uses. The claimed score is stored
+  // against the match's fixed team sides, so it must be translated out of
+  // "mine"/"theirs" exactly once, here.
+  const mySide: 'a' | 'b' = userId && match?.team_a_player_ids?.includes(userId) ? 'a' : 'b';
+
+  // A score is only claimed when BOTH boxes are filled — half a score is worse
+  // than none, since an admin cannot tell which half is missing.
+  const claimComplete = myScore !== '' && oppScore !== '';
+  const claimPartial = (myScore !== '') !== (oppScore !== '');
+  const showScoreClaim = reason !== null && reason !== 'notplayed';
 
   const handleSubmit = () => {
     if (!reason || !id) return;
     const payload = note.trim() ? `${reason}: ${note.trim()}` : reason;
+    const claim =
+      showScoreClaim && claimComplete
+        ? mySide === 'a'
+          ? { claimedScoreA: Number(myScore), claimedScoreB: Number(oppScore) }
+          : { claimedScoreA: Number(oppScore), claimedScoreB: Number(myScore) }
+        : {};
     raiseDispute.mutate(
-      { matchId: id, reason: payload },
+      { matchId: id, reason: payload, ...claim },
       {
         onSuccess: () => {
           router.replace('/(tabs)/matches' as never);
@@ -144,6 +174,76 @@ export default function DisputeForm() {
           })}
         </View>
 
+        {showScoreClaim && (
+          <View style={{ gap: 8, marginTop: 6 }}>
+            <Text className="font-sans font-bold text-text-2" style={{ fontSize: 13 }}>
+              {`Gerçek skor (${rule.unit})`}
+            </Text>
+            <Text className="font-sans text-text-3" style={{ fontSize: 12.5, lineHeight: 18 }}>
+              Maçın gerçekte kaç {rule.unitPlural} bittiğini yaz — admin bunu değerlendirecek. Emin
+              değilsen boş bırakabilirsin.
+            </Text>
+            <View className="flex-row items-center" style={{ gap: 10 }}>
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text className="font-sans text-text-3" style={{ fontSize: 12 }}>
+                  Sen
+                </Text>
+                <TextInput
+                  value={myScore}
+                  onChangeText={(v) => setMyScore(sanitizeScore(v))}
+                  keyboardType="number-pad"
+                  placeholder="—"
+                  placeholderTextColor={colors.text3}
+                  accessibilityLabel={`Senin ${rule.unitPlural} sayın`}
+                  style={{
+                    paddingVertical: 12,
+                    borderRadius: 14,
+                    borderWidth: 1.5,
+                    borderColor: colors.borderStrong,
+                    backgroundColor: colors.surface,
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 20,
+                    textAlign: 'center',
+                    color: colors.text,
+                  }}
+                />
+              </View>
+              <Text className="font-num text-text-3" style={{ fontSize: 18, marginTop: 18 }}>
+                –
+              </Text>
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text className="font-sans text-text-3" numberOfLines={1} style={{ fontSize: 12 }}>
+                  {opponentName}
+                </Text>
+                <TextInput
+                  value={oppScore}
+                  onChangeText={(v) => setOppScore(sanitizeScore(v))}
+                  keyboardType="number-pad"
+                  placeholder="—"
+                  placeholderTextColor={colors.text3}
+                  accessibilityLabel={`${opponentName} ${rule.unitPlural} sayısı`}
+                  style={{
+                    paddingVertical: 12,
+                    borderRadius: 14,
+                    borderWidth: 1.5,
+                    borderColor: colors.borderStrong,
+                    backgroundColor: colors.surface,
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 20,
+                    textAlign: 'center',
+                    color: colors.text,
+                  }}
+                />
+              </View>
+            </View>
+            {claimPartial && (
+              <Text className="font-sans" style={{ fontSize: 12, color: colors.loss }}>
+                İki skoru da yaz ya da ikisini de boş bırak.
+              </Text>
+            )}
+          </View>
+        )}
+
         <Text className="font-sans font-bold text-text-2" style={{ fontSize: 13, marginTop: 6 }}>
           Açıklama
         </Text>
@@ -173,7 +273,7 @@ export default function DisputeForm() {
         <Button
           full
           size="lg"
-          disabled={!reason || raiseDispute.isPending}
+          disabled={!reason || claimPartial || raiseDispute.isPending}
           icon={<Icon name="flag" size={17} color={colors.onLime} />}
           onPress={handleSubmit}
         >

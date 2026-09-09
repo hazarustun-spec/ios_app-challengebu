@@ -48,10 +48,12 @@ public class LiveMatchActivityModule: Module {
         youSide: a["youSide"] as? String ?? "a",
         nameA: a["nameA"] as? String ?? "Sen",
         nameB: a["nameB"] as? String ?? "Rakip",
+        formatKey: a["formatKey"] as? String ?? "bu_klasik",
+        unitLabel: a["unitLabel"] as? String ?? "oyun",
         categoryLabel: a["categoryLabel"] as? String
       )
       let state = LiveMatchAttributes.ContentState(
-        gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0, phase: "ongoing", winner: nil)
+        unitsA: 0, unitsB: 0, phase: "ongoing", winner: nil)
       // Dedup: if an activity for this matchId already exists (e.g. it was
       // push-started by the server while the app was backgrounded), adopt it
       // instead of requesting a second card. Keep the onPushToken observer path
@@ -181,10 +183,8 @@ public class LiveMatchActivityModule: Module {
   @available(iOS 16.2, *)
   static func contentState(from s: [String: Any]) -> LiveMatchAttributes.ContentState {
     LiveMatchAttributes.ContentState(
-      gamesA: s["gamesA"] as? Int ?? 0,
-      gamesB: s["gamesB"] as? Int ?? 0,
-      pointsA: s["pointsA"] as? Int ?? 0,
-      pointsB: s["pointsB"] as? Int ?? 0,
+      unitsA: s["unitsA"] as? Int ?? 0,
+      unitsB: s["unitsB"] as? Int ?? 0,
       phase: s["phase"] as? String ?? "ongoing",
       winner: s["winner"] as? String)
   }

@@ -1,21 +1,35 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+/**
+ * The live score as the SERVER holds it: `unitsA` is always team A's count and
+ * `unitsB` always team B's, whichever team the reader happens to be on.
+ *
+ * That absoluteness is the whole point. The previous shape called these
+ * `gamesA`/`gamesB` and the score screen read them as "mine"/"theirs", which is
+ * only true for a team-A player: a team-B player saw the opponent's score under
+ * their own name, and the "+" button under "Sen" awarded to team A. Two phones
+ * showed mirrored scores for the same match and their submissions never matched.
+ * Callers must map through their own side — see `mySide` in
+ * app/match/[id]/score.tsx.
+ *
+ * "Units" rather than "games" because the unit depends on the format: games in
+ * Klasik and Pro Set, points in Hızlı Tiebreak, sets in 3 Set Klasik. See
+ * lib/live-format.ts.
+ */
 export type LiveScore = {
-  gamesA: number;
-  gamesB: number;
-  pointsA: number;
-  pointsB: number;
+  unitsA: number;
+  unitsB: number;
   phase: 'ongoing' | 'void' | 'finished';
   winner: 'a' | 'b' | null;
 };
 
 function fromRow(r: Record<string, unknown>): LiveScore {
   return {
-    gamesA: Number(r.games_a ?? 0),
-    gamesB: Number(r.games_b ?? 0),
-    pointsA: Number(r.points_a ?? 0),
-    pointsB: Number(r.points_b ?? 0),
+    // The columns keep their historical `games_*` names; migration
+    // 20260909000001 repurposed them to hold whichever unit the format counts.
+    unitsA: Number(r.games_a ?? 0),
+    unitsB: Number(r.games_b ?? 0),
     phase: (r.phase as LiveScore['phase']) ?? 'ongoing',
     winner: (r.winner as LiveScore['winner']) ?? null,
   };
@@ -60,10 +74,11 @@ export function useLiveScore(matchId: string | undefined) {
     };
   }, [matchId]);
 
-  const awardPoint = useCallback(
+  /** Give one unit to a TEAM side — 'a' and 'b' are the match's fixed sides. */
+  const awardUnit = useCallback(
     async (side: 'a' | 'b') => {
       if (!matchId) return;
-      const { data, error: rpcError } = await supabase.rpc('award_point', {
+      const { data, error: rpcError } = await supabase.rpc('award_unit', {
         p_match_id: matchId,
         p_side: side,
       });
@@ -73,14 +88,24 @@ export function useLiveScore(matchId: string | undefined) {
     [matchId],
   );
 
-  // Undo the most recent point — server-authoritative (event-sourced), mirrors
-  // awardPoint. Applies the returned row optimistically; Realtime confirms.
-  const undoPoint = useCallback(async () => {
-    if (!matchId) return;
-    const { data, error: rpcError } = await supabase.rpc('undo_point', { p_match_id: matchId });
-    if (rpcError) throw rpcError; // surfaced at the call site
-    if (data) setScore(fromRow(data as Record<string, unknown>)); // optimistic; Realtime confirms
-  }, [matchId]);
+  /**
+   * Take back the last unit given to ONE side. Per-side on purpose: with a
+   * "−" control next to each player, "take back mine" has to mean mine. The
+   * old undo reversed whichever side scored last, so tapping "−" on your own
+   * row could remove your opponent's game.
+   */
+  const revokeUnit = useCallback(
+    async (side: 'a' | 'b') => {
+      if (!matchId) return;
+      const { data, error: rpcError } = await supabase.rpc('revoke_unit', {
+        p_match_id: matchId,
+        p_side: side,
+      });
+      if (rpcError) throw rpcError; // surfaced at the call site
+      if (data) setScore(fromRow(data as Record<string, unknown>)); // optimistic; Realtime confirms
+    },
+    [matchId],
+  );
 
-  return { score, error, awardPoint, undoPoint };
+  return { score, error, awardUnit, revokeUnit };
 }
