@@ -2,15 +2,19 @@ import { assertEquals } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
 import { ANON_KEY, SUPABASE_URL, adminClient, createTestUser, teardownUsers } from './helpers.ts';
 
-// award_point() is a SECURITY DEFINER RPC gated on auth.uid() being a match
-// participant, so it must be called with a participant's access token (not the
-// service role). These tests pin the tennis deuce / advantage flow.
+// award_unit()/revoke_unit() are SECURITY DEFINER RPCs gated on auth.uid() being
+// a match participant, so they must be called with a participant's access token
+// (not the service role). What these pin is the RPC path under RLS — the
+// per-format win conditions are covered exhaustively in
+// tests/database/live-score-formats.test.sql.
+//
+// The deuce/advantage scenarios this file used to hold went with rally scoring
+// (migration 20260909000001): one event is now one UNIT of the match's format.
 
 interface Score {
+  // Historical column names; they hold the format's unit count now.
   games_a: number;
   games_b: number;
-  points_a: number;
-  points_b: number;
   phase: string;
   winner: string | null;
 }
@@ -84,72 +88,75 @@ function userClient(accessToken: string) {
   });
 }
 
-Deno.test('award_point: deuce → advantage → game progression (margin 2)', async () => {
+function scorer(token: string, matchId: string) {
+  const supa = userClient(token);
+  return {
+    award: async (side: 'a' | 'b'): Promise<Score> => {
+      const { data, error } = await supa.rpc('award_unit', { p_match_id: matchId, p_side: side });
+      if (error) throw new Error(`award_unit(${side}): ${error.message}`);
+      return data as Score;
+    },
+    revoke: async (side: 'a' | 'b'): Promise<Score> => {
+      const { data, error } = await supa.rpc('revoke_unit', { p_match_id: matchId, p_side: side });
+      if (error) throw new Error(`revoke_unit(${side}): ${error.message}`);
+      return data as Score;
+    },
+  };
+}
+
+Deno.test('award_unit: one tap is one unit, and it lands on the side asked for', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
-  const supa = userClient(aliceToken);
+  const { award } = scorer(aliceToken, matchId);
   try {
-    const award = async (side: 'a' | 'b'): Promise<Score> => {
-      const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
-      if (error) throw new Error(`award_point(${side}): ${error.message}`);
-      return data as Score;
-    };
+    let score = await award('a');
+    // The old engine needed four taps to move this number; that is the whole
+    // behaviour change.
+    assertEquals([score.games_a, score.games_b], [1, 0]);
 
-    await award('a');
-    await award('b');
-    await award('a');
-    await award('b');
-    await award('a');
-    let s2 = await award('b'); // 3-3 deuce
-    assertEquals([s2.points_a, s2.points_b], [3, 3]);
-    assertEquals([s2.games_a, s2.games_b], [0, 0]);
-
-    s2 = await award('a'); // 4-3 advantage A
-    assertEquals([s2.points_a, s2.points_b], [4, 3]);
-    assertEquals([s2.games_a, s2.games_b], [0, 0]);
-
-    s2 = await award('b'); // back to deuce (3-3)
-    assertEquals([s2.points_a, s2.points_b], [3, 3]);
-    assertEquals([s2.games_a, s2.games_b], [0, 0]);
-
-    s2 = await award('a'); // 4-3 again
-    assertEquals([s2.points_a, s2.points_b], [4, 3]);
-
-    s2 = await award('a'); // game won, margin 2
-    assertEquals([s2.points_a, s2.points_b], [0, 0]);
-    assertEquals([s2.games_a, s2.games_b], [1, 0]);
+    score = await award('b');
+    assertEquals([score.games_a, score.games_b], [1, 1]);
+    assertEquals(score.phase, 'ongoing');
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('award_point: 40-30 (3-2) +A wins the game (margin 2)', async () => {
+Deno.test('revoke_unit: takes back the side asked for, not the side that scored last', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
-  const supa = userClient(aliceToken);
+  const { award, revoke } = scorer(aliceToken, matchId);
   try {
-    const award = async (side: 'a' | 'b'): Promise<Score> => {
-      const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
-      if (error) throw new Error(`award_point(${side}): ${error.message}`);
-      return data as Score;
-    };
+    await award('a');
+    await award('a');
+    await award('b'); // b scored most recently
 
-    await award('a');
-    await award('a');
-    await award('a');
-    await award('b');
-    let s2 = await award('b'); // 3-2
-    assertEquals([s2.points_a, s2.points_b], [3, 2]);
-
-    s2 = await award('a'); // margin 2 → game won
-    assertEquals([s2.points_a, s2.points_b], [0, 0]);
-    assertEquals([s2.games_a, s2.games_b], [1, 0]);
+    // The old undo_point would have removed b's unit here.
+    const score = await revoke('a');
+    assertEquals([score.games_a, score.games_b], [1, 1]);
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('award_point: non-participant is rejected', async () => {
+Deno.test('award_point alias: builds already in the App Store keep working', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
+  const supa = userClient(aliceToken);
+  try {
+    // The shipped Live Activity intents call award_point by name. Dropping it
+    // would turn a wrong score into a hard failure on a phone that cannot be
+    // fixed over the air.
+    const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: 'a' });
+    if (error) throw new Error(`award_point: ${error.message}`);
+    const score = data as Score;
+    assertEquals([score.games_a, score.games_b], [1, 0]);
+  } finally {
+    await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
+  }
+});
+
+Deno.test('award_unit: non-participant is rejected', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceId, bobId } = await makeMatch(s);
   const carol = await createTestUser({
@@ -158,7 +165,7 @@ Deno.test('award_point: non-participant is rejected', async () => {
   });
   try {
     const supa = userClient(carol.accessToken);
-    const { error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: 'a' });
+    const { error } = await supa.rpc('award_unit', { p_match_id: matchId, p_side: 'a' });
     assertEquals(error?.code, '42501');
   } finally {
     await teardownUsers([aliceId, bobId, carol.userId], { matchIds: [matchId] });

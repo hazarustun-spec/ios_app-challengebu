@@ -2,13 +2,18 @@ import { assertEquals } from 'jsr:@std/assert';
 import { createClient } from '@supabase/supabase-js';
 import { ANON_KEY, SUPABASE_URL, adminClient, createTestUser, teardownUsers } from './helpers.ts';
 
-// Event-sourced scoring: award_point appends to point_events; undo_point flips the latest.
+// Event-sourced scoring: award_unit appends to point_events, revoke_unit flips
+// the latest event of ONE side, and the score is replayed from the log.
+//
+// Since migration 20260909000001 an event is one UNIT of the match's format —
+// a game in Klasik, a tiebreak point in Hızlı Tiebreak, a set in 3 Set Klasik —
+// not a rally. That is why the counts here are four where they used to be
+// sixteen.
 
 interface Score {
+  // Historical column names; they hold the format's unit count now.
   games_a: number;
   games_b: number;
-  points_a: number;
-  points_b: number;
   phase: string;
   winner: string | null;
 }
@@ -87,72 +92,67 @@ function userClient(accessToken: string) {
 function awarder(token: string, matchId: string) {
   const supa = userClient(token);
   return async (side: 'a' | 'b'): Promise<Score> => {
-    const { data, error } = await supa.rpc('award_point', { p_match_id: matchId, p_side: side });
-    if (error) throw new Error(`award_point(${side}): ${error.message}`);
+    const { data, error } = await supa.rpc('award_unit', { p_match_id: matchId, p_side: side });
+    if (error) throw new Error(`award_unit(${side}): ${error.message}`);
     return data as Score;
   };
 }
 
-function undoer(token: string, matchId: string) {
+function revoker(token: string, matchId: string) {
   const supa = userClient(token);
-  return async (): Promise<Score> => {
-    const { data, error } = await supa.rpc('undo_point', { p_match_id: matchId });
-    if (error) throw new Error(`undo_point: ${error.message}`);
+  return async (side: 'a' | 'b'): Promise<Score> => {
+    const { data, error } = await supa.rpc('revoke_unit', { p_match_id: matchId, p_side: side });
+    if (error) throw new Error(`revoke_unit(${side}): ${error.message}`);
     return data as Score;
   };
 }
 
-Deno.test('(a) award then undo returns to the prior score', async () => {
+Deno.test('(a) award then revoke returns to the prior score', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
-  const undo = undoer(aliceToken, matchId);
+  const revoke = revoker(aliceToken, matchId);
   try {
     await award('a');
     await award('b');
     let score = await award('a'); // 2-1
-    assertEquals([score.points_a, score.points_b], [2, 1]);
+    assertEquals([score.games_a, score.games_b], [2, 1]);
 
-    score = await undo(); // back to 1-1
-    assertEquals([score.points_a, score.points_b], [1, 1]);
-    assertEquals([score.games_a, score.games_b], [0, 0]);
+    score = await revoke('a'); // back to 1-1
+    assertEquals([score.games_a, score.games_b], [1, 1]);
     assertEquals(score.phase, 'ongoing');
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('(b) undo a game-winning point reverts games + phase', async () => {
+Deno.test('(b) revoking the last unit of a run leaves the rest intact', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
-  const undo = undoer(aliceToken, matchId);
+  const revoke = revoker(aliceToken, matchId);
   try {
     await award('a');
     await award('a');
-    await award('a');
-    let score = await award('a'); // game won
-    assertEquals([score.games_a, score.games_b], [1, 0]);
-    assertEquals([score.points_a, score.points_b], [0, 0]);
+    let score = await award('a');
+    assertEquals([score.games_a, score.games_b], [3, 0]);
 
-    score = await undo(); // back to 40-0
-    assertEquals([score.games_a, score.games_b], [0, 0]);
-    assertEquals([score.points_a, score.points_b], [3, 0]);
+    score = await revoke('a');
+    assertEquals([score.games_a, score.games_b], [2, 0]);
     assertEquals(score.phase, 'ongoing');
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('(b2) undo a match-ending point reverts finished → ongoing', async () => {
+Deno.test('(b2) revoking a match-ending unit reverts finished → ongoing', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
-  const undo = undoer(aliceToken, matchId);
+  const revoke = revoker(aliceToken, matchId);
   try {
-    for (let g = 0; g < 4; g++) {
-      for (let p = 0; p < 4; p++) await award('a');
-    }
+    // Klasik: four games win it. Sixteen rally taps used to be needed here.
+    for (let g = 0; g < 4; g++) await award('a');
     const supa = userClient(aliceToken);
     const { data } = await supa
       .from('live_match_scores')
@@ -163,17 +163,18 @@ Deno.test('(b2) undo a match-ending point reverts finished → ongoing', async (
     assertEquals((data as Score).winner, 'a');
     assertEquals([(data as Score).games_a, (data as Score).games_b], [4, 0]);
 
-    const score = await undo();
+    // Replay from the log rather than patching the row, so a mis-tapped
+    // match-winning unit is genuinely recoverable.
+    const score = await revoke('a');
     assertEquals(score.phase, 'ongoing');
     assertEquals(score.winner, null);
     assertEquals([score.games_a, score.games_b], [3, 0]);
-    assertEquals([score.points_a, score.points_b], [3, 0]);
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('(c) dedupe: two award(a) from DIFFERENT users within 5s → ONE point', async () => {
+Deno.test('(c) dedupe: two award(a) from DIFFERENT users in the window → ONE unit', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, bobToken, aliceId, bobId } = await makeMatch(s);
   try {
@@ -181,8 +182,9 @@ Deno.test('(c) dedupe: two award(a) from DIFFERENT users within 5s → ONE point
     const bobAward = awarder(bobToken, matchId);
 
     await aliceAward('a'); // 1-0
-    const score = await bobAward('a'); // same rally, within 5s → collapsed
-    assertEquals([score.points_a, score.points_b], [1, 0]);
+    // Both players reaching for their phone after the same game.
+    const score = await bobAward('a');
+    assertEquals([score.games_a, score.games_b], [1, 0]);
 
     const supa = adminClient();
     const { data } = await supa
@@ -202,8 +204,9 @@ Deno.test('(d) two award(a) from the SAME user → BOTH count (no dedupe)', asyn
   const award = awarder(aliceToken, matchId);
   try {
     await award('a'); // 1-0
-    const score = await award('a'); // same user → not deduped → 2-0
-    assertEquals([score.points_a, score.points_b], [2, 0]);
+    // One person entering two units is scoring twice, not double-tapping.
+    const score = await award('a');
+    assertEquals([score.games_a, score.games_b], [2, 0]);
 
     const supa = adminClient();
     const { data } = await supa
@@ -222,9 +225,7 @@ Deno.test('(e) award on a finished match → no-op', async () => {
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const award = awarder(aliceToken, matchId);
   try {
-    for (let g = 0; g < 4; g++) {
-      for (let p = 0; p < 4; p++) await award('a');
-    }
+    for (let g = 0; g < 4; g++) await award('a');
     const score = await award('b'); // no-op
     assertEquals(score.phase, 'finished');
     assertEquals(score.winner, 'a');
@@ -236,13 +237,13 @@ Deno.test('(e) award on a finished match → no-op', async () => {
       .select('id')
       .eq('match_id', matchId)
       .eq('awarded', true);
-    assertEquals((data ?? []).length, 16); // no 17th event
+    assertEquals((data ?? []).length, 4); // no fifth event
   } finally {
     await teardownUsers([aliceId, bobId], { matchIds: [matchId] });
   }
 });
 
-Deno.test('(f) undo by a non-participant is rejected (42501)', async () => {
+Deno.test('(f) revoke by a non-participant is rejected (42501)', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { matchId, aliceToken, aliceId, bobId } = await makeMatch(s);
   const carol = await createTestUser({
@@ -252,7 +253,7 @@ Deno.test('(f) undo by a non-participant is rejected (42501)', async () => {
   try {
     await awarder(aliceToken, matchId)('a');
     const supa = userClient(carol.accessToken);
-    const { error } = await supa.rpc('undo_point', { p_match_id: matchId });
+    const { error } = await supa.rpc('revoke_unit', { p_match_id: matchId, p_side: 'a' });
     assertEquals(error?.code, '42501');
   } finally {
     await teardownUsers([aliceId, bobId, carol.userId], { matchIds: [matchId] });

@@ -115,6 +115,99 @@ Deno.test('raise-dispute: participant raises dispute → match status disputed',
   }
 });
 
+Deno.test('raise-dispute: works with NO score submitted', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  // Deliberately skips the two submit-match-score calls: this is the case the
+  // function used to refuse with "Scores must be submitted before a dispute can
+  // be raised", which meant the one situation the report button most needed to
+  // cover — the score cannot be entered at all — was the one it rejected.
+  const alice = await createTestUser({
+    email: `alice-rdns-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
+  const bob = await createTestUser({
+    email: `bob-rdns-${s}@test.local`,
+    genderCategory: 'erkek',
+  });
+  const supa = adminClient();
+  const { data: court } = await supa.from('courts').select('id').limit(1).single();
+  const { body: req } = await invokeFunction(
+    'create-match-request',
+    {
+      type: 'direct_challenge',
+      targetId: bob.userId,
+      category: 'erkek_tek',
+      format: 'bu_klasik',
+      isRated: true,
+      proposedDate: '2026-07-01',
+      proposedTime: '19:00',
+      courtId: court!.id,
+    },
+    alice.accessToken,
+  );
+  const { body: acc } = await invokeFunction(
+    'accept-match-request',
+    { requestId: (req as { id: string }).id },
+    bob.accessToken,
+  );
+  const matchId = (acc as { matchId: string }).matchId;
+
+  try {
+    const { status, body } = await invokeFunction(
+      'raise-dispute',
+      { matchId, reason: 'skor ekrani calismiyor' },
+      alice.accessToken,
+    );
+    assertEquals(status, 200);
+    assertEquals((body as { status: string }).status, 'disputed');
+  } finally {
+    await teardownUsers([alice.userId, bob.userId], { matchIds: [matchId] });
+  }
+});
+
+Deno.test('raise-dispute: records the score the reporter says it should have been', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  const { aliceToken, matchId, aliceId, bobId, carolId } = await setupAwaitingMatch(s);
+  try {
+    const { status, body } = await invokeFunction(
+      'raise-dispute',
+      { matchId, reason: 'skor yanlis', claimedScoreA: 4, claimedScoreB: 2 },
+      aliceToken,
+    );
+    assertEquals(status, 200);
+
+    const supa = adminClient();
+    const { data: dispute } = await supa
+      .from('disputes')
+      .select('claimed_score_a, claimed_score_b')
+      .eq('id', (body as { disputeId: string }).disputeId)
+      .single();
+    // Stored against the match's FIXED team sides, not "mine"/"theirs" — the
+    // client translates once, so an admin reads it the same way the match does.
+    assertEquals(dispute!.claimed_score_a, 4);
+    assertEquals(dispute!.claimed_score_b, 2);
+  } finally {
+    await teardownUsers([aliceId, bobId, carolId], { matchIds: [matchId] });
+  }
+});
+
+Deno.test('raise-dispute: half a claimed score is rejected', async () => {
+  const s = crypto.randomUUID().slice(0, 8);
+  const { aliceToken, matchId, aliceId, bobId, carolId } = await setupAwaitingMatch(s);
+  try {
+    // Half a score is worse than none: an admin cannot tell which half is
+    // missing.
+    const { status } = await invokeFunction(
+      'raise-dispute',
+      { matchId, reason: 'skor yanlis', claimedScoreA: 4 },
+      aliceToken,
+    );
+    assertEquals(status, 400);
+  } finally {
+    await teardownUsers([aliceId, bobId, carolId], { matchIds: [matchId] });
+  }
+});
+
 Deno.test('raise-dispute: non-participant forbidden', async () => {
   const s = crypto.randomUUID().slice(0, 8);
   const { carolToken, matchId, aliceId, bobId, carolId } = await setupAwaitingMatch(s);
