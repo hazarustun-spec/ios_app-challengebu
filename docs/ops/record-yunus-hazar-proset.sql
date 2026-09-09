@@ -22,8 +22,9 @@
 --
 -- HOW TO RUN
 --   Supabase Dashboard → SQL Editor → paste the WHOLE file → Run.
---   Players are identified by LOGIN E-MAIL — see the constants below.
---   Nothing is written unless both resolve to exactly one account each.
+--   Both players are identified by their exact LOGIN E-MAIL — see the
+--   constants below. Nothing is written unless each resolves to exactly one
+--   active account.
 --   The script waits for the function's reply, prints it, then prints the
 --   recorded match with the ratings it moved.
 
@@ -32,7 +33,8 @@
 --   matched `first_name like 'yunus%'` and would have found nobody: Yunus
 --   Emre's profile reads first_name "Emre", last_name "Y". A display name is
 --   whatever someone typed during onboarding; the login address is what the
---   account actually is.
+--   account actually is — and an exact address cannot match two people, which
+--   a name pattern can.
 -- Created before the DO block on purpose: a `raise` inside the block rolls the
 -- whole block back, CREATE TEMP TABLE included, and the SELECT at the bottom
 -- would then fail with "relation _record_match_req does not exist" — burying
@@ -44,9 +46,8 @@ do $$
 declare
   -- Winner (team A, 8 games).
   c_winner_email  constant text := 'emre.yuksel@std.bogazici.edu.tr';
-  -- Loser (team B, 4 games). A pattern, matched against e-mail OR first name;
-  -- replace with an exact address if the guard below calls it ambiguous.
-  c_loser_pattern constant text := 'hazar%';
+  -- Loser (team B, 4 games).
+  c_loser_email   constant text := 'hazar.ustun@std.bogazici.edu.tr';
   c_score_winner  constant int  := 8;
   c_score_loser   constant int  := 4;
   c_format        constant text := 'pro_set_8';
@@ -80,19 +81,14 @@ begin
 
   select count(*) into v_count
     from public.profiles p join auth.users u on u.id = p.user_id
-   where (lower(u.email) like lower(c_loser_pattern)
-          or lower(p.first_name) like lower(c_loser_pattern))
-     and p.status = 'active';
+   where lower(u.email) = lower(c_loser_email) and p.status = 'active';
   if v_count <> 1 then
-    raise exception
-      'Expected exactly 1 active player matching %, found % — narrow it to an exact e-mail',
-      c_loser_pattern, v_count;
+    raise exception 'Expected exactly 1 active player with e-mail %, found %',
+      c_loser_email, v_count;
   end if;
   select p.user_id, p.gender_category into v_loser, v_loser_gender
     from public.profiles p join auth.users u on u.id = p.user_id
-   where (lower(u.email) like lower(c_loser_pattern)
-          or lower(p.first_name) like lower(c_loser_pattern))
-     and p.status = 'active';
+   where lower(u.email) = lower(c_loser_email) and p.status = 'active';
 
   if v_winner = v_loser then
     raise exception 'Both identifiers matched the same account (%)', v_winner;
