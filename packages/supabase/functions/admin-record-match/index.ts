@@ -12,10 +12,20 @@
 // cannot edit a match that is already settled, and it applies ELO through
 // `applyEloForMatch` — the same helper `confirm-match` uses — rather than doing
 // the arithmetic again somewhere new.
+//
+// The guard is `requireInternalOrAdmin`, the same one advance-tournament-bracket
+// and award-badges use. That admits two callers: a human admin's JWT, or the
+// service role key on a service-to-service call. The second is what lets this be
+// driven from SQL — a statement in the Dashboard reads the service role key out
+// of vault and POSTs here through pg_net, which is how the push trigger already
+// talks to dispatch-push. It widens nothing: the service role key bypasses RLS
+// on every table anyway, so anyone holding it could already write this row by
+// hand — badly, and without the ELO.
 
 import { z } from 'zod';
 import { applyEloForMatch } from '../_shared/apply-elo.ts';
-import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
+import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
+import { requireInternalOrAdmin } from '../_shared/internal-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import type { MatchFormat } from '../_shared/elo.ts';
 import { conflict, errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
@@ -64,7 +74,17 @@ Deno.serve(async (req) => {
 
   try {
     const supa = getServiceClient();
-    const auth = await requireAdmin(req, supa);
+    await requireInternalOrAdmin(req, supa);
+
+    // Who to blame in the audit log. A human admin's token resolves to their
+    // user id; an internal call carrying the service role key has no person
+    // behind it, and inventing one would be worse than recording none.
+    let actorId: string | null = null;
+    try {
+      actorId = (await requireAuth(req, supa)).userId;
+    } catch {
+      actorId = null;
+    }
 
     const raw = await req.json();
     const parsed = inputSchema.safeParse(raw);
@@ -136,11 +156,12 @@ Deno.serve(async (req) => {
     // An admin writing a result on other people's behalf is exactly the kind of
     // action that has to be attributable afterwards.
     await supa.from('audit_log').insert({
-      actor_id: auth.userId,
+      actor_id: actorId,
       action: 'admin_record_match',
       entity_type: 'matches',
       entity_id: match.id,
       details: {
+        via: actorId ? 'admin' : 'internal',
         note: input.note ?? null,
         score: `${input.scoreTeamA}-${input.scoreTeamB}`,
         winner_team: winnerTeam,
