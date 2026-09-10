@@ -5,7 +5,7 @@
 -- The match was played on the build whose score screen mirrored the two
 -- players' perspectives (migration 20260909000001), so their two submissions
 -- could never agree and the match could not settle. This records the result
--- outright — no "Sonucu Onayla" tap from either player.
+-- outright - no "Sonucu Onayla" tap from either player.
 --
 -- WHY IT CALLS AN EDGE FUNCTION INSTEAD OF WRITING elo_ratings
 --
@@ -21,23 +21,23 @@
 -- `applyEloForMatch` that confirm-match calls.
 --
 -- HOW TO RUN
---   Supabase Dashboard → SQL Editor → paste the WHOLE file → Run.
---   Both players are identified by their exact LOGIN E-MAIL — see the
+--   Supabase Dashboard -> SQL Editor -> paste the WHOLE file -> Run.
+--   Both players are identified by their exact LOGIN E-MAIL - see the
 --   constants below. Nothing is written unless each resolves to exactly one
 --   active account.
 --   The script waits for the function's reply, prints it, then prints the
 --   recorded match with the ratings it moved.
 
--- ── EDIT THESE IF YOU RUN IT FOR A DIFFERENT MATCH ─────────────────────────
+-- -- EDIT THESE IF YOU RUN IT FOR A DIFFERENT MATCH -------------------------
 --   Identify by LOGIN E-MAIL, not by name. The first version of this script
 --   matched `first_name like 'yunus%'` and would have found nobody: Yunus
 --   Emre's profile reads first_name "Emre", last_name "Y". A display name is
 --   whatever someone typed during onboarding; the login address is what the
---   account actually is — and an exact address cannot match two people, which
+--   account actually is - and an exact address cannot match two people, which
 --   a name pattern can.
 -- Created before the DO block on purpose: a `raise` inside the block rolls the
 -- whole block back, CREATE TEMP TABLE included, and the SELECT at the bottom
--- would then fail with "relation _record_match_req does not exist" — burying
+-- would then fail with "relation _record_match_req does not exist" - burying
 -- the actual reason the script stopped.
 create temp table if not exists _record_match_req (request_id bigint);
 delete from _record_match_req;
@@ -63,10 +63,10 @@ declare
   v_request bigint;
   v_count int;
 begin
-  -- ── Identify the players ──────────────────────────────────────────────────
+  -- -- Identify the players --------------------------------------------------
   -- Read through auth.users, which is where the login address actually lives.
   -- profiles.email is only written on the signup INSERT and RLS revokes UPDATE
-  -- on it, so it can be stale on any account ever repaired by hand — matching
+  -- on it, so it can be stale on any account ever repaired by hand - matching
   -- on it silently touched 0 rows once already.
   select count(*) into v_count
     from public.profiles p join auth.users u on u.id = p.user_id
@@ -94,7 +94,7 @@ begin
     raise exception 'Both identifiers matched the same account (%)', v_winner;
   end if;
 
-  -- ── Category has to be one both players are actually rated in ─────────────
+  -- -- Category has to be one both players are actually rated in -------------
   -- A player only holds an elo_ratings row for the categories their gender
   -- seeds (20260805000002); applying a result in a category somebody is not
   -- seeded in would create a rating out of thin air.
@@ -111,7 +111,7 @@ begin
     raise exception 'No court on record';
   end if;
 
-  -- ── Don't record it twice ─────────────────────────────────────────────────
+  -- -- Don't record it twice -------------------------------------------------
   select count(*) into v_count
     from public.matches
    where format = c_format::match_format
@@ -119,17 +119,17 @@ begin
      and score_team_a = c_score_winner and score_team_b = c_score_loser
      and status in ('awaiting_confirmation','confirmed');
   if v_count > 0 then
-    raise exception 'This match is already on record (% row(s)) — nothing written', v_count;
+    raise exception 'This match is already on record (% row(s)) - nothing written', v_count;
   end if;
 
-  -- ── Call admin-record-match ───────────────────────────────────────────────
+  -- -- Call admin-record-match -----------------------------------------------
   select decrypted_secret into v_url
     from vault.decrypted_secrets where name = 'edge_functions_url' limit 1;
   select decrypted_secret into v_key
     from vault.decrypted_secrets where name = 'service_role_key' limit 1;
   if v_url is null or v_key is null then
     raise exception
-      'vault is missing edge_functions_url or service_role_key — the push trigger needs these too';
+      'vault is missing edge_functions_url or service_role_key - the push trigger needs these too';
   end if;
 
   select net.http_post(
@@ -162,18 +162,18 @@ end $$;
 -- Give pg_net a moment to actually make the request.
 select pg_sleep(4);
 
--- ── What the function said ──────────────────────────────────────────────────
+-- -- What the function said --------------------------------------------------
 -- 200 with a matchId is success. Anything else is the reason it refused, in
 -- plain text: 401 means the vault key is wrong, 400 names the bad field.
--- An empty result means pg_net has not answered yet — re-run just this SELECT.
+-- An empty result means pg_net has not answered yet - re-run just this SELECT.
 select r.status_code,
        r.content::jsonb as response
 from net._http_response r
 join _record_match_req q on q.request_id = r.id;
 
--- ── The recorded match, with the ratings it moved ───────────────────────────
+-- -- The recorded match, with the ratings it moved ---------------------------
 -- rating_after_* being filled is the proof ELO ran. NULL there means the match
--- was written but applyEloForMatch was not — read the response above.
+-- was written but applyEloForMatch was not - read the response above.
 select
   m.id                                                                 as match_id,
   m.status,
