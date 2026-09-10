@@ -232,6 +232,55 @@ gizliliği bölümleri onda yok. Şu anki link zaten daha eksiksiz belgeye gidiy
 İki ayrı metin tutmak, zamanla çelişmeleri demek. Değiştirmek istersen tek satır:
 `apps/mobile/lib/legal.ts` → `kvkk: ${LEGAL_BASE}/kvkk.html`.
 
+### 🔴 Prod'da dahili anahtar uyuşmazlığı — push, canlı skor, rakibin kartı ÇALIŞMIYORDU (11 Eyl)
+
+Yunus Emre–Hazar maçını SQL'den kaydetmeye çalışırken ortaya çıktı.
+
+**Ne oluyordu:** Veritabanı tetikleyicileri edge function'ları pg_net ile çağırıyor
+ve Bearer olarak vault'taki `service_role_key` kaydını gönderiyor. Migration
+yorumları bu değerin `INTERNAL_PUSH_KEY`'e eşit olduğunu söylüyordu. **Prod'da
+değildi**: vault 222 karakterlik eski tip bir service-role JWT tutuyordu. Fonksiyonlar
+Bearer'ı `INTERNAL_PUSH_KEY` ile karşılaştırıyor → **tetikleyiciden gelen her çağrı
+reddediliyordu**:
+- `dispatch-push` → **push bildirimleri gitmiyordu**
+- `push-live-score` → canlı skor kilit ekranındaki karta gitmiyordu
+- `start-opponent-activity` → **rakibin telefonunda kart hiç başlamıyordu**
+  (widget'ın ikinizde de çıkmamasının ikinci sebebi; ilki kartın skor ekranından
+  çıkınca sonlanmasıydı)
+
+Ne zamandan beri bozuk olduğu bilinmiyor — pg_net cevapları 6 saat tutuyor.
+
+**Teşhis, gizli değer açığa çıkmadan yapıldı:** iki tarafın SHA-256 özeti
+karşılaştırıldı (CLI özet yöntemi, uygulama paketinde zaten açık olan
+`REVIEW_OTP_CODE=424242` ile kalibre edildi). `edge_functions_url` doğruydu, tek
+sorun anahtardı.
+
+**Düzeltme:** `INTERNAL_PUSH_KEY` yenilendi — fonksiyonlara CLI ile, vault'a SQL ile.
+İki tarafın özeti de `80d25085…c449b6`. Yeni anahtarla iki fonksiyon yoklandı:
+yetki geçti (`400 Invalid input`, hiçbir şey yazılmadı).
+
+**Sonuç:** Yunus Emre–Hazar Pro Set 8-4 `admin-record-match` ile kaydedildi,
+`confirmed`, Emre 1200→1224, Hazar 1200→1176. Kayıt anında Mac'e bir
+"ChallengeBu! Bildirim" düştü — push'un yeniden çalıştığına güçlü işaret.
+
+Aynı gün bulunan iki ek hata da düzeltildi: `admin-record-match` gateway'de JWT
+kontrolü açık deploy edilmişti (`INTERNAL_PUSH_KEY` JWT değil) ve yanlış anahtarla
+karşılaştırıyordu. `config.toml` artık pg_net ile çağrılan dört fonksiyonun hepsi
+için `verify_jwt = false` bildiriyor; bu ayar daha önce sadece platformda
+duruyordu, repoda yazmıyordu.
+
+- [ ] **Anahtarı bir kez daha yenile.** Yeni anahtar vault SQL'inin ekran görüntüsünde
+      göründü; `admin-record-match` onu kabul ettiği için eline geçiren maç
+      kaydedip ELO değiştirebilir. Aynı süreç, bu sefer sadece sonuç satırının
+      görüntüsü alınacak.
+- [ ] **Bu değişmezin bekçisi yok.** Vault ile fonksiyon anahtarı sessizce ayrıştı
+      ve push'u kimse fark etmeden durdurdu. Admin → Sağlık ekranına kontrol
+      eklenmeli: vault anahtarıyla `dispatch-push`'a boş gövdeli istek — `400`
+      sağlıklı, `401` uyuşmazlık.
+- [ ] **Push ne zamandan beri bozuktu?** `select max(push_sent_at) from notifications`
+      son başarılı teslimi gösterir; kullanıcıların kaç haftadır bildirim
+      almadığını söyler.
+
 ### ✅ Prod'a giden (9-10 Eyl)
 - [x] 3 migration: `4_plus`, `live_score_units_by_format`, `dispute_claimed_score`.
       **0 devam eden maç sıfırlandı** — kimsenin maçı bozulmadı.
