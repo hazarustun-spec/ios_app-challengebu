@@ -15,10 +15,18 @@
 -- that in SQL would be a second implementation of the same rule, and the drift
 -- between them would surface as somebody's ladder position being quietly wrong.
 --
--- So this does what the push trigger already does (20260625000001): reads the
--- service role key out of vault and POSTs to an Edge Function through pg_net.
+-- So this does what the push trigger already does (20260625000001): reads a
+-- key out of vault and POSTs to an Edge Function through pg_net.
 -- `admin-record-match` inserts the match as confirmed and calls the SAME
 -- `applyEloForMatch` that confirm-match calls.
+--
+-- About that key: the vault entry is NAMED `service_role_key`, but its value is
+-- INTERNAL_PUSH_KEY (see 20260626000004), not the real service role key. The
+-- first run of this script wrote nothing because of it: the API gateway
+-- rejected the call as "Invalid JWT" (INTERNAL_PUSH_KEY is not a JWT and the
+-- function had been deployed with JWT verification on), and behind that the
+-- function compared the Bearer to the wrong key anyway. Both were fixed on the
+-- function side; this script did not need to change.
 --
 -- HOW TO RUN
 --   Supabase Dashboard -> SQL Editor -> paste the WHOLE file -> Run.

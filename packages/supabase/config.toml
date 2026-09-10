@@ -61,3 +61,27 @@ inspector_port = 8083
 # email + the fixed REVIEW_OTP_CODE secret can mint a session.
 [functions.review-login]
 verify_jwt = false
+
+# Functions the DATABASE calls through pg_net. Each is authenticated by its own
+# code — the Bearer must equal INTERNAL_PUSH_KEY, which is not a JWT, so the
+# gateway's JWT check has to be off or every trigger-driven call is rejected as
+# "Invalid JWT" before the function runs.
+#
+# These were live with the check off, but nothing in the repo said so: the
+# setting existed only on the platform, left there by earlier deploys with
+# --no-verify-jwt. A new function deployed without the flag (admin-record-match)
+# silently got the check ON and failed that way. Declared here, a plain
+# `supabase functions deploy` can no longer flip any of them.
+[functions.dispatch-push]
+verify_jwt = false
+
+[functions.push-live-score]
+verify_jwt = false
+
+[functions.start-opponent-activity]
+verify_jwt = false
+
+# Also accepts a signed-in admin, whose JWT the function verifies itself via
+# requireAdmin (auth.getUser + role check).
+[functions.admin-record-match]
+verify_jwt = false

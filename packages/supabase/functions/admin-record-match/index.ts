@@ -13,19 +13,29 @@
 // `applyEloForMatch` — the same helper `confirm-match` uses — rather than doing
 // the arithmetic again somewhere new.
 //
-// The guard is `requireInternalOrAdmin`, the same one advance-tournament-bracket
-// and award-badges use. That admits two callers: a human admin's JWT, or the
-// service role key on a service-to-service call. The second is what lets this be
-// driven from SQL — a statement in the Dashboard reads the service role key out
-// of vault and POSTs here through pg_net, which is how the push trigger already
-// talks to dispatch-push. It widens nothing: the service role key bypasses RLS
-// on every table anyway, so anyone holding it could already write this row by
-// hand — badly, and without the ELO.
+// Auth mirrors dispatch-push, push-live-score and start-opponent-activity — the
+// functions the database already drives through pg_net:
+//
+//   1. An internal call carries INTERNAL_PUSH_KEY as its Bearer. The vault
+//      entry the triggers read is NAMED `service_role_key`, but its value is
+//      INTERNAL_PUSH_KEY (see migration 20260626000004): under the new API-key
+//      system the function's SUPABASE_SERVICE_ROLE_KEY is a different string,
+//      so comparing against it never matches. The first version of this guard
+//      compared against exactly that — and was never even reached, because:
+//
+//   2. The function has to be deployed with verify_jwt = false (config.toml),
+//      like the other internal functions. INTERNAL_PUSH_KEY is not a JWT, and
+//      with the gateway's check on, every internal call was rejected as
+//      "Invalid JWT" before this code ran. The first SQL-driven attempt to
+//      record a match died there and wrote nothing.
+//
+// Any other caller must be a signed-in admin, verified here by requireAdmin
+// (auth.getUser + role check). Turning the gateway check off moves that
+// verification into the function; it does not remove it.
 
 import { z } from 'zod';
 import { applyEloForMatch } from '../_shared/apply-elo.ts';
-import { AuthError, requireAuth } from '../_shared/auth-guard.ts';
-import { requireInternalOrAdmin } from '../_shared/internal-guard.ts';
+import { AuthError, requireAdmin } from '../_shared/auth-guard.ts';
 import { handleCors } from '../_shared/cors.ts';
 import type { MatchFormat } from '../_shared/elo.ts';
 import { conflict, errorResponse, internalError, jsonResponse } from '../_shared/errors.ts';
@@ -74,16 +84,16 @@ Deno.serve(async (req) => {
 
   try {
     const supa = getServiceClient();
-    await requireInternalOrAdmin(req, supa);
 
-    // Who to blame in the audit log. A human admin's token resolves to their
-    // user id; an internal call carrying the service role key has no person
-    // behind it, and inventing one would be worse than recording none.
+    // Internal call first, compared against INTERNAL_PUSH_KEY exactly as
+    // dispatch-push does; otherwise a signed-in admin is required. The audit
+    // log records the admin's id, or null for an internal call — there is no
+    // person behind that one, and inventing one would be worse than none.
+    const internalKey = (Deno.env.get('INTERNAL_PUSH_KEY') ?? '').trim();
+    const bearer = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
     let actorId: string | null = null;
-    try {
-      actorId = (await requireAuth(req, supa)).userId;
-    } catch {
-      actorId = null;
+    if (!(internalKey && bearer === internalKey)) {
+      actorId = (await requireAdmin(req, supa)).userId;
     }
 
     const raw = await req.json();
