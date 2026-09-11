@@ -3,19 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { AppState } from 'react-native';
 import { env } from './env';
+import { createSessionStorage } from './session-storage';
 
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => SecureStore.getItemAsync(key),
-  setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
-  removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-};
+// Readable after the first unlock since boot, so a background launch on a
+// locked phone can still find the session — see session-storage.ts.
+const sessionStorage = createSessionStorage(SecureStore, SecureStore.AFTER_FIRST_UNLOCK);
 
 export const supabase = createClient(
   env.EXPO_PUBLIC_SUPABASE_URL,
   env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   {
     auth: {
-      storage: ExpoSecureStoreAdapter,
+      storage: sessionStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,

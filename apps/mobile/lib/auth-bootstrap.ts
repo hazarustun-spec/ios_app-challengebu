@@ -1,23 +1,65 @@
+import type { Session } from '@supabase/supabase-js';
+import { AppState } from 'react-native';
 import { useAuthStore } from '../stores/auth-store';
 import { writeLiveActivityAuthContext } from './live-match-activity';
 import { isOnboardingComplete } from './onboarding-status';
 import { setSentryUser } from './sentry';
 import { supabase } from './supabase';
 
-export async function bootstrapAuth() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+/**
+ * Reads the stored session. `undefined` means the read itself FAILED — almost
+ * always the keychain refusing because the phone is locked and iOS launched us
+ * in the background. That is not the same as `null` (nobody signed in), and
+ * treating it the same is what kept sending people back to the e-mail screen.
+ */
+async function readStoredSession(): Promise<Session | null | undefined> {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session;
+  } catch (err) {
+    console.warn('[auth-bootstrap] session read failed, will retry on foreground:', err);
+    return undefined;
+  }
+}
+
+async function adoptSession(session: Session | null) {
   useAuthStore.getState().setSession(session);
   // Keep the App Group user-level auth context fresh so the lock-screen
   // AwardPointIntent can authenticate (iOS-guarded inside the helper).
   writeLiveActivityAuthContext(session?.access_token, session?.refresh_token);
+  if (session?.user) await loadProfile(session.user.id);
+}
 
-  if (session?.user) {
-    await loadProfile(session.user.id);
+export async function bootstrapAuth() {
+  const session = await readStoredSession();
+  if (session !== undefined) {
+    await adoptSession(session);
+    // Only a read that actually answered may end the loading state. After a
+    // failed read the root screen keeps its spinner instead of redirecting to
+    // sign-in, and the foreground handler below finishes the job.
+    useAuthStore.getState().setLoading(false);
   }
 
-  useAuthStore.getState().setLoading(false);
+  // Whenever the app comes to the foreground without a session in memory, look
+  // in storage again. Covers the background launch above, and any other path
+  // that left memory empty while the keychain still holds a valid session. A
+  // real sign-out cleared storage too, so this finds nothing and changes
+  // nothing for it.
+  AppState.addEventListener('change', async (state) => {
+    if (state !== 'active' || useAuthStore.getState().session) return;
+    let stored = await readStoredSession();
+    if (stored === undefined) {
+      // In the foreground the keychain is open, so a failure here is not the
+      // lock. Try once more, then give up to the sign-in screen rather than
+      // leave the person staring at a spinner forever.
+      await delay(FOREGROUND_RETRY_MS);
+      stored = await readStoredSession();
+    }
+    if (stored) await adoptSession(stored);
+    useAuthStore.getState().setLoading(false);
+  });
 
   supabase.auth.onAuthStateChange(async (_event, newSession) => {
     useAuthStore.getState().setSession(newSession);
@@ -39,6 +81,7 @@ export async function bootstrapAuth() {
 // keeps that first-render race from becoming data loss.
 const LOAD_PROFILE_ATTEMPTS = 3;
 const LOAD_PROFILE_BASE_DELAY_MS = 500;
+const FOREGROUND_RETRY_MS = 500;
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
