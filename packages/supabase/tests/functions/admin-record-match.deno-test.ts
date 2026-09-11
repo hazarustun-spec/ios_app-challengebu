@@ -117,3 +117,113 @@ Deno.test('admin-record-match: level scores are refused — a recorded match nee
     await teardownUsers([f.winner.userId, f.loser.userId]);
   }
 });
+
+// ── RESCORE: settle an existing match that never had ELO applied ───────────
+//
+// This is the path for a match that was played through the app but got stuck —
+// the first real one was voided after the score screen mirrored the two
+// players' perspectives. Category, format and teams must come from the match's
+// own row. Doing it with CREATE instead is how a correction once landed on the
+// wrong opponent and in the wrong category.
+
+async function voidedMatch(f: Fixture, teamA: string, teamB: string): Promise<string> {
+  const { data, error } = await adminClient()
+    .from('matches')
+    .insert({
+      category: 'erkek_tek',
+      format: 'pro_set_8',
+      court_id: f.courtId,
+      played_at: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+      team_a_player_ids: [teamA],
+      team_b_player_ids: [teamB],
+      score_team_a: 0,
+      score_team_b: 0,
+      winner_team: 'void',
+      status: 'voided',
+    })
+    .select('id')
+    .single();
+  if (error || !data) throw new Error(`voided match insert failed: ${error?.message}`);
+  return data.id as string;
+}
+
+Deno.test('admin-record-match: RESCORE settles a voided match and applies ELO', async () => {
+  const f = await fixture(crypto.randomUUID().slice(0, 8));
+  // Winner deliberately on team B, so a side mix-up would show.
+  const matchId = await voidedMatch(f, f.loser.userId, f.winner.userId);
+  try {
+    const { status, body } = await invokeFunction(
+      'admin-record-match',
+      { matchId, scoreTeamA: 4, scoreTeamB: 8 },
+      INTERNAL_KEY,
+    );
+    assertEquals(status, 200, `unexpected response: ${JSON.stringify(body)}`);
+    const res = body as { winnerTeam: string; category: string; previousStatus: string };
+    assertEquals(res.winnerTeam, 'b');
+    // The category is the match's own, not derived from anything.
+    assertEquals(res.category, 'erkek_tek');
+    assertEquals(res.previousStatus, 'voided');
+
+    const supa = adminClient();
+    const { data: m } = await supa.from('matches').select('*').eq('id', matchId).single();
+    assertExists(m);
+    assertEquals(m.status, 'confirmed');
+    assertEquals(m.winner_team, 'b');
+    assertEquals([m.score_team_a, m.score_team_b], [4, 8]);
+    assertEquals(m.voided_reason, null);
+
+    // Two new players at 1200, Pro Set 8-4: K 40 x (1 - 0.5) x margin 1.2 = 24.
+    const { data: ratings } = await supa
+      .from('elo_ratings')
+      .select('profile_id, rating, matches_played')
+      .eq('category', 'erkek_tek')
+      .in('profile_id', [f.winner.userId, f.loser.userId]);
+    type Rating = { profile_id: string; rating: number; matches_played: number };
+    const byId = new Map(((ratings ?? []) as Rating[]).map((r) => [r.profile_id, r]));
+    assertEquals(byId.get(f.winner.userId)?.rating, 1224);
+    assertEquals(byId.get(f.loser.userId)?.rating, 1176);
+    assertEquals(byId.get(f.winner.userId)?.matches_played, 1);
+  } finally {
+    await teardownUsers([f.winner.userId, f.loser.userId], { matchIds: [matchId] });
+  }
+});
+
+Deno.test('admin-record-match: RESCORE refuses a match whose ELO was already applied', async () => {
+  const f = await fixture(crypto.randomUUID().slice(0, 8));
+  const matchId = await voidedMatch(f, f.winner.userId, f.loser.userId);
+  try {
+    const first = await invokeFunction(
+      'admin-record-match',
+      { matchId, scoreTeamA: 8, scoreTeamB: 4 },
+      INTERNAL_KEY,
+    );
+    assertEquals(first.status, 200);
+
+    // A second call would move both ratings again on top of the first.
+    const second = await invokeFunction(
+      'admin-record-match',
+      { matchId, scoreTeamA: 8, scoreTeamB: 4 },
+      INTERNAL_KEY,
+    );
+    assertEquals(second.status, 409);
+
+    const { data: w } = await adminClient()
+      .from('elo_ratings')
+      .select('rating')
+      .eq('category', 'erkek_tek')
+      .eq('profile_id', f.winner.userId)
+      .single();
+    assertEquals(w?.rating, 1224, 'rating moved twice');
+  } finally {
+    await teardownUsers([f.winner.userId, f.loser.userId], { matchIds: [matchId] });
+  }
+});
+
+Deno.test('admin-record-match: RESCORE of a missing match is a 404', async () => {
+  const { status } = await invokeFunction(
+    'admin-record-match',
+    { matchId: crypto.randomUUID(), scoreTeamA: 8, scoreTeamB: 4 },
+    INTERNAL_KEY,
+  );
+  assertEquals(status, 404);
+});
