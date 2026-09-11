@@ -541,3 +541,17 @@ profil `role = 'player'` varsayılanıyla yeniden oluştu. O script artık
 - Yeni fikir çıkarsa doğrudan buraya ekle (kategori uygun)
 - Her session başında **1. maddeden başla** — atlamayalım
 - v2 maddeleri kaynağı `docs/roadmap/v2-backlog.md`
+
+## Oturum düşmesi — kalan risk (2026-09-11)
+
+OTA `884d94c6` ana nedeni kapattı (keychain WHEN_UNLOCKED → AFTER_FIRST_UNLOCK,
+okuma hatası artık "çıkış" sayılmıyor). Geriye bir yol kaldı, native build ister:
+
+- [ ] Kilit ekranı widget'ı (`LiveScoreRPC.refreshAccessToken`) 401'de refresh
+      token'ı kendisi harcıyor ve yenisini yalnızca App Group'a yazıyor.
+      Supabase refresh token'ı döndürdüğü için uygulamanın keychain'deki kopyası
+      geçersizleşir → uygulama bir sonraki açılışta "Already Used" alır ve çıkış
+      yapar. Sadece canlı maçta, uygulama 1 saatten uzun arka plandayken kilit
+      ekranından puan girilirse olur. Çözüm: native modüle `readAuthContext`
+      ekle; JS, istenmemiş bir SIGNED_OUT'ta App Group'taki refresh token ile
+      bir kez `refreshSession` denesin.
