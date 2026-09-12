@@ -39,6 +39,14 @@ export function AppGuards() {
     if (!session && !inPublicArea) {
       router.replace('/(auth)/sign-in');
     }
+    // And the way back. If the session turns up while someone is on the
+    // splash / welcome / sign-in screens — a launch-time refresh that failed
+    // on a cold network and then succeeded seconds later — take them in
+    // instead of letting them type an e-mail for a session they already have.
+    // The OTP screen navigates on its own once the code verifies.
+    if (session && root === '(auth)' && segments[1] !== 'otp') {
+      router.replace('/');
+    }
   }, [session, loading, segments]);
 
   // Suspended / banned guard. Fires whenever `profile.status` becomes one of

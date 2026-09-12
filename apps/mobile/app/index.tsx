@@ -1,5 +1,5 @@
 import { type Href, Redirect } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { Button } from '../components/ui/Button';
 import { loadProfile } from '../lib/auth-bootstrap';
@@ -7,14 +7,29 @@ import { useAuthStore } from '../stores/auth-store';
 import { firstIncompleteStep, useOnboardingStore } from '../stores/onboarding-store';
 import { colors } from '../theme/colors';
 
+const SLOW_START_MS = 4000;
+
 export default function Index() {
   const { session, profile, loading, profileError } = useAuthStore();
   const [retrying, setRetrying] = useState(false);
+  // auth-bootstrap keeps retrying instead of guessing "signed out" when the
+  // network is not up yet; after a few seconds, say what we are waiting for.
+  const [slowStart, setSlowStart] = useState(false);
+  useEffect(() => {
+    if (!loading) return;
+    const t = setTimeout(() => setSlowStart(true), SLOW_START_MS);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white" style={{ gap: 16 }}>
         <ActivityIndicator size="large" color="#1e3a8a" />
+        {slowStart && (
+          <Text className="font-sans text-text-2" style={{ fontSize: 15, textAlign: 'center' }}>
+            Bağlantı bekleniyor…
+          </Text>
+        )}
       </View>
     );
   }
